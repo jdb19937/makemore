@@ -52,11 +52,18 @@ int main() {
   Layout *hidl3 = Layout::new_square_random(512);
   Layout *hidl4 = Layout::new_square_random(512);
   Layout *outl = Layout::new_square_grid(32);
-  Megatron *m1 = new Megatron(inl, hidl1); m1->makemaps(10);
-  Megatron *m2 = new Megatron(hidl1, hidl2); m2->makemaps(40);
-  Megatron *m3 = new Megatron(hidl2, hidl3); m3->makemaps(40);
-  Megatron *m4 = new Megatron(hidl3, hidl4); m4->makemaps(20);
-  Megatron *m5 = new Megatron(hidl4, outl); m5->makemaps(10);
+
+  Wiring *w1 = new Wiring(inl, hidl1, 10);
+  Wiring *w2 = new Wiring(hidl1, hidl2, 40);
+  Wiring *w3 = new Wiring(hidl2, hidl3, 40);
+  Wiring *w4 = new Wiring(hidl3, hidl4, 20);
+  Wiring *w5 = new Wiring(hidl4, outl, 10);
+
+  Megatron *m1 = new Megatron(w1);
+  Megatron *m2 = new Megatron(w2);
+  Megatron *m3 = new Megatron(w3);
+  Megatron *m4 = new Megatron(w4);
+  Megatron *m5 = new Megatron(w5);
   m5->kappa = 4.0;
 
   Tron *m = compositron(m1, m2);

@@ -3,11 +3,13 @@
 
 #include "tron.hh"
 #include "layout.hh"
+#include "wiring.hh"
 
 struct Megatron : Tron {
   const double *in;
   double *fin, *out, *fout;
 
+  const Wiring *wire;
   const Layout *inl, *outl;
 
   unsigned int wn;
@@ -18,7 +20,7 @@ struct Megatron : Tron {
 
   double eta, kappa;
 
-  Megatron(const Layout *_inl, const Layout *_outl);
+  Megatron(const Wiring *_wire);
   virtual ~Megatron();
 
   virtual const double *feed(const double *_in, double *_fin);
@@ -30,7 +32,7 @@ struct Megatron : Tron {
   virtual double *foutput() { return fout; }
 
 
-  void makemaps(unsigned int minv = 0, unsigned int maxv = (1<<16), double disp = 4.0);
+  void _makemaps(double disp = 4.0);
 };
 
 #endif
