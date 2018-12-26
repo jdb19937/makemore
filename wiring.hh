@@ -5,7 +5,7 @@
 
 #include <vector>
 
-struct Wiring {
+struct Wiring : Persist {
   const Layout *inl, *outl;
   unsigned int inn, outn;
 
@@ -20,6 +20,9 @@ struct Wiring {
  
   unsigned int wn;
   std::vector< std::vector<unsigned int> > moi, mio, miw, mow;
+
+  void load(FILE *fp) { assert(!"todo"); }
+  void save(FILE *fp) { assert(!"todo"); }
 };
 
 #endif

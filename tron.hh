@@ -7,9 +7,10 @@
 #include <stdint.h>
 #include <string.h>
 #include <unistd.h>
-#include <time.h>
 
-struct Tron {
+#include "persist.hh"
+
+struct Tron : Persist {
   unsigned int inn, outn;
 
   Tron(unsigned int _inn, unsigned int _outn) : inn(_inn), outn(_outn) {
@@ -58,27 +59,6 @@ struct Tron {
   double err3();
   double err2();
   double err1();
-
-  virtual void load(FILE *fp) { }
-  virtual void save(FILE *fp) { }
-
-  void load(const char *fn) {
-    FILE *fp = fopen(fn, "r");
-    assert(fp);
-    load(fp);
-    fclose(fp);
-  }
-
-  void save(const char *fn) {
-    char tfn[4096] = {0};
-    assert(strlen(fn) < 4000);
-    sprintf(tfn, "%s.%d.tmp", fn, getpid());
-    FILE *fp = fopen(tfn, "w");
-    assert(fp);
-    save(fp);
-    fclose(fp);
-    assert(0 == rename(tfn, fn));
-  }
 };
 
 struct Compositron : Tron {
@@ -136,6 +116,9 @@ struct Encudatron : Tron {
   virtual const double *output() { return out; }
   virtual const double *finput() { return fin; }
   virtual double *foutput() { return fout; }
+
+  virtual void load(FILE *fp) { }
+  virtual void save(FILE *fp) { }
 };
 
 inline Encudatron *encudatron(unsigned int n) {
@@ -158,6 +141,9 @@ struct Decudatron : Tron {
   virtual const double *output() { return out; }
   virtual const double *finput() { return fin; }
   virtual double *foutput() { return fout; }
+
+  virtual void load(FILE *fp) { }
+  virtual void save(FILE *fp) { }
 };
 
 inline Decudatron *decudatron(unsigned int n) {
@@ -182,6 +168,9 @@ struct Intron : Tron {
 
   virtual const double *feed(const double *_in, double *_fin);
   virtual void train(double r);
+
+  virtual void load(FILE *fp) { }
+  virtual void save(FILE *fp) { }
 };
 
 inline Intron *intron(unsigned int n, Tron *t) {
@@ -222,6 +211,9 @@ struct Extron : Tron {
   virtual void train(double r) {
 
   }
+
+  virtual void load(FILE *fp) { }
+  virtual void save(FILE *fp) { }
 };
 
 inline Extron *extron(unsigned int n, Tron *t) {
@@ -246,6 +238,9 @@ struct Identron : Tron {
   virtual const double *output() { return in; }
   virtual const double *finput() { return fin; }
   virtual double *foutput() { return fin; }
+
+  virtual void load(FILE *fp) { }
+  virtual void save(FILE *fp) { }
 };
 
 inline Identron *identron(unsigned int n) {

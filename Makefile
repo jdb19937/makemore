@@ -5,8 +5,8 @@ CXXFLAGS = -O6
 LDFLAGS = -lm
 CULDFLAGS = -lcuda -lcudart
 
-HDR = cudamem.hh random.hh tron.hh ppm.hh layout.hh megatron.hh wiring.hh
-OBJ = tron.o cudamem.o random.o ppm.o layout.o megatron.o wiring.o
+HDR = cudamem.hh random.hh tron.hh ppm.hh layout.hh megatron.hh wiring.hh persist.hh
+OBJ = cudamem.o random.o tron.o ppm.o layout.o megatron.o wiring.o persist.o
 
 PPMTOOLS = ppmtolab ppmtol ppmtolabtwid ppmtoltwid labtwidtoppm labtoppm ltoppm
 DATAREQS = $(PPMTOOLS) unzipped
