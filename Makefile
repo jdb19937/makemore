@@ -96,9 +96,9 @@ unzipped: celeba-dataset.zip
 	unzip celeba-dataset/img_align_celeba.zip -d celeba-dataset
 	touch unzipped
 
+.PHONY: celeba-dataset.zip
 celeba-dataset.zip:
-	echo 'get celeba-dataset.zip from'
-	echo 'https://www.kaggle.com/jessicali9530/celeba-dataset/home'
+	test -s $@ || { echo 'get celeba-dataset.zip from https://www.kaggle.com/jessicali9530/celeba-dataset/home'; false; }
 
 .PHONY: clean
 clean:
