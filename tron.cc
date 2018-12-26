@@ -1,3 +1,5 @@
+#define __MAKEMORE_TRON_CC__ 1
+
 #include <stdio.h>
 
 #include <math.h>
@@ -47,8 +49,8 @@ double Tron::err1() {
 }
 
 Encudatron::Encudatron(unsigned int n) : Tron(n, n) {
-  out = cumake(outn);
-  fout = cumake(outn);
+  out = cunew<double>(outn);
+  fout = cunew<double>(outn);
 }
 
 Encudatron::~Encudatron() {
@@ -84,7 +86,7 @@ void Encudatron::train(double r) {
 Decudatron::Decudatron(unsigned int n) : Tron(n, n) {
   out = new double[outn]();
   fout = new double[outn]();
-  dfin_tmp = cumake(inn);
+  dfin_tmp = cunew<double>(inn);
 }
 
 Decudatron::~Decudatron() {
@@ -116,8 +118,8 @@ void Decudatron::train(double r) {
 
 Intron::Intron(unsigned int n, Tron *_t) : Tron(n, _t->outn + n) {
   t = _t;
-  out = cumake(outn);
-  fout = cumake(outn);
+  out = cunew<double>(outn);
+  fout = cunew<double>(outn);
 }
 
 Intron::~Intron() {

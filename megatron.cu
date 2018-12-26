@@ -1,3 +1,5 @@
+#define __MAKEMORE_MEGATRON_CU__ 1
+
 #include <stdio.h>
 
 #include <math.h>
@@ -169,13 +171,13 @@ Megatron::Megatron(const Wiring *_wire) : Tron(_wire->inn, _wire->outn) {
   inl = wire->inl;
   outl = wire->outl;
 
-  cudaMalloc((void **)&out, sizeof(double) * outn);
-  cudaMalloc((void **)&fout, sizeof(double) * outn);
+  cumake(&out, outn);
+  cumake(&fout, outn);
 
-  cudaMalloc((void **)&owmap, sizeof(unsigned int *) * outn);
-  cudaMalloc((void **)&oimap, sizeof(unsigned int *) * outn);
-  cudaMalloc((void **)&iwmap, sizeof(unsigned int *) * inn);
-  cudaMalloc((void **)&iomap, sizeof(unsigned int *) * inn);
+  cumake(&owmap, outn);
+  cumake(&oimap, outn);
+  cumake(&iomap, inn);
+  cumake(&iwmap, inn);
 
   kappa = 1.0;
   eta = 1.0;
@@ -185,13 +187,13 @@ Megatron::Megatron(const Wiring *_wire) : Tron(_wire->inn, _wire->outn) {
 }
 
 Megatron::~Megatron() {
-  cudaFree((void *)out);
-  cudaFree((void *)fout);
+  cufree(out);
+  cufree(fout);
 
-  cudaFree((void *)owmap);
-  cudaFree((void *)oimap);
-  cudaFree((void *)iwmap);
-  cudaFree((void *)iomap);
+  cufree(owmap);
+  cufree(oimap);
+  cufree(iwmap);
+  cufree(iomap);
 }
 
 void Megatron::_makemaps(double disp) {
@@ -203,8 +205,10 @@ void Megatron::_makemaps(double disp) {
   const vector< vector<unsigned int> > &mow = wire->mow;
 
   wn = wire->wn;
-  cudaMalloc((void **)&weight, sizeof(double) * wire->wn);
-  double *cweight = new double[wire->wn];
+  cumake(&weight, wn);
+  double *cweight = new double[wn];
+
+  unsigned int *tmp;
 
   for (unsigned int outi = 0; outi < outn; ++outi) {
     const vector<unsigned int>& v = moi[outi];
@@ -220,33 +224,29 @@ void Megatron::_makemaps(double disp) {
     }
     cweight[w[w.size() - 1]] = 0; //-sw/2.0;
 
-    void *rr;
-    cudaMalloc((void **)&rr, sizeof(unsigned int) * v.size());
-    cudaMemcpy(rr, v.data(), sizeof(unsigned int) * v.size(), cudaMemcpyHostToDevice);
-    cudaMemcpy(oimap + outi, &rr, sizeof(unsigned int *), cudaMemcpyHostToDevice);
+    tmp = cunew<unsigned int>(v.size());
+    encude(v.data(), v.size(), tmp);
+    encude(&tmp, 1, oimap + outi);
 
-
-    cudaMalloc((void **)&rr, sizeof(unsigned int) * w.size());
-    cudaMemcpy(rr, w.data(), sizeof(unsigned int) * w.size(), cudaMemcpyHostToDevice);
-    cudaMemcpy(owmap + outi, &rr, sizeof(unsigned int *), cudaMemcpyHostToDevice);
+    tmp = cunew<unsigned int>(w.size());
+    encude(w.data(), w.size(), tmp);
+    encude(&tmp, 1, owmap + outi);
   }
 
-  cudaMemcpy(weight, cweight, sizeof(double) * wn, cudaMemcpyHostToDevice);
+  encude(cweight, wn, weight);
   delete[] cweight;
 
   for (unsigned int ini = 0; ini < inn; ++ini) {
     const vector<unsigned int>& v = mio[ini];
     const vector<unsigned int>& w = miw[ini];
 
-    void *rr;
-    cudaMalloc((void **)&rr, sizeof(unsigned int) * v.size());
-    cudaMemcpy(rr, v.data(), sizeof(unsigned int) * v.size(), cudaMemcpyHostToDevice);
-    cudaMemcpy(iomap + ini, &rr, sizeof(unsigned int *), cudaMemcpyHostToDevice);
+    tmp = cunew<unsigned int>(v.size());
+    encude(v.data(), v.size(), tmp);
+    encude(&tmp, 1, iomap + ini);
 
-
-    cudaMalloc((void **)&rr, sizeof(unsigned int) * w.size());
-    cudaMemcpy(rr, w.data(), sizeof(unsigned int) * w.size(), cudaMemcpyHostToDevice);
-    cudaMemcpy(iwmap + ini, &rr, sizeof(unsigned int *), cudaMemcpyHostToDevice);
+    tmp = cunew<unsigned int>(w.size());
+    encude(w.data(), w.size(), tmp);
+    encude(&tmp, 1, iwmap + ini);
   }
 }
 

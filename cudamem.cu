@@ -1,33 +1,35 @@
+#define __MAKEMORE_CUDAMEM_CU__ 1
 #include "cudamem.hh"
 
 #include <assert.h>
 #include <stdio.h>
 
-void encude(const double *a, unsigned int n, double *da) {
-  cudaMemcpy(da, a, sizeof(double)*n, cudaMemcpyHostToDevice);
+void encudev(const void *a, unsigned int n, void *da) {
+  cudaMemcpy(da, a, n, cudaMemcpyHostToDevice);
 }
 
-void decude(const double *da, unsigned int n, double *a) {
-  cudaMemcpy(a, da, sizeof(double)*n, cudaMemcpyDeviceToHost);
+void decudev(const void *da, unsigned int n, void *a) {
+  cudaMemcpy(a, da, n, cudaMemcpyDeviceToHost);
 }
 
-double *cumake(unsigned int n) {
-  double *d = NULL;
-  assert(0 == cudaMalloc((void **)&d, sizeof(double) * n));
+void cumakev(void **dp, unsigned int n) {
+  void *d = NULL;
+  assert(0 == cudaMalloc((void **)&d, n));
   assert(d != NULL);
-  return d;
+  assert(dp != NULL);
+  *dp = d;
 }
 
-void cufree(double *x) {
-  cudaFree((void *)x);
+void cufreev(void *x) {
+  cudaFree(x);
 }
 
-void cuzero(double *x, unsigned int n) {
-  cudaMemset((void *)x, 0, n * sizeof(double));
+void cuzerov(void *x, unsigned int n) {
+  cudaMemset((void *)x, 0, n);
 }
 
-void cucopy(const double *x, unsigned int n, double *y) {
-  cudaMemcpy(y, x, sizeof(double) * n, cudaMemcpyDeviceToDevice);
+void cucopyv(const void *x, unsigned int n, void *y) {
+  cudaMemcpy(y, x, n, cudaMemcpyDeviceToDevice);
 }
 
 
