@@ -30,7 +30,7 @@ struct Megatron : Tron {
   virtual double *foutput() { return fout; }
 
 
-  void makemaps(unsigned int k, double disp = 4.0);
+  void makemaps(unsigned int minv = 0, unsigned int maxv = (1<<16), double disp = 4.0);
 };
 
 #endif

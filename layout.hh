@@ -12,7 +12,6 @@ struct Layout {
 
   static Layout *new_square_grid(unsigned int dim, double s = 0.0);
   static Layout *new_square_random(unsigned int n, double s = 0.0);
-  static Layout *new_square_random2(unsigned int n, double s = 0.0);
 };
 
 #endif

@@ -190,7 +190,7 @@ Megatron::~Megatron() {
   cudaFree((void *)iomap);
 }
 
-void Megatron::makemaps(unsigned int k, double disp) {
+void Megatron::makemaps(unsigned int minv, unsigned int maxv, double disp) {
   using namespace std;
   vector<vector<unsigned int> > moi, mio;
   vector<vector<unsigned int> > mow, miw;
@@ -205,6 +205,7 @@ void Megatron::makemaps(unsigned int k, double disp) {
   const double *inr = inl->r;
   const double *outx = outl->x;
   const double *outy = outl->y;
+  const double *outr = outl->r;
 
   wn = 0;
 
@@ -217,13 +218,15 @@ void Megatron::makemaps(unsigned int k, double disp) {
 
       if (inr)
         d -= inr[ini];
+      if (inr)
+        d -= outr[ini];
 
       dini.insert(make_pair(d, ini));
     }
 
      auto q = dini.begin();
      unsigned int j = 0;
-     while (q != dini.end() && j < k) {
+     while (q != dini.end() && j < maxv && (j < minv || q->first < 0)) {
        unsigned int ini = q->second;
        moi[outi].push_back(ini + 1);
        mio[ini].push_back(outi + 1);

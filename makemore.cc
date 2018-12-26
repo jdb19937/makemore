@@ -48,7 +48,7 @@ int main() {
 
   Layout *inl = Layout::new_square_grid(32);
   Layout *hidl1 = Layout::new_square_random(512);
-  Layout *hidl2 = Layout::new_square_random2(512);
+  Layout *hidl2 = Layout::new_square_random(512);
   Layout *hidl3 = Layout::new_square_random(512);
   Layout *hidl4 = Layout::new_square_random(512);
   Layout *outl = Layout::new_square_grid(32);

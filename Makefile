@@ -27,6 +27,8 @@ datasets: $(DATASETS)
 
 $(OBJ): $(HDR)
 
+makemore.o: $(HDR)
+
 %.o: %.cu
 	$(NVCC) -o $@ $(NVCCFLAGS) -c $<
 
@@ -75,19 +77,19 @@ faces32l.dat:
 	mv -f $@.tmp $@
 
 
-ppmtolab: ppm.cc
+ppmtolab: ppm.cc ppm.hh
 	$(CXX) -o $@ $(CXXFLAGS) -DPPMTOLAB_MAIN $< $(LDFLAGS)
-ppmtol: ppm.cc
+ppmtol: ppm.cc ppm.hh
 	$(CXX) -o $@ $(CXXFLAGS) -DPPMTOL_MAIN $< $(LDFLAGS)
-ppmtolabtwid: ppm.cc
+ppmtolabtwid: ppm.cc ppm.hh
 	$(CXX) -o $@ $(CXXFLAGS) -DPPMTOLABTWID_MAIN $< $(LDFLAGS)
-ppmtoltwid: ppm.cc
+ppmtoltwid: ppm.cc ppm.hh
 	$(CXX) -o $@ $(CXXFLAGS) -DPPMTOLTWID_MAIN $< $(LDFLAGS)
-labtwidtoppm: ppm.cc
+labtwidtoppm: ppm.cc ppm.hh
 	$(CXX) -o $@ $(CXXFLAGS) -DLABTWIDTOPPM_MAIN $< $(LDFLAGS)
-labtoppm: ppm.cc
+labtoppm: ppm.cc ppm.hh
 	$(CXX) -o $@ $(CXXFLAGS) -DLABTOPPM_MAIN $< $(LDFLAGS)
-ltoppm: ppm.cc
+ltoppm: ppm.cc ppm.hh
 	$(CXX) -o $@ $(CXXFLAGS) -DLTOPPM_MAIN $< $(LDFLAGS)
 
 unzipped: celeba-dataset.zip
