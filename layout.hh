@@ -14,6 +14,22 @@ struct Layout : Persist {
     n = 0;
     x = y = r = NULL;
   }
+ 
+  Layout(const Layout &lay) {
+    n = lay.n;
+
+    if (x) delete[] x;
+    if (y) delete[] y;
+    if (r) delete[] r;
+
+    x = new double[n];
+    y = new double[n];
+    r = new double[n];
+
+    memcpy(x, lay.x, n * sizeof(double));
+    memcpy(y, lay.y, n * sizeof(double));
+    memcpy(r, lay.r, n * sizeof(double));
+  }
 
   Layout(unsigned int n);
   ~Layout();
