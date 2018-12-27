@@ -89,7 +89,7 @@ struct Compositron : Tron {
     b->load(fp);
   }
 
-  virtual void save(FILE *fp) {
+  virtual void save(FILE *fp) const {
     a->save(fp);
     b->save(fp);
   }
@@ -118,7 +118,7 @@ struct Encudatron : Tron {
   virtual double *foutput() { return fout; }
 
   virtual void load(FILE *fp) { }
-  virtual void save(FILE *fp) { }
+  virtual void save(FILE *fp) const { }
 };
 
 inline Encudatron *encudatron(unsigned int n) {
@@ -143,7 +143,7 @@ struct Decudatron : Tron {
   virtual double *foutput() { return fout; }
 
   virtual void load(FILE *fp) { }
-  virtual void save(FILE *fp) { }
+  virtual void save(FILE *fp) const { }
 };
 
 inline Decudatron *decudatron(unsigned int n) {
@@ -170,7 +170,7 @@ struct Intron : Tron {
   virtual void train(double r);
 
   virtual void load(FILE *fp) { }
-  virtual void save(FILE *fp) { }
+  virtual void save(FILE *fp) const { }
 };
 
 inline Intron *intron(unsigned int n, Tron *t) {
@@ -213,7 +213,7 @@ struct Extron : Tron {
   }
 
   virtual void load(FILE *fp) { }
-  virtual void save(FILE *fp) { }
+  virtual void save(FILE *fp) const { }
 };
 
 inline Extron *extron(unsigned int n, Tron *t) {
@@ -240,7 +240,7 @@ struct Identron : Tron {
   virtual double *foutput() { return fin; }
 
   virtual void load(FILE *fp) { }
-  virtual void save(FILE *fp) { }
+  virtual void save(FILE *fp) const { }
 };
 
 inline Identron *identron(unsigned int n) {

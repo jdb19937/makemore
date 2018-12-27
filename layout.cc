@@ -1,3 +1,6 @@
+#include <stdint.h>
+#include <netinet/in.h>
+
 #include <math.h>
 
 #include "layout.hh"
@@ -53,3 +56,25 @@ Layout *Layout::new_square_random(unsigned int n, double s) {
   return l;
 }
 
+void Layout::save(FILE *fp) const {
+  uint32_t on = htonl(n);
+  assert(1 == fwrite(&on, 4, 1, fp));
+  assert(n == fwrite(x, sizeof(double), n, fp));
+  assert(n == fwrite(y, sizeof(double), n, fp));
+  assert(n == fwrite(r, sizeof(double), n, fp));
+}
+
+void Layout::load(FILE *fp) {
+  uint32_t on;
+  assert(1 == fread(&on, 4, 1, fp));
+  n = ntohl(on);
+  
+  x = new double[n];
+  assert(n == fread(x, sizeof(double), n, fp));
+
+  y = new double[n];
+  assert(n == fread(y, sizeof(double), n, fp));
+
+  r = new double[n];
+  assert(n == fread(r, sizeof(double), n, fp));
+}

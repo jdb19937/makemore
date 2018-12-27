@@ -25,7 +25,7 @@ void Persist::load(const char *fn) {
   fclose(fp);
 }
 
-void Persist::save(const char *fn) {
+void Persist::save(const char *fn) const {
   char tfn[4096] = {0};
   assert(strlen(fn) < 4000);
   sprintf(tfn, "%s.%d.tmp", fn, getpid());

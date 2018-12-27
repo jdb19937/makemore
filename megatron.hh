@@ -35,7 +35,7 @@ struct Megatron : Tron {
   void _makemaps(double disp = 4.0);
 
   virtual void load(FILE *fp) { assert(!"todo"); }
-  virtual void save(FILE *fp) { assert(!"todo"); }
+  virtual void save(FILE *fp) const { assert(!"todo"); }
 };
 
 #endif

@@ -2,6 +2,9 @@
 #include "wiring.hh"
 
 #include <stdio.h>
+#include <stdint.h>
+#include <netinet/in.h>
+
 #include <math.h>
 
 #include <vector>
@@ -70,3 +73,64 @@ Wiring::Wiring(const Layout *_inl, const Layout *_outl, unsigned int minv, unsig
     q->push_back(0);
   }
 }
+
+static void _getvecvec(vector< vector<unsigned int> > &vv, FILE *fp) {
+  unsigned int vvs;
+  assert(1 == fread(&vvs, 1, 4, fp));
+  vvs = ntohl(vvs);
+  vv.resize(vvs);
+
+  for (unsigned int vvi = 0; vvi < vv.size(); ++vvi) {
+    vector<unsigned int> &v = vv[vvi];
+
+    unsigned int vs;
+    assert(1 == fread(&vs, 1, 4, fp));
+    vs = ntohl(vs);
+    v.resize(vs);
+
+    vector<unsigned int> nv;
+    nv.resize(v.size());
+    assert(nv.size() == fread(nv.data(), 1, nv.size(), fp));
+
+    for (unsigned int i = 0; i < nv.size(); ++i)
+      v[i] = ntohl(nv[i]);
+  }
+}
+
+void Wiring::load(FILE *fp) {
+  inl = load_new<Layout>(fp);
+  outl = load_new<Layout>(fp);
+  _getvecvec(mio, fp);
+  _getvecvec(miw, fp);
+  _getvecvec(moi, fp);
+  _getvecvec(mow, fp);
+}
+
+static void _putvecvec(const vector< vector<unsigned int> > &vv, FILE *fp) {
+  unsigned int vvs = htonl(vv.size());
+  assert(1 == fwrite(&vvs, 1, 4, fp));
+
+  for (unsigned int vvi = 0; vvi < vv.size(); ++vvi) {
+    const vector<unsigned int> &v = vv[vvi];
+    unsigned int vs = htonl(v.size());
+    assert(1 == fwrite(&vs, 1, 4, fp));
+
+    vector<unsigned int> nv;
+    nv.resize(v.size());
+    for (unsigned int i = 0; i < nv.size(); ++i)
+      nv[i] = htonl(v[i]);
+    assert(nv.size() == fwrite(nv.data(), 1, nv.size(), fp));
+  }
+}
+
+void Wiring::save(FILE *fp) const {
+  inl->save(fp);
+  outl->save(fp);
+  _putvecvec(mio, fp);
+  _putvecvec(miw, fp);
+  _putvecvec(moi, fp);
+  _putvecvec(mow, fp);
+}
+
+
+  
