@@ -43,7 +43,7 @@ Wiring::Wiring(const Layout *_inl, const Layout *_outl, unsigned int minv, unsig
       if (inr)
         d -= inr[ini];
       if (inr)
-        d -= outr[ini];
+        d -= outr[outi];
 
       dini.insert(make_pair(d, ini));
     }
@@ -71,6 +71,9 @@ Wiring::Wiring(const Layout *_inl, const Layout *_outl, unsigned int minv, unsig
 
   for (auto q = mio.begin(); q != mio.end(); ++q) {
     q->push_back(0);
+  }
+  for (auto q = miw.begin(); q != miw.end(); ++q) {
+    q->push_back(-1);
   }
 }
 

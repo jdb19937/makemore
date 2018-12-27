@@ -1,6 +1,8 @@
 #ifndef __LAYOUT_HH__
 #define __LAYOUT_HH__ 1
 
+#include <stdio.h>
+#include <string.h>
 #include <assert.h>
 
 #include "random.hh"
