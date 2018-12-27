@@ -33,20 +33,22 @@ Dataset::Dataset(const char *fn) {
   dataoff = ftell(fp);
 
   assert(dataoff % sizeof(double) == 0);
+  dataoff /= sizeof(double);
+
   assert(fseek(fp, 0, SEEK_SET) == 0);
 
   struct stat st;
   int ret = fstat(fileno(fp), &st);
   assert(ret == 0);
   // fprintf(stderr, "sz=%lu off=%u k=%u n=%u\n", st.st_size, dataoff, k, n);
-  assert(st.st_size == dataoff + k * n * sizeof(double));
+  assert(st.st_size == (dataoff + k * n) * sizeof(double));
 
   map_size = (st.st_size + 4095) & ~4095;
   map = mmap(NULL, map_size, PROT_READ, MAP_PRIVATE, fileno(fp), 0);
   assert(map != MAP_FAILED);
   assert(map);
 
-  dataptr = (double *)(((uint8_t *)map) + dataoff);
+  dataptr = (double *)map + dataoff;
 }
 
 Dataset::~Dataset() {

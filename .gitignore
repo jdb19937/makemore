@@ -1,4 +1,16 @@
 celeba-dataset
-unzipped
+*.o
 *.zip
 *.dat
+
+labhi
+grayhi
+labshrink
+labtogray
+graytolab
+ppmtolab
+labtoppm
+recongray
+reconlab
+
+makemore
