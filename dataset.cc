@@ -16,6 +16,7 @@
 #include "dataset.hh"
 #include "layout.hh"
 #include "random.hh"
+#include "cudamem.hh"
 
 Dataset::Dataset(const char *fn) {
   fp = fopen(fn, "r");
@@ -60,9 +61,35 @@ unsigned int Dataset::pick() const {
   return (rand() % n);
 }
 
+void Dataset::pick_minibatch(unsigned int mbn, unsigned int *mb) const {
+  for (unsigned int mbi = 0; mbi < mbn; ++mbi)
+    mb[mbi] = rand() % n;
+}
+
 const double *Dataset::data(unsigned int i) const {
   assert(i < n);
   return (dataptr + i * k);
+}
+
+void Dataset::copy(unsigned int i, double *d) const {
+  assert(i < n);
+  memcpy(d, dataptr + i * k, k * sizeof(double));
+}
+
+void Dataset::copy_minibatch(const unsigned int *mb, unsigned int mbn, double *d) const {
+  for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
+    unsigned int i = mb[mbi];
+    assert(i < n);
+    memcpy(d + mbi * k, dataptr + i * k, k * sizeof(double));
+  }
+}
+
+void Dataset::encude_minibatch(const unsigned int *mb, unsigned int mbn, double *d) const {
+  for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
+    unsigned int i = mb[mbi];
+    assert(i < n);
+    encude(dataptr + i * k, k, d + mbi * k);
+  }
 }
 
 #if DATASET_TEST_MAIN
