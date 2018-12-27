@@ -15,7 +15,7 @@ int main() {
 
   Layout *inl = Layout::new_square_grid(32);
   Layout *hidl1 = Layout::new_square_random(1024);
-  Layout *hidl2 = Layout::new_square_random(256);
+  Layout *hidl2 = Layout::new_square_random(512);
   Layout *hidl3 = Layout::new_square_random(1024);
 //  Layout *hidl4 = Layout::new_square_random(512);
   Layout *outl = Layout::new_square_grid(32);
@@ -56,7 +56,7 @@ int main() {
     cerr2 += 0.001 * cm->err2();
     cerr3 *= 0.999;
     cerr3 += 0.001 * cm->err3();
-    cm->train(0.1);
+    cm->train(0.03);
 
     if (i % 1000 == 0) {
       fprintf(stderr, "i=%d in[0]=%lf out[0]=%lf cerr2=%lf cerr3=%lf\n", i, in[0], out[0], cerr2, cerr3);
