@@ -52,7 +52,7 @@ for (my $y = 0; $y < $laydim; ++$y) {
 
     my $ax = ($x + 0.5) / $laydim;
     my $ay = ($y + 0.5) / $laydim;
-    my $ar = sqrt($mul / atan2(0,-1)) / $laydim;
+    my $ar = sqrt(1.0 / atan2(0,-1)) / $laydim;
 
     for (1 .. $chan) {
       push @ax, $ax;
