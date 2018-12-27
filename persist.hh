@@ -4,7 +4,15 @@
 #include <stdio.h>
 
 struct Persist {
-  virtual void load(FILE *) = 0;
+  inline bool _check_eof(FILE *fp) {
+    int c = getc(fp);
+    if (c == EOF)
+      return true;
+    ungetc(c, fp);
+    return false;
+  }
+
+  virtual bool load(FILE *) = 0;
   virtual void save(FILE *) const = 0;
 
   void load(const char *fn);
