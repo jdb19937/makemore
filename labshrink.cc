@@ -53,4 +53,5 @@ int main(int argc, char **argv) {
   
   ret = fwrite(data, sizeof(double), w * h * 3, stdout);
   assert(ret == w * h * 3);
+  return 0;
 }

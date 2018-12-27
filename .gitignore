@@ -1,14 +1,4 @@
 celeba-dataset
-labtoppm
-labtwidtoppm
-ltoppm
-ppmtol
-ppmtolab
-ppmtolabtwid
-ppmtoltwid
 unzipped
-makemore
 *.zip
 *.dat
-*.tmp
-*.o

@@ -9,11 +9,14 @@ HDR = cudamem.hh random.hh tron.hh ppm.hh layout.hh megatron.hh wiring.hh persis
 OBJ = cudamem.o random.o tron.o ppm.o layout.o megatron.o wiring.o persist.o
 
 DATASETS = faceattrs.dat \
-  face8lab.dat face8l.dat \
-  face16lab.dat face16l.dat face16labhi.dat face16lhi.dat \
-  face32lab.dat face32l.dat face32labhi.dat face32lhi.dat
+  face8l.dat face8g.dat \
+  face16l.dat face16g.dat face16lh.dat face16gh.dat \
+  face32l.dat face32g.dat face32lh.dat face32gh.dat
 
-LABTOOLS = labhi labl lablhi labshrink ppmtolab
+LABTOOLS = \
+  ppmtolab labtoppm \
+  labshrink labhi labtogray grayhi \
+  reconlab recongray
 
 .PHONY: all
 all: makemore
@@ -42,57 +45,55 @@ $(DATASETS): $(LABTOOLS) celeba-dataset
 faceattrs.dat:
 	./mkattrs.pl > $@
 
-face8lab.dat:
-	./mkdata.pl './labshrink 128 128 4'  > $@
 face8l.dat:
-	./mkdata.pl './labshrink 128 128 4 |./labl 8 8' > $@
+	./mkdata.pl './labshrink 128 128 4'  > $@
+face8g.dat:
+	./mkdata.pl './labshrink 128 128 4 |./labtogray 8 8' > $@
 
-face16lab.dat:
-	./mkdata.pl './labshrink 128 128 3'  > $@
 face16l.dat:
-	./mkdata.pl './labshrink 128 128 3 |./labl 16 16' > $@
-face16labhi.dat:
+	./mkdata.pl './labshrink 128 128 3'  > $@
+face16g.dat:
+	./mkdata.pl './labshrink 128 128 3 |./labtogray 16 16' > $@
+face16lh.dat:
 	./mkdata.pl './labshrink 128 128 3 |./labhi 16 16'  > $@
-face16lhi.dat:
-	./mkdata.pl './labshrink 128 128 3 |./lablhi 16 16' > $@
+face16gh.dat:
+	./mkdata.pl './labshrink 128 128 3 |./labtogray 16 16 |./grayhi 16 16' > $@
 
-face32lab.dat:
-	./mkdata.pl './labshrink 128 128 2'  > $@
 face32l.dat:
-	./mkdata.pl './labshrink 128 128 2 |./labl 32 32' > $@
-face32labhi.dat:
+	./mkdata.pl './labshrink 128 128 2'  > $@
+face32g.dat:
+	./mkdata.pl './labshrink 128 128 2 |./labtogray 32 32' > $@
+face32lh.dat:
 	./mkdata.pl './labshrink 128 128 2 |./labhi 32 32'  > $@
-face32lhi.dat:
-	./mkdata.pl './labshrink 128 128 2 |./lablhi 32 32' > $@
+face32gh.dat:
+	./mkdata.pl './labshrink 128 128 2 |./labtogray 32 32 |./grayhi 32 32' > $@
 
 
+ppmtolab.o: ppm.hh
+ppmtolab: ppmtolab.o ppm.o
+	$(CXX) -o $@ $(CXXFLAGS) $^ $(LDFLAGS)
 
-ppmtolab: ppm.cc ppm.hh
-	$(CXX) -o $@ $(CXXFLAGS) -DPPMTOLAB_MAIN $< $(LDFLAGS)
-ppmtol: ppm.cc ppm.hh
-	$(CXX) -o $@ $(CXXFLAGS) -DPPMTOL_MAIN $< $(LDFLAGS)
-ppmtolabtwid: ppm.cc ppm.hh
-	$(CXX) -o $@ $(CXXFLAGS) -DPPMTOLABTWID_MAIN $< $(LDFLAGS)
-ppmtolabhi: ppm.cc ppm.hh
-	$(CXX) -o $@ $(CXXFLAGS) -DPPMTOLABTWID_MAIN $< $(LDFLAGS)
-ppmtoltwid: ppm.cc ppm.hh
-	$(CXX) -o $@ $(CXXFLAGS) -DPPMTOLTWID_MAIN $< $(LDFLAGS)
-ppmtolhi: ppm.cc ppm.hh
-	$(CXX) -o $@ $(CXXFLAGS) -DPPMTOLTWID_MAIN $< $(LDFLAGS)
-labtwidtoppm: ppm.cc ppm.hh
-	$(CXX) -o $@ $(CXXFLAGS) -DLABTWIDTOPPM_MAIN $< $(LDFLAGS)
-labtoppm: ppm.cc ppm.hh
-	$(CXX) -o $@ $(CXXFLAGS) -DLABTOPPM_MAIN $< $(LDFLAGS)
-ltoppm: ppm.cc ppm.hh
-	$(CXX) -o $@ $(CXXFLAGS) -DLTOPPM_MAIN $< $(LDFLAGS)
+labtoppm.o: ppm.hh
+labtoppm: labtoppm.o ppm.o
+	$(CXX) -o $@ $(CXXFLAGS) $^ $(LDFLAGS)
+
+graytoppm.o: ppm.hh
+graytoppm: graytoppm.o ppm.o
+	$(CXX) -o $@ $(CXXFLAGS) $^ $(LDFLAGS)
 
 labshrink: labshrink.o
 	$(CXX) -o $@ $(CXXFLAGS) $< $(LDFLAGS)
+labtogray: labtogray.o
+	$(CXX) -o $@ $(CXXFLAGS) $< $(LDFLAGS)
+graytolab: graytolab.o
+	$(CXX) -o $@ $(CXXFLAGS) $< $(LDFLAGS)
 labhi: labhi.o
 	$(CXX) -o $@ $(CXXFLAGS) $< $(LDFLAGS)
-lablhi: lablhi.o
+grayhi: grayhi.o
 	$(CXX) -o $@ $(CXXFLAGS) $< $(LDFLAGS)
-labl: labl.o
+reconlab: reconlab.o
+	$(CXX) -o $@ $(CXXFLAGS) $< $(LDFLAGS)
+recongray: recongray.o
 	$(CXX) -o $@ $(CXXFLAGS) $< $(LDFLAGS)
 
 unzipped: celeba-dataset.zip
