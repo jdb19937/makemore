@@ -1,4 +1,4 @@
-#define __WIRING_CC 1
+#define __MAKEMORE_WIRING_CC__ 1
 #include "wiring.hh"
 
 #include <stdio.h>

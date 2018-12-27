@@ -1,5 +1,5 @@
-#ifndef __TRON_HH__
-#define __TRON_HH__ 1
+#ifndef __MAKEMORE_TRON_HH__
+#define __MAKEMORE_TRON_HH__ 1
 
 #include <assert.h>
 #include <stdio.h>

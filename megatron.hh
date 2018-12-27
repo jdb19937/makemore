@@ -1,5 +1,5 @@
-#ifndef __MEGATRON_HH__
-#define __MEGATRON_HH__ 1
+#ifndef __MAKEMORE_MEGATRON_HH__
+#define __MAKEMORE_MEGATRON_HH__ 1
 
 #include "tron.hh"
 #include "layout.hh"

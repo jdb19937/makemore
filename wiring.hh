@@ -1,5 +1,5 @@
-#ifndef __WIRING_HH__
-#define __WIRING_HH__ 1
+#ifndef __MAKEMORE_WIRING_HH__
+#define __MAKEMORE_WIRING_HH__ 1
 
 #include "layout.hh"
 

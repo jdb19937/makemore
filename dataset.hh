@@ -1,6 +1,7 @@
 #ifndef __MAKEMORE_DATASET_HH__
 #define __MAKEMORE_DATASET_HH__ 1
 
+#include <stdio.h>
 #include <sys/types.h>
 
 struct Dataset {
