@@ -52,14 +52,10 @@ int main() {
 
     const double *out = cm->feed(in);
     cm->target(in);
-    cerr2 *= 0.999;
-    cerr2 += 0.001 * cm->err2();
-    cerr3 *= 0.999;
-    cerr3 += 0.001 * cm->err3();
     cm->train(0.03);
 
     if (i % 1000 == 0) {
-      fprintf(stderr, "i=%d in[0]=%lf out[0]=%lf cerr2=%lf cerr3=%lf\n", i, in[0], out[0], cerr2, cerr3);
+      fprintf(stderr, "i=%d in[0]=%lf out[0]=%lf cerr2=%lf cerr3=%lf\n", i, in[0], out[0], cm->cerr2, cm->cerr3);
       PPM ppm1;
       ppm1.unvectorizegray(in, 32, 32);
 

@@ -13,8 +13,12 @@
 struct Tron : Persist {
   unsigned int inn, outn;
 
-  Tron(unsigned int _inn, unsigned int _outn) : inn(_inn), outn(_outn) {
+  double cerr1, cerr2, cerr3;
 
+  Tron(unsigned int _inn, unsigned int _outn) : inn(_inn), outn(_outn) {
+    cerr1 = 0.5;
+    cerr2 = 0.5;
+    cerr3 = 0.5;
   }
 
   virtual const double *feed(const double *in, double *fin) = 0;
@@ -35,6 +39,15 @@ struct Tron : Persist {
 
     for (unsigned int i = 0; i < outn; ++i)
       fout[i] = tgt[i] - out[i];
+
+    cerr1 *= 0.999;
+    cerr1 += 0.001 * err1();
+
+    cerr2 *= 0.999;
+    cerr2 += 0.001 * err2();
+
+    cerr3 *= 0.999;
+    cerr3 += 0.001 * err3();
   }
 
   void target(bool n) {
