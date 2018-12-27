@@ -76,6 +76,11 @@ void Dataset::copy(unsigned int i, double *d) const {
   memcpy(d, dataptr + i * k, k * sizeof(double));
 }
 
+void Dataset::encude(unsigned int i, double *d) const {
+  assert(i < n);
+  ::encude(dataptr + i * k, k, d);
+}
+
 void Dataset::copy_minibatch(const unsigned int *mb, unsigned int mbn, double *d) const {
   for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
     unsigned int i = mb[mbi];
@@ -88,7 +93,7 @@ void Dataset::encude_minibatch(const unsigned int *mb, unsigned int mbn, double 
   for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
     unsigned int i = mb[mbi];
     assert(i < n);
-    encude(dataptr + i * k, k, d + mbi * k);
+    ::encude(dataptr + i * k, k, d + mbi * k);
   }
 }
 
