@@ -3,8 +3,8 @@ celeba-dataset
 *.zip
 *.dat
 
-labhi
-grayhi
+labhifreq
+grayhifreq
 labshrink
 labtogray
 graytolab
