@@ -45,5 +45,6 @@ unsigned int Dataset::pick() const {
 }
 
 const double *Dataset::data(unsigned int i) const {
+  assert(i < n);
   return (map + i * k);
 }
