@@ -8,10 +8,12 @@ CULDFLAGS = -lcuda -lcudart
 HDR = cudamem.hh random.hh tron.hh ppm.hh layout.hh megatron.hh wiring.hh persist.hh dataset.hh
 OBJ = cudamem.o random.o tron.o ppm.o layout.o megatron.o wiring.o persist.o dataset.o
 
-DATASETS = faceattrs.dat \
-  face8l.dat face8g.dat \
-  face16l.dat face16g.dat face16lh.dat face16gh.dat \
-  face32l.dat face32g.dat face32lh.dat face32gh.dat
+DATASETS = face-attrs.dat \
+  face-8x8-lab-full.dat face-8x8-gray-full.dat \
+  face-16x16-lab-full.dat face-16x16-gray-full.dat \
+  face-16x16-lab-hi.dat face-16x16-gray-hi.dat \
+  face-32x32-lab-full.dat face-32x32-gray-full.dat \
+  face-32x32-lab-hi.dat face-32x32-gray-hi.dat
 
 LABTOOLS = \
   ppmtolab labtoppm \
@@ -45,30 +47,32 @@ makemore: $(OBJ) makemore.o
 
 $(DATASETS): $(LABTOOLS) celeba-dataset/unzipped
 
-faceattrs.dat:
+face-attrs.dat:
 	./mkattrs.pl > $@
 
-face8l.dat:
+face-8x8-lab-full.dat:
 	./mkdata.pl './labshrink 128 128 4'  > $@
-face8g.dat:
+face-8x8-gray-full.dat:
 	./mkdata.pl './labshrink 128 128 4 |./labtogray 8 8' > $@
 
-face16l.dat:
+
+face-16x16-lab-full.dat:
 	./mkdata.pl './labshrink 128 128 3'  > $@
-face16g.dat:
+face-16x16-gray-full.dat:
 	./mkdata.pl './labshrink 128 128 3 |./labtogray 16 16' > $@
-face16lh.dat:
+face-16x16-lab-hi.dat:
 	./mkdata.pl './labshrink 128 128 3 |./labhi 16 16'  > $@
-face16gh.dat:
+face-16x16-gray-hi.dat:
 	./mkdata.pl './labshrink 128 128 3 |./labtogray 16 16 |./grayhi 16 16' > $@
 
-face32l.dat:
+
+face-32x32-lab-full.dat:
 	./mkdata.pl './labshrink 128 128 2'  > $@
-face32g.dat:
+face-32x32-gray-full.dat:
 	./mkdata.pl './labshrink 128 128 2 |./labtogray 32 32' > $@
-face32lh.dat:
+face-32x32-lab-hi.dat:
 	./mkdata.pl './labshrink 128 128 2 |./labhi 32 32'  > $@
-face32gh.dat:
+face-32x32-gray-hi.dat:
 	./mkdata.pl './labshrink 128 128 2 |./labtogray 32 32 |./grayhi 32 32' > $@
 
 
