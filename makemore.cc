@@ -14,34 +14,30 @@ int main() {
 
 
   Layout *inl = Layout::new_square_grid(32);
-  Layout *hidl1 = Layout::new_square_random(512, 8);
-  Layout *hidl2 = Layout::new_square_random(512, 8);
-  Layout *hidl3 = Layout::new_square_random(512, 8);
-  Layout *hidl4 = Layout::new_square_random(512, 8);
+  Layout *hidl1 = Layout::new_square_random(1024);
+  Layout *hidl2 = Layout::new_square_random(256);
+  Layout *hidl3 = Layout::new_square_random(1024);
+//  Layout *hidl4 = Layout::new_square_random(512);
   Layout *outl = Layout::new_square_grid(32);
 
-  Wiring *w1 = new Wiring(inl, hidl1);
-  Wiring *w2 = new Wiring(hidl1, hidl2);
-  Wiring *w3 = new Wiring(hidl2, hidl3);
-  Wiring *w4 = new Wiring(hidl3, hidl4);
-  Wiring *w5 = new Wiring(hidl4, outl);
+  Wiring *w1 = new Wiring(inl, hidl1, 8, 8);
+  Wiring *w2 = new Wiring(hidl1, hidl2, 8, 8);
+  Wiring *w3 = new Wiring(hidl2, hidl3, 8, 8);
+  Wiring *w4 = new Wiring(hidl3, outl, 8, 8);
+//  Wiring *w5 = new Wiring(hidl4, outl, 10);
 
-fprintf(stderr, "w1\n");
   Megatron *m1 = new Megatron(w1);
-fprintf(stderr, "w2\n");
   Megatron *m2 = new Megatron(w2);
-fprintf(stderr, "w3\n");
   Megatron *m3 = new Megatron(w3);
-fprintf(stderr, "w4\n");
   Megatron *m4 = new Megatron(w4);
-fprintf(stderr, "w5\n");
-  Megatron *m5 = new Megatron(w5);
-  m5->kappa = 4.0;
+//  Megatron *m5 = new Megatron(w5);
+//  m5->kappa = 4.0;
+  m4->kappa = 4.0;
 
   Tron *m = compositron(m1, m2);
   m = compositron(m, m3);
   m = compositron(m, m4);
-  m = compositron(m, m5);
+//  m = compositron(m, m5);
 
   Tron *cm = compositron(encudatron(1024), m);
   cm = compositron(cm, decudatron(1024));
@@ -60,7 +56,7 @@ fprintf(stderr, "w5\n");
     cerr2 += 0.001 * cm->err2();
     cerr3 *= 0.999;
     cerr3 += 0.001 * cm->err3();
-    cm->train(0.01);
+    cm->train(0.1);
 
     if (i % 1000 == 0) {
       fprintf(stderr, "i=%d in[0]=%lf out[0]=%lf cerr2=%lf cerr3=%lf\n", i, in[0], out[0], cerr2, cerr3);
