@@ -18,9 +18,13 @@ struct Megatron : Tron {
 
   double *weight;
 
+  unsigned int inrn, outrn;
+  unsigned int mbn;
+  double *dweight;
+
   double eta, kappa;
 
-  Megatron(const Wiring *_wire);
+  Megatron(const Wiring *_wire, unsigned int _mbn = 1);
   virtual ~Megatron();
 
   virtual const double *feed(const double *_in, double *_fin);
