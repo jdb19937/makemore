@@ -26,7 +26,7 @@ if ($::gray)  {
   if ($::hifreq) {
     $chan = 3;
     $laydim = $dim / 2;
-    $pipe .= "| ./grayhi $dim $dim";
+    $pipe .= "| ./grayhifreq $dim $dim";
   } else {
     $chan = 1;
     $laydim = $dim;
@@ -35,7 +35,7 @@ if ($::gray)  {
   if ($::hifreq) {
     $chan = 9;
     $laydim = $dim / 2;
-    $pipe .= "| ./labhi $dim $dim";
+    $pipe .= "| ./labhifreq $dim $dim";
   } else {
     $chan = 3;
     $laydim = $dim;
