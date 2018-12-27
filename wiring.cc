@@ -76,7 +76,7 @@ Wiring::Wiring(const Layout *_inl, const Layout *_outl, unsigned int minv, unsig
 
 static void _getvecvec(vector< vector<unsigned int> > &vv, FILE *fp) {
   unsigned int vvs;
-  assert(1 == fread(&vvs, 1, 4, fp));
+  assert(1 == fread(&vvs, 4, 1, fp));
   vvs = ntohl(vvs);
   vv.resize(vvs);
 
@@ -84,13 +84,13 @@ static void _getvecvec(vector< vector<unsigned int> > &vv, FILE *fp) {
     vector<unsigned int> &v = vv[vvi];
 
     unsigned int vs;
-    assert(1 == fread(&vs, 1, 4, fp));
+    assert(1 == fread(&vs, 4, 1, fp));
     vs = ntohl(vs);
     v.resize(vs);
 
     vector<unsigned int> nv;
     nv.resize(v.size());
-    assert(nv.size() == fread(nv.data(), 1, nv.size(), fp));
+    assert(nv.size() == fread(nv.data(), sizeof(unsigned int), nv.size(), fp));
 
     for (unsigned int i = 0; i < nv.size(); ++i)
       v[i] = ntohl(nv[i]);
@@ -108,18 +108,18 @@ void Wiring::load(FILE *fp) {
 
 static void _putvecvec(const vector< vector<unsigned int> > &vv, FILE *fp) {
   unsigned int vvs = htonl(vv.size());
-  assert(1 == fwrite(&vvs, 1, 4, fp));
+  assert(1 == fwrite(&vvs, 4, 1, fp));
 
   for (unsigned int vvi = 0; vvi < vv.size(); ++vvi) {
     const vector<unsigned int> &v = vv[vvi];
     unsigned int vs = htonl(v.size());
-    assert(1 == fwrite(&vs, 1, 4, fp));
+    assert(1 == fwrite(&vs, 4, 1, fp));
 
     vector<unsigned int> nv;
     nv.resize(v.size());
     for (unsigned int i = 0; i < nv.size(); ++i)
       nv[i] = htonl(v[i]);
-    assert(nv.size() == fwrite(nv.data(), 1, nv.size(), fp));
+    assert(nv.size() == fwrite(nv.data(), sizeof(unsigned int), nv.size(), fp));
   }
 }
 

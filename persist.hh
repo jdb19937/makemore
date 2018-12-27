@@ -12,7 +12,7 @@ struct Persist {
     return false;
   }
 
-  virtual bool load(FILE *) = 0;
+  virtual void load(FILE *) = 0;
   virtual void save(FILE *) const = 0;
 
   void load(const char *fn);

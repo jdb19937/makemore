@@ -6,10 +6,15 @@
 struct Dataset {
   unsigned int k, n;
 
+  off_t dataoff;
+  double *dataptr;
   size_t map_size;
-  double *map;
+  void *map;
+  FILE *fp;
 
-  Dataset(const char *fn, unsigned int _k);
+  class Layout *lay;
+
+  Dataset(const char *fn);
   ~Dataset();
 
   unsigned int pick() const;

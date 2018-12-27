@@ -11,9 +11,9 @@ OBJ = cudamem.o random.o tron.o ppm.o layout.o megatron.o wiring.o persist.o dat
 DATASETS = face-attrs.dat \
   face-8x8-lab-full.dat face-8x8-gray-full.dat \
   face-16x16-lab-full.dat face-16x16-gray-full.dat \
-  face-16x16-lab-hi.dat face-16x16-gray-hi.dat \
+  face-16x16-lab-hifreq.dat face-16x16-gray-hifreq.dat \
   face-32x32-lab-full.dat face-32x32-gray-full.dat \
-  face-32x32-lab-hi.dat face-32x32-gray-hi.dat
+  face-32x32-lab-hifreq.dat face-32x32-gray-hifreq.dat
 
 LABTOOLS = \
   ppmtolab labtoppm \
@@ -51,29 +51,28 @@ face-attrs.dat:
 	./mkattrs.pl > $@
 
 face-8x8-lab-full.dat:
-	./mkdata.pl './labshrink 128 128 4'  > $@
+	./mkdata.pl -dim=8  > $@
 face-8x8-gray-full.dat:
-	./mkdata.pl './labshrink 128 128 4 |./labtogray 8 8' > $@
+	./mkdata.pl -dim=8 -gray > $@
 
 
 face-16x16-lab-full.dat:
-	./mkdata.pl './labshrink 128 128 3'  > $@
+	./mkdata.pl -dim=16  > $@
 face-16x16-gray-full.dat:
-	./mkdata.pl './labshrink 128 128 3 |./labtogray 16 16' > $@
-face-16x16-lab-hi.dat:
-	./mkdata.pl './labshrink 128 128 3 |./labhi 16 16'  > $@
-face-16x16-gray-hi.dat:
-	./mkdata.pl './labshrink 128 128 3 |./labtogray 16 16 |./grayhi 16 16' > $@
-
+	./mkdata.pl -dim=16 -gray > $@
+face-16x16-lab-hifreq.dat:
+	./mkdata.pl -dim=16 -hifreq  > $@
+face-16x16-gray-hifreq.dat:
+	./mkdata.pl -dim=16 -gray -hifreq > $@
 
 face-32x32-lab-full.dat:
-	./mkdata.pl './labshrink 128 128 2'  > $@
+	./mkdata.pl -dim=32  > $@
 face-32x32-gray-full.dat:
-	./mkdata.pl './labshrink 128 128 2 |./labtogray 32 32' > $@
-face-32x32-lab-hi.dat:
-	./mkdata.pl './labshrink 128 128 2 |./labhi 32 32'  > $@
-face-32x32-gray-hi.dat:
-	./mkdata.pl './labshrink 128 128 2 |./labtogray 32 32 |./grayhi 32 32' > $@
+	./mkdata.pl -dim=32 -gray > $@
+face-32x32-lab-hifreq.dat:
+	./mkdata.pl -dim=32 -hifreq  > $@
+face-32x32-gray-hifreq.dat:
+	./mkdata.pl -dim=32 -gray -hifreq > $@
 
 
 ppmtolab.o: ppm.hh

@@ -2,6 +2,7 @@
 
 #include <stdio.h>
 #include <errno.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
@@ -10,34 +11,47 @@
 #include <sys/mman.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <netinet/in.h>
 
 #include "dataset.hh"
+#include "layout.hh"
 #include "random.hh"
 
-Dataset::Dataset(const char *fn, unsigned int _k) {
-  k = _k;
-
-  int fd = open(fn, O_RDONLY);
-  if (fd != -1) {
+Dataset::Dataset(const char *fn) {
+  fp = fopen(fn, "r");
+  if (!fp) {
     fprintf(stderr, "Dataset::Dataset: %s: %s\n", fn, strerror(errno));
-    assert(fd != -1);
+    assert(fp);
   }
 
-  struct stat st;
-  int ret = fstat(fd, &st);
-  assert(ret == 0);
+  assert(fp);
+  lay = load_new<Layout>(fp);
+  k = lay->n;
+  uint32_t on;
+  assert(1 == fread(&on, 4, 1, fp));
+  n = ntohl(on);
+  dataoff = ftell(fp);
 
-  assert(st.st_size % (k * sizeof(double)) == 0);
-  n = st.st_size / (k * sizeof(double));
+  assert(dataoff % sizeof(double) == 0);
+  assert(fseek(fp, 0, SEEK_SET) == 0);
+
+  struct stat st;
+  int ret = fstat(fileno(fp), &st);
+  assert(ret == 0);
+  // fprintf(stderr, "sz=%lu off=%u k=%u n=%u\n", st.st_size, dataoff, k, n);
+  assert(st.st_size == dataoff + k * n * sizeof(double));
 
   map_size = (st.st_size + 4095) & ~4095;
-  map = (double *)mmap(NULL, map_size, PROT_READ, MAP_PRIVATE, fd, 0);
-  assert((void *)map != MAP_FAILED);
+  map = mmap(NULL, map_size, PROT_READ, MAP_PRIVATE, fileno(fp), 0);
+  assert(map != MAP_FAILED);
   assert(map);
+
+  dataptr = (double *)(((uint8_t *)map) + dataoff);
 }
 
 Dataset::~Dataset() {
   munmap(map, map_size);
+  fclose(fp);
 }
 
 unsigned int Dataset::pick() const {
@@ -46,5 +60,13 @@ unsigned int Dataset::pick() const {
 
 const double *Dataset::data(unsigned int i) const {
   assert(i < n);
-  return (map + i * k);
+  return (dataptr + i * k);
 }
+
+#if DATASET_TEST_MAIN
+int main(int argc, char **argv) {
+  assert(argc > 1);
+  Dataset ds(argv[1]);
+  return 0;
+}
+#endif

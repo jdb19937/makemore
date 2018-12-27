@@ -3,6 +3,12 @@
 use FindBin qw($Bin);
 use File::Temp qw(tempdir);
 
+print pack('N', 40);
+print pack('d*', (0.5) x 40); # x
+print pack('d*', (0.5) x 40); # y
+print pack('d*', (0.5) x 40); # r
+print pack('N', 202599);
+
 select(STDOUT);
 $| = 1;
 
