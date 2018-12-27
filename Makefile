@@ -20,6 +20,8 @@ LABTOOLS = \
   labshrink labhifreq labtogray grayhifreq \
   reconlab recongray
 
+MORETOOLS = catlay
+
 .PHONY: all
 all: makemore
 
@@ -29,6 +31,9 @@ datasets: $(DATASETS)
 
 .PHONY: labtools
 labtools: $(LABTOOLS)
+
+.PHONY: moretools
+moretools: $(MORETOOLS)
 
 
 $(OBJ): $(HDR)
@@ -101,6 +106,10 @@ reconlab: reconlab.o
 	$(CXX) -o $@ $(CXXFLAGS) $< $(LDFLAGS)
 recongray: recongray.o
 	$(CXX) -o $@ $(CXXFLAGS) $< $(LDFLAGS)
+
+catlay: catlay.o layout.o persist.o
+	$(CXX) -o $@ $(CXXFLAGS) $^ $(LDFLAGS)
+
 
 celeba-dataset/unzipped: celeba-dataset.zip
 	rm -rf celeba-dataset

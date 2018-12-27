@@ -1,4 +1,5 @@
 #include <stdint.h>
+#include <string.h>
 #include <netinet/in.h>
 
 #include <math.h>
@@ -78,3 +79,28 @@ void Layout::load(FILE *fp) {
   r = new double[n];
   assert(n == fread(r, sizeof(double), n, fp));
 }
+
+Layout &Layout::operator +=(const Layout &lay) {
+  double *nx = new double[n + lay.n];
+  memcpy(nx, x, n * sizeof(double));
+  memcpy(nx + n, lay.x, lay.n * sizeof(double));
+
+  double *ny = new double[n + lay.n];
+  memcpy(ny, y, n * sizeof(double));
+  memcpy(ny + n, lay.y, lay.n * sizeof(double));
+
+  double *nr = new double[n + lay.n];
+  memcpy(nr, r, n * sizeof(double));
+  memcpy(nr + n, lay.r, lay.n * sizeof(double));
+
+  n += lay.n;
+  if (x) delete[] x;
+  x = nx;
+  if (y) delete[] y;
+  y = ny;
+  if (r) delete[] r;
+  r = nr;
+
+  return *this;
+}
+

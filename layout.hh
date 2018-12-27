@@ -23,6 +23,10 @@ struct Layout : Persist {
 
   virtual void load(FILE *fp);
   virtual void save(FILE *fp) const;
+
+  virtual void load(const char *fn) { Persist::load(fn); }
+
+  Layout &operator +=(const Layout &x);
 };
 
 #endif
