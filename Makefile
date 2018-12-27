@@ -17,7 +17,7 @@ DATASETS = face-attrs.dat \
 
 LABTOOLS = \
   ppmtolab labtoppm \
-  labshrink labhi labtogray grayhi \
+  labshrink labhifreq labtogray grayhifreq \
   reconlab recongray
 
 .PHONY: all
@@ -93,9 +93,9 @@ labtogray: labtogray.o
 	$(CXX) -o $@ $(CXXFLAGS) $< $(LDFLAGS)
 graytolab: graytolab.o
 	$(CXX) -o $@ $(CXXFLAGS) $< $(LDFLAGS)
-labhi: labhi.o
+labhifreq: labhifreq.o
 	$(CXX) -o $@ $(CXXFLAGS) $< $(LDFLAGS)
-grayhi: grayhi.o
+grayhifreq: grayhifreq.o
 	$(CXX) -o $@ $(CXXFLAGS) $< $(LDFLAGS)
 reconlab: reconlab.o
 	$(CXX) -o $@ $(CXXFLAGS) $< $(LDFLAGS)
