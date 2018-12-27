@@ -1,5 +1,5 @@
-#ifndef __RANDOM_HH__
-#define __RANDOM_HH__
+#ifndef __MAKEMORE_RANDOM_HH__
+#define __MAKEMORE_RANDOM_HH__
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -16,16 +16,5 @@ inline double rnd(double a, double b) {
   double r = a + rnd() * (b - a);
   return r;
 }
-
-struct RandomSeed {
-  RandomSeed() {
-    srand(rand() + time(NULL));
-    srand(rand() + getpid());
-  }
-};
-
-#ifndef __RANDOM_CC
-extern RandomSeed _randomseed;
-#endif
 
 #endif

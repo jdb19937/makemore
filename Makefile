@@ -5,8 +5,8 @@ CXXFLAGS = -O6
 LDFLAGS = -lm
 CULDFLAGS = -lcuda -lcudart
 
-HDR = cudamem.hh random.hh tron.hh ppm.hh layout.hh megatron.hh wiring.hh persist.hh
-OBJ = cudamem.o random.o tron.o ppm.o layout.o megatron.o wiring.o persist.o
+HDR = cudamem.hh random.hh tron.hh ppm.hh layout.hh megatron.hh wiring.hh persist.hh dataset.hh
+OBJ = cudamem.o random.o tron.o ppm.o layout.o megatron.o wiring.o persist.o dataset.o
 
 DATASETS = faceattrs.dat \
   face8l.dat face8g.dat \
@@ -43,7 +43,7 @@ makemore.o: $(HDR)
 makemore: $(OBJ) makemore.o
 	$(CXX) -o $@ $(CXXFLAGS) $^ $(LDFLAGS) $(CULDFLAGS)
 
-$(DATASETS): $(LABTOOLS) celeba-dataset
+$(DATASETS): $(LABTOOLS) celeba-dataset/unzipped
 
 faceattrs.dat:
 	./mkattrs.pl > $@
@@ -99,11 +99,11 @@ reconlab: reconlab.o
 recongray: recongray.o
 	$(CXX) -o $@ $(CXXFLAGS) $< $(LDFLAGS)
 
-unzipped: celeba-dataset.zip
+celeba-dataset/unzipped: celeba-dataset.zip
 	rm -rf celeba-dataset
 	unzip celeba-dataset.zip -d celeba-dataset
 	unzip celeba-dataset/img_align_celeba.zip -d celeba-dataset
-	touch unzipped
+	touch celeba-dataset/unzipped
 
 #
 # .PHONY: celeba-dataset.zip
@@ -121,5 +121,4 @@ clean:
 .PHONY: dataclean
 dataclean: clean
 	rm -rf celeba-dataset
-	rm -f unzipped
 	rm -f $(DATASETS)
