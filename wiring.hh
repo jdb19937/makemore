@@ -21,8 +21,8 @@ struct Wiring : Persist {
   unsigned int wn;
   std::vector< std::vector<unsigned int> > moi, mio, miw, mow;
 
-  void load(FILE *fp);
-  void save(FILE *fp) const;
+  virtual void load(FILE *fp);
+  virtual void save(FILE *fp) const;
 };
 
 #endif

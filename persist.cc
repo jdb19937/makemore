@@ -15,7 +15,7 @@
     typeid(*this).name(), method, fn, strerror(errno));
 
 
-void Persist::load(const char *fn) {
+void Persist::load_file(const char *fn) {
   FILE *fp = fopen(fn, "r");
   if (!fp) {
     PERROR("load", fn);
@@ -25,7 +25,7 @@ void Persist::load(const char *fn) {
   fclose(fp);
 }
 
-void Persist::save(const char *fn) const {
+void Persist::save_file(const char *fn) const {
   char tfn[4096] = {0};
   assert(strlen(fn) < 4000);
   sprintf(tfn, "%s.%d.tmp", fn, getpid());

@@ -6,7 +6,7 @@ int main(int argc, char **argv) {
   for (int i = 1; i < argc; ++i) {
     const char *fn = argv[i];
     Layout y;
-    y.load(fn);
+    y.load_file(fn);
     x += y;
   }
 
