@@ -66,8 +66,7 @@ __global__ void gpu_megatron_train1(
   double *weight,
   double eta, double kappa,
 
-  unsigned int inrn, unsigned int outrn, unsigned int mbn,
-  double *dweight
+  unsigned int inrn, unsigned int outrn, unsigned int mbn
 ) {
   unsigned int outri = blockIdx.x * blockDim.x + threadIdx.x;
   if (outri >= outn)
@@ -96,14 +95,14 @@ __global__ void gpu_megatron_train1(
       unsigned int ini = mbi * inrn + *inrip - 1;
       unsigned int wi = *wip;
 
-      dweight[wn * mbi + wi] = z * in[ini];
+      weight[wi] += z * in[ini];
 
       ++inrip;
       ++wip;
     }
 
     unsigned int wi = *wip;
-    dweight[wn * mbi + wi] = z;
+    weight[wi] += z;
   }
 }
 
@@ -144,30 +143,6 @@ __global__ void gpu_megatron_train2(
   }
 }
 
-__global__ void gpu_megatron_train3(
-  const double *in,
-  double *fin, double *out, double *fout,
-  unsigned int inn, unsigned int outn,
-  unsigned int wn,
-  unsigned int **iwmap, unsigned int **owmap,
-  unsigned int **iomap, unsigned int **oimap,
-  double *weight,
-  double eta, double kappa,
-
-  unsigned int inrn, unsigned int outrn, unsigned int mbn,
-  double *dweight
-) {
-  unsigned int wi = blockIdx.x * blockDim.x + threadIdx.x;
-  if (wi >= wn)
-    return;
-
-  double sum = 0;
-  for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
-    sum += dweight[wn * mbi + wi];
-  }
-  weight[wi] += sum;
-}
-
 
 
 const double *Megatron::feed(const double *_in, double *_fin) {
@@ -199,7 +174,7 @@ void Megatron::train(double nu) {
     in, fin, out, fout, inn, outn,
     wn, iwmap, owmap, iomap, oimap,
     weight, nu * eta, kappa,
-    inrn, outrn, mbn, dweight
+    inrn, outrn, mbn
   );
 
   if (fin) {
@@ -213,16 +188,6 @@ void Megatron::train(double nu) {
       inrn, outrn, mbn
     );
   }
-
-  int bs3 = 128;
-  int gs3 = (wn + bs3 - 1) / bs3;
-
-  gpu_megatron_train3<<<gs3, bs3>>>(
-    in, fin, out, fout, inn, outn,
-    wn, iwmap, owmap, iomap, oimap,
-    weight, nu * eta, kappa,
-    inrn, outrn, mbn, dweight
-  );
 }
 
 Megatron::Megatron(const Wiring *_wire, unsigned int _mbn) : Tron(_wire->inn * _mbn, _wire->outn * _mbn) {
@@ -272,7 +237,6 @@ void Megatron::_makemaps(double disp) {
 
   wn = wire->wn;
   cumake(&weight, wn);
-  cumake(&dweight, wn * mbn);
 
   double *cweight = new double[wn];
 

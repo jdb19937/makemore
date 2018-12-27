@@ -20,7 +20,6 @@ struct Megatron : Tron {
 
   unsigned int inrn, outrn;
   unsigned int mbn;
-  double *dweight;
 
   double eta, kappa;
 
