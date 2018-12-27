@@ -2,6 +2,7 @@ celeba-dataset
 *.o
 *.zip
 *.dat
+*.swp
 
 labhifreq
 grayhifreq
