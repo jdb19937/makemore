@@ -12,6 +12,7 @@
 int main() {
   Dataset samples("face-32x32-gray-full.dat");
 
+  unsigned int mbn = 4;
 
   Layout *inl = Layout::new_square_grid(32);
   Layout *hidl1 = Layout::new_square_random(1024);
@@ -26,10 +27,10 @@ int main() {
   Wiring *w4 = new Wiring(hidl3, outl, 8, 8);
 //  Wiring *w5 = new Wiring(hidl4, outl, 10);
 
-  Megatron *m1 = new Megatron(w1);
-  Megatron *m2 = new Megatron(w2);
-  Megatron *m3 = new Megatron(w3);
-  Megatron *m4 = new Megatron(w4);
+  Megatron *m1 = new Megatron(w1, mbn);
+  Megatron *m2 = new Megatron(w2, mbn);
+  Megatron *m3 = new Megatron(w3, mbn);
+  Megatron *m4 = new Megatron(w4, mbn);
 //  Megatron *m5 = new Megatron(w5);
 //  m5->kappa = 4.0;
   m4->kappa = 4.0;
@@ -39,16 +40,18 @@ int main() {
   m = compositron(m, m4);
 //  m = compositron(m, m5);
 
-  Tron *cm = compositron(encudatron(1024), m);
-  cm = compositron(cm, decudatron(1024));
+  Tron *cm = compositron(encudatron(mbn * 1024), m);
+  cm = compositron(cm, decudatron(mbn * 1024));
 
   int i = 0;
 
+  double *in = new double[mbn * 1024];
+
   double cerr2 = 0.5, cerr3 = 0.5;
   while (1) {
-    int which = samples.pick();
-
-    const double *in = samples.data(which);
+    unsigned int which[mbn];
+    samples.pick_minibatch(mbn, which);
+    samples.copy_minibatch(which, mbn, in);
 
     const double *out = cm->feed(in);
     cm->target(in);
