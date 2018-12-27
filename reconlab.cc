@@ -1,4 +1,6 @@
 #include <stdio.h>
+#include <stdlib.h>
+#include <assert.h>
 
 #include <vector>
 
@@ -51,12 +53,11 @@ int main(int argc, char **argv) {
   ret = fread(lo.data(), sizeof(double), lo.size(), stdin);
   assert(ret == lo.size());
 
-  PPM p;
   std::vector<double> v;
   untwiddle(lo, hi, w, h, &v);
   assert(v.size() == w * h * 3);
 
-  int ret = fwrite(v.data(), 1, w * h * 3, stdout);
+  ret = fwrite(v.data(), 1, w * h * 3, stdout);
   assert(ret == w * h * 3);
   return 0;
 }

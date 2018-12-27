@@ -25,6 +25,9 @@ all: makemore
 .PHONY: datasets
 datasets: $(DATASETS)
 
+.PHONY: labtools
+labtools: $(LABTOOLS)
+
 
 $(OBJ): $(HDR)
 

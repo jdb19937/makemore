@@ -1,4 +1,6 @@
 #include <stdio.h>
+#include <stdlib.h>
+#include <assert.h>
 
 #include <vector>
 
@@ -25,9 +27,9 @@ void untwiddle(const Vec &lo, const Vec &hi, unsigned int w, unsigned int h, Vec
       double s = (hi[ihi++] - 0.5) * 2.0;
 
       (*z)[p] = m + l + t + s;
-      (*z)[p+3] = m - l + t - s;
-      (*z)[p+w3] = m + l - t - s;
-      (*z)[p+w3+3] = m - l - t + s;
+      (*z)[p+1] = m - l + t - s;
+      (*z)[p+w] = m + l - t - s;
+      (*z)[p+w+1] = m - l - t + s;
     }
   }
 }
@@ -52,7 +54,7 @@ int main(int argc, char **argv) {
   untwiddle(lo, hi, w, h, &v);
   assert(v.size() == w * h);
 
-  int ret = fwrite(v.data(), 1, w * h, stdout);
+  ret = fwrite(v.data(), 1, w * h, stdout);
   assert(ret == w * h);
   return 0;
 }
