@@ -80,7 +80,7 @@ gen.net: gen.top
 disinput.lay: samples.lay context.lay
 	../catlay controls.lay context.lay > $@
 dishidden1.lay:
-	../makelay -rand 256 16 > $@
+	../makelay -rand 128 16 > $@
 dishidden1.wire: disinput.lay dishidden1.lay
 	../wireup $^ > $@
 dishidden2.lay:
