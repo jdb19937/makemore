@@ -4,9 +4,9 @@ NVCCFLAGS = -O6
 CXXFLAGS = -O6
 LDFLAGS = -lm
 CULDFLAGS = -lcuda -lcudart
-
-LIBHDR = cudamem.hh random.hh tron.hh ppm.hh layout.hh megatron.hh wiring.hh persist.hh dataset.hh topology.hh network.hh
-LIBOBJ = cudamem.o random.o tron.o ppm.o layout.o megatron.o wiring.o persist.o dataset.o topology.o network.o
+ 
+LIBHDR = cudamem.hh random.hh tron.hh ppm.hh layout.hh megatron.hh wiring.hh persist.hh dataset.hh topology.hh network.hh multitron.hh
+LIBOBJ = cudamem.o random.o tron.o ppm.o layout.o megatron.o wiring.o persist.o dataset.o topology.o network.o multitron.o
 LIB = libmakemore.a
 
 DATASETS = face-attrs.dat \
@@ -182,6 +182,7 @@ clean:
 	rm -f *.o
 	rm -f makemore
 	rm -f $(LABTOOLS)
+	rm -f $(MORETOOLS)
 	rm -f *.tmp
 
 .PHONY: dataclean

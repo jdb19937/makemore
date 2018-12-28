@@ -164,8 +164,6 @@ const double *Megatron::feed(const double *_in, double *_fin) {
 }
 
 
-#include "cudamem.hh"
-
 void Megatron::train(double nu) {
 //fprintf(stderr, "kappa=%lf eta=%lf nu=%lf\n", kappa, eta, nu);
   int bs1 = 128;

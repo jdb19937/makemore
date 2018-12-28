@@ -18,14 +18,14 @@
 #include "random.hh"
 #include "cudamem.hh"
 #include "topology.hh"
+#include "multitron.hh"
 
 Network::Network(const Topology *_top, unsigned int _mbn = 1, const char *_fn = NULL) {
   top = _top;
   fn = _fn;
   mbn = _mbn;
 
-  npass = top->npass;
-  twn = top->nweights;
+  unsigned int twn = top->nweights;
 
   map_size = ((twn * sizeof(double)) + 4095) & ~4095;
   fd = -1;
@@ -47,49 +47,11 @@ Network::Network(const Topology *_top, unsigned int _mbn = 1, const char *_fn = 
   assert(map != MAP_FAILED);
   assert(map);
 
-  megatrons.clear();
-
-  double *wb = map;
-  for (auto wi = top->wirings.begin(); wi != top->wirings.end(); ++wi) {
-    Megatron *mt = new Megatron(*wi, wb, mbn);
-    megatrons.push_back(mt);
-    wb += (*wi)->wn;
-  }
-
-  tron = NULL;
-  for (auto ti = megatrons.begin(); ti != megatrons.end(); ++ti) {
-    if (tron) {
-      tron = compositron(tron, *ti);
-      compositrons.push_back(tron);
-    } else {
-      tron = *ti;
-    }
-  }
-
-  enctron = encudatron(tron->inn);
-  dectron = decudatron(tron->outn);
-
-  cutron = tron;
-
-  cutron = compositron(enctron, cutron);
-  compositrons.push_back(cutron);
-
-  cutron = compositron(cutron, dectron);
-  compositrons.push_back(dectron);
-}
-
-void Network::randomize(double disp) {
-  for (auto ti = megatrons.begin(); ti != megatrons.end(); ++ti)
-    (*ti)->randomize(disp);
+  tron = new Multitron(top->wirings, map, top->npass, mbn);
 }
 
 Network::~Network() {
-  for (auto ti = megatrons.begin(); ti != megatrons.end(); ++ti)
-    delete *ti;
-  for (auto ti = compositrons.begin(); ti != compositrons.end(); ++ti)
-    delete *ti;
-  delete enctron;
-  delete dectron;
+  delete tron;
 
   ::munmap(map, map_size);
   if (fd >= 0)

@@ -5,15 +5,15 @@
 #include "wiring.hh"
 #include "topology.hh"
 #include "megatron.hh"
+#include "multitron.hh"
 
 #include <string>
 #include <vector>
 
 struct Network {
-  const Topology *top;
-  unsigned int twn;
-  unsigned int npass;
+  unsigned int inrn, outrn;
 
+  const Topology *top;
   unsigned int mbn;
 
   int fd;
@@ -23,17 +23,9 @@ struct Network {
   double *map;
 
   Network(const Topology *_top, unsigned int _mbn, const char *_fn);
-  ~Network();
+  virtual ~Network();
 
-  void randomize(double disp = 4.0);
-
-  std::vector<Megatron*> megatrons;
-  std::vector<Tron*> compositrons;
-  Encudatron *enctron;
-  Decudatron *dectron;
-
-  Tron *tron;
-  Tron *cutron;
+  Multitron *tron;
 };
 
 #endif

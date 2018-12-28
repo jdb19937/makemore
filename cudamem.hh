@@ -28,5 +28,14 @@ template <class T> inline void cucopy(const T *da, unsigned int n, T *db)
   { cucopy(da, n * sizeof(T), db); }
 
 extern void cuaddvec(const double *a, const double *b, unsigned int n, double *c);
+extern void cucutpaste(
+  const double *a, const double *b,
+  unsigned int rows, unsigned int acols, unsigned int bcols, unsigned int ccols,
+  double *c
+);
+extern void cucutadd(
+  const double *a, unsigned int rows, unsigned int acols,
+  unsigned int bcols, double *b
+);
 
 #endif
