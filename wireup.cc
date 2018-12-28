@@ -1,5 +1,6 @@
 #include "wiring.hh"
 #include "layout.hh"
+#include "random.hh"
 
 int main(int argc, char **argv) {
   assert(argc >= 3);

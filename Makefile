@@ -28,7 +28,7 @@ LABTOOLS = \
   labshrink labhifreq labtogray grayhifreq \
   reconlab recongray
 
-MORETOOLS = catlay wireup maketop
+MORETOOLS = makelay catlay wireup maketop
 
 .PHONY: all
 all: makemore
@@ -142,6 +142,8 @@ recongray: recongray.o
 	$(CXX) -o $@ $(CXXFLAGS) $< $(LDFLAGS)
 
 catlay: catlay.o layout.o persist.o
+	$(CXX) -o $@ $(CXXFLAGS) $^ $(LDFLAGS)
+makelay: makelay.o layout.o persist.o
 	$(CXX) -o $@ $(CXXFLAGS) $^ $(LDFLAGS)
 
 wireup: wireup.o wiring.o layout.o persist.o

@@ -26,7 +26,13 @@ struct Network {
 
   void randomize(double disp = 4.0);
 
-  std::vector<Megatron*> trons;
+  std::vector<Megatron*> megatrons;
+  std::vector<Tron*> compositrons;
+  Encudatron *enctron;
+  Decudatron *dectron;
+
+  Tron *tron;
+  Tron *cutron;
 };
 
 #endif

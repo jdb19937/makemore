@@ -46,24 +46,50 @@ Network::Network(const Topology *_top, unsigned int _mbn = 1, const char *_fn = 
   assert(map != MAP_FAILED);
   assert(map);
 
-  trons.clear();
+  megatrons.clear();
 
   double *wb = map;
   for (auto wi = top->wirings.begin(); wi != top->wirings.end(); ++wi) {
     Megatron *mt = new Megatron(*wi, wb, mbn);
-    trons.push_back(mt);
+    megatrons.push_back(mt);
     wb += (*wi)->wn;
   }
+
+  tron = NULL;
+  for (auto ti = megatrons.begin(); ti != megatrons.end(); ++ti) {
+    if (tron) {
+      tron = compositron(tron, *ti);
+      compositrons.push_back(tron);
+    } else {
+      tron = *ti;
+    }
+  }
+
+  enctron = encudatron(tron->inn);
+  dectron = decudatron(tron->outn);
+
+  cutron = tron;
+
+  cutron = compositron(enctron, cutron);
+  compositrons.push_back(cutron);
+
+  cutron = compositron(cutron, dectron);
+  compositrons.push_back(dectron);
 }
 
 void Network::randomize(double disp) {
-  for (auto ti = trons.begin(); ti != trons.end(); ++ti)
+  for (auto ti = megatrons.begin(); ti != megatrons.end(); ++ti)
     (*ti)->randomize(disp);
 }
 
 Network::~Network() {
-  for (auto ti = trons.begin(); ti != trons.end(); ++ti)
+  for (auto ti = megatrons.begin(); ti != megatrons.end(); ++ti)
     delete *ti;
+  for (auto ti = compositrons.begin(); ti != compositrons.end(); ++ti)
+    delete *ti;
+  delete enctron;
+  delete dectron;
+
   ::munmap(map, map_size);
   if (fd >= 0)
     ::close(fd);

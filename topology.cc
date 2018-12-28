@@ -9,7 +9,7 @@
   
 void Topology::save(FILE *fp) const {
   uint32_t tmp = htonl(wirings.size());
-  assert(1 == fwrite(&tmp, 1, 4, fp));
+  assert(1 == fwrite(&tmp, 4, 1, fp));
 
   for (auto wi = wirings.begin(); wi != wirings.end(); ++wi) {
     Wiring *wire = *wi;
@@ -21,7 +21,7 @@ void Topology::load(FILE *fp) {
   wirings.clear();
 
   uint32_t tmp;
-  assert(1 == fread(&tmp, 1, 4, fp));
+  assert(1 == fread(&tmp, 4, 1, fp));
   tmp = ntohl(tmp);
   assert(tmp >= 1);
   wirings.resize(ntohl(tmp));

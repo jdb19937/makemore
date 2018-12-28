@@ -25,17 +25,19 @@ Layout::~Layout() {
   delete[] r;
 }
 
-Layout *Layout::new_square_grid(unsigned int dim, double s) {
-  Layout *l = new Layout(dim * dim);
+Layout *Layout::new_square_grid(unsigned int dim, double s, unsigned int chan) {
+  Layout *l = new Layout(dim * dim * chan);
 
   double pi = atan2(0, -1);
   double r = sqrt(s / pi) / (double)dim;
 
   for (unsigned int j = 0; j < dim; ++j) {
     for (unsigned int i = 0; i < dim; ++i) {
-      l->x[j * dim + i] = ((double)i + 0.5) / (double)dim;
-      l->y[j * dim + i] = ((double)j + 0.5) / (double)dim;
-      l->r[j + dim + i] = r;
+      for (unsigned int c = 0; c < chan; ++c) {
+        l->x[chan * (j * dim + i) + c] = ((double)i + 0.5) / (double)dim;
+        l->y[chan * (j * dim + i) + c] = ((double)j + 0.5) / (double)dim;
+        l->r[chan * (j + dim + i) + c] = r;
+      }
     }
   }
 
@@ -51,6 +53,20 @@ Layout *Layout::new_square_random(unsigned int n, double s) {
   for (unsigned int i = 0; i < l->n; ++i) {
     l->x[i] = rnd();
     l->y[i] = rnd();
+    l->r[i] = r;
+  }
+
+  return l;
+}
+
+Layout *Layout::new_square_center(unsigned int n, double r) {
+  Layout *l = new Layout(n);
+
+  double pi = atan2(0, -1);
+
+  for (unsigned int i = 0; i < l->n; ++i) {
+    l->x[i] = 0.5;
+    l->y[i] = 0.5;
     l->r[i] = r;
   }
 

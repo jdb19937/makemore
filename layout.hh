@@ -36,8 +36,9 @@ struct Layout : Persist {
   Layout(unsigned int n);
   ~Layout();
 
-  static Layout *new_square_grid(unsigned int dim, double s = 1.0);
+  static Layout *new_square_grid(unsigned int dim, double s = 1.0, unsigned int chan = 1);
   static Layout *new_square_random(unsigned int n, double s = 1.0);
+  static Layout *new_square_center(unsigned int n, double s = 1.0);
 
   virtual void load(FILE *fp);
   virtual void save(FILE *fp) const;
