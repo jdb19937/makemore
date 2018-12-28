@@ -6,7 +6,6 @@
 #include <vector>
 
 struct Wiring : Persist {
-  const Layout *inl, *outl;
   unsigned int inn, outn;
 
   Wiring(

@@ -62,10 +62,16 @@ struct Tron {
     target(tgt);
   }
 
+  void report() {
+    fprintf(stderr, "cerr1=%lf cerr2=%lf cerr3=%lf\n", cerr1, cerr2, cerr3);
+  }
+
   virtual const double *input() = 0;
   virtual const double *finput() = 0;
   virtual const double *output() = 0;
   virtual double *foutput() = 0;
+
+  virtual void sync() { }
 
   double err3();
   double err2();
@@ -94,6 +100,11 @@ struct Compositron : Tron {
   virtual const double *input() { return a->input(); }
   virtual const double *finput() { return a->finput(); }
   virtual double *foutput() { return b->foutput(); }
+
+  virtual void sync() {
+    a->sync();
+    b->sync();
+  }
 };
 
 inline Compositron *compositron(Tron *f, Tron *g) {

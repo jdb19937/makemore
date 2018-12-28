@@ -10,7 +10,6 @@ struct Megatron : Tron {
   double *fin, *out, *fout;
 
   const Wiring *wire;
-  const Layout *inl, *outl;
 
   unsigned int wn;
   unsigned int **iwmap, **owmap;
@@ -23,7 +22,9 @@ struct Megatron : Tron {
 
   double eta, kappa;
 
-  Megatron(const Wiring *_wire, unsigned int _mbn = 1);
+  double *cweight;
+
+  Megatron(const Wiring *_wire, double *_cweight, unsigned int _mbn = 1);
   virtual ~Megatron();
 
   virtual const double *feed(const double *_in, double *_fin);
@@ -34,8 +35,11 @@ struct Megatron : Tron {
   virtual const double *input() { return in; }
   virtual double *foutput() { return fout; }
 
+  virtual void sync();
 
-  void _makemaps(double disp = 4.0);
+
+  void _makemaps();
+  void randomize(double disp = 4.0);
 };
 
 #endif

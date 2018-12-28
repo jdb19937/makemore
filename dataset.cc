@@ -35,8 +35,8 @@ Dataset::Dataset(const char *fn, unsigned int _k) {
   struct stat st;
   int ret = fstat(fileno(fp), &st);
   assert(ret == 0);
-  // fprintf(stderr, "sz=%lu off=%u k=%u n=%u\n", st.st_size, dataoff, k, n);
-  assert(st.st_size == (dataoff + k * n) * sizeof(double));
+  assert((st.st_size - dataoff) % (k * sizeof(double)) == 0);
+  n = (st.st_size - dataoff) / (k * sizeof(double));
 
   map_size = (st.st_size + 4095) & ~4095;
   map = mmap(NULL, map_size, PROT_READ, MAP_PRIVATE, fileno(fp), 0);

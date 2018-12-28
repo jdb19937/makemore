@@ -12,10 +12,7 @@
 
 using namespace std;
 
-Wiring::Wiring(const Layout *_inl, const Layout *_outl, unsigned int minv, unsigned int maxv) {
-  inl = _inl;
-  outl = _outl;
-
+Wiring::Wiring(const Layout *inl, const Layout *outl, unsigned int minv, unsigned int maxv) {
   inn = inl->n;
   outn = outl->n;
 
@@ -101,8 +98,15 @@ static void _getvecvec(vector< vector<unsigned int> > &vv, FILE *fp) {
 }
 
 void Wiring::load(FILE *fp) {
-  inl = load_new<Layout>(fp);
-  outl = load_new<Layout>(fp);
+  uint32_t tmp;
+  int ret = fread(&tmp, 4, 1, fp);
+  assert(ret == 1);
+  inn = ntohl(tmp);
+
+  ret = fread(&tmp, 4, 1, fp);
+  assert(ret == 1);
+  outn = ntohl(tmp);
+
   _getvecvec(mio, fp);
   _getvecvec(miw, fp);
   _getvecvec(moi, fp);
@@ -127,8 +131,12 @@ static void _putvecvec(const vector< vector<unsigned int> > &vv, FILE *fp) {
 }
 
 void Wiring::save(FILE *fp) const {
-  inl->save(fp);
-  outl->save(fp);
+  uint32_t tmp = htonl(inn);
+  assert(1 == fwrite(&tmp, 4, 1, fp));
+
+  tmp = htonl(outn);
+  assert(1 == fwrite(&tmp, 4, 1, fp));
+
   _putvecvec(mio, fp);
   _putvecvec(miw, fp);
   _putvecvec(moi, fp);

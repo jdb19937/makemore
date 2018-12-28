@@ -7,6 +7,7 @@
 #include <vector>
 #include <map>
 
+#include "cudamem.hh"
 #include "megatron.hh"
 
 __global__ void gpu_megatron_feed(
@@ -190,7 +191,9 @@ void Megatron::train(double nu) {
   }
 }
 
-Megatron::Megatron(const Wiring *_wire, unsigned int _mbn) : Tron(_wire->inn * _mbn, _wire->outn * _mbn) {
+Megatron::Megatron(const Wiring *_wire, double *_cweight, unsigned int _mbn)
+  : Tron(_wire->inn * _mbn, _wire->outn * _mbn)
+{
   mbn = _mbn;
   assert(mbn > 0);
   assert(inn % mbn == 0);
@@ -199,8 +202,6 @@ Megatron::Megatron(const Wiring *_wire, unsigned int _mbn) : Tron(_wire->inn * _
   outrn = outn / mbn;
 
   wire = _wire;
-  inl = wire->inl;
-  outl = wire->outl;
 
   cumake(&out, outn);
   cumake(&fout, outn);
@@ -213,8 +214,11 @@ Megatron::Megatron(const Wiring *_wire, unsigned int _mbn) : Tron(_wire->inn * _
   kappa = 1.0;
   eta = 1.0;
 
-  double disp = 4.0;
-  _makemaps(disp);
+  wn = wire->wn;
+  cumake(&weight, wn);
+  encude(cweight, wn, weight);
+
+  _makemaps();
 }
 
 Megatron::~Megatron() {
@@ -227,7 +231,7 @@ Megatron::~Megatron() {
   cufree(iomap);
 }
 
-void Megatron::_makemaps(double disp) {
+void Megatron::_makemaps() {
   using namespace std;
 
   const vector< vector<unsigned int> > &moi = wire->moi;
@@ -235,26 +239,12 @@ void Megatron::_makemaps(double disp) {
   const vector< vector<unsigned int> > &miw = wire->miw;
   const vector< vector<unsigned int> > &mow = wire->mow;
 
-  wn = wire->wn;
-  cumake(&weight, wn);
-
-  double *cweight = new double[wn];
-
   unsigned int *tmp;
 
   for (unsigned int outri = 0; outri < outrn; ++outri) {
     const vector<unsigned int>& v = moi[outri];
     const vector<unsigned int>& w = mow[outri];
     assert(w.size());
-
-    double iss = disp / sqrt(w.size() + 1);
-    double sw = 0;
-    for (unsigned int i = 0; i < w.size() - 1; ++i) {
-      double ww = iss * rnd(-1, 1);
-      cweight[w[i]] = ww;
-      sw += ww;
-    }
-    cweight[w[w.size() - 1]] = 0; //-sw/2.0;
 
     tmp = cunew<unsigned int>(v.size());
     encude(v.data(), v.size(), tmp);
@@ -264,9 +254,6 @@ void Megatron::_makemaps(double disp) {
     encude(w.data(), w.size(), tmp);
     encude(&tmp, 1, owmap + outri);
   }
-
-  encude(cweight, wn, weight);
-  delete[] cweight;
 
   for (unsigned int inri = 0; inri < inrn; ++inri) {
     const vector<unsigned int>& v = mio[inri];
@@ -282,3 +269,28 @@ void Megatron::_makemaps(double disp) {
   }
 }
 
+void Megatron::randomize(double disp) {
+  using namespace std;
+
+  const vector< vector<unsigned int> > &mow = wire->mow;
+
+  for (unsigned int outri = 0; outri < outrn; ++outri) {
+    const vector<unsigned int>& w = mow[outri];
+    assert(w.size());
+
+    double iss = disp / sqrt(w.size() + 1);
+    double sw = 0;
+    for (unsigned int i = 0; i < w.size() - 1; ++i) {
+      double ww = iss * rnd(-1, 1);
+      cweight[w[i]] = ww;
+      sw += ww;
+    }
+    cweight[w[w.size() - 1]] = 0; //-sw/2.0;
+  }
+
+  encude(cweight, wn, weight);
+}
+
+void Megatron::sync() {
+  ::decude(weight, wn, cweight);
+}
