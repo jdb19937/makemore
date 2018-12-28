@@ -10,7 +10,7 @@
 #include "ppm.hh"
 
 int main() {
-  Dataset samples("face-32x32-gray-full.dat", 32 * 32 * 3);
+  Dataset samples("face-32x32-gray-full.dat", 32 * 32);
 
   unsigned int mbn = 4;
 
@@ -33,15 +33,19 @@ int main() {
 
   double *mw1 = new double[w1->wn];
   Megatron *m1 = new Megatron(w1, mw1, mbn);
+  m1->randomize();
 
   double *mw2 = new double[w2->wn];
   Megatron *m2 = new Megatron(w2, mw2, mbn);
+  m2->randomize();
 
   double *mw3 = new double[w3->wn];
   Megatron *m3 = new Megatron(w3, mw3, mbn);
+  m3->randomize();
 
   double *mw4 = new double[w4->wn];
   Megatron *m4 = new Megatron(w4, mw4, mbn);
+  m4->randomize();
 
 //  Megatron *m5 = new Megatron(w5);
 //  m5->kappa = 4.0;
