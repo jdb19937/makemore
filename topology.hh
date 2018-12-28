@@ -35,6 +35,13 @@ struct Topology : Persist {
 
   virtual void load(FILE *fp);
   virtual void save(FILE *fp) const;
+
+  unsigned int total_weights() const {
+    unsigned int tw = 0;
+    for (auto i = wirings.begin(); i != wirings.end(); ++i)
+      tw += (*i)->wn;
+    return 0;
+  }
 };
 
 #endif
