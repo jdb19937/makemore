@@ -14,8 +14,11 @@ int main(int argc, char **argv) {
   if (argc >= 5)
     maxv = (unsigned int)atoi(argv[4]);
 
-  Layout *il = load_new<Layout>(ifn);
-  Layout *ol = load_new<Layout>(ofn);
+  Layout *il = new Layout;
+  il->load_file(ifn);
+
+  Layout *ol = new Layout;
+  ol->load_file(ofn);
 
   Wiring *wire = new Wiring();
   wire->wireup(il, ol, minv, maxv);

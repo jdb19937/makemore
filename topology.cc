@@ -8,14 +8,8 @@
 #include <netinet/in.h>
   
 void Topology::save(FILE *fp) const {
-  assert(layouts.size() == 1 + wirings.size());
-  uint32_t tmp = htonl(layouts.size());
+  uint32_t tmp = htonl(wirings.size());
   assert(1 == fwrite(&tmp, 1, 4, fp));
-
-  for (auto li = layouts.begin(); li != layouts.end(); ++li) {
-    Layout *lay = *li;
-    lay->save(fp);
-  }
 
   for (auto wi = wirings.begin(); wi != wirings.end(); ++wi) {
     Wiring *wire = *wi;
@@ -24,30 +18,24 @@ void Topology::save(FILE *fp) const {
 }
 
 void Topology::load(FILE *fp) {
-  layouts.clear();
   wirings.clear();
 
   uint32_t tmp;
   assert(1 == fread(&tmp, 1, 4, fp));
   tmp = ntohl(tmp);
   assert(tmp >= 1);
-  layouts.resize(ntohl(tmp));
-  wirings.resize(layouts.size() - 1);
+  wirings.resize(ntohl(tmp));
 
-  for (auto li = layouts.begin(); li != layouts.end(); ++li) {
-    Layout *lay = new Layout;
-    lay->load(fp);
-    *li = lay;
-  }
-
-  auto li = layouts.begin();
+  Wiring *prev = NULL;
   for (auto wi = wirings.begin(); wi != wirings.end(); ++wi) {
     Wiring *wire = new Wiring;
     wire->load(fp);
     *wi = wire;
 
-    assert(wire->inn == (*li)->n);
-    ++li;
-    assert(wire->outn == (*li)->n);
+    if (prev) {
+      assert(wire->inn == prev->outn);
+    }
+
+    prev = wire;
   }
 }

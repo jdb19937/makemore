@@ -16,6 +16,10 @@ Wiring::Wiring() {
   inn = outn = 0;
 }
 
+Wiring::~Wiring() {
+
+}
+
 void Wiring::wireup(const Layout *inl, const Layout *outl, unsigned int minv, unsigned int maxv) {
   inn = inl->n;
   outn = outl->n;

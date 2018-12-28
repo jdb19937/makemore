@@ -28,7 +28,7 @@ LABTOOLS = \
   labshrink labhifreq labtogray grayhifreq \
   reconlab recongray
 
-MORETOOLS = catlay wireup
+MORETOOLS = catlay wireup maketop
 
 .PHONY: all
 all: makemore
@@ -61,7 +61,8 @@ makemore.o: $(HDR)
 makemore: $(OBJ) makemore.o
 	$(CXX) -o $@ $(CXXFLAGS) $^ $(LDFLAGS) $(CULDFLAGS)
 
-$(DATASETS): $(LABTOOLS) celeba-dataset/unzipped
+# $(DATASETS): $(LABTOOLS) celeba-dataset/unzipped
+$(DATASETS): celeba-dataset/unzipped
 
 face-attrs.dat:
 	./mkattrsdat.pl > $@
@@ -144,6 +145,8 @@ catlay: catlay.o layout.o persist.o
 	$(CXX) -o $@ $(CXXFLAGS) $^ $(LDFLAGS)
 
 wireup: wireup.o wiring.o layout.o persist.o
+	$(CXX) -o $@ $(CXXFLAGS) $^ $(LDFLAGS)
+maketop: maketop.o topology.o wiring.o layout.o persist.o
 	$(CXX) -o $@ $(CXXFLAGS) $^ $(LDFLAGS)
 
 
