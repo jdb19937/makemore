@@ -37,8 +37,8 @@ controls.lay: global-controls.lay local-controls.lay
 	../catlay $^ > $@
 
 
-encinput.lay: samples.lay context.lay
-	../catlay samples.lay context.lay > $@
+encinput.lay: context.lay samples.lay
+	../catlay context.lay samples.lay > $@
 enchidden1.lay:
 	../makelay -rand 256 16 > $@
 enchidden1.wire: encinput.lay enchidden1.lay
@@ -52,13 +52,13 @@ encoutput.lay: controls.lay
 encoutput.wire: enchidden2.lay encoutput.lay
 	../wireup $^ > $@
 enc.top: enchidden1.wire enchidden2.wire encoutput.wire
-	../maketop $^ > $@
+	../maketop -npass 40 $^ > $@
 enc.net: enc.top
 	../makenet enc.top enc.net
 
 
-geninput.lay: controls.lay context.lay
-	../catlay controls.lay context.lay > $@
+geninput.lay: context.lay controls.lay
+	../catlay context.lay controls.lay > $@
 genhidden1.lay:
 	../makelay -rand 256 16 > $@
 genhidden1.wire: geninput.lay genhidden1.lay
@@ -72,7 +72,7 @@ genoutput.lay: samples.lay
 genoutput.wire: genhidden2.lay genoutput.lay
 	../wireup $^ > $@
 gen.top: genhidden1.wire genhidden2.wire genoutput.wire
-	../maketop $^ > $@
+	../maketop -npass 40 $^ > $@
 gen.net: gen.top
 	../makenet gen.top gen.net
 

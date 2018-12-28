@@ -2,8 +2,11 @@
 
 int main(int argc, char **argv) {
   unsigned int npass = 0;
-  if (argc >= 3 && !strcmp(argv[1], "-npass"))
+  if (argc >= 3 && !strcmp(argv[1], "-npass")) {
     npass = atoi(argv[2]);
+    argc -= 2;
+    argv += 2;
+  }
 
   Topology top(npass);
 
