@@ -72,7 +72,7 @@ genoutput.lay: samples.lay
 genoutput.wire: genhidden2.lay genoutput.lay
 	../wireup $^ > $@
 gen.top: genhidden1.wire genhidden2.wire genoutput.wire
-	../maketop 40 $^ > $@
+	../maketop $^ > $@
 gen.net: gen.top
 	../makenet gen.top gen.net
 
