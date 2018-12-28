@@ -5,8 +5,8 @@ CXXFLAGS = -O6
 LDFLAGS = -lm
 CULDFLAGS = -lcuda -lcudart
  
-LIBHDR = cudamem.hh random.hh tron.hh ppm.hh layout.hh megatron.hh wiring.hh persist.hh dataset.hh topology.hh network.hh multitron.hh
-LIBOBJ = cudamem.o random.o tron.o ppm.o layout.o megatron.o wiring.o persist.o dataset.o topology.o network.o multitron.o
+LIBHDR = cudamem.hh random.hh tron.hh ppm.hh layout.hh megatron.hh wiring.hh persist.hh dataset.hh topology.hh multitron.hh project.hh
+LIBOBJ = cudamem.o random.o tron.o ppm.o layout.o megatron.o wiring.o persist.o dataset.o topology.o multitron.o project.o
 LIB = libmakemore.a
 
 DATASETS = face-attrs.dat \
@@ -29,7 +29,7 @@ LABTOOLS = \
   labshrink labhifreq labtogray grayhifreq \
   reconlab recongray
 
-MORETOOLS = testmore makemore makelay catlay wireup maketop makenet
+MORETOOLS = testmore makemore makelay catlay wireup maketop makemap
 
 .PHONY: all
 all: $(MORETOOLS)
@@ -153,8 +153,8 @@ wireup: wireup.o $(LIB)
 maketop.o: $(LIBHDR)
 maketop: maketop.o $(LIB)
 	$(CXX) -o $@ $(CXXFLAGS) $^ $(LDFLAGS)
-makenet.o: $(LIBHDR)
-makenet: makenet.o $(LIB)
+makemap.o: $(LIBHDR)
+makemap: makemap.o $(LIB)
 	$(CXX) -o $@ $(CXXFLAGS) $^ $(LDFLAGS) $(CULDFLAGS)
 
 makemore.o: $(LIBHDR)

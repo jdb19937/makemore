@@ -294,6 +294,16 @@ void Megatron::randomize(double disp) {
 }
 
 void Megatron::sync(double t) {
-  assert(t == 1);
-  ::decude(weight, wn, cweight);
+  if (t == 1) {
+    ::decude(weight, wn, cweight);
+    return;
+  }
+
+  if (t == 0) {
+    ::encude(cweight, wn, weight);
+    return;
+  }
+
+  assert(0);
+  // cusync(wn, weight, cweight, t);
 }

@@ -20,7 +20,12 @@ struct Multitron : Tron {
 
   std::vector<Megatron*> megatrons;
 
-  Multitron(const std::vector<Wiring*> wires, double *weightbuf, unsigned int _npass = 0, unsigned int _mbn = 1);
+  int fd;
+  const char *fn;
+  size_t map_size;
+  double *map;
+
+  Multitron(const Topology &top, unsigned int _npass = 0, unsigned int _mbn = 1, const char *fn = NULL);
   virtual ~Multitron();
 
   virtual const double *feed(const double *_in, double *_fin);

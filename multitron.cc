@@ -1,24 +1,58 @@
 #define __MAKEMORE_MULTITRON_CC__ 1
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdint.h>
+#include <errno.h>
+#include <unistd.h>
+#include <sys/mman.h>
+#include <sys/types.h>
+#include <fcntl.h>
+
+#include "topology.hh"
 #include "multitron.hh"
 #include "cudamem.hh"
 
 #include <vector>
 
-Multitron::Multitron(const std::vector<Wiring*> wires, double *weightbuf, unsigned int _npass, unsigned int _mbn) : Tron(0, 0) {
+Multitron::Multitron(const Topology &top, unsigned int _npass, unsigned int _mbn, const char *mapfn) : Tron(0, 0) {
+  unsigned int twn = top.nweights;
+  map_size = ((twn * sizeof(double)) + 4095) & ~4095;
+  fd = -1;
+
+  if (mapfn) {
+    fd = ::open(mapfn, O_RDWR | O_CREAT, 0777);
+    if (fd < 0) {
+      fprintf(stderr, "%s: %s\n", mapfn, strerror(errno));
+      assert(!(fd < 0));
+    }
+
+    int ret = ::ftruncate(fd, twn * sizeof(double));
+    assert(ret == 0);
+
+    map = (double *)::mmap(NULL, map_size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+  } else {
+    map = (double *)::mmap(NULL, map_size, PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0);
+  }
+
+  assert(map != MAP_FAILED);
+  assert(map);
+
+  const std::vector<Wiring*>& wirings = top.wirings;
+  assert(wirings.begin() != wirings.end());
+
   npass = _npass;
   mbn = _mbn;
 
   megatrons.clear();
-  assert(wires.begin() != wires.end());
-
-  double *wb = weightbuf;
-  for (auto wi = wires.begin(); wi != wires.end(); ++wi) {
+  double *wb = map;
+  for (auto wi = wirings.begin(); wi != wirings.end(); ++wi) {
     Megatron *mt = new Megatron(*wi, wb, mbn);
     megatrons.push_back(mt);
     wb += (*wi)->wn;
   }
-  inrn = (*wires.begin())->inn;
-  outrn = (*wires.rbegin())->outn + npass;
+  inrn = (*wirings.begin())->inn;
+  outrn = (*wirings.rbegin())->outn + npass;
 
   inn = inrn * mbn;
   outn = outrn * mbn;
@@ -41,6 +75,10 @@ Multitron::~Multitron() {
     cufree(passbuf);
   if (fpassbuf)
     cufree(fpassbuf);
+
+  ::munmap(map, map_size);
+  if (fd >= 0)
+    ::close(fd);
 }
 
 

@@ -33,17 +33,30 @@ void cucopyv(const void *x, unsigned int n, void *y) {
 }
 
 
-__global__ void gpu_cuaddvec(const double *a, const double *b, double *c, int n) {
+__global__ void gpu_cuaddvec(const double *a, const double *b, unsigned int n, double *c) {
   unsigned int i = blockIdx.x * blockDim.x + threadIdx.x;
   if (i < n)
-      c[i] = a[i] + b[i];
+    c[i] = a[i] + b[i];
 }
 
 void cuaddvec(const double *a, const double *b, unsigned int n, double *c) {
   int bs = 128;
   int gs = ((n + bs - 1) / bs);
-  gpu_cuaddvec<<<gs, bs>>>(a, b, c, n);
+  gpu_cuaddvec<<<gs, bs>>>(a, b, n, c);
 }
+
+__global__ void gpu_cumulvec(const double *a, double m, int n, double *b) {
+  unsigned int i = blockIdx.x * blockDim.x + threadIdx.x;
+  if (i < n)
+    b[i] = a[i] * m;
+}
+
+void cumulvec(const double *a, double m, unsigned int n, double *b) {
+  int bs = 128;
+  int gs = ((n + bs - 1) / bs);
+  gpu_cumulvec<<<gs, bs>>>(a, m, n, b);
+}
+
 
 __global__ void gpu_cucutpaste(
   const double *a, const double *b,
