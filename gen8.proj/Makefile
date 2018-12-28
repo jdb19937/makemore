@@ -77,8 +77,8 @@ gen.map: gen.top
 	../makemap gen.top gen.map
 
 
-disinput.lay: samples.lay context.lay
-	../catlay controls.lay context.lay > $@
+disinput.lay: context.lay samples.lay
+	../catlay context.lay samples.lay > $@
 dishidden1.lay:
 	../makelay -rand 128 16 > $@
 dishidden1.wire: disinput.lay dishidden1.lay
