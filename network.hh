@@ -10,6 +10,9 @@
 struct Network {
   Network();
   ~Network();
+
+  virtual void load(FILE *fp);
+  virtual void save(FILE *fp) const;
 };
 
 #endif

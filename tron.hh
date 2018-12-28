@@ -8,9 +8,7 @@
 #include <string.h>
 #include <unistd.h>
 
-#include "persist.hh"
-
-struct Tron : Persist {
+struct Tron {
   unsigned int inn, outn;
 
   double cerr1, cerr2, cerr3;
@@ -96,16 +94,6 @@ struct Compositron : Tron {
   virtual const double *input() { return a->input(); }
   virtual const double *finput() { return a->finput(); }
   virtual double *foutput() { return b->foutput(); }
-
-  virtual void load(FILE *fp) {
-    a->load(fp);
-    b->load(fp);
-  }
-
-  virtual void save(FILE *fp) const {
-    a->save(fp);
-    b->save(fp);
-  }
 };
 
 inline Compositron *compositron(Tron *f, Tron *g) {
@@ -129,9 +117,6 @@ struct Encudatron : Tron {
   virtual const double *output() { return out; }
   virtual const double *finput() { return fin; }
   virtual double *foutput() { return fout; }
-
-  virtual void load(FILE *fp) { }
-  virtual void save(FILE *fp) const { }
 };
 
 inline Encudatron *encudatron(unsigned int n) {
@@ -154,9 +139,6 @@ struct Decudatron : Tron {
   virtual const double *output() { return out; }
   virtual const double *finput() { return fin; }
   virtual double *foutput() { return fout; }
-
-  virtual void load(FILE *fp) { }
-  virtual void save(FILE *fp) const { }
 };
 
 inline Decudatron *decudatron(unsigned int n) {
@@ -181,9 +163,6 @@ struct Intron : Tron {
 
   virtual const double *feed(const double *_in, double *_fin);
   virtual void train(double r);
-
-  virtual void load(FILE *fp) { }
-  virtual void save(FILE *fp) const { }
 };
 
 inline Intron *intron(unsigned int n, Tron *t) {
@@ -224,9 +203,6 @@ struct Extron : Tron {
   virtual void train(double r) {
 
   }
-
-  virtual void load(FILE *fp) { }
-  virtual void save(FILE *fp) const { }
 };
 
 inline Extron *extron(unsigned int n, Tron *t) {
@@ -251,9 +227,6 @@ struct Identron : Tron {
   virtual const double *output() { return in; }
   virtual const double *finput() { return fin; }
   virtual double *foutput() { return fin; }
-
-  virtual void load(FILE *fp) { }
-  virtual void save(FILE *fp) const { }
 };
 
 inline Identron *identron(unsigned int n) {

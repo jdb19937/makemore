@@ -12,6 +12,9 @@ struct Topology : Persist {
 
   Topology();
   ~Topology();
+
+  virtual void load(FILE *fp);
+  virtual void save(FILE *fp) const;
 };
 
 #endif
