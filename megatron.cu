@@ -293,6 +293,7 @@ void Megatron::randomize(double disp) {
   encude(cweight, wn, weight);
 }
 
-void Megatron::sync() {
+void Megatron::sync(double t) {
+  assert(t == 1);
   ::decude(weight, wn, cweight);
 }

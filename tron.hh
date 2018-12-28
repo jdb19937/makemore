@@ -71,7 +71,7 @@ struct Tron {
   virtual const double *output() = 0;
   virtual double *foutput() = 0;
 
-  virtual void sync() { }
+  virtual void sync(double t) { }
 
   double err3();
   double err2();
@@ -101,9 +101,9 @@ struct Compositron : Tron {
   virtual const double *finput() { return a->finput(); }
   virtual double *foutput() { return b->foutput(); }
 
-  virtual void sync() {
-    a->sync();
-    b->sync();
+  virtual void sync(double t) {
+    a->sync(t);
+    b->sync(t);
   }
 };
 

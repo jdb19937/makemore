@@ -4,6 +4,7 @@ celeba-dataset
 *.dat
 *.swp
 *.lay
+*.proj
 
 labhifreq
 grayhifreq
@@ -21,4 +22,7 @@ maketop
 makenet
 wireup
 
+libmakemore.a
+
 makemore
+testmore

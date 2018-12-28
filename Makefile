@@ -29,10 +29,10 @@ LABTOOLS = \
   labshrink labhifreq labtogray grayhifreq \
   reconlab recongray
 
-MORETOOLS = makelay catlay wireup maketop makenet
+MORETOOLS = testmore makemore makelay catlay wireup maketop makenet
 
 .PHONY: all
-all: makemore
+all: $(MORETOOLS)
 
 
 .PHONY: datasets

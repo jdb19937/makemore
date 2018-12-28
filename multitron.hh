@@ -35,7 +35,7 @@ struct Multitron : Tron {
   virtual double *foutput()
     { return fpassbuf ? fpassbuf : fout; }
 
-  virtual void sync();
+  virtual void sync(double t);
 
 
   void _makemaps();

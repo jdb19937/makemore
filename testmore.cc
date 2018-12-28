@@ -8,6 +8,6 @@ int main() {
   enctop->load_file("gen8.proj/enc.top");
 
   Network *encnet = new Network(enctop, 1, "gen8.proj/enc.net");
-  encnet->randomize();
+  encnet->tron->randomize();
   return 0;
 }

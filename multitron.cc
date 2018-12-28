@@ -80,3 +80,8 @@ void Multitron::train(double nu) {
   }
 }
 
+void Multitron::sync(double t) {
+  for (auto mi = megatrons.rbegin(); mi != megatrons.rend(); ++mi) {
+    (*mi)->sync(t);
+  }
+}

@@ -35,7 +35,7 @@ struct Megatron : Tron {
   virtual const double *input() { return in; }
   virtual double *foutput() { return fout; }
 
-  virtual void sync();
+  virtual void sync(double t);
 
 
   void _makemaps();

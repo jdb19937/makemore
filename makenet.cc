@@ -15,7 +15,7 @@ int main(int argc, char **argv) {
 
   const char *netfn = argv[2];
   Network *net = new Network(top, 1, netfn);
-  net->randomize();
+  net->tron->randomize();
 
   delete net;
   delete top;
