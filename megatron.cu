@@ -216,6 +216,8 @@ Megatron::Megatron(const Wiring *_wire, double *_cweight, unsigned int _mbn)
 
   wn = wire->wn;
   cumake(&weight, wn);
+
+  cweight = _cweight;
   encude(cweight, wn, weight);
 
   _makemaps();
@@ -229,6 +231,8 @@ Megatron::~Megatron() {
   cufree(oimap);
   cufree(iwmap);
   cufree(iomap);
+
+  cufree(weight);
 }
 
 void Megatron::_makemaps() {

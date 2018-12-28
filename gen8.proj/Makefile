@@ -15,7 +15,10 @@ WIRINGS = \
 TOPOLOGIES = \
   enc.top gen.top dis.top
 
-all: $(DATASETS) $(LAYOUTS) $(WIRINGS) $(TOPOLOGIES)
+NETWORKS = \
+  enc.net gen.net dis.net
+
+all: $(DATASETS) $(LAYOUTS) $(WIRINGS) $(TOPOLOGIES) $(NETWORKS)
 
 context.dat:
 	ln -sf ../face-attrs.dat $@
@@ -50,6 +53,8 @@ encoutput.wire: enchidden2.lay encoutput.lay
 	../wireup $^ > $@
 enc.top: enchidden1.wire enchidden2.wire encoutput.wire
 	../maketop $^ > $@
+enc.net: enc.top
+	../makenet enc.top enc.net
 
 
 geninput.lay: controls.lay context.lay
@@ -68,6 +73,8 @@ genoutput.wire: genhidden2.lay genoutput.lay
 	../wireup $^ > $@
 gen.top: genhidden1.wire genhidden2.wire genoutput.wire
 	../maketop $^ > $@
+gen.net: gen.top
+	../makenet gen.top gen.net
 
 
 disinput.lay: samples.lay context.lay
@@ -86,6 +93,8 @@ disoutput.wire: dishidden2.lay disoutput.lay
 	../wireup $^ > $@
 dis.top: dishidden1.wire dishidden2.wire disoutput.wire
 	../maketop $^ > $@
+dis.net: dis.top
+	../makenet dis.top dis.net
 
 clean:
-	rm -f *.lay *.dat *.wire *.top
+	rm -f *.lay *.dat *.wire *.top *.net

@@ -28,7 +28,7 @@ LABTOOLS = \
   labshrink labhifreq labtogray grayhifreq \
   reconlab recongray
 
-MORETOOLS = makelay catlay wireup maketop
+MORETOOLS = makelay catlay wireup maketop makenet
 
 .PHONY: all
 all: makemore
@@ -155,6 +155,8 @@ wireup: wireup.o wiring.o layout.o persist.o
 	$(CXX) -o $@ $(CXXFLAGS) $^ $(LDFLAGS)
 maketop: maketop.o topology.o wiring.o layout.o persist.o
 	$(CXX) -o $@ $(CXXFLAGS) $^ $(LDFLAGS)
+makenet: makenet.o $(OBJ)
+	$(CXX) -o $@ $(CXXFLAGS) $^ $(LDFLAGS) $(CULDFLAGS)
 
 
 celeba-dataset/unzipped: celeba-dataset.zip
