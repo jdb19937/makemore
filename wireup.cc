@@ -10,7 +10,7 @@ int main(int argc, char **argv) {
   if (argc >= 4)
     minv = (unsigned int)atoi(argv[3]);
 
-  unsigned int maxv = 0;
+  unsigned int maxv = -1;
   if (argc >= 5)
     maxv = (unsigned int)atoi(argv[4]);
 
