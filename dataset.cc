@@ -14,25 +14,19 @@
 #include <netinet/in.h>
 
 #include "dataset.hh"
-#include "layout.hh"
 #include "random.hh"
 #include "cudamem.hh"
 
-Dataset::Dataset(const char *fn) {
+Dataset::Dataset(const char *fn, unsigned int _k) {
+  k = _k;
+
   fp = fopen(fn, "r");
   if (!fp) {
     fprintf(stderr, "Dataset::Dataset: %s: %s\n", fn, strerror(errno));
     assert(fp);
   }
 
-  assert(fp);
-  lay = load_new<Layout>(fp);
-  k = lay->n;
-  uint32_t on;
-  assert(1 == fread(&on, 4, 1, fp));
-  n = ntohl(on);
-  dataoff = ftell(fp);
-
+  off_t dataoff = 0;
   assert(dataoff % sizeof(double) == 0);
   dataoff /= sizeof(double);
 
@@ -99,8 +93,8 @@ void Dataset::encude_minibatch(const unsigned int *mb, unsigned int mbn, double 
 
 #if DATASET_TEST_MAIN
 int main(int argc, char **argv) {
-  assert(argc > 1);
-  Dataset ds(argv[1]);
+  assert(argc > 2);
+  Dataset ds(argv[1], atoi(argv[2]));
   return 0;
 }
 #endif

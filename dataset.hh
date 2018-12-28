@@ -13,9 +13,7 @@ struct Dataset {
   void *map;
   FILE *fp;
 
-  class Layout *lay;
-
-  Dataset(const char *fn);
+  Dataset(const char *fn, unsigned int k);
   ~Dataset();
 
   unsigned int pick() const;
