@@ -39,14 +39,14 @@ Project::Project(const char *_dir, unsigned int _mbn) {
   sprintf(encmapfn, "%s/enc.map", _dir);
   enctop = new Topology;
   enctop->load_file(enctopfn);
-  enctron = new Multitron(*enctop, 0, mbn, encmapfn);
+  enctron = new Multitron(*enctop, contextlay->n, mbn, encmapfn);
 
   char genmapfn[4096], gentopfn[4096];
   sprintf(gentopfn, "%s/gen.top", _dir);
   sprintf(genmapfn, "%s/gen.map", _dir);
   gentop = new Topology;
   gentop->load_file(gentopfn);
-  gentron = new Multitron(*gentop, 0, mbn, genmapfn);
+  gentron = new Multitron(*gentop, contextlay->n, mbn, genmapfn);
 
   char dismapfn[4096], distopfn[4096];
   sprintf(distopfn, "%s/dis.top", _dir);
@@ -54,6 +54,7 @@ Project::Project(const char *_dir, unsigned int _mbn) {
   distop = new Topology;
   distop->load_file(distopfn);
   distron = new Multitron(*distop, 0, mbn, dismapfn);
+
 }
 
 Project::~Project() {
