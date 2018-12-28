@@ -8,6 +8,22 @@
 #include "random.hh"
 #include "cudamem.hh"
 
+void Tron::target(const double *tgt) {
+  const double *out = output();
+  double *fout = foutput();
+
+  cusubvec(tgt, out, outn, fout);
+
+  double err2 = sqrt(cusumsq(fout, outn) / outn);
+  cerr2 *= (1.0 - errdecay);
+  cerr2 += errdecay * err2;
+
+  double errm = cumaxabs(fout, outn);
+  cerrm *= (1.0 - errdecay);
+  cerrm += errdecay * errm;
+}
+
+#if 0
 double Tron::err3() {
   double *fout = foutput();
   if (!fout)
@@ -47,105 +63,46 @@ double Tron::err1() {
   e /= (double)outn;
   return e;
 }
+#endif
 
-Encudatron::Encudatron(unsigned int n) : Tron(n, n) {
-  out = cunew<double>(outn);
-  fout = cunew<double>(outn);
-}
 
-Encudatron::~Encudatron() {
-  cufree(out);
-  cufree(fout);
-}
-
-const double *Encudatron::feed(const double *_in, double *_fin) {
-  assert(inn == outn);
-
-  in = _in;
-  fin = _fin;
-
-  encude(in, inn, out);
-  cuzero(fout, outn);
-
-  return out;
-}
-
-void Encudatron::train(double r) {
-  assert(inn == outn);
-
-  if (!fin)
-    return;
-
-  double dfin[inn];
-  decude(fout, outn, dfin);
-
-  for (unsigned int i = 0; i < inn; ++i)
-    fin[i] += dfin[i];
-}
-
-Decudatron::Decudatron(unsigned int n) : Tron(n, n) {
-  out = new double[outn]();
-  fout = new double[outn]();
-  dfin_tmp = cunew<double>(inn);
-}
-
-Decudatron::~Decudatron() {
-  delete[] out;
-  delete[] fout;
-  cufree(dfin_tmp);
-}
-
-const double *Decudatron::feed(const double *_in, double *_fin) {
-  assert(inn == outn);
-
-  in = _in;
-  fin = _fin;
-
-  decude(in, inn, out);
-  memset(fout, 0, outn * sizeof(double));
-
-  return out;
-}
-
-void Decudatron::train(double r) {
-  assert(inn == outn);
-
-  if (fin) {
-    encude(fout, outn, dfin_tmp);
-    cuaddvec(fin, dfin_tmp, inn, fin);
-  }
-}
-
-Intron::Intron(unsigned int n, Tron *_t) : Tron(n, _t->outn + n) {
+Passthrutron::Passthrutron(unsigned int _k, unsigned int _mbn, Tron *_t) {
+  k = _k;
+  mbn = _mbn;
   t = _t;
+
+  assert(t->inn % mbn == 0);
+  inrn = t->inn / mbn;
+  assert(inrn >= k);
+  assert(t->outn % mbn == 0);
+  outrn = t->outn / mbn;
+
+  inn = t->inn;
+
+  outrn += k;
+  outn = mbn * outrn;
+
   out = cunew<double>(outn);
   fout = cunew<double>(outn);
 }
 
-Intron::~Intron() {
+Passthrutron::~Passthrutron() {
   cufree(out);
   cufree(fout);
 }
 
-const double *Intron::feed(const double *_in, double *_fin) {
-  in = _in;
-  fin = _fin;
+const double *Passthrutron::feed(const double *in, double *fin) {
+  const double *tout = t->feed(in, fin);
 
-  cucopy(in, inn, out);
-  if (t->outn > 0)
-    cucopy(t->output(), t->outn, out + inn);
   cuzero(fout, outn);
+  cucutpaste(in, tout, mbn, inrn, outrn - k, outrn, out);
 
   return out;
 }
 
-void Intron::train(double r) {
-  double *tfout = t->foutput();
-
-  if (tfout && t->outn > 0)
-    cuaddvec(fout + inn, tfout, t->outn, tfout);
-  if (fin)
-    cuaddvec(fout, fin, inn, fin);
+void Passthrutron::train(double nu) {
+  cucutadd(fout, mbn, outrn, outrn - k, t->foutput());
+  t->train(nu);
 }
 
 #if TRONTEST_MAIN

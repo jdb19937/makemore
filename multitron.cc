@@ -50,6 +50,8 @@ Multitron::Multitron(const Topology &top, unsigned int _mbn, const char *mapfn) 
     megatrons.push_back(mt);
     wb += (*wi)->wn;
   }
+  assert(map + twn == wb);
+
   inrn = (*wirings.begin())->inn;
   outrn = (*wirings.rbegin())->outn;
 
@@ -78,7 +80,7 @@ const double *Multitron::feed(const double *_in, double *_fin) {
   out = (*mi)->feed(in, fin);
   fout = (*mi)->foutput();
 
-  auto pmi = mi++;
+  ++mi;
   while (mi != megatrons.end()) {
     out = (*mi)->feed(out, fout);
     fout = (*mi)->foutput();

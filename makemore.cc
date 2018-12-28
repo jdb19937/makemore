@@ -8,6 +8,7 @@
 #include "dataset.hh"
 #include "megatron.hh"
 #include "ppm.hh"
+#include "cudamem.hh"
 
 int main() {
   Dataset samples("face-32x32-gray-full.dat", 32 * 32);
@@ -56,30 +57,37 @@ int main() {
   m = compositron(m, m4);
 //  m = compositron(m, m5);
 
-  Tron *cm = compositron(encudatron(mbn * 1024), m);
-  cm = compositron(cm, decudatron(mbn * 1024));
+  Tron *cm = m;
+//  Tron *cm = compositron(encudatron(mbn * 1024), m);
+//  cm = compositron(cm, decudatron(mbn * 1024));
 
   int i = 0;
 
-  double *in = new double[mbn * 1024];
+  double *in;
+  cumake(&in, mbn * 1024);
 
-  double cerr2 = 0.5, cerr3 = 0.5;
+  double *cin = new double[mbn * 1024];
+  double *cout = new double[mbn * 1024];
+
   while (1) {
     unsigned int which[mbn];
     samples.pick_minibatch(mbn, which);
-    samples.copy_minibatch(which, mbn, in);
+    samples.encude_minibatch(which, mbn, in);
 
     const double *out = cm->feed(in);
     cm->target(in);
     cm->train(0.03);
 
     if (i % 1000 == 0) {
-      fprintf(stderr, "i=%d in[0]=%lf out[0]=%lf cerr2=%lf cerr3=%lf\n", i, in[0], out[0], cm->cerr2, cm->cerr3);
+      decude(in, mbn * 1024, cin);
+      decude(out, mbn * 1024, cout);
+
+      fprintf(stderr, "i=%d cin[0]=%lf cout[0]=%lf cerr2=%lf cerrm=%lf\n", i, cin[0], cout[0], cm->cerr2, cm->cerrm);
       PPM ppm1;
-      ppm1.unvectorizegray(in, 32, 32);
+      ppm1.unvectorizegray(cin, 32, 32);
 
       PPM ppm2;
-      ppm2.unvectorizegray(out, 32, 32);
+      ppm2.unvectorizegray(cout, 32, 32);
 
       PPM ppm3;
       ppm3.w = 32;

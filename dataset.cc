@@ -78,7 +78,7 @@ void Dataset::encude(unsigned int i, double *d) const {
 void Dataset::copy_minibatch(const unsigned int *mb, unsigned int mbn, double *d, unsigned int off, unsigned int len) const {
   if (len == 0)
     len = k;
-  assert(off + len <= k);
+  assert(len - off >= k);
 
   for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
     unsigned int i = mb[mbi];
@@ -90,7 +90,7 @@ void Dataset::copy_minibatch(const unsigned int *mb, unsigned int mbn, double *d
 void Dataset::encude_minibatch(const unsigned int *mb, unsigned int mbn, double *d, unsigned int off, unsigned int len) const {
   if (len == 0)
     len = k;
-  assert(off + len <= k);
+  assert(len - off >= k);
 
   for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
     unsigned int i = mb[mbi];

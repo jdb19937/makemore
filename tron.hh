@@ -9,14 +9,24 @@
 #include <unistd.h>
 
 struct Tron {
+  double errdecay;
+
   unsigned int inn, outn;
 
-  double cerr1, cerr2, cerr3;
+  double cerr2, cerrm;
+
+  Tron() {
+    inn = 0;
+    outn = 0;
+    cerr2 = 0.5;
+    cerrm = 0.5;
+    errdecay = 0.001;
+  }
 
   Tron(unsigned int _inn, unsigned int _outn) : inn(_inn), outn(_outn) {
-    cerr1 = 0.5;
     cerr2 = 0.5;
-    cerr3 = 0.5;
+    cerrm = 0.5;
+    errdecay = 0.001;
   }
 
   virtual const double *feed(const double *in, double *fin) = 0;
@@ -31,40 +41,7 @@ struct Tron {
     train(0.001);
   }
 
-  void target(const double *tgt) {
-    double *fout = foutput();
-    const double *out = output();
-
-    for (unsigned int i = 0; i < outn; ++i)
-      fout[i] = tgt[i] - out[i];
-
-    cerr1 *= 0.999;
-    cerr1 += 0.001 * err1();
-
-    cerr2 *= 0.999;
-    cerr2 += 0.001 * err2();
-
-    cerr3 *= 0.999;
-    cerr3 += 0.001 * err3();
-  }
-
-  void target(bool n) {
-    assert(outn == 1);
-    double tgt[1];
-    tgt[0] = n ? 1.0 : 0.0;
-    target(tgt);
-  }
-
-  void target(double x) {
-    assert(outn == 1);
-    double tgt[1];
-    tgt[0] = x;
-    target(tgt);
-  }
-
-  void report() {
-    fprintf(stderr, "cerr1=%lf cerr2=%lf cerr3=%lf\n", cerr1, cerr2, cerr3);
-  }
+  void target(const double *tgt);
 
   virtual const double *input() = 0;
   virtual const double *finput() = 0;
@@ -72,10 +49,6 @@ struct Tron {
   virtual double *foutput() = 0;
 
   virtual void sync(double t) { }
-
-  double err3();
-  double err2();
-  double err1();
 };
 
 struct Compositron : Tron {
@@ -101,6 +74,10 @@ struct Compositron : Tron {
   virtual const double *finput() { return a->finput(); }
   virtual double *foutput() { return b->foutput(); }
 
+  virtual void target(const double *tgt) {
+    b->target(tgt);
+  }
+
   virtual void sync(double t) {
     a->sync(t);
     b->sync(t);
@@ -112,74 +89,36 @@ inline Compositron *compositron(Tron *f, Tron *g) {
 }
 
 
-struct Encudatron : Tron {
-  const double *in;
-  double *fin;
-  double *out;
-  double *fout;
 
-  Encudatron(unsigned int n);
-  ~Encudatron();
-
-  virtual const double *feed(const double *_in, double *_fin);
-  virtual void train(double r);
-
-  virtual const double *input() { return in; }
-  virtual const double *output() { return out; }
-  virtual const double *finput() { return fin; }
-  virtual double *foutput() { return fout; }
-};
-
-inline Encudatron *encudatron(unsigned int n) {
-  return new Encudatron(n);
-}
-
-struct Decudatron : Tron {
-  const double *in;
-  double *fin, *dfin_tmp;
-  double *out;
-  double *fout;
-
-  Decudatron(unsigned int n);
-  ~Decudatron();
-
-  virtual const double *feed(const double *_in, double *_fin);
-  virtual void train(double r);
-
-  virtual const double *input() { return in; }
-  virtual const double *output() { return out; }
-  virtual const double *finput() { return fin; }
-  virtual double *foutput() { return fout; }
-};
-
-inline Decudatron *decudatron(unsigned int n) {
-  return new Decudatron(n);
-}
-
-
-struct Intron : Tron {
+struct Passthrutron : Tron {
   Tron *t;
+  unsigned int mbn;
+  unsigned int k;
+  unsigned int inrn, outrn;
 
-  const double *in;
-  double *fin;
   double *out, *fout;
 
-  Intron(unsigned int n, Tron *_t);
-  virtual ~Intron();
+  Passthrutron(unsigned int k, unsigned int _mbn, Tron *_t);
+  virtual ~Passthrutron();
 
-  virtual const double *input() { return in; }
+  virtual const double *input() { return t->input(); }
   virtual const double *output() { return out; }
-  virtual const double *finput() { return fin; }
+  virtual const double *finput() { return t->finput(); }
   virtual double *foutput() { return fout; }
 
-  virtual const double *feed(const double *_in, double *_fin);
-  virtual void train(double r);
+  virtual const double *feed(const double *in, double *fin);
+  virtual void train(double nu);
+
+  virtual void target(const double *tgt) {
+    t->target(tgt);
+  }
 };
 
-inline Intron *intron(unsigned int n, Tron *t) {
-  return new Intron(n, t);
+inline Passthrutron *passthrutron(unsigned int k, unsigned int mbn, Tron *t) {
+  return new Passthrutron(k, mbn, t);
 }
 
+#if 0
 struct Extron : Tron {
   Tron *t;
 
@@ -219,6 +158,7 @@ struct Extron : Tron {
 inline Extron *extron(unsigned int n, Tron *t) {
   return new Extron(n, t);
 }
+#endif
 
 struct Identron : Tron {
   const double *in;

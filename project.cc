@@ -18,7 +18,7 @@ Project::Project(const char *_dir, unsigned int _mbn) {
 
   char samplesdatfn[4096];
   sprintf(samplesdatfn, "%s/samples.dat", _dir);
-  Dataset *samples = new Dataset(samplesdatfn, sampleslay->n);
+  samples = new Dataset(samplesdatfn, sampleslay->n);
 
   char contextlayfn[4096];
   sprintf(contextlayfn, "%s/context.lay", _dir);
@@ -27,7 +27,7 @@ Project::Project(const char *_dir, unsigned int _mbn) {
 
   char contextdatfn[4096];
   sprintf(contextdatfn, "%s/context.dat", _dir);
-  Dataset *context = new Dataset(contextdatfn, contextlay->n);
+  context = new Dataset(contextdatfn, contextlay->n);
 
   char controlslayfn[4096];
   sprintf(controlslayfn, "%s/controls.lay", _dir);
