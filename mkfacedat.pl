@@ -24,49 +24,17 @@ my ($chan, $laydim);
 if ($::gray)  {
   $pipe .= "| ./labtogray $dim $dim";
   if ($::hifreq) {
-    $chan = 3;
-    $laydim = $dim / 2;
     $pipe .= "| ./grayhifreq $dim $dim";
-  } else {
-    $chan = 1;
-    $laydim = $dim;
   }
 } else {
   if ($::hifreq) {
-    $chan = 9;
-    $laydim = $dim / 2;
     $pipe .= "| ./labhifreq $dim $dim";
   } else {
-    $chan = 3;
-    $laydim = $dim;
   }
 }
 
 select(STDOUT);
 $| = 1;
-
-my (@ax, @ay, @ar);
-
-for (my $y = 0; $y < $laydim; ++$y) {
-  for (my $x = 0; $x < $laydim; ++$x) {
-
-    my $ax = ($x + 0.5) / $laydim;
-    my $ay = ($y + 0.5) / $laydim;
-    my $ar = sqrt(1.0 / atan2(0,-1)) / $laydim;
-
-    for (1 .. $chan) {
-      push @ax, $ax;
-      push @ay, $ay;
-      push @ar, $ar;
-    }
-  }
-}
-
-print pack('N', $laydim * $laydim * $chan);
-print pack('d*', @ax);
-print pack('d*', @ay);
-print pack('d*', @ar);
-print pack('N', 202599);
 
 my $celeba = "$Bin/celeba-dataset";
 my $attrfn = "$celeba/list_attr_celeba.csv";

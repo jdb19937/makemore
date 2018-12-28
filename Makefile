@@ -15,6 +15,14 @@ DATASETS = face-attrs.dat \
   face-32x32-lab-full.dat face-32x32-gray-full.dat \
   face-32x32-lab-hifreq.dat face-32x32-gray-hifreq.dat
 
+LAYOUTS = face-attrs.lay \
+  face-8x8-lab-full.lay face-8x8-gray-full.lay \
+  face-16x16-lab-full.lay face-16x16-gray-full.lay \
+  face-16x16-lab-hifreq.lay face-16x16-gray-hifreq.lay \
+  face-32x32-lab-full.lay face-32x32-gray-full.lay \
+  face-32x32-lab-hifreq.lay face-32x32-gray-hifreq.lay
+
+
 LABTOOLS = \
   ppmtolab labtoppm \
   labshrink labhifreq labtogray grayhifreq \
@@ -28,6 +36,9 @@ all: makemore
 
 .PHONY: datasets
 datasets: $(DATASETS)
+
+.PHONY: layouts
+layouts: $(LAYOUTS)
 
 .PHONY: labtools
 labtools: $(LABTOOLS)
@@ -53,31 +64,53 @@ makemore: $(OBJ) makemore.o
 $(DATASETS): $(LABTOOLS) celeba-dataset/unzipped
 
 face-attrs.dat:
-	./mkattrs.pl > $@
+	./mkattrsdat.pl > $@
+face-attrs.lay:
+	./mkattrslay.pl > $@
 
 face-8x8-lab-full.dat:
-	./mkdata.pl -dim=8  > $@
+	./mkfacedat.pl -dim=8  > $@
+face-8x8-lab-full.lay:
+	./mkfacelay.pl 8 3 > $@
 face-8x8-gray-full.dat:
-	./mkdata.pl -dim=8 -gray > $@
+	./mkfacedat.pl -dim=8 -gray > $@
+face-8x8-gray-full.lay:
+	./mkfacelay.pl 8 1 > $@
 
 
 face-16x16-lab-full.dat:
-	./mkdata.pl -dim=16  > $@
+	./mkfacedat.pl -dim=16  > $@
+face-16x16-lab-full.lay:
+	./mkfacelay.pl 16 3 > $@
 face-16x16-gray-full.dat:
-	./mkdata.pl -dim=16 -gray > $@
+	./mkfacedat.pl -dim=16 -gray > $@
+face-16x16-gray-full.lay:
+	./mkfacelay.pl 16 1 > $@
 face-16x16-lab-hifreq.dat:
-	./mkdata.pl -dim=16 -hifreq  > $@
+	./mkfacedat.pl -dim=16 -hifreq  > $@
+face-16x16-lab-hifreq.lay:
+	./mkfacelay.pl 8 9 > $@
 face-16x16-gray-hifreq.dat:
-	./mkdata.pl -dim=16 -gray -hifreq > $@
+	./mkfacedat.pl -dim=16 -gray -hifreq > $@
+face-16x16-gray-hifreq.lay:
+	./mkfacelay.pl 8 3 > $@
 
 face-32x32-lab-full.dat:
-	./mkdata.pl -dim=32  > $@
+	./mkfacedat.pl -dim=32  > $@
+face-32x32-lab-full.lay:
+	./mkfacelay.pl 32 3 > $@
 face-32x32-gray-full.dat:
-	./mkdata.pl -dim=32 -gray > $@
+	./mkfacedat.pl -dim=32 -gray > $@
+face-32x32-gray-full.lay:
+	./mkfacelay.pl 32 1 > $@
 face-32x32-lab-hifreq.dat:
-	./mkdata.pl -dim=32 -hifreq  > $@
+	./mkfacedat.pl -dim=32 -hifreq  > $@
+face-32x32-lab-hifreq.lay:
+	./mkfacelay.pl 16 9 > $@
 face-32x32-gray-hifreq.dat:
-	./mkdata.pl -dim=32 -gray -hifreq > $@
+	./mkfacedat.pl -dim=32 -gray -hifreq > $@
+face-32x32-gray-hifreq.lay:
+	./mkfacelay.pl 16 3 > $@
 
 
 ppmtolab.o: ppm.hh

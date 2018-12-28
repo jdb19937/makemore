@@ -3,6 +3,7 @@ celeba-dataset
 *.zip
 *.dat
 *.swp
+*.lay
 
 labhifreq
 grayhifreq
