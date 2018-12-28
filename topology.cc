@@ -24,7 +24,7 @@ void Topology::load(FILE *fp) {
   assert(1 == fread(&tmp, 4, 1, fp));
   tmp = ntohl(tmp);
   assert(tmp >= 1);
-  wirings.resize(ntohl(tmp));
+  wirings.resize(tmp);
 
   Wiring *prev = NULL;
   for (auto wi = wirings.begin(); wi != wirings.end(); ++wi) {

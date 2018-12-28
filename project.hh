@@ -9,10 +9,6 @@
 struct Project {
   std::string dir;
 
-  Dataset *samples;
-  Dataset *context;
-  Layout *control;
-
   Project(const char *_dir);
   ~Project();
 };

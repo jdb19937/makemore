@@ -29,7 +29,7 @@ struct Topology : Persist {
     unsigned int tw = 0;
     for (auto i = wirings.begin(); i != wirings.end(); ++i)
       tw += (*i)->wn;
-    return 0;
+    return tw;
   }
 };
 

@@ -4,14 +4,16 @@ DATASETS = context.dat samples.dat
 LAYOUTS = \
   context.lay samples.lay controls.lay \
   encinput.lay enchidden1.lay enchidden2.lay encoutput.lay \
-  geninput.lay genhidden1.lay genhidden2.lay genoutput.lay
+  geninput.lay genhidden1.lay genhidden2.lay genoutput.lay \
+  disinput.lay dishidden1.lay dishidden2.lay disoutput.lay
 
 WIRINGS = \
   enchidden1.wire enchidden2.wire encoutput.wire \
-  genhidden1.wire genhidden2.wire genoutput.wire
+  genhidden1.wire genhidden2.wire genoutput.wire \
+  dishidden1.wire dishidden2.wire disoutput.wire
 
 TOPOLOGIES = \
-  enc.top gen.top
+  enc.top gen.top dis.top
 
 all: $(DATASETS) $(LAYOUTS) $(WIRINGS) $(TOPOLOGIES)
 
@@ -65,6 +67,24 @@ genoutput.lay: samples.lay
 genoutput.wire: genhidden2.lay genoutput.lay
 	../wireup $^ > $@
 gen.top: genhidden1.wire genhidden2.wire genoutput.wire
+	../maketop $^ > $@
+
+
+disinput.lay: samples.lay context.lay
+	../catlay controls.lay context.lay > $@
+dishidden1.lay:
+	../makelay -rand 256 16 > $@
+dishidden1.wire: disinput.lay dishidden1.lay
+	../wireup $^ > $@
+dishidden2.lay:
+	../makelay -rand 64 16 > $@
+dishidden2.wire: dishidden1.lay dishidden2.lay
+	../wireup $^ > $@
+disoutput.lay:
+	../makelay -center 1 > $@
+disoutput.wire: dishidden2.lay disoutput.lay
+	../wireup $^ > $@
+dis.top: dishidden1.wire dishidden2.wire disoutput.wire
 	../maketop $^ > $@
 
 clean:

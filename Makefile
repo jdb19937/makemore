@@ -51,6 +51,8 @@ $(OBJ): $(HDR)
 
 makemore.o: $(HDR)
 
+testmore.o: $(HDR)
+
 %.o: %.cu
 	$(NVCC) -o $@ $(NVCCFLAGS) -c $<
 
@@ -59,6 +61,9 @@ makemore.o: $(HDR)
 
 
 makemore: $(OBJ) makemore.o
+	$(CXX) -o $@ $(CXXFLAGS) $^ $(LDFLAGS) $(CULDFLAGS)
+
+testmore: $(OBJ) testmore.o
 	$(CXX) -o $@ $(CXXFLAGS) $^ $(LDFLAGS) $(CULDFLAGS)
 
 # $(DATASETS): $(LABTOOLS) celeba-dataset/unzipped
