@@ -15,8 +15,8 @@ struct Persist {
   virtual void load(FILE *) = 0;
   virtual void save(FILE *) const = 0;
 
-  void load_file(const char *fn);
-  void save_file(const char *fn) const;
+  virtual void load_file(const char *fn);
+  virtual void save_file(const char *fn) const;
 };
 
 template <class T> inline T *load_new(FILE *fp) {

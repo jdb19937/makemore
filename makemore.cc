@@ -21,10 +21,14 @@ int main() {
 //  Layout *hidl4 = Layout::new_square_random(512);
   Layout *outl = Layout::new_square_grid(32);
 
-  Wiring *w1 = new Wiring(inl, hidl1, 8, 8);
-  Wiring *w2 = new Wiring(hidl1, hidl2, 8, 8);
-  Wiring *w3 = new Wiring(hidl2, hidl3, 8, 8);
-  Wiring *w4 = new Wiring(hidl3, outl, 8, 8);
+  Wiring *w1 = new Wiring();
+  w1->wireup(inl, hidl1, 8, 8);
+  Wiring *w2 = new Wiring();
+  w2->wireup(hidl1, hidl2, 8, 8);
+  Wiring *w3 = new Wiring();
+  w3->wireup(hidl2, hidl3, 8, 8);
+  Wiring *w4 = new Wiring();
+  w4->wireup(hidl3, outl, 8, 8);
 //  Wiring *w5 = new Wiring(hidl4, outl, 10);
 
   double *mw1 = new double[w1->wn];

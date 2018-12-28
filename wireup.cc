@@ -17,7 +17,8 @@ int main(int argc, char **argv) {
   Layout *il = load_new<Layout>(ifn);
   Layout *ol = load_new<Layout>(ofn);
 
-  Wiring *wire = new Wiring(il, ol, minv, maxv);
+  Wiring *wire = new Wiring();
+  wire->wireup(il, ol, minv, maxv);
   wire->save(stdout);
   return 0;
 }

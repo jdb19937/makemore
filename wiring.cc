@@ -12,7 +12,11 @@
 
 using namespace std;
 
-Wiring::Wiring(const Layout *inl, const Layout *outl, unsigned int minv, unsigned int maxv) {
+Wiring::Wiring() {
+  inn = outn = 0;
+}
+
+void Wiring::wireup(const Layout *inl, const Layout *outl, unsigned int minv, unsigned int maxv) {
   inn = inl->n;
   outn = outl->n;
 
@@ -107,6 +111,10 @@ void Wiring::load(FILE *fp) {
   assert(ret == 1);
   outn = ntohl(tmp);
 
+  ret = fread(&tmp, 4, 1, fp);
+  assert(ret == 1);
+  wn = ntohl(tmp);
+
   _getvecvec(mio, fp);
   _getvecvec(miw, fp);
   _getvecvec(moi, fp);
@@ -135,6 +143,9 @@ void Wiring::save(FILE *fp) const {
   assert(1 == fwrite(&tmp, 4, 1, fp));
 
   tmp = htonl(outn);
+  assert(1 == fwrite(&tmp, 4, 1, fp));
+
+  tmp = htonl(wn);
   assert(1 == fwrite(&tmp, 4, 1, fp));
 
   _putvecvec(mio, fp);
