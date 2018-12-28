@@ -14,7 +14,7 @@ int main(int argc, char **argv) {
   top->load_file(topfn);
 
   const char *mapfn = argv[2];
-  Multitron *tron = new Multitron(*top, 0, 1, mapfn);
+  Multitron *tron = new Multitron(*top, 1, mapfn);
   tron->randomize();
   tron->sync(1);
 

@@ -15,9 +15,6 @@ struct Multitron : Tron {
   const double *in, *out;
   double *fin, *fout;
 
-  unsigned int npass;
-  double *passbuf, *fpassbuf;
-
   std::vector<Megatron*> megatrons;
 
   int fd;
@@ -25,7 +22,7 @@ struct Multitron : Tron {
   size_t map_size;
   double *map;
 
-  Multitron(const Topology &top, unsigned int _npass = 0, unsigned int _mbn = 1, const char *fn = NULL);
+  Multitron(const Topology &top, unsigned int _mbn = 1, const char *fn = NULL);
   virtual ~Multitron();
 
   virtual const double *feed(const double *_in, double *_fin);
@@ -34,11 +31,11 @@ struct Multitron : Tron {
   virtual const double *input()
     { return in; }
   virtual const double *output()
-    { return passbuf ? passbuf : out; }
+    { return out; }
   virtual const double *finput()
     { return fin; }
   virtual double *foutput()
-    { return fpassbuf ? fpassbuf : fout; }
+    { return fout; }
 
   virtual void sync(double t);
 

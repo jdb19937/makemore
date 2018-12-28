@@ -15,7 +15,7 @@
 
 #include <vector>
 
-Multitron::Multitron(const Topology &top, unsigned int _npass, unsigned int _mbn, const char *mapfn) : Tron(0, 0) {
+Multitron::Multitron(const Topology &top, unsigned int _mbn, const char *mapfn) : Tron(0, 0) {
   unsigned int twn = top.nweights;
   map_size = ((twn * sizeof(double)) + 4095) & ~4095;
   fd = -1;
@@ -41,7 +41,6 @@ Multitron::Multitron(const Topology &top, unsigned int _npass, unsigned int _mbn
   const std::vector<Wiring*>& wirings = top.wirings;
   assert(wirings.begin() != wirings.end());
 
-  npass = _npass;
   mbn = _mbn;
 
   megatrons.clear();
@@ -52,17 +51,10 @@ Multitron::Multitron(const Topology &top, unsigned int _npass, unsigned int _mbn
     wb += (*wi)->wn;
   }
   inrn = (*wirings.begin())->inn;
-  outrn = (*wirings.rbegin())->outn + npass;
+  outrn = (*wirings.rbegin())->outn;
 
   inn = inrn * mbn;
   outn = outrn * mbn;
-
-  passbuf = NULL;
-  fpassbuf = NULL;
-  if (npass > 0) {
-    cumake(&passbuf, outrn * mbn);
-    cumake(&fpassbuf, outrn * mbn);
-  }
 }
 
 void Multitron::randomize(double disp) {
@@ -71,11 +63,6 @@ void Multitron::randomize(double disp) {
 }
 
 Multitron::~Multitron() {
-  if (passbuf)
-    cufree(passbuf);
-  if (fpassbuf)
-    cufree(fpassbuf);
-
   ::munmap(map, map_size);
   if (fd >= 0)
     ::close(fd);
@@ -98,21 +85,10 @@ const double *Multitron::feed(const double *_in, double *_fin) {
     ++mi;
   }
 
-  if (npass == 0)
-    return out;
-
-  cuzero(fpassbuf, mbn * outrn); 
-  cucutpaste(in, out, mbn, inrn, outrn - npass, outrn, passbuf);
-
-  return passbuf;
+  return out;
 }
 
 void Multitron::train(double nu) {
-  if (npass > 0) {
-    assert(fpassbuf);
-    cucutadd(fpassbuf, mbn, outrn, outrn - npass, fout);
-  }
-
   for (auto mi = megatrons.rbegin(); mi != megatrons.rend(); ++mi) {
     (*mi)->train(nu);
   }

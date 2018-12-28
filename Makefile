@@ -32,7 +32,7 @@ LABTOOLS = \
 MORETOOLS = testmore makemore makelay catlay wireup maketop makemap
 
 .PHONY: all
-all: $(MORETOOLS)
+all: $(LIB) $(MORETOOLS)
 
 
 .PHONY: datasets
@@ -181,6 +181,7 @@ celeba-dataset/unzipped: celeba-dataset.zip
 clean:
 	rm -f *.o
 	rm -f makemore
+	rm -f libmakemore.a
 	rm -f $(LABTOOLS)
 	rm -f $(MORETOOLS)
 	rm -f *.tmp
