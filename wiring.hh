@@ -12,6 +12,16 @@ struct Wiring : Persist {
   Wiring();
   ~Wiring();
 
+  Wiring(const Wiring &wire) {
+    inn = wire.inn;
+    outn = wire.outn;
+    wn = wire.wn;
+    moi = wire.moi;
+    mio = wire.mio;
+    miw = wire.miw;
+    mow = wire.mow;
+  }
+
   void wireup(
     const Layout *_inl,
     const Layout *_outl,
