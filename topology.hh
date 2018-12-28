@@ -7,17 +7,10 @@
 #include <vector>
 
 struct Topology : Persist {
-  unsigned int npass;
   unsigned int nweights;
   std::vector<Wiring*> wirings;
 
   Topology() {
-    npass = 0;
-    nweights = 0;
-  }
-
-  Topology(unsigned int _npass) {
-    npass = _npass;
     nweights = 0;
   }
 

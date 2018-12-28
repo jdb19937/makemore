@@ -7,7 +7,7 @@ int main() {
   Topology *enctop = new Topology;
   enctop->load_file("gen8.proj/enc.top");
 
-  Network *encnet = new Network(enctop, 1, "gen8.proj/enc.net");
+  Network *encnet = new Network(enctop, 0, 1, "gen8.proj/enc.net");
   encnet->tron->randomize();
   return 0;
 }

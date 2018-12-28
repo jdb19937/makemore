@@ -14,7 +14,7 @@ int main(int argc, char **argv) {
   top->load_file(topfn);
 
   const char *netfn = argv[2];
-  Network *net = new Network(top, 1, netfn);
+  Network *net = new Network(top, 0, 1, netfn);
   net->tron->randomize();
 
   delete net;

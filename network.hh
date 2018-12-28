@@ -22,7 +22,7 @@ struct Network {
   size_t map_size;
   double *map;
 
-  Network(const Topology *_top, unsigned int _mbn, const char *_fn);
+  Network(const Topology *_top, unsigned int npass = 0, unsigned int _mbn = 1, const char *_fn = NULL);
   virtual ~Network();
 
   Multitron *tron;

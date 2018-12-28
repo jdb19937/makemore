@@ -20,7 +20,7 @@
 #include "topology.hh"
 #include "multitron.hh"
 
-Network::Network(const Topology *_top, unsigned int _mbn = 1, const char *_fn = NULL) {
+Network::Network(const Topology *_top, unsigned int npass, unsigned int _mbn, const char *_fn) {
   top = _top;
   fn = _fn;
   mbn = _mbn;
@@ -47,7 +47,7 @@ Network::Network(const Topology *_top, unsigned int _mbn = 1, const char *_fn = 
   assert(map != MAP_FAILED);
   assert(map);
 
-  tron = new Multitron(top->wirings, map, top->npass, mbn);
+  tron = new Multitron(top->wirings, map, npass, mbn);
 }
 
 Network::~Network() {

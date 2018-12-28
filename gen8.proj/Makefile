@@ -52,7 +52,7 @@ encoutput.lay: controls.lay
 encoutput.wire: enchidden2.lay encoutput.lay
 	../wireup $^ > $@
 enc.top: enchidden1.wire enchidden2.wire encoutput.wire
-	../maketop -npass 40 $^ > $@
+	../maketop $^ > $@
 enc.net: enc.top
 	../makenet enc.top enc.net
 
@@ -72,7 +72,7 @@ genoutput.lay: samples.lay
 genoutput.wire: genhidden2.lay genoutput.lay
 	../wireup $^ > $@
 gen.top: genhidden1.wire genhidden2.wire genoutput.wire
-	../maketop -npass 40 $^ > $@
+	../maketop 40 $^ > $@
 gen.net: gen.top
 	../makenet gen.top gen.net
 
