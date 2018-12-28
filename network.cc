@@ -24,7 +24,8 @@ Network::Network(const Topology *_top, unsigned int _mbn = 1, const char *_fn = 
   fn = _fn;
   mbn = _mbn;
 
-  twn = top->total_weights();
+  npass = top->npass;
+  twn = top->nweights;
 
   map_size = ((twn * sizeof(double)) + 4095) & ~4095;
   fd = -1;

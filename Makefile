@@ -5,8 +5,9 @@ CXXFLAGS = -O6
 LDFLAGS = -lm
 CULDFLAGS = -lcuda -lcudart
 
-HDR = cudamem.hh random.hh tron.hh ppm.hh layout.hh megatron.hh wiring.hh persist.hh dataset.hh topology.hh network.hh
-OBJ = cudamem.o random.o tron.o ppm.o layout.o megatron.o wiring.o persist.o dataset.o topology.o network.o
+LIBHDR = cudamem.hh random.hh tron.hh ppm.hh layout.hh megatron.hh wiring.hh persist.hh dataset.hh topology.hh network.hh
+LIBOBJ = cudamem.o random.o tron.o ppm.o layout.o megatron.o wiring.o persist.o dataset.o topology.o network.o
+LIB = libmakemore.a
 
 DATASETS = face-attrs.dat \
   face-8x8-lab-full.dat face-8x8-gray-full.dat \
@@ -47,11 +48,7 @@ labtools: $(LABTOOLS)
 moretools: $(MORETOOLS)
 
 
-$(OBJ): $(HDR)
-
-makemore.o: $(HDR)
-
-testmore.o: $(HDR)
+$(LIBOBJ): $(LIBHDR)
 
 %.o: %.cu
 	$(NVCC) -o $@ $(NVCCFLAGS) -c $<
@@ -59,12 +56,9 @@ testmore.o: $(HDR)
 %.o: %.cc
 	$(CXX) -o $@ $(CXXFLAGS) -c $<
 
+libmakemore.a: $(LIBOBJ)
+	ar cr $@ $^
 
-makemore: $(OBJ) makemore.o
-	$(CXX) -o $@ $(CXXFLAGS) $^ $(LDFLAGS) $(CULDFLAGS)
-
-testmore: $(OBJ) testmore.o
-	$(CXX) -o $@ $(CXXFLAGS) $^ $(LDFLAGS) $(CULDFLAGS)
 
 # $(DATASETS): $(LABTOOLS) celeba-dataset/unzipped
 $(DATASETS): celeba-dataset/unzipped
@@ -146,16 +140,28 @@ reconlab: reconlab.o
 recongray: recongray.o
 	$(CXX) -o $@ $(CXXFLAGS) $< $(LDFLAGS)
 
-catlay: catlay.o layout.o persist.o
+catlay.o: $(LIBHDR)
+catlay: catlay.o $(LIB)
 	$(CXX) -o $@ $(CXXFLAGS) $^ $(LDFLAGS)
-makelay: makelay.o layout.o persist.o
+makelay.o: $(LIBHDR)
+makelay: makelay.o $(LIB)
 	$(CXX) -o $@ $(CXXFLAGS) $^ $(LDFLAGS)
 
-wireup: wireup.o wiring.o layout.o persist.o
+wireup.o: $(LIBHDR)
+wireup: wireup.o $(LIB)
 	$(CXX) -o $@ $(CXXFLAGS) $^ $(LDFLAGS)
-maketop: maketop.o topology.o wiring.o layout.o persist.o
+maketop.o: $(LIBHDR)
+maketop: maketop.o $(LIB)
 	$(CXX) -o $@ $(CXXFLAGS) $^ $(LDFLAGS)
-makenet: makenet.o $(OBJ)
+makenet.o: $(LIBHDR)
+makenet: makenet.o $(LIB)
+	$(CXX) -o $@ $(CXXFLAGS) $^ $(LDFLAGS) $(CULDFLAGS)
+
+makemore.o: $(LIBHDR)
+makemore: makemore.o $(LIB)
+	$(CXX) -o $@ $(CXXFLAGS) $^ $(LDFLAGS) $(CULDFLAGS)
+testmore.o: $(LIBHDR)
+testmore: testmore.o $(LIB)
 	$(CXX) -o $@ $(CXXFLAGS) $^ $(LDFLAGS) $(CULDFLAGS)
 
 

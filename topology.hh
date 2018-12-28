@@ -7,10 +7,18 @@
 #include <vector>
 
 struct Topology : Persist {
+  unsigned int npass;
+  unsigned int nweights;
   std::vector<Wiring*> wirings;
 
   Topology() {
+    npass = 0;
+    nweights = 0;
+  }
 
+  Topology(unsigned int _npass) {
+    npass = _npass;
+    nweights = 0;
   }
 
   ~Topology() {
@@ -19,18 +27,12 @@ struct Topology : Persist {
   }
 
   void addwire(const Wiring &w) {
+    nweights += w.wn;
     wirings.push_back(new Wiring(w));
   }
 
   virtual void load(FILE *fp);
   virtual void save(FILE *fp) const;
-
-  unsigned int total_weights() const {
-    unsigned int tw = 0;
-    for (auto i = wirings.begin(); i != wirings.end(); ++i)
-      tw += (*i)->wn;
-    return tw;
-  }
 };
 
 #endif

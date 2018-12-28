@@ -1,7 +1,11 @@
 #include "topology.hh"
 
 int main(int argc, char **argv) {
-  Topology top;
+  unsigned int npass = 0;
+  if (argc >= 3 && !strcmp(argv[1], "-npass"))
+    npass = atoi(argv[2]);
+
+  Topology top(npass);
 
   assert(argc >= 2);
   for (int i = 1; i < argc; ++i) {
@@ -10,6 +14,7 @@ int main(int argc, char **argv) {
     top.addwire(w);
   }
 
+  fprintf(stderr, "nweights=%u npass=%u\n", top.nweights, top.npass);
   top.save(stdout);
   return 0;
 }

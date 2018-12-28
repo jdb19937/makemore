@@ -12,6 +12,7 @@
 struct Network {
   const Topology *top;
   unsigned int twn;
+  unsigned int npass;
 
   unsigned int mbn;
 
