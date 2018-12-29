@@ -16,6 +16,7 @@ struct Multitron : Tron {
   double *fin, *fout;
 
   std::vector<Megatron*> megatrons;
+  Megatron *mt0, *mt1;
 
   int fd;
   const char *fn;
@@ -29,13 +30,13 @@ struct Multitron : Tron {
   virtual void train(double r);
 
   virtual const double *input()
-    { return in; }
+    { return mt0->input(); }
   virtual const double *output()
-    { return out; }
+    { return mt1->output(); }
   virtual const double *finput()
-    { return fin; }
+    { return mt0->finput(); }
   virtual double *foutput()
-    { return fout; }
+    { return mt1->foutput(); }
 
   virtual void sync(double t);
 

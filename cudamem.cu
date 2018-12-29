@@ -4,6 +4,13 @@
 #include <assert.h>
 #include <stdio.h>
 
+#if 0
+static double *cubuf = NULL;
+static struct _cuinit {
+  _cuinit() { cumake(&cubuf, 1<<20); }
+} _cuiniter;
+#endif
+
 void encudev(const void *a, unsigned int n, void *da) {
   cudaMemcpy(da, a, n, cudaMemcpyHostToDevice);
 }
@@ -14,13 +21,16 @@ void decudev(const void *da, unsigned int n, void *a) {
 
 void cumakev(void **dp, unsigned int n) {
   void *d = NULL;
+//fprintf(stderr, "makev %u -> ", n);
   assert(0 == cudaMalloc((void **)&d, n));
+//fprintf(stderr, "%llu\n", d);
   assert(d != NULL);
   assert(dp != NULL);
   *dp = d;
 }
 
 void cufreev(void *x) {
+//fprintf(stderr, "cufree %llu\n", x);
   cudaFree(x);
 }
 
@@ -98,6 +108,8 @@ void cucutpaste(
   unsigned int rows, unsigned int acols, unsigned int bcols, unsigned int ccols,
   double *c
 ) {
+  assert(ccols >= bcols);
+
   int bs = 128;
   int gs = ((ccols + bs - 1) / bs);
   gpu_cucutpaste<<<gs, bs>>>(a, b, rows, acols, bcols, ccols, c);
@@ -105,23 +117,30 @@ void cucutpaste(
 
 
 __global__ void gpu_cucutadd(
-  const double *a, unsigned int rows, unsigned int acols,
-  unsigned int bcols, double *b
+  const double *a,
+  unsigned int rows, unsigned int acols, unsigned int bcols,
+  double *b
 ) {
   unsigned int bcol = blockIdx.x * blockDim.x + threadIdx.x;
   if (bcol >= bcols)
     return;
 
   unsigned int acol = bcol + (acols - bcols);
+
   for (unsigned int row = 0; row < rows; ++row) {
     b[bcols * row + bcol] += a[acols * row + acol];
   }
 }
 
 void cucutadd(
-  const double *a, unsigned int rows, unsigned int acols,
-  unsigned int bcols, double *b
+  const double *a,
+  unsigned int rows, unsigned int acols, unsigned int bcols,
+  double *b
 ) {
+  if (acols == bcols) 
+    return;
+  assert(acols > bcols);
+
   int bs = 128;
   int gs = ((bcols + bs - 1) / bs);
   gpu_cucutadd<<<gs, bs>>>(a, rows, acols, bcols, b);
@@ -136,7 +155,7 @@ __global__ void gpu_sumsq(
   unsigned int i0 = si * 128;
   if (i0 >= n)
     return;
-  unsigned int i1 = i0 + 128 >= n ? n : i0 + 128;
+  unsigned int i1 = (i0 + 128 >= n) ? n : (i0 + 128);
   
   double s = 0;
   for (unsigned int i = i0; i < i1; ++i)
@@ -150,7 +169,7 @@ double cusumsq(
   if (n == 0)
     return 0;
 
-  double *sumsqp;
+  double *sumsqp = NULL;
   unsigned int sumsqn = ((n + 127) / 128);
   cumake(&sumsqp, sumsqn);
 
@@ -180,7 +199,7 @@ __global__ void gpu_max(
   unsigned int i0 = si * 128;
   if (i0 >= n)
     return;
-  unsigned int i1 = i0 + 128 >= n ? n : i0 + 128;
+  unsigned int i1 = (i0 + 128 >= n) ? n : (i0 + 128);
 
   unsigned int i = i0;
   double s = fabs(a[i]);
@@ -201,9 +220,8 @@ double cumaxabs(
   if (n == 0)
     return 0;
 
-  double *maxp;
+  double *maxp = NULL;
   unsigned int maxn = ((n + 127) / 128);
-
   cumake(&maxp, maxn);
 
   int bs = 128;

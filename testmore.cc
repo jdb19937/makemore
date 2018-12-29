@@ -14,9 +14,12 @@ int main() {
   encnet->tron->randomize();
 #endif
 
-  Project *p = new Project("gen8.proj");
-  unsigned int mbn = p->mbn;
+  unsigned int mbn = 8;
+  Project *p = new Project("gen8.proj", mbn);
   unsigned int *mb = new unsigned int[mbn];
+
+  assert(p->contextlay->n == 40);
+  assert(p->sampleslay->n == 192);
 
   unsigned int encsz = mbn * (p->contextlay->n + p->sampleslay->n);
   double *encin = NULL;
@@ -31,7 +34,6 @@ int main() {
   Compositron *encgentron = compositron(encpasstron, genpasstron);
 
   unsigned int i = 0;
-  double cerr2 = 0.5;
 
   double *cencin = new double[encsz];
   double *cgenout = new double[encsz];
@@ -40,31 +42,23 @@ int main() {
 //fprintf(stderr, "encgentron in=%u outn=%u\n", encgentron->inn, encgentron->outn);
 
   while (1) {
-    p->samples->pick_minibatch(mbn, mb);
-    p->samples->encude_minibatch(mb, mbn, encin, p->context->k, p->context->k + p->samples->k);
-    p->context->encude_minibatch(mb, mbn, encin, 0, p->context->k + p->samples->k);
+    p->context->pick_minibatch(mbn, mb);
+
+    p->context->encude_minibatch(mb, mbn, encin,
+      0, p->context->k + p->samples->k);
+    p->samples->encude_minibatch(mb, mbn, encin,
+      p->context->k, p->context->k + p->samples->k);
 
     genout = encgentron->feed(encin, NULL);
-
-//    encgentron->target(encin);
-//    encgentron->train(0.01);
+    encgentron->target(encin);
+    encgentron->train(0.01);
 
 //fprintf(stderr, "hi %u %u (%u %u) encin=%lu genout=%lu\n", i, encsz, p->context->k, p->samples->k, encin, genout);
 
-    decude(encin, encsz, cencin);
-    decude(genout, encsz, cgenout);
-
-    double err2 = 0;
-    for (unsigned int j = 0; j < encsz; ++j)
-      err2 += (cencin[j] - cgenout[j]) * (cencin[j] - cgenout[j]);
-    err2 /= encsz;
-    err2 = sqrt(err2);
-
-    cerr2 *= 0.999;
-    cerr2 += 0.001 * err2;
-
-    if (i % 1000 == 0) {
-       fprintf(stderr, "i=%u encsz=%u (%lf, %lf) cerr2=%lf\n", i, encsz, cencin[100], cgenout[100], cerr2);
+    if (i % 100 == 0) {
+//      decude(encin, encsz, cencin);
+//      decude(genout, encsz, cgenout);
+       fprintf(stderr, "i=%u cerr2=%lf\n", i, encgentron->cerr2);
     }
     ++i;
   }

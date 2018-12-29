@@ -72,27 +72,3 @@ Project::~Project() {
   delete controlslay;
 }
 
-#if 0
-  cuzero(fpassbuf, mbn * outrn); 
-  cucutpaste(in, out, mbn, inrn, outrn - npass, outrn, passbuf);
-
-  return passbuf;
-}
-
-void Multitron::train(double nu) {
-  if (npass > 0) {
-    assert(fpassbuf);
-    cucutadd(fpassbuf, mbn, outrn, outrn - npass, fout);
-  }
-
-  for (auto mi = megatrons.rbegin(); mi != megatrons.rend(); ++mi) {
-    (*mi)->train(nu);
-  }
-}
-
-void Multitron::sync(double t) {
-  for (auto mi = megatrons.rbegin(); mi != megatrons.rend(); ++mi) {
-    (*mi)->sync(t);
-  }
-}
-#endif

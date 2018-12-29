@@ -16,6 +16,7 @@ struct Dataset {
   Dataset(const char *fn, unsigned int k);
   ~Dataset();
 
+  void mlock();
   unsigned int pick() const;
   const double *data(unsigned int) const;
   void copy(unsigned int, double *) const;

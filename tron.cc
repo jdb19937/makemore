@@ -23,50 +23,10 @@ void Tron::target(const double *tgt) {
   cerrm += errdecay * errm;
 }
 
-#if 0
-double Tron::err3() {
-  double *fout = foutput();
-  if (!fout)
-    return 0;
-
-  double me = 0;
-  for (unsigned int i = 0; i < outn; ++i) {
-    double e = fout[i] * fout[i];
-    if (e > me)
-      me = e;
-  }
-  me = sqrt(me);
-  return me;
-}
-
-double Tron::err2() {
-  double *fout = foutput();
-  if (!fout)
-    return 0;
-
-  double e = 0;
-  for (unsigned int i = 0; i < outn; ++i)
-    e += fout[i] * fout[i];
-  e /= (double)outn;
-  e = sqrt(e);
-  return e;
-}
-
-double Tron::err1() {
-  double *fout = foutput();
-  if (!fout)
-    return 0;
-
-  double e = 0;
-  for (unsigned int i = 0; i < outn; ++i)
-    e += (abs(fout[i]) < 0.5) ? 0.0 : 1.0;
-  e /= (double)outn;
-  return e;
-}
-#endif
-
-
 Passthrutron::Passthrutron(unsigned int _k, unsigned int _mbn, Tron *_t) {
+  cerr2 = 0.5;
+  cerrm = 0.5;
+
   k = _k;
   mbn = _mbn;
   t = _t;
@@ -82,8 +42,8 @@ Passthrutron::Passthrutron(unsigned int _k, unsigned int _mbn, Tron *_t) {
   outrn += k;
   outn = mbn * outrn;
 
-  out = cunew<double>(outn);
-  fout = cunew<double>(outn);
+  cumake(&out, outn);
+  cumake(&fout, outn);
 }
 
 Passthrutron::~Passthrutron() {
@@ -101,7 +61,8 @@ const double *Passthrutron::feed(const double *in, double *fin) {
 }
 
 void Passthrutron::train(double nu) {
-  cucutadd(fout, mbn, outrn, outrn - k, t->foutput());
+  if (double *tfout = t->foutput())
+    cucutadd(fout, mbn, outrn, outrn - k, tfout);
   t->train(nu);
 }
 

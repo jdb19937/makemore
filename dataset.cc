@@ -26,29 +26,34 @@ Dataset::Dataset(const char *fn, unsigned int _k) {
     assert(fp);
   }
 
-  off_t dataoff = 0;
-  assert(dataoff % sizeof(double) == 0);
-  dataoff /= sizeof(double);
-
   assert(fseek(fp, 0, SEEK_SET) == 0);
 
   struct stat st;
   int ret = fstat(fileno(fp), &st);
   assert(ret == 0);
-  assert((st.st_size - dataoff) % (k * sizeof(double)) == 0);
-  n = (st.st_size - dataoff) / (k * sizeof(double));
+  assert(st.st_size % (k * sizeof(double)) == 0);
+  n = st.st_size / (k * sizeof(double));
 
   map_size = (st.st_size + 4095) & ~4095;
   map = mmap(NULL, map_size, PROT_READ, MAP_PRIVATE, fileno(fp), 0);
   assert(map != MAP_FAILED);
   assert(map);
 
-  dataptr = (double *)map + dataoff;
+  dataptr = (double *)map;
 }
 
 Dataset::~Dataset() {
   munmap(map, map_size);
   fclose(fp);
+}
+
+void Dataset::mlock() {
+  fprintf(stderr, "mlocking dataset\n");
+  int ret = ::mlock(map, map_size);
+  if (ret != 0) {
+    fprintf(stderr, "mlock: %s\n", strerror(errno));
+    assert(ret == 0);
+  }
 }
 
 unsigned int Dataset::pick() const {

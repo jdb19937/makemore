@@ -57,6 +57,36 @@ __global__ void gpu_megatron_feed(
   }
 } 
 
+__global__ void gpu_megatron_train0(
+  const double *in,
+  double *fin, double *out, double *fout,
+  unsigned int inn, unsigned int outn,
+  unsigned int wn,
+  unsigned int **iwmap, unsigned int **owmap,
+  unsigned int **iomap, unsigned int **oimap,
+  double *weight,
+  double eta, double kappa,
+
+  unsigned int inrn, unsigned int outrn, unsigned int mbn
+) {
+  unsigned int outi = blockIdx.x * blockDim.x + threadIdx.x;
+  if (outi >= outn)
+    return;
+
+  double o = out[outi];
+
+  o -= 0.5;
+  o /= kappa;
+  o += 0.5;
+
+  if (o > 1.0)
+    o = 1.0;
+  else if (o < 0.0)
+    o = 0.0;
+
+  fout[outi] *= o * (1.0 - o) / kappa;
+}
+
 __global__ void gpu_megatron_train1(
   const double *in,
   double *fin, double *out, double *fout,
@@ -70,7 +100,7 @@ __global__ void gpu_megatron_train1(
   unsigned int inrn, unsigned int outrn, unsigned int mbn
 ) {
   unsigned int outri = blockIdx.x * blockDim.x + threadIdx.x;
-  if (outri >= outn)
+  if (outri >= outrn)
     return;
 
   for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
@@ -79,17 +109,6 @@ __global__ void gpu_megatron_train1(
     unsigned int *inrip = oimap[outri];
     unsigned int *wip = owmap[outri];
 
-    double o = out[outi];
-
-    o -= 0.5;
-    o /= kappa;
-    o += 0.5;
-
-    if (o > 1.0)
-      o = 1.0;
-    else if (o < 0.0)
-      o = 0.0;
-    fout[outi] = fout[outi] * o * (1.0 - o) / kappa;
     double z = eta * fout[outi];
 
     while (*inrip) {
@@ -131,7 +150,6 @@ __global__ void gpu_megatron_train2(
     double sum = 0;
     while (*outrip) {
       unsigned int outi = mbi * outrn + *outrip - 1;
-      assert(outi < outn);
       unsigned int wi = *wip;
 
       sum += weight[wi] * fout[outi];
@@ -165,7 +183,16 @@ const double *Megatron::feed(const double *_in, double *_fin) {
 
 
 void Megatron::train(double nu) {
-//fprintf(stderr, "kappa=%lf eta=%lf nu=%lf\n", kappa, eta, nu);
+  int bs0 = 128;
+  int gs0 = (outn + bs0 - 1) / bs0;
+
+  gpu_megatron_train0<<<gs0, bs0>>>(
+    in, fin, out, fout, inn, outn,
+    wn, iwmap, owmap, iomap, oimap,
+    weight, nu * eta, kappa,
+    inrn, outrn, mbn
+  );
+
   int bs1 = 128;
   int gs1 = (outrn + bs1 - 1) / bs1;
 
@@ -214,9 +241,8 @@ Megatron::Megatron(const Wiring *_wire, double *_cweight, unsigned int _mbn)
 
   wn = wire->wn;
   cumake(&weight, wn);
-
   cweight = _cweight;
-  encude(cweight, wn, weight);
+  sync(0);
 
   _makemaps();
 }
@@ -289,8 +315,7 @@ void Megatron::randomize(double disp) {
     }
     cweight[w[w.size() - 1]] = 0; //-sw/2.0;
   }
-
-  encude(cweight, wn, weight);
+  sync(0);
 }
 
 void Megatron::sync(double t) {

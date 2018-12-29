@@ -45,18 +45,29 @@ Multitron::Multitron(const Topology &top, unsigned int _mbn, const char *mapfn) 
 
   megatrons.clear();
   double *wb = map;
+  Megatron *prev = NULL;
   for (auto wi = wirings.begin(); wi != wirings.end(); ++wi) {
     Megatron *mt = new Megatron(*wi, wb, mbn);
     megatrons.push_back(mt);
     wb += (*wi)->wn;
+
+    if (prev)
+      assert(mt->inn == prev->outn);
+    prev = mt;
   }
   assert(map + twn == wb);
+
+  mt0 = megatrons[0];
+  mt1 = megatrons[megatrons.size() - 1];
 
   inrn = (*wirings.begin())->inn;
   outrn = (*wirings.rbegin())->outn;
 
   inn = inrn * mbn;
   outn = outrn * mbn;
+
+  assert(mt0->inn == inn);
+  assert(mt1->outn == outn);
 }
 
 void Multitron::randomize(double disp) {
@@ -65,20 +76,19 @@ void Multitron::randomize(double disp) {
 }
 
 Multitron::~Multitron() {
+  for (auto ti = megatrons.begin(); ti != megatrons.end(); ++ti)
+    delete *ti;
   ::munmap(map, map_size);
   if (fd >= 0)
     ::close(fd);
 }
 
 
-const double *Multitron::feed(const double *_in, double *_fin) {
-  in = _in;
-  fin = _fin;
-
+const double *Multitron::feed(const double *in, double *fin) {
   auto mi = megatrons.begin();
   assert(mi != megatrons.end());
-  out = (*mi)->feed(in, fin);
-  fout = (*mi)->foutput();
+  const double *out = (*mi)->feed(in, fin);
+  double *fout = (*mi)->foutput();
 
   ++mi;
   while (mi != megatrons.end()) {
@@ -91,13 +101,13 @@ const double *Multitron::feed(const double *_in, double *_fin) {
 }
 
 void Multitron::train(double nu) {
-  for (auto mi = megatrons.rbegin(); mi != megatrons.rend(); ++mi) {
-    (*mi)->train(nu);
+  for (int i = megatrons.size() - 1; i >= 0; --i) {
+    megatrons[i]->train(nu);
   }
 }
 
 void Multitron::sync(double t) {
-  for (auto mi = megatrons.rbegin(); mi != megatrons.rend(); ++mi) {
-    (*mi)->sync(t);
+  for (int i = 0; i < megatrons.size(); ++i) {
+    megatrons[i]->sync(t);
   }
 }

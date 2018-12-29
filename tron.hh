@@ -41,7 +41,7 @@ struct Tron {
     train(0.001);
   }
 
-  void target(const double *tgt);
+  virtual void target(const double *tgt);
 
   virtual const double *input() = 0;
   virtual const double *finput() = 0;
@@ -57,6 +57,8 @@ struct Compositron : Tron {
   Compositron(Tron *_a, Tron *_b) : Tron(_a->inn, _b->outn) {
     a = _a;
     b = _b;
+
+    assert(a->outn == b->inn);
   }
 
   virtual const double *feed(const double *in, double *fin) {
@@ -73,10 +75,6 @@ struct Compositron : Tron {
   virtual const double *input() { return a->input(); }
   virtual const double *finput() { return a->finput(); }
   virtual double *foutput() { return b->foutput(); }
-
-  virtual void target(const double *tgt) {
-    b->target(tgt);
-  }
 
   virtual void sync(double t) {
     a->sync(t);
@@ -108,10 +106,6 @@ struct Passthrutron : Tron {
 
   virtual const double *feed(const double *in, double *fin);
   virtual void train(double nu);
-
-  virtual void target(const double *tgt) {
-    t->target(tgt);
-  }
 };
 
 inline Passthrutron *passthrutron(unsigned int k, unsigned int mbn, Tron *t) {
