@@ -24,11 +24,6 @@ void Wiring::wireup(const Layout *inl, const Layout *outl, unsigned int minv, un
   inn = inl->n;
   outn = outl->n;
 
-  moi.resize(outn);
-  mow.resize(outn);
-  mio.resize(inn);
-  miw.resize(inn);
-
   const double *inx = inl->x;
   const double *iny = inl->y;
   const double *inr = inl->r;
@@ -57,51 +52,10 @@ void Wiring::wireup(const Layout *inl, const Layout *outl, unsigned int minv, un
      unsigned int j = 0;
      while (q != dini.end() && j < maxv && (j < minv || q->first < 0)) {
        unsigned int ini = q->second;
-       moi[outi].push_back(ini + 1);
-       mio[ini].push_back(outi + 1);
-
-       mow[outi].push_back(wn);
-       miw[ini].push_back(wn);
-
-       ++q;
-       ++j;
-
+       connected.insert(make_pair(ini, outi));
        ++wn;
+       ++q;
      }
-
-     moi[outi].push_back(0);
-     mow[outi].push_back(wn);
-     ++wn;
-  }
-
-  for (auto q = mio.begin(); q != mio.end(); ++q) {
-    q->push_back(0);
-  }
-  for (auto q = miw.begin(); q != miw.end(); ++q) {
-    q->push_back(-1);
-  }
-}
-
-static void _getvecvec(vector< vector<unsigned int> > &vv, FILE *fp) {
-  unsigned int vvs;
-  assert(1 == fread(&vvs, 4, 1, fp));
-  vvs = ntohl(vvs);
-  vv.resize(vvs);
-
-  for (unsigned int vvi = 0; vvi < vv.size(); ++vvi) {
-    vector<unsigned int> &v = vv[vvi];
-
-    unsigned int vs;
-    assert(1 == fread(&vs, 4, 1, fp));
-    vs = ntohl(vs);
-    v.resize(vs);
-
-    vector<unsigned int> nv;
-    nv.resize(v.size());
-    assert(nv.size() == fread(nv.data(), sizeof(unsigned int), nv.size(), fp));
-
-    for (unsigned int i = 0; i < nv.size(); ++i)
-      v[i] = ntohl(nv[i]);
   }
 }
 
@@ -119,30 +73,24 @@ void Wiring::load(FILE *fp) {
   assert(ret == 1);
   wn = ntohl(tmp);
 
-  _getvecvec(mio, fp);
-  _getvecvec(miw, fp);
-  _getvecvec(moi, fp);
-  _getvecvec(mow, fp);
-}
+  for (unsigned int wi = 0; wi < wn; ++wi) {
+    unsigned int ini;
+    ret = fread(&ini, 4, 1, fp);
+    assert(ret == 1);
+    ini = ntohl(ini);
 
-static void _putvecvec(const vector< vector<unsigned int> > &vv, FILE *fp) {
-  unsigned int vvs = htonl(vv.size());
-  assert(1 == fwrite(&vvs, 4, 1, fp));
+    unsigned int outi;
+    ret = fread(&outi, 4, 1, fp);
+    assert(ret == 1);
+    outi = ntohl(outi);
 
-  for (unsigned int vvi = 0; vvi < vv.size(); ++vvi) {
-    const vector<unsigned int> &v = vv[vvi];
-    unsigned int vs = htonl(v.size());
-    assert(1 == fwrite(&vs, 4, 1, fp));
-
-    vector<unsigned int> nv;
-    nv.resize(v.size());
-    for (unsigned int i = 0; i < nv.size(); ++i)
-      nv[i] = htonl(v[i]);
-    assert(nv.size() == fwrite(nv.data(), sizeof(unsigned int), nv.size(), fp));
+    connected.insert(make_pair(ini, outi));
   }
 }
 
 void Wiring::save(FILE *fp) const {
+  int ret;
+
   uint32_t tmp = htonl(inn);
   assert(1 == fwrite(&tmp, 4, 1, fp));
 
@@ -152,10 +100,15 @@ void Wiring::save(FILE *fp) const {
   tmp = htonl(wn);
   assert(1 == fwrite(&tmp, 4, 1, fp));
 
-  _putvecvec(mio, fp);
-  _putvecvec(miw, fp);
-  _putvecvec(moi, fp);
-  _putvecvec(mow, fp);
+  for (auto wi = connected.begin(); wi != connected.end(); ++wi) {
+    tmp = htonl(wi->first);
+    ret = fwrite(&tmp, 4, 1, fp);
+    assert(ret == 1);
+
+    tmp = htonl(wi->second);
+    ret = fwrite(&tmp, 4, 1, fp);
+    assert(ret == 1);
+  }
 }
 
 

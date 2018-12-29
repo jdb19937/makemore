@@ -2,13 +2,14 @@
 #include "topology.hh"
 #include "random.hh"
 #include "cudamem.hh"
+#include "ppm.hh"
 
 #include <math.h>
 
 int main() {
   seedrand();
 
-  unsigned int mbn = 8;
+  unsigned int mbn = 1;
   Project *p = new Project("gen8.proj", mbn);
   unsigned int *mb = new unsigned int[mbn];
 
@@ -25,7 +26,7 @@ int main() {
 
   Passthrutron *encpasstron = passthrutron(p->contextlay->n, mbn, p->enctron);
   Passthrutron *genpasstron = passthrutron(p->contextlay->n, mbn, p->gentron);
-  Compositron *encgentron = compositron(encpasstron, genpasstron);
+  Compositron *encgentron = compositron(encpasstron, p->gentron);
 
   unsigned int i = 0;
 
@@ -44,19 +45,18 @@ int main() {
       p->context->k, p->context->k + p->samples->k);
 
     genout = encgentron->feed(encin, NULL);
-    encgentron->target(encin);
-    encgentron->train(0.05);
 
-//fprintf(stderr, "hi %u %u (%u %u) encin=%lu genout=%lu\n", i, encsz, p->context->k, p->samples->k, encin, genout);
+     {
+       double lab[192 * 2];
+       p->samples->copy(mb[0], lab);
+       decude(genout, 192, lab + 192);
+       PPM p;
+       p.unvectorize(lab, 8, 16);
+       p.write(stdout);
+     }
 
-    if (i % 1000 == 0) {
-//      decude(encin, encsz, cencin);
-//      decude(genout, encsz, cgenout);
-       fprintf(stderr, "i=%u cerr2=%lf cerrm=%lf\n", i, encgentron->cerr2, encgentron->cerrm);
-
-       p->enctron->sync(1);
-       p->gentron->sync(1);
-    }
+     p->enctron->sync(0);
+     p->gentron->sync(0);
     ++i;
   }
   return 0;

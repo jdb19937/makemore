@@ -7,6 +7,12 @@
 #include <unistd.h>
 #include <sys/types.h>
 
+inline void seedrand() {
+  fprintf(stderr, "initializing random seed\n");
+  srand(rand() + time(NULL));
+  srand(rand() + getpid());
+}
+
 inline double rnd() {
   double r = (double)(rand() % (1 << 24)) / (double)(1 << 24);
   return r;

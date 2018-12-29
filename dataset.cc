@@ -35,24 +35,36 @@ Dataset::Dataset(const char *fn, unsigned int _k) {
   n = st.st_size / (k * sizeof(double));
 
   map_size = (st.st_size + 4095) & ~4095;
+#if 0
   map = mmap(NULL, map_size, PROT_READ, MAP_PRIVATE, fileno(fp), 0);
   assert(map != MAP_FAILED);
   assert(map);
+#else
+fprintf(stderr, "reading data\n");
+  map = (double *)(new uint8_t[st.st_size]);
+  ret = fread((uint8_t *)map, 1, st.st_size, fp);
+fprintf(stderr, "read data ret=%d\n", ret);
+  assert(ret == st.st_size);
+#endif
 
   dataptr = (double *)map;
 }
 
 Dataset::~Dataset() {
+#if 0
   munmap(map, map_size);
+#else
+  delete[] ((uint8_t *)map);
+#endif
   fclose(fp);
 }
 
-void Dataset::mlock() {
-  fprintf(stderr, "mlocking dataset\n");
+bool Dataset::mlock() {
   int ret = ::mlock(map, map_size);
   if (ret != 0) {
-    fprintf(stderr, "mlock: %s\n", strerror(errno));
-    assert(ret == 0);
+    return false;
+  } else {
+    return true;
   }
 }
 

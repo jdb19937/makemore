@@ -49,7 +49,7 @@ Multitron::Multitron(const Topology &top, unsigned int _mbn, const char *mapfn) 
   for (auto wi = wirings.begin(); wi != wirings.end(); ++wi) {
     Megatron *mt = new Megatron(*wi, wb, mbn);
     megatrons.push_back(mt);
-    wb += (*wi)->wn;
+    wb += mt->wn;
 
     if (prev)
       assert(mt->inn == prev->outn);

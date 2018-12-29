@@ -20,6 +20,24 @@ MAPFILES = \
 
 all: $(DATASETS) $(LAYOUTS) $(WIRINGS) $(TOPOLOGIES) $(MAPFILES)
 
+enchidden1.lay:
+	../makelay -rand 256 16 > $@
+enchidden2.lay:
+	../makelay -rand 256 32 > $@
+genhidden1.lay:
+	../makelay -rand 256 32 > $@
+genhidden2.lay:
+	../makelay -rand 256 16 > $@
+dishidden1.lay:
+	../makelay -rand 128 16 > $@
+dishidden2.lay:
+	../makelay -rand 64 16 > $@
+global-controls.lay:
+	../makelay -center 16 > $@
+local-controls.lay:
+	../makelay -grid 8 > $@
+
+
 context.dat:
 	ln -sf ../face-attrs.dat $@
 context.lay:
@@ -29,22 +47,14 @@ samples.dat:
 samples.lay:
 	ln -sf ../face-8x8-lab-full.lay $@
 
-global-controls.lay:
-	../makelay -center 16 > $@
-local-controls.lay:
-	../makelay -grid 4 > $@
 controls.lay: global-controls.lay local-controls.lay
 	../catlay $^ > $@
 
 
 encinput.lay: context.lay samples.lay
 	../catlay context.lay samples.lay > $@
-enchidden1.lay:
-	../makelay -rand 256 16 > $@
 enchidden1.wire: encinput.lay enchidden1.lay
 	../wireup $^ > $@
-enchidden2.lay:
-	../makelay -rand 256 16 > $@
 enchidden2.wire: enchidden1.lay enchidden2.lay
 	../wireup $^ > $@
 encoutput.lay: controls.lay
@@ -59,12 +69,8 @@ enc.map: enc.top
 
 geninput.lay: context.lay controls.lay
 	../catlay context.lay controls.lay > $@
-genhidden1.lay:
-	../makelay -rand 256 16 > $@
 genhidden1.wire: geninput.lay genhidden1.lay
 	../wireup $^ > $@
-genhidden2.lay:
-	../makelay -rand 256 16 > $@
 genhidden2.wire: genhidden1.lay genhidden2.lay
 	../wireup $^ > $@
 genoutput.lay: samples.lay
@@ -79,12 +85,8 @@ gen.map: gen.top
 
 disinput.lay: context.lay samples.lay
 	../catlay context.lay samples.lay > $@
-dishidden1.lay:
-	../makelay -rand 128 16 > $@
 dishidden1.wire: disinput.lay dishidden1.lay
 	../wireup $^ > $@
-dishidden2.lay:
-	../makelay -rand 64 16 > $@
 dishidden2.wire: dishidden1.lay dishidden2.lay
 	../wireup $^ > $@
 disoutput.lay:

@@ -20,7 +20,7 @@ struct Topology : Persist {
   }
 
   void addwire(const Wiring &w) {
-    nweights += w.wn;
+    nweights += w.wn + w.outn;
     wirings.push_back(new Wiring(w));
   }
 

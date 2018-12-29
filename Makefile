@@ -29,7 +29,7 @@ LABTOOLS = \
   labshrink labhifreq labtogray grayhifreq \
   reconlab recongray
 
-MORETOOLS = testmore makemore makelay catlay wireup maketop makemap
+MORETOOLS = testmore makemore makelay catlay wireup maketop makemap seefaith seecenter seerand
 
 .PHONY: all
 all: $(LIB) $(MORETOOLS)
@@ -162,6 +162,15 @@ makemore: makemore.o $(LIB)
 	$(CXX) -o $@ $(CXXFLAGS) $^ $(LDFLAGS) $(CULDFLAGS)
 testmore.o: $(LIBHDR)
 testmore: testmore.o $(LIB)
+	$(CXX) -o $@ $(CXXFLAGS) $^ $(LDFLAGS) $(CULDFLAGS)
+seefaith.o: $(LIBHDR)
+seefaith: seefaith.o $(LIB)
+	$(CXX) -o $@ $(CXXFLAGS) $^ $(LDFLAGS) $(CULDFLAGS)
+seecenter.o: $(LIBHDR)
+seecenter: seecenter.o $(LIB)
+	$(CXX) -o $@ $(CXXFLAGS) $^ $(LDFLAGS) $(CULDFLAGS)
+seerand.o: $(LIBHDR)
+seerand: seerand.o $(LIB)
 	$(CXX) -o $@ $(CXXFLAGS) $^ $(LDFLAGS) $(CULDFLAGS)
 
 

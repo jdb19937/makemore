@@ -32,7 +32,7 @@ void Topology::load(FILE *fp) {
     wire->load(fp);
     *wi = wire;
 
-    nweights += wire->wn;
+    nweights += wire->wn + wire->outn;
 
     if (prev) {
       assert(wire->inn == prev->outn);

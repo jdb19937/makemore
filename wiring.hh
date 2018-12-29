@@ -4,10 +4,11 @@
 #include "layout.hh"
 
 #include <vector>
+#include <set>
 
 struct Wiring : Persist {
   unsigned int inn, outn, wn;
-  std::vector< std::vector<unsigned int> > moi, mio, miw, mow;
+  std::set<std::pair<unsigned int, unsigned int> > connected;
 
   Wiring();
   ~Wiring();
@@ -16,10 +17,7 @@ struct Wiring : Persist {
     inn = wire.inn;
     outn = wire.outn;
     wn = wire.wn;
-    moi = wire.moi;
-    mio = wire.mio;
-    miw = wire.miw;
-    mow = wire.mow;
+    connected = wire.connected;
   }
 
   void wireup(

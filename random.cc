@@ -2,13 +2,3 @@
 #include <stdio.h>
 
 #include "random.hh"
-
-struct RandomSeed {
-  RandomSeed() {
-    fprintf(stderr, "initializing random seed\n");
-    srand(rand() + time(NULL));
-    srand(rand() + getpid());
-  }
-};
-
-static struct RandomSeed _randomseed;

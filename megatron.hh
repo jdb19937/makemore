@@ -14,6 +14,7 @@ struct Megatron : Tron {
   unsigned int wn;
   unsigned int **iwmap, **owmap;
   unsigned int **iomap, **oimap;
+  unsigned int *wimap, *womap;
 
   double *weight;
 
@@ -23,6 +24,8 @@ struct Megatron : Tron {
   double eta, kappa;
 
   double *cweight;
+
+  std::vector<std::vector<unsigned int> > _mow;
 
   Megatron(const Wiring *_wire, double *_cweight, unsigned int _mbn = 1);
   virtual ~Megatron();

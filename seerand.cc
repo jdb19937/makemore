@@ -2,13 +2,14 @@
 #include "topology.hh"
 #include "random.hh"
 #include "cudamem.hh"
+#include "ppm.hh"
 
 #include <math.h>
 
 int main() {
   seedrand();
 
-  unsigned int mbn = 8;
+  unsigned int mbn = 1;
   Project *p = new Project("gen8.proj", mbn);
   unsigned int *mb = new unsigned int[mbn];
 
@@ -25,9 +26,12 @@ int main() {
 
   Passthrutron *encpasstron = passthrutron(p->contextlay->n, mbn, p->enctron);
   Passthrutron *genpasstron = passthrutron(p->contextlay->n, mbn, p->gentron);
-  Compositron *encgentron = compositron(encpasstron, genpasstron);
+  Compositron *encgentron = compositron(encpasstron, p->gentron);
 
   unsigned int i = 0;
+
+  double *genin;
+  cumake(&genin, mbn * (p->contextlay->n + p->controlslay->n));
 
   double *cencin = new double[encsz];
   double *cgenout = new double[encsz];
@@ -38,25 +42,26 @@ int main() {
   while (1) {
     p->context->pick_minibatch(mbn, mb);
 
-    p->context->encude_minibatch(mb, mbn, encin,
-      0, p->context->k + p->samples->k);
-    p->samples->encude_minibatch(mb, mbn, encin,
-      p->context->k, p->context->k + p->samples->k);
+    p->context->encude_minibatch(mb, mbn, genin,
+      0, p->context->k + p->controlslay->n);
 
-    genout = encgentron->feed(encin, NULL);
-    encgentron->target(encin);
-    encgentron->train(0.05);
+    double r[p->controlslay->n];
+    for (unsigned int j = 0; j < p->controlslay->n; ++j) r[j] = rnd();
+    encude(r, p->controlslay->n, genin + p->context->k);
 
-//fprintf(stderr, "hi %u %u (%u %u) encin=%lu genout=%lu\n", i, encsz, p->context->k, p->samples->k, encin, genout);
+    genout = p->gentron->feed(genin, NULL);
 
-    if (i % 1000 == 0) {
-//      decude(encin, encsz, cencin);
-//      decude(genout, encsz, cgenout);
-       fprintf(stderr, "i=%u cerr2=%lf cerrm=%lf\n", i, encgentron->cerr2, encgentron->cerrm);
+     {
+       double lab[192 * 2];
+       p->samples->copy(mb[0], lab);
+       decude(genout, 192, lab + 192);
+       PPM p;
+       p.unvectorize(lab, 8, 16);
+       p.write(stdout);
+     }
 
-       p->enctron->sync(1);
-       p->gentron->sync(1);
-    }
+     p->enctron->sync(0);
+     p->gentron->sync(0);
     ++i;
   }
   return 0;
