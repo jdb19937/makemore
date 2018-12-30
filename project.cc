@@ -35,8 +35,6 @@ Project::Project(const char *_dir, unsigned int _mbn) {
   enctop->load_file(enctopfn);
   enctron = new Multitron(*enctop, mbn, encmapfn);
 
-enctron->mt1->kappa = 4.0;
-
   encpasstron = passthrutron(contextlay->n, mbn, enctron);
 
   char genmapfn[4096], gentopfn[4096];
@@ -45,10 +43,16 @@ enctron->mt1->kappa = 4.0;
   gentop = new Topology;
   gentop->load_file(gentopfn);
   gentron = new Multitron(*gentop, mbn, genmapfn);
-
-gentron->mt1->kappa = 4.0;
-
+  gentron->mt1->activated = false;
   encgentron = compositron(encpasstron, gentron);
+
+  char dismapfn[4096], distopfn[4096];
+  sprintf(distopfn, "%s/dis.top", _dir);
+  sprintf(dismapfn, "%s/dis.map", _dir);
+  distop = new Topology;
+  distop->load_file(distopfn);
+  distron = new Multitron(*distop, mbn, dismapfn);
+  encdistron = compositron(encpasstron, distron);
 
 #if 0
   char dismapfn[4096], distopfn[4096];

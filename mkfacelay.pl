@@ -15,7 +15,7 @@ for (my $y = 0; $y < $dim; ++$y) {
 
     my $ax = ($x + 0.5) / $dim;
     my $ay = ($y + 0.5) / $dim;
-    my $ar = sqrt(1.0 / atan2(0,-1)) / $dim;
+    my $ar = 0.5 / $dim;
 
     for (1 .. $chan) {
       push @ax, $ax;

@@ -21,13 +21,14 @@ struct Megatron : Tron {
   unsigned int inrn, outrn;
   unsigned int mbn;
 
-  double eta, kappa;
+  double eta;
+  bool activated;
 
   double *cweight;
 
   std::vector<std::vector<unsigned int> > _mow;
 
-  Megatron(const Wiring *_wire, double *_cweight, unsigned int _mbn = 1);
+  Megatron(const Wiring *_wire, double *_cweight, unsigned int _mbn = 1, double _eta = 1.0, bool _activated = true);
   virtual ~Megatron();
 
   virtual const double *feed(const double *_in, double *_fin);

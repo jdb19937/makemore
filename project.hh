@@ -20,7 +20,7 @@ struct Project {
   Topology *enctop, *gentop, *distop;
   Multitron *enctron, *gentron, *distron;
 
-  Tron *encpasstron, *encgentron;
+  Tron *encpasstron, *encgentron, *encdistron;
 
   // fidelity, center, confuse, discern
 };

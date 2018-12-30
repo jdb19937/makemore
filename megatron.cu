@@ -19,7 +19,7 @@ __global__ void gpu_megatron_feed(
   unsigned int **iomap, unsigned int **oimap,
   unsigned int *wimap, unsigned int *womap,
   double *weight,
-  double eta, double nu, double kappa,
+  double eta, double nu, bool activated,
 
   unsigned int inrn, unsigned int outrn, unsigned int mbn
 ) {
@@ -46,13 +46,13 @@ __global__ void gpu_megatron_feed(
   unsigned int wi = *wip;
   sum += weight[wi] * 1.0;
 
-  double q = 1.0 / (1.0 + exp(-sum));
+  if (activated) {
+    double q = 1.0 / (1.0 + exp(-sum));
+    out[outi] = q;
+  } else {
+    out[outi] = sum;
+  }
 
-  q -= 0.5;
-  q *= kappa;
-  q += 0.5;
-
-  out[outi] = q;
   fout[outi] = 0.0;
 } 
 
@@ -65,7 +65,7 @@ __global__ void gpu_megatron_train0(
   unsigned int **iomap, unsigned int **oimap,
   unsigned int *wimap, unsigned int *womap,
   double *weight,
-  double eta, double nu, double kappa,
+  double eta, double nu, bool activated,
 
   unsigned int inrn, unsigned int outrn, unsigned int mbn
 ) {
@@ -74,18 +74,14 @@ __global__ void gpu_megatron_train0(
     return;
 
   double o = out[outi];
-
-  o -= 0.5;
-  o /= kappa;
-  o += 0.5;
+  double fo = fout[outi];
 
   if (o > 1.0)
     o = 1.0;
   else if (o < 0.0)
     o = 0.0;
 
-  double fo = fout[outi];
-  fout[outi] = fo * o * (1.0 - o) / kappa;
+  fout[outi] = fo * o * (1.0 - o);
 }
 
 
@@ -98,7 +94,7 @@ __global__ void gpu_megatron_train1(
   unsigned int **iomap, unsigned int **oimap,
   unsigned int *wimap, unsigned int *womap,
   double *weight,
-  double eta, double nu, double kappa,
+  double eta, double nu, bool activated,
 
   unsigned int inrn, unsigned int outrn, unsigned int mbn
 ) {
@@ -136,7 +132,7 @@ __global__ void gpu_megatron_train2(
   unsigned int **iomap, unsigned int **oimap,
   unsigned int *wimap, unsigned int *womap,
   double *weight,
-  double eta, double nu, double kappa,
+  double eta, double nu, bool activated,
 
   unsigned int inrn, unsigned int outrn, unsigned int mbn
 ) {
@@ -178,7 +174,7 @@ const double *Megatron::feed(const double *_in, double *_fin) {
   gpu_megatron_feed<<<gs, bs>>>(
     in, fin, out, fout, inn, outn,
     wn, iwmap, owmap, iomap, oimap, wimap, womap,
-    weight, eta, 1.0, kappa,
+    weight, eta, 1.0, activated,
     inrn, outrn, mbn
   );
 
@@ -187,14 +183,16 @@ const double *Megatron::feed(const double *_in, double *_fin) {
 
 
 void Megatron::train(double nu) {
-  int bs0 = 128;
-  int gs0 = (outn + bs0 - 1) / bs0;
-  gpu_megatron_train0<<<gs0, bs0>>>(
-    in, fin, out, fout, inn, outn,
-    wn, iwmap, owmap, iomap, oimap, wimap, womap,
-    weight, eta, nu, kappa,
-    inrn, outrn, mbn
-  );
+  if (activated) {
+    int bs0 = 128;
+    int gs0 = (outn + bs0 - 1) / bs0;
+    gpu_megatron_train0<<<gs0, bs0>>>(
+      in, fin, out, fout, inn, outn,
+      wn, iwmap, owmap, iomap, oimap, wimap, womap,
+      weight, eta, nu, activated,
+      inrn, outrn, mbn
+    );
+  }
 
   if (fin) {
     int bs1 = 128;
@@ -202,7 +200,7 @@ void Megatron::train(double nu) {
     gpu_megatron_train1<<<gs1, bs1>>>(
       in, fin, out, fout, inn, outn,
       wn, iwmap, owmap, iomap, oimap, wimap, womap,
-      weight, eta, nu, kappa,
+      weight, eta, nu, activated,
       inrn, outrn, mbn
     );
   }
@@ -212,12 +210,12 @@ void Megatron::train(double nu) {
   gpu_megatron_train2<<<gs2, bs2>>>(
     in, fin, out, fout, inn, outn,
     wn, iwmap, owmap, iomap, oimap, wimap, womap,
-    weight, eta, nu, kappa,
+    weight, eta, nu, activated,
     inrn, outrn, mbn
   );
 }
 
-Megatron::Megatron(const Wiring *_wire, double *_cweight, unsigned int _mbn)
+Megatron::Megatron(const Wiring *_wire, double *_cweight, unsigned int _mbn, double _eta, bool _activated)
   : Tron(_wire->inn * _mbn, _wire->outn * _mbn)
 {
   mbn = _mbn;
@@ -237,8 +235,8 @@ Megatron::Megatron(const Wiring *_wire, double *_cweight, unsigned int _mbn)
   cumake(&iomap, inrn);
   cumake(&iwmap, inrn);
 
-  kappa = 1.0;
-  eta = 1.0;
+  eta = _eta;
+  activated = _activated;
 
   _makemaps();
 

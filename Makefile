@@ -1,7 +1,7 @@
 CXX = g++
 NVCC = nvcc
-NVCCFLAGS = -O1
-CXXFLAGS = -O1
+NVCCFLAGS = -O6
+CXXFLAGS = -O6
 LDFLAGS = -lm
 CULDFLAGS = -lcuda -lcudart
  
