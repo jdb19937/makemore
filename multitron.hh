@@ -12,9 +12,6 @@ struct Multitron : Tron {
   unsigned int mbn;
   unsigned int inrn, outrn;
 
-  const double *in, *out;
-  double *fin, *fout;
-
   std::vector<Megatron*> megatrons;
   Megatron *mt0, *mt1;
 
@@ -33,8 +30,6 @@ struct Multitron : Tron {
     { return mt0->input(); }
   virtual const double *output()
     { return mt1->output(); }
-  virtual const double *finput()
-    { return mt0->finput(); }
   virtual double *foutput()
     { return mt1->foutput(); }
 

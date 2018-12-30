@@ -1,7 +1,7 @@
 CXX = g++
 NVCC = nvcc
-NVCCFLAGS = -O6
-CXXFLAGS = -O6
+NVCCFLAGS = -O1
+CXXFLAGS = -O1
 LDFLAGS = -lm
 CULDFLAGS = -lcuda -lcudart
  
@@ -9,14 +9,14 @@ LIBHDR = cudamem.hh random.hh tron.hh ppm.hh layout.hh megatron.hh wiring.hh per
 LIBOBJ = cudamem.o random.o tron.o ppm.o layout.o megatron.o wiring.o persist.o dataset.o topology.o multitron.o project.o
 LIB = libmakemore.a
 
-DATASETS = face-attrs.dat \
+DATASETS = face-attrs.dat face-gender.dat \
   face-8x8-lab-full.dat face-8x8-gray-full.dat \
   face-16x16-lab-full.dat face-16x16-gray-full.dat \
   face-16x16-lab-hifreq.dat face-16x16-gray-hifreq.dat \
   face-32x32-lab-full.dat face-32x32-gray-full.dat \
   face-32x32-lab-hifreq.dat face-32x32-gray-hifreq.dat
 
-LAYOUTS = face-attrs.lay \
+LAYOUTS = face-attrs.lay face-gender.lay \
   face-8x8-lab-full.lay face-8x8-gray-full.lay \
   face-16x16-lab-full.lay face-16x16-gray-full.lay \
   face-16x16-lab-hifreq.lay face-16x16-gray-hifreq.lay \
@@ -29,7 +29,7 @@ LABTOOLS = \
   labshrink labhifreq labtogray grayhifreq \
   reconlab recongray
 
-MORETOOLS = testmore makemore makelay catlay wireup maketop makemap seefaith seecenter seerand
+MORETOOLS = testmore makemore makelay catlay wireup maketop makemap seezoom
 
 .PHONY: all
 all: $(LIB) $(MORETOOLS)
@@ -67,6 +67,10 @@ face-attrs.dat:
 	./mkattrsdat.pl > $@
 face-attrs.lay:
 	./mkattrslay.pl > $@
+face-gender.dat:
+	./mkgenderdat.pl > $@
+face-gender.lay:
+	./mkunitlay.pl > $@
 
 face-8x8-lab-full.dat:
 	./mkfacedat.pl -dim=8  > $@
@@ -171,6 +175,9 @@ seecenter: seecenter.o $(LIB)
 	$(CXX) -o $@ $(CXXFLAGS) $^ $(LDFLAGS) $(CULDFLAGS)
 seerand.o: $(LIBHDR)
 seerand: seerand.o $(LIB)
+	$(CXX) -o $@ $(CXXFLAGS) $^ $(LDFLAGS) $(CULDFLAGS)
+seezoom.o: $(LIBHDR)
+seezoom: seezoom.o $(LIB)
 	$(CXX) -o $@ $(CXXFLAGS) $^ $(LDFLAGS) $(CULDFLAGS)
 
 

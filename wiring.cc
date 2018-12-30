@@ -57,6 +57,37 @@ void Wiring::wireup(const Layout *inl, const Layout *outl, unsigned int minv, un
        ++q;
      }
   }
+
+  std::vector<unsigned int> fanout, fanin;
+  fanout.resize(inn);
+  fanin.resize(outn);
+
+  for (auto ci = connected.begin(); ci != connected.end(); ++ci) {
+    unsigned int ini = ci->first;
+    unsigned int outi = ci->second;
+    fanin[outi]++;
+    fanout[ini]++;
+  }
+
+  double avgfanin = 0, minfanin = -1, maxfanin = -1;
+  for (unsigned int outi = 0; outi < outn; ++outi) {
+    avgfanin += (double)fanin[outi] / (double)outn;
+    if (fanin[outi] > maxfanin)
+      maxfanin = fanin[outi];
+    if (minfanin < 0 || fanin[outi] < minfanin)
+      minfanin = fanin[outi];
+  }
+  fprintf(stderr, "avgfanin=%lf minfanin=%lf maxfanin=%lf\n", avgfanin,  minfanin, maxfanin);
+
+  double avgfanout = 0, minfanout = -1, maxfanout = -1;
+  for (unsigned int ini = 0; ini < inn; ++ini) {
+    avgfanout += (double)fanout[ini] / (double)inn;
+    if (fanout[ini] > maxfanout)
+      maxfanout = fanout[ini];
+    if (minfanout < 0 || fanout[ini] < minfanout)
+      minfanout = fanout[ini];
+  }
+  fprintf(stderr, "avgfanout=%lf minfanout=%lf maxfanout=%lf\n", avgfanout,  minfanout, maxfanout);
 }
 
 void Wiring::load(FILE *fp) {

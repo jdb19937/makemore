@@ -9,20 +9,37 @@
 #include <string>
 
 struct Project {
-  std::string dir;
-  unsigned int mbn;
-
   Project(const char *_dir, unsigned int _mbn = 4);
   ~Project();
 
+  std::string dir;
+  unsigned int mbn;
+
   Layout *sampleslay, *contextlay, *controlslay;
-  Dataset *samples, *context;
 
   Topology *enctop, *gentop, *distop;
   Multitron *enctron, *gentron, *distron;
 
+  Tron *encpasstron, *encgentron;
+
   // fidelity, center, confuse, discern
 };
+
+struct SimpleProject : Project {
+  SimpleProject(const char *_dir, unsigned int _mbn = 4);
+  ~SimpleProject();
+
+  Dataset *samples, *context;
+};
+
+struct ZoomProject : Project {
+  ZoomProject(const char *_dir, unsigned int _mbn = 4);
+  ~ZoomProject();
+
+  Layout *lofreqlay, *attrslay;
+  Dataset *lofreq, *hifreq, *attrs;
+};
+
 
 #endif
 

@@ -10,7 +10,7 @@ int main() {
   seedrand();
 
   unsigned int mbn = 1;
-  Project *p = new Project("gen8.proj", mbn);
+  SimpleProject *p = new SimpleProject("gen8.proj", mbn);
   unsigned int *mb = new unsigned int[mbn];
 
   assert(p->contextlay->n == 40);

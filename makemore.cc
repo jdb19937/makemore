@@ -1,103 +1,71 @@
-#include <stdio.h>
+#include "project.hh"
+#include "topology.hh"
+#include "random.hh"
+#include "cudamem.hh"
 
 #include <math.h>
 
-#include <vector>
-#include <map>
+int main(int argc, char **argv) {
+  assert(argc > 1);
+  seedrand();
 
-#include "dataset.hh"
-#include "megatron.hh"
-#include "ppm.hh"
-#include "cudamem.hh"
+  unsigned int mbn = 8;
+  ZoomProject *p = new ZoomProject(argv[1], mbn);
+  unsigned int *mb = new unsigned int[mbn];
 
-int main() {
-  Dataset samples("face-32x32-gray-full.dat", 32 * 32);
+  unsigned int lfn = p->lofreqlay->n;
+  unsigned int an = p->attrslay->n;
+  unsigned int sn = p->sampleslay->n;
+  unsigned int hfn = sn;
+  unsigned int cn = p->contextlay->n;
+  assert(cn == lfn + an);
+  unsigned int csn = sn + cn;
 
-  unsigned int mbn = 4;
+  Dataset *hifreq = p->hifreq;
+  Dataset *lofreq = p->lofreq;
+  Dataset *attrs = p->attrs;
 
-  Layout *inl = Layout::new_square_grid(32);
-  Layout *hidl1 = Layout::new_square_random(1024);
-  Layout *hidl2 = Layout::new_square_random(512);
-  Layout *hidl3 = Layout::new_square_random(1024);
-//  Layout *hidl4 = Layout::new_square_random(512);
-  Layout *outl = Layout::new_square_grid(32);
+  assert(hifreq->n == lofreq->n);
+  assert(hifreq->k == hfn);
+  assert(lofreq->k == lfn);
+  assert(attrs->k == an);
+  assert(csn == hfn + lfn + an);
+  assert(cn == lfn + an);
 
-  Wiring *w1 = new Wiring();
-  w1->wireup(inl, hidl1, 8, 8);
-  Wiring *w2 = new Wiring();
-  w2->wireup(hidl1, hidl2, 8, 8);
-  Wiring *w3 = new Wiring();
-  w3->wireup(hidl2, hidl3, 8, 8);
-  Wiring *w4 = new Wiring();
-  w4->wireup(hidl3, outl, 8, 8);
-//  Wiring *w5 = new Wiring(hidl4, outl, 10);
+  Tron *encgentron = p->encgentron;
 
-  double *mw1 = new double[w1->wn];
-  Megatron *m1 = new Megatron(w1, mw1, mbn);
-  m1->randomize();
+fprintf(stderr, "hfn=%u lfn=%u an=%u cn=%u sn=%u csn=%u mbn=%u\n", hfn, lfn, an, cn, sn, csn, mbn);
+  double *encin = NULL;
+  cumake(&encin, mbn * csn);
+  const double *genout;
 
-  double *mw2 = new double[w2->wn];
-  Megatron *m2 = new Megatron(w2, mw2, mbn);
-  m2->randomize();
+  double *gentgt = NULL;
+  cumake(&gentgt, mbn * hfn);
 
-  double *mw3 = new double[w3->wn];
-  Megatron *m3 = new Megatron(w3, mw3, mbn);
-  m3->randomize();
+assert(encgentron->inn == csn * mbn);
+assert(encgentron->outn == hfn * mbn);
 
-  double *mw4 = new double[w4->wn];
-  Megatron *m4 = new Megatron(w4, mw4, mbn);
-  m4->randomize();
-
-//  Megatron *m5 = new Megatron(w5);
-//  m5->kappa = 4.0;
-  m4->kappa = 4.0;
-
-  Tron *m = compositron(m1, m2);
-  m = compositron(m, m3);
-  m = compositron(m, m4);
-//  m = compositron(m, m5);
-
-  Tron *cm = m;
-//  Tron *cm = compositron(encudatron(mbn * 1024), m);
-//  cm = compositron(cm, decudatron(mbn * 1024));
-
-  int i = 0;
-
-  double *in;
-  cumake(&in, mbn * 1024);
-
-  double *cin = new double[mbn * 1024];
-  double *cout = new double[mbn * 1024];
+  unsigned int i = 0;
 
   while (1) {
-    unsigned int which[mbn];
-    samples.pick_minibatch(mbn, which);
-    samples.encude_minibatch(which, mbn, in);
+    hifreq->pick_minibatch(mbn, mb);
+    attrs->encude_minibatch(mb, mbn, encin, 0, csn);
+    lofreq->encude_minibatch(mb, mbn, encin, an, csn);
+    hifreq->encude_minibatch(mb, mbn, encin, cn, csn);
 
-    const double *out = cm->feed(in);
-    cm->target(in);
-    cm->train(0.03);
+    genout = encgentron->feed(encin, NULL);
+    hifreq->encude_minibatch(mb, mbn, gentgt);
 
-    if (i % 1000 == 0) {
-      decude(in, mbn * 1024, cin);
-      decude(out, mbn * 1024, cout);
+    encgentron->target(gentgt);
+    encgentron->train(0.5);
 
-      fprintf(stderr, "i=%d cin[0]=%lf cout[0]=%lf cerr2=%lf cerrm=%lf\n", i, cin[0], cout[0], cm->cerr2, cm->cerrm);
-      PPM ppm1;
-      ppm1.unvectorizegray(cin, 32, 32);
-
-      PPM ppm2;
-      ppm2.unvectorizegray(cout, 32, 32);
-
-      PPM ppm3;
-      ppm3.w = 32;
-      ppm3.h = 64;
-      ppm3.data = new uint8_t[ppm3.w * ppm3.h * 3];
-      memcpy(ppm3.data, ppm1.data, 32 * 32 * 3);
-      memcpy(ppm3.data + 32*32*3, ppm2.data, 32 * 32 * 3);
-      ppm3.write(stdout);
+    if (i % 100 == 0) {
+       fprintf(stderr, "i=%u cerr2=%lf cerrm=%lf\n", i, encgentron->cerr2, encgentron->cerrm);
+       p->enctron->sync(1);
+       p->gentron->sync(1);
     }
-
-   ++i;
+    ++i;
   }
+
+  return 0;
 }

@@ -19,7 +19,7 @@ __global__ void gpu_megatron_feed(
   unsigned int **iomap, unsigned int **oimap,
   unsigned int *wimap, unsigned int *womap,
   double *weight,
-  double eta, double kappa,
+  double eta, double nu, double kappa,
 
   unsigned int inrn, unsigned int outrn, unsigned int mbn
 ) {
@@ -65,7 +65,7 @@ __global__ void gpu_megatron_train0(
   unsigned int **iomap, unsigned int **oimap,
   unsigned int *wimap, unsigned int *womap,
   double *weight,
-  double eta, double kappa,
+  double eta, double nu, double kappa,
 
   unsigned int inrn, unsigned int outrn, unsigned int mbn
 ) {
@@ -88,6 +88,7 @@ __global__ void gpu_megatron_train0(
   fout[outi] = fo * o * (1.0 - o) / kappa;
 }
 
+
 __global__ void gpu_megatron_train1(
   const double *in,
   double *fin, double *out, double *fout,
@@ -97,50 +98,7 @@ __global__ void gpu_megatron_train1(
   unsigned int **iomap, unsigned int **oimap,
   unsigned int *wimap, unsigned int *womap,
   double *weight,
-  double eta, double kappa,
-
-  unsigned int inrn, unsigned int outrn, unsigned int mbn
-) {
-  unsigned int wi = blockIdx.x * blockDim.x + threadIdx.x;
-  if (wi >= wn)
-    return;
-
-  double dw = 0;
-
-  unsigned int outri = womap[wi];
-  --outri;
-
-  unsigned int inri = wimap[wi];
-  if (inri == 0) {
-    for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
-      unsigned int outi = mbi * outrn + outri;
-      dw += eta * fout[outi];
-    }
-    weight[wi] += dw;
-    return;
-  }
-  --inri;
-
-  for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
-    unsigned int outi = mbi * outrn + outri;
-    double z = eta * fout[outi];
-
-    unsigned int ini = mbi * inrn + inri;
-    dw += z * in[ini];
-  }
-  weight[wi] += dw;
-}
-
-__global__ void gpu_megatron_train2(
-  const double *in,
-  double *fin, double *out, double *fout,
-  unsigned int inn, unsigned int outn,
-  unsigned int wn,
-  unsigned int **iwmap, unsigned int **owmap,
-  unsigned int **iomap, unsigned int **oimap,
-  unsigned int *wimap, unsigned int *womap,
-  double *weight,
-  double eta, double kappa,
+  double eta, double nu, double kappa,
 
   unsigned int inrn, unsigned int outrn, unsigned int mbn
 ) {
@@ -169,18 +127,58 @@ __global__ void gpu_megatron_train2(
 }
 
 
+__global__ void gpu_megatron_train2(
+  const double *in,
+  double *fin, double *out, double *fout,
+  unsigned int inn, unsigned int outn,
+  unsigned int wn,
+  unsigned int **iwmap, unsigned int **owmap,
+  unsigned int **iomap, unsigned int **oimap,
+  unsigned int *wimap, unsigned int *womap,
+  double *weight,
+  double eta, double nu, double kappa,
+
+  unsigned int inrn, unsigned int outrn, unsigned int mbn
+) {
+  unsigned int wi = blockIdx.x * blockDim.x + threadIdx.x;
+  if (wi >= wn)
+    return;
+
+  double dw = 0;
+
+  unsigned int outri = womap[wi];
+  --outri;
+  unsigned int inri = wimap[wi];
+
+  if (inri == 0) {
+    for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
+      unsigned int outi = mbi * outrn + outri;
+      dw += fout[outi];
+    }
+  } else {
+    --inri;
+
+    for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
+      unsigned int outi = mbi * outrn + outri;
+      unsigned int ini = mbi * inrn + inri;
+      dw += fout[outi] * in[ini];
+    }
+  }
+
+  weight[wi] += dw * eta * nu;
+}
 
 const double *Megatron::feed(const double *_in, double *_fin) {
   in = _in;
   fin = _fin;
 
   int bs = 128;
-  int gs = (outn + bs  - 1) / bs;
+  int gs = (outn + bs - 1) / bs;
 
   gpu_megatron_feed<<<gs, bs>>>(
     in, fin, out, fout, inn, outn,
     wn, iwmap, owmap, iomap, oimap, wimap, womap,
-    weight, eta, kappa,
+    weight, eta, 1.0, kappa,
     inrn, outrn, mbn
   );
 
@@ -194,29 +192,29 @@ void Megatron::train(double nu) {
   gpu_megatron_train0<<<gs0, bs0>>>(
     in, fin, out, fout, inn, outn,
     wn, iwmap, owmap, iomap, oimap, wimap, womap,
-    weight, nu * eta, kappa,
-    inrn, outrn, mbn
-  );
-
-  int bs1 = 128;
-  int gs1 = (wn + bs1 - 1) / bs1;
-  gpu_megatron_train1<<<gs1, bs1>>>(
-    in, fin, out, fout, inn, outn,
-    wn, iwmap, owmap, iomap, oimap, wimap, womap,
-    weight, nu * eta, kappa,
+    weight, eta, nu, kappa,
     inrn, outrn, mbn
   );
 
   if (fin) {
-    int bs2 = 128;
-    int gs2 = (inn + bs2 - 1) / bs2;
-    gpu_megatron_train2<<<gs2, bs2>>>(
+    int bs1 = 128;
+    int gs1 = (inn + bs1 - 1) / bs1;
+    gpu_megatron_train1<<<gs1, bs1>>>(
       in, fin, out, fout, inn, outn,
       wn, iwmap, owmap, iomap, oimap, wimap, womap,
-      weight, nu * eta, kappa,
+      weight, eta, nu, kappa,
       inrn, outrn, mbn
     );
   }
+
+  int bs2 = 128;
+  int gs2 = (wn + bs2 - 1) / bs2;
+  gpu_megatron_train2<<<gs2, bs2>>>(
+    in, fin, out, fout, inn, outn,
+    wn, iwmap, owmap, iomap, oimap, wimap, womap,
+    weight, eta, nu, kappa,
+    inrn, outrn, mbn
+  );
 }
 
 Megatron::Megatron(const Wiring *_wire, double *_cweight, unsigned int _mbn)
@@ -294,11 +292,6 @@ void Megatron::_makemaps() {
     ++wi;
   }
 
-  for (unsigned int inri = 0; inri < wire->inn; ++inri) {
-    mio[inri].push_back(0);
-    miw[inri].push_back((unsigned int)-1);
-  }
-
   wn = wi;
   std::vector<unsigned int> mwi, mwo;
   mwi.resize(wn);
@@ -312,10 +305,15 @@ void Megatron::_makemaps() {
   }
   for (unsigned int inri = 0; inri < wire->inn; ++inri) {
     for (auto wip = miw[inri].begin(); wip != miw[inri].end(); ++wip) {
-      if (*wip != (unsigned)-1)
-        mwi[*wip] = inri + 1;
+      mwi[*wip] = inri + 1;
     }
   }
+
+  for (unsigned int inri = 0; inri < wire->inn; ++inri) {
+    mio[inri].push_back(0);
+    miw[inri].push_back((unsigned int)-1);
+  }
+
     
   unsigned int *tmp;
 
@@ -324,11 +322,11 @@ void Megatron::_makemaps() {
     const vector<unsigned int>& w = mow[outri];
     assert(w.size());
 
-    tmp = cunew<unsigned int>(v.size());
+    cumake(&tmp, v.size());
     encude(v.data(), v.size(), tmp);
     encude(&tmp, 1, oimap + outri);
 
-    tmp = cunew<unsigned int>(w.size());
+    cumake(&tmp, w.size());
     encude(w.data(), w.size(), tmp);
     encude(&tmp, 1, owmap + outri);
   }
@@ -337,21 +335,21 @@ void Megatron::_makemaps() {
     const vector<unsigned int>& v = mio[inri];
     const vector<unsigned int>& w = miw[inri];
 
-    tmp = cunew<unsigned int>(v.size());
+    cumake(&tmp, v.size());
     encude(v.data(), v.size(), tmp);
     encude(&tmp, 1, iomap + inri);
 
-    tmp = cunew<unsigned int>(w.size());
+    cumake(&tmp, w.size());
     encude(w.data(), w.size(), tmp);
     encude(&tmp, 1, iwmap + inri);
   }
 
   _mow = mow;
 
-  wimap = cunew<unsigned int>(wn);
+  cumake(&wimap, wn);
   encude(mwi.data(), wn, wimap);
 
-  womap = cunew<unsigned int>(wn);
+  cumake(&womap, wn);
   encude(mwo.data(), wn, womap);
 }
 

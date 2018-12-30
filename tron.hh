@@ -18,14 +18,14 @@ struct Tron {
   Tron() {
     inn = 0;
     outn = 0;
-    cerr2 = 0.5;
-    cerrm = 0.5;
+    cerr2 = 0;
+    cerrm = 0;
     errdecay = 0.001;
   }
 
   Tron(unsigned int _inn, unsigned int _outn) : inn(_inn), outn(_outn) {
-    cerr2 = 0.5;
-    cerrm = 0.5;
+    cerr2 = 0;
+    cerrm = 0;
     errdecay = 0.001;
   }
 
@@ -44,7 +44,6 @@ struct Tron {
   virtual void target(const double *tgt);
 
   virtual const double *input() = 0;
-  virtual const double *finput() = 0;
   virtual const double *output() = 0;
   virtual double *foutput() = 0;
 
@@ -73,7 +72,6 @@ struct Compositron : Tron {
 
   virtual const double *output() { return b->output(); }
   virtual const double *input() { return a->input(); }
-  virtual const double *finput() { return a->finput(); }
   virtual double *foutput() { return b->foutput(); }
 
   virtual void sync(double t) {
@@ -101,7 +99,6 @@ struct Passthrutron : Tron {
 
   virtual const double *input() { return t->input(); }
   virtual const double *output() { return out; }
-  virtual const double *finput() { return t->finput(); }
   virtual double *foutput() { return fout; }
 
   virtual const double *feed(const double *in, double *fin);
@@ -129,7 +126,6 @@ struct Extron : Tron {
 
   virtual const double *input() { return in; }
   virtual const double *output() { return in; }
-  virtual const double *finput() { return fin; }
   virtual double *foutput() { return fin; }
 
   virtual const double *feed(const double *_in, double *_fin) {
@@ -170,7 +166,6 @@ struct Identron : Tron {
 
   virtual const double *input() { return in; }
   virtual const double *output() { return in; }
-  virtual const double *finput() { return fin; }
   virtual double *foutput() { return fin; }
 };
 

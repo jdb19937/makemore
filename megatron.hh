@@ -33,7 +33,6 @@ struct Megatron : Tron {
   virtual const double *feed(const double *_in, double *_fin);
   virtual void train(double r);
 
-  virtual const double *finput() { return fin; }
   virtual const double *output() { return out; }
   virtual const double *input() { return in; }
   virtual double *foutput() { return fout; }

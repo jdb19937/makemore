@@ -4,13 +4,6 @@
 #include <assert.h>
 #include <stdio.h>
 
-#if 0
-static double *cubuf = NULL;
-static struct _cuinit {
-  _cuinit() { cumake(&cubuf, 1<<20); }
-} _cuiniter;
-#endif
-
 void encudev(const void *a, unsigned int n, void *da) {
   cudaMemcpy(da, a, n, cudaMemcpyHostToDevice);
 }
@@ -85,21 +78,22 @@ __global__ void gpu_cucutpaste(
   unsigned int rows, unsigned int acols, unsigned int bcols, unsigned int ccols,
   double *c
 ) {
-  unsigned int ccol = blockIdx.x * blockDim.x + threadIdx.x;
-  if (ccol >= ccols)
+  unsigned int ci = blockIdx.x * blockDim.x + threadIdx.x;
+  unsigned int cn = ccols * rows;
+  if (ci >= cn)
     return;
+  unsigned int ccol = ci % ccols;
+  unsigned int row = ci / ccols;
 
   unsigned int k = ccols - bcols;
   if (ccol < k) {
     unsigned int acol = ccol;
-    for (unsigned int row = 0; row < rows; ++row) {
-      c[ccols * row + ccol] = a[acols * row + acol];
-    }
+    unsigned int ai = acols * row + acol;
+    c[ci] = a[ai];
   } else {
     unsigned int bcol = ccol - k;
-    for (unsigned int row = 0; row < rows; ++row) {
-      c[ccols * row + ccol] = b[bcols * row + bcol];
-    }
+    unsigned int bi = bcols * row + bcol;
+    c[ci] = b[bi];
   }
 }
 
@@ -109,9 +103,10 @@ void cucutpaste(
   double *c
 ) {
   assert(ccols >= bcols);
+  unsigned int cn = ccols * rows;
 
   int bs = 128;
-  int gs = ((ccols + bs - 1) / bs);
+  int gs = ((cn + bs - 1) / bs);
   gpu_cucutpaste<<<gs, bs>>>(a, b, rows, acols, bcols, ccols, c);
 }
 
@@ -121,15 +116,17 @@ __global__ void gpu_cucutadd(
   unsigned int rows, unsigned int acols, unsigned int bcols,
   double *b
 ) {
-  unsigned int bcol = blockIdx.x * blockDim.x + threadIdx.x;
-  if (bcol >= bcols)
+  unsigned int bi = blockIdx.x * blockDim.x + threadIdx.x;
+  unsigned int bn = bcols * rows;
+  if (bi >= bn)
     return;
+  unsigned int bcol = bi % bcols;
+  unsigned int row = bi / bcols;
 
   unsigned int acol = bcol + (acols - bcols);
+  unsigned int ai = acols * row + acol;
 
-  for (unsigned int row = 0; row < rows; ++row) {
-    b[bcols * row + bcol] += a[acols * row + acol];
-  }
+  b[bi] += a[ai];
 }
 
 void cucutadd(
@@ -137,12 +134,11 @@ void cucutadd(
   unsigned int rows, unsigned int acols, unsigned int bcols,
   double *b
 ) {
-  if (acols == bcols) 
-    return;
-  assert(acols > bcols);
+  assert(acols >= bcols);
 
+  unsigned int bn = bcols * rows;
   int bs = 128;
-  int gs = ((bcols + bs - 1) / bs);
+  int gs = ((bn + bs - 1) / bs);
   gpu_cucutadd<<<gs, bs>>>(a, rows, acols, bcols, b);
 }
 
@@ -191,7 +187,7 @@ double cusumsq(
 }
 
 
-__global__ void gpu_max(
+__global__ void gpu_maxabs(
   const double *a, unsigned int n, double *maxp
 ) {
   unsigned int si = blockIdx.x * blockDim.x + threadIdx.x;
@@ -226,7 +222,7 @@ double cumaxabs(
 
   int bs = 128;
   int gs = (maxn + bs - 1) / bs;
-  gpu_max<<<gs, bs>>>(a, n, maxp);
+  gpu_maxabs<<<gs, bs>>>(a, n, maxp);
 
   double *maxv = new double[maxn];
   decude(maxp, maxn, maxv);

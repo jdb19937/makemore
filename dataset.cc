@@ -35,7 +35,7 @@ Dataset::Dataset(const char *fn, unsigned int _k) {
   n = st.st_size / (k * sizeof(double));
 
   map_size = (st.st_size + 4095) & ~4095;
-#if 0
+#if 1
   map = mmap(NULL, map_size, PROT_READ, MAP_PRIVATE, fileno(fp), 0);
   assert(map != MAP_FAILED);
   assert(map);
@@ -51,7 +51,7 @@ fprintf(stderr, "read data ret=%d\n", ret);
 }
 
 Dataset::~Dataset() {
-#if 0
+#if 1
   munmap(map, map_size);
 #else
   delete[] ((uint8_t *)map);

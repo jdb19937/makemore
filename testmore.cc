@@ -9,7 +9,7 @@ int main() {
   seedrand();
 
   unsigned int mbn = 8;
-  Project *p = new Project("gen8.proj", mbn);
+  SimpleProject *p = new SimpleProject("gen8.proj", mbn);
   unsigned int *mb = new unsigned int[mbn];
 
   assert(p->contextlay->n == 40);
@@ -45,7 +45,7 @@ int main() {
 
     genout = encgentron->feed(encin, NULL);
     encgentron->target(encin);
-    encgentron->train(0.05);
+    encgentron->train(0.001);
 
 //fprintf(stderr, "hi %u %u (%u %u) encin=%lu genout=%lu\n", i, encsz, p->context->k, p->samples->k, encin, genout);
 
