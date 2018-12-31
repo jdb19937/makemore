@@ -14,7 +14,7 @@ int main(int argc, char **argv) {
   seedrand();
 
   unsigned int mbn = 8;
-  double nu = 0.01;
+  double nu = 0.001;
 
   if (argc < 2)
     return usage();
@@ -39,12 +39,10 @@ int main(int argc, char **argv) {
   unsigned int i = 0;
   while (1) {
     p->learn(control_source, nu, i);
-
     if (i % 100 == 0) {
-      p->report(i);
+      p->report("learnmore", i);
       p->save();
     }
-
     ++i;
   }
 

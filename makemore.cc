@@ -71,6 +71,7 @@ int main(int argc, char **argv) {
   const char *project_dir = argv[0];
   Project *p = open_project(project_dir, 1);
 
+  unsigned int i = 0;
   while (1) {
     p->generate(
       context_source,
@@ -83,6 +84,13 @@ int main(int argc, char **argv) {
       size_t ret = fwrite(p->output(), sizeof(double), mbn * p->outputlay->n, stdout);
       assert(ret == mbn * p->outputlay->n);
     }
+
+    if (i % 100 == 0) {
+      fprintf(stderr, "makemore i=%d\n", i);
+      p->load();
+    }
+
+    ++i;
   }
 
   return 0;

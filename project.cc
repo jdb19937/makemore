@@ -241,11 +241,12 @@ void SimpleProject::learn(ControlSource control_source, double nu, unsigned int 
   gentron->train(nu);
 }
 
-void SimpleProject::report(unsigned int i) {
+void SimpleProject::report(const char *prog, unsigned int i) {
   fprintf(
     stderr,
-    "i=%u gen_err2=%lf gen_errm=%lf encgen_err2=%lf encgen_errm=%lf\n",
-    i, gentron->err2, gentron->errm, encgentron->err2, encgentron->errm
+    "%s %s i=%u gen_err2=%lf gen_errm=%lf encgen_err2=%lf encgen_errm=%lf\n",
+    prog, dir.c_str(), i,
+    gentron->err2, gentron->errm, encgentron->err2, encgentron->errm
   );
 }
 
@@ -702,11 +703,12 @@ void ZoomProject::load() {
   gentron->sync(0);
 }
 
-void ZoomProject::report(unsigned int i) {
+void ZoomProject::report(const char *prog, unsigned int i) {
   fprintf(
     stderr,
-    "i=%u gen_err2=%lf gen_errm=%lf encgen_err2=%lf encgen_errm=%lf\n",
-    i, gentron->err2, gentron->errm, encgentron->err2, encgentron->errm
+    "%s %s i=%u gen_err2=%lf gen_errm=%lf encgen_err2=%lf encgen_errm=%lf\n",
+    prog, dir.c_str(), i,
+    gentron->err2, gentron->errm, encgentron->err2, encgentron->errm
   );
 }
 

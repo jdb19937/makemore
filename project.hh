@@ -64,8 +64,8 @@ struct Project {
     fprintf(stderr, "saving, nothing to do\n");
   }
 
-  virtual void report(unsigned int i) {
-    fprintf(stderr, "i=%u\n", i);
+  virtual void report(const char *prog, unsigned int i) {
+    fprintf(stderr, "%s %s i=%u\n", prog, dir.c_str(), i);
   }
 };
 
@@ -108,7 +108,7 @@ struct SimpleProject : Project {
 
   virtual void load();
   virtual void save();
-  virtual void report(unsigned int i);
+  virtual void report(const char *prog, unsigned int i);
 };
 
 
@@ -148,7 +148,7 @@ struct ZoomProject : Project {
 
   virtual void load();
   virtual void save();
-  virtual void report(unsigned int i);
+  virtual void report(const char *prog, unsigned int i);
 };
 
 
