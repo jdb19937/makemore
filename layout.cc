@@ -51,8 +51,8 @@ Layout *Layout::new_square_random(unsigned int n, double s) {
   double r = sqrt(s / (pi * (double)n));
 
   for (unsigned int i = 0; i < l->n; ++i) {
-    l->x[i] = randrange(0, 1);
-    l->y[i] = randrange(0, 1);
+    l->x[i] = randrange(0.0, 1.0);
+    l->y[i] = randrange(0.0, 1.0);
     l->r[i] = r;
   }
 

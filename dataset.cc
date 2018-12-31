@@ -69,12 +69,12 @@ bool Dataset::mlock() {
 }
 
 unsigned int Dataset::pick() const {
-  return (randint() % n);
+  return (randuint() % n);
 }
 
 void Dataset::pick_minibatch(unsigned int mbn, unsigned int *mb) const {
   for (unsigned int mbi = 0; mbi < mbn; ++mbi)
-    mb[mbi] = randint() % n;
+    mb[mbi] = randuint() % n;
 }
 
 const double *Dataset::data(unsigned int i) const {
