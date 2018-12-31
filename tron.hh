@@ -13,19 +13,19 @@ struct Tron {
 
   unsigned int inn, outn;
 
-  double cerr2, cerrm;
+  double err2, errm;
 
   Tron() {
     inn = 0;
     outn = 0;
-    cerr2 = 0;
-    cerrm = 0;
+    err2 = 0;
+    errm = 0;
     errdecay = 0.001;
   }
 
   Tron(unsigned int _inn, unsigned int _outn) : inn(_inn), outn(_outn) {
-    cerr2 = 0;
-    cerrm = 0;
+    err2 = 0;
+    errm = 0;
     errdecay = 0.001;
   }
 

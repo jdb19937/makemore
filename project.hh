@@ -20,20 +20,29 @@ struct Project {
   Layout *contextlay, *controlslay, *outputlay;
 
   typedef enum {
+    CONTEXT_SOURCE_UNKNOWN,
     CONTEXT_SOURCE_TRAINING,
     CONTEXT_SOURCE_STDIN
   } ContextSource;
 
   typedef enum {
+    CONTROL_SOURCE_UNKNOWN,
     CONTROL_SOURCE_CENTER,
     CONTROL_SOURCE_TRAINING,
     CONTROL_SOURCE_RANDOM,
     CONTROL_SOURCE_STDIN
   } ControlSource;
 
+  typedef enum {
+    OUTPUT_FORMAT_UNKNOWN,
+    OUTPUT_FORMAT_RAW,
+    OUTPUT_FORMAT_PPM
+  } OutputFormat;
+
   virtual void learn(
     ControlSource control_source,
-    double nu
+    double nu,
+    unsigned int i
   ) = 0;
 
   virtual void generate(
@@ -48,9 +57,15 @@ struct Project {
   }
 
   virtual void load() {
+    fprintf(stderr, "loading, nothing to do\n");
   }
 
   virtual void save() {
+    fprintf(stderr, "saving, nothing to do\n");
+  }
+
+  virtual void report(unsigned int i) {
+    fprintf(stderr, "i=%u\n", i);
   }
 };
 
@@ -76,7 +91,8 @@ struct SimpleProject : Project {
 
   virtual void learn(
     ControlSource control_source,
-    double nu
+    double nu,
+    unsigned int i
   );
 
   virtual void generate(
@@ -92,6 +108,7 @@ struct SimpleProject : Project {
 
   virtual void load();
   virtual void save();
+  virtual void report(unsigned int i);
 };
 
 
@@ -114,7 +131,8 @@ struct ZoomProject : Project {
 
   virtual void learn(
     ControlSource control_source,
-    double nu
+    double nu,
+    unsigned int i
   );
 
   virtual void generate(
@@ -130,6 +148,7 @@ struct ZoomProject : Project {
 
   virtual void load();
   virtual void save();
+  virtual void report(unsigned int i);
 };
 
 

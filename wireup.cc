@@ -1,3 +1,6 @@
+#include <stdio.h>
+#include <stdlib.h>
+
 #include "wiring.hh"
 #include "layout.hh"
 #include "random.hh"

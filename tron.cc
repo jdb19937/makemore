@@ -14,18 +14,18 @@ void Tron::target(const double *tgt) {
 
   cusubvec(tgt, out, outn, fout);
 
-  double err2 = sqrt(cusumsq(fout, outn) / outn);
-  cerr2 *= (1.0 - errdecay);
-  cerr2 += errdecay * err2;
+  double nerr2 = sqrt(cusumsq(fout, outn) / outn);
+  err2 *= (1.0 - errdecay);
+  err2 += errdecay * nerr2;
 
-  double errm = cumaxabs(fout, outn);
-  cerrm *= (1.0 - errdecay);
-  cerrm += errdecay * errm;
+  double nerrm = cumaxabs(fout, outn);
+  errm *= (1.0 - errdecay);
+  errm += errdecay * nerrm;
 }
 
 Passthrutron::Passthrutron(unsigned int _k, unsigned int _mbn, Tron *_t) {
-  cerr2 = 0.5;
-  cerrm = 0.5;
+  err2 = 0;
+  errm = 0;
 
   k = _k;
   mbn = _mbn;

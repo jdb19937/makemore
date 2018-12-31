@@ -13,7 +13,7 @@
 
 static std::string read_word(FILE *fp, char sep) {
   int c = getc(fp);
-  if (c == -1)
+  if (c == EOF)
     return "";
 
   char buf[2];
@@ -23,7 +23,7 @@ static std::string read_word(FILE *fp, char sep) {
 
   while (1) {
     c = getc(fp);
-    if (c == -1)
+    if (c == EOF)
       return "";
     if (c == sep)
       break;
@@ -41,6 +41,7 @@ Project *open_project(const char *dir, unsigned int mbn) {
   char fn[4096];
   sprintf(fn, "%s/config.tsv", dir);
   FILE *fp = fopen(fn, "r");
+  assert(fp);
 
   std::string type;
 
@@ -190,7 +191,7 @@ SimpleProject::~SimpleProject() {
   cufree(gentgt);
 }
 
-void SimpleProject::learn(ControlSource control_source, double nu) {
+void SimpleProject::learn(ControlSource control_source, double nu, unsigned int i) {
   size_t ret;
 
   context->pick_minibatch(mbn, mbbuf);
@@ -200,7 +201,6 @@ void SimpleProject::learn(ControlSource control_source, double nu) {
   case CONTROL_SOURCE_TRAINING:
     context->encude_minibatch(mbbuf, mbn, encin, 0, outputlay->n);
     samples->encude_minibatch(mbbuf, mbn, encin, contextlay->n, outputlay->n);
-
     encgentron->feed(encin, NULL);
     encgentron->target(gentgt);
     encgentron->train(nu);
@@ -214,25 +214,11 @@ void SimpleProject::learn(ControlSource control_source, double nu) {
   case CONTROL_SOURCE_CENTER:
     for (unsigned int j = 0; j < controlslay->n * mbn; ++j)
       controlbuf[j] = 0;
-    for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
-      encude(
-        controlbuf + mbi * controlslay->n,
-        controlslay->n,
-        genin + mbi * (contextlay->n + controlslay->n) + contextlay->n
-      );
-    }
     break;
 
   case CONTROL_SOURCE_RANDOM:
     for (unsigned int j = 0; j < controlslay->n * mbn; ++j)
       controlbuf[j] = randgauss();
-    for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
-      encude(
-        controlbuf + mbi * controlslay->n,
-        controlslay->n,
-        genin + mbi * (contextlay->n + controlslay->n) + contextlay->n
-      );
-    }
     break;
 
   default:
@@ -240,10 +226,6 @@ void SimpleProject::learn(ControlSource control_source, double nu) {
     break;
   }
 
-  context->encude_minibatch(mbbuf, mbn, genin, 0, contextlay->n + controlslay->n);
-
-  for (unsigned int j = 0; j < controlslay->n * mbn; ++j)
-    controlbuf[j] = randgauss();
   for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
     encude(
       controlbuf + mbi * controlslay->n,
@@ -252,9 +234,19 @@ void SimpleProject::learn(ControlSource control_source, double nu) {
     );
   }
 
+  context->encude_minibatch(mbbuf, mbn, genin, 0, contextlay->n + controlslay->n);
+
   gentron->feed(genin, NULL);
   gentron->target(gentgt);
   gentron->train(nu);
+}
+
+void SimpleProject::report(unsigned int i) {
+  fprintf(
+    stderr,
+    "i=%u gen_err2=%lf gen_errm=%lf encgen_err2=%lf encgen_errm=%lf\n",
+    i, gentron->err2, gentron->errm, encgentron->err2, encgentron->errm
+  );
 }
 
 
@@ -272,21 +264,27 @@ void SimpleProject::generate(
   unsigned int dim = round(sqrt(labn / 3));
   assert(dim * dim * 3 == labn);
 
-  if (
-    context_source == CONTEXT_SOURCE_TRAINING ||
-    control_source == CONTROL_SOURCE_TRAINING
-  ) {
-    context->pick_minibatch(mbn, mbbuf);
-  }
+  bool picked = 0;
 
   switch (context_source) {
   case CONTEXT_SOURCE_TRAINING:
+    if (!picked) {
+      context->pick_minibatch(mbn, mbbuf);
+      picked = true;
+    }
     context->copy_minibatch(mbbuf, mbn, contextbuf);
     break;
     
   case CONTEXT_SOURCE_STDIN:
-    ret = fread(contextbuf, sizeof(double), contextlay->n * mbn, stdin);
-    assert(ret == contextlay->n * mbn);
+    for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
+      ret = fread(contextbuf + mbi * contextlay->n, sizeof(double), contextlay->n, stdin);
+      assert(ret == contextlay->n);
+
+      if (control_source == CONTROL_SOURCE_STDIN) {
+        ret = fread(controlbuf + mbi * controlslay->n, sizeof(double), controlslay->n, stdin);
+        assert(ret == controlslay->n * mbn);
+      }
+    }
     break;
 
   default:
@@ -304,11 +302,13 @@ void SimpleProject::generate(
 
   switch (control_source) {
   case CONTROL_SOURCE_STDIN:
-    ret = fread(controlbuf, sizeof(double), controlslay->n * mbn, stdin);
-    assert(ret == controlslay->n * mbn);
     break;
 
   case CONTROL_SOURCE_TRAINING:
+    if (!picked) {
+      context->pick_minibatch(mbn, mbbuf);
+      picked = true;
+    }
     context->encude_minibatch(mbbuf, mbn, encin, 0, contextlay->n + sampleslay->n);
     samples->encude_minibatch(mbbuf, mbn, encin, contextlay->n, contextlay->n + sampleslay->n);
     encout = enctron->feed(encin, NULL);
@@ -318,32 +318,24 @@ void SimpleProject::generate(
   case CONTROL_SOURCE_CENTER:
     for (unsigned int j = 0; j < controlslay->n * mbn; ++j)
       controlbuf[j] = 0;
-
-    for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
-      encude(
-        controlbuf + mbi * controlslay->n,
-        controlslay->n,
-        genin + mbi * (contextlay->n + controlslay->n) + contextlay->n
-      );
-    }
-
     break;
+
   case CONTROL_SOURCE_RANDOM:
     for (unsigned int j = 0; j < controlslay->n * mbn; ++j)
       controlbuf[j] = randgauss();
-
-    for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
-      encude(
-        controlbuf + mbi * controlslay->n,
-        controlslay->n,
-        genin + mbi * (contextlay->n + controlslay->n) + contextlay->n
-      );
-    }
-
     break;
+
   default:
     assert(0);
     break;
+  }
+
+  for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
+    encude(
+      controlbuf + mbi * controlslay->n,
+      controlslay->n,
+      genin + mbi * (contextlay->n + controlslay->n) + contextlay->n
+    );
   }
 
   const double *genout = gentron->feed(genin, NULL);
@@ -351,21 +343,22 @@ void SimpleProject::generate(
 
   for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
     memcpy(
-      outputbuf + mbi * outputlay->n,
-      contextbuf + mbi * contextlay->n, 
-      contextlay->n
+      outputbuf + (mbi * outputlay->n) + 0,
+      contextbuf + (mbi * contextlay->n), 
+      contextlay->n * sizeof(double)
     );
 
     memcpy(
-      outputbuf + mbi * outputlay->n + contextlay->n,
-      samplesbuf + mbi * sampleslay->n, 
-      sampleslay->n
+      outputbuf + (mbi * outputlay->n) + contextlay->n,
+      samplesbuf + (mbi * sampleslay->n),
+      sampleslay->n * sizeof(double)
     );
   }
 }
 
 void SimpleProject::write_ppm(FILE *fp) {
   assert(mbn > 0);
+
 
   unsigned int labn = sampleslay->n;
   assert(contextlay->n + sampleslay->n == outputlay->n);
@@ -507,7 +500,7 @@ ZoomProject::~ZoomProject() {
 }
 
 
-void ZoomProject::learn(ControlSource control_source, double nu) {
+void ZoomProject::learn(ControlSource control_source, double nu, unsigned int i) {
   size_t ret;
 
   attrs->pick_minibatch(mbn, mbbuf);
@@ -532,30 +525,24 @@ void ZoomProject::learn(ControlSource control_source, double nu) {
   case CONTROL_SOURCE_CENTER:
     for (unsigned int j = 0; j < controlslay->n * mbn; ++j)
       controlbuf[j] = 0;
-    for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
-      encude(
-        controlbuf + mbi * controlslay->n,
-        controlslay->n,
-        genin + mbi * (contextlay->n + controlslay->n) + contextlay->n
-      );
-    }
-
     break;
+
   case CONTROL_SOURCE_RANDOM:
     for (unsigned int j = 0; j < controlslay->n * mbn; ++j)
       controlbuf[j] = randgauss();
-    for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
-      encude(
-        controlbuf + mbi * controlslay->n,
-        controlslay->n,
-        genin + mbi * (contextlay->n + controlslay->n) + contextlay->n
-      );
-    }
-
     break;
+
   default:
     assert(0);
     break;
+  }
+
+  for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
+    encude(
+      controlbuf + mbi * controlslay->n,
+      controlslay->n,
+      genin + mbi * (contextlay->n + controlslay->n) + contextlay->n
+    );
   }
 
   attrs->encude_minibatch(mbbuf, mbn, genin, 0, contextlay->n + controlslay->n);
@@ -583,27 +570,33 @@ void ZoomProject::generate(
   assert(dim * dim * 3 == labn);
   assert(dim * dim * 9 == hifreqlay->n * 4);
 
-  if (
-    context_source == CONTEXT_SOURCE_TRAINING ||
-    control_source == CONTROL_SOURCE_TRAINING
-  ) {
-    attrs->pick_minibatch(mbn, mbbuf);
-  }
+  bool picked = false;
 
 
   switch (context_source) {
   case CONTEXT_SOURCE_TRAINING:
+    if (!picked) {
+      attrs->pick_minibatch(mbn, mbbuf);
+      picked = true;
+    }
     attrs->copy_minibatch(mbbuf, mbn, attrsbuf);
     lofreq->copy_minibatch(mbbuf, mbn, lofreqbuf);
     break;
     
   case CONTEXT_SOURCE_STDIN:
-    ret = fread(attrsbuf, sizeof(double), attrslay->n * mbn, stdin);
-    assert(ret == attrslay->n * mbn);
-    ret = fread(lofreqbuf, sizeof(double), lofreqlay->n * mbn, stdin);
-    assert(ret == lofreqlay->n * mbn);
+    for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
+      ret = fread(attrsbuf + mbi * attrslay->n, sizeof(double), attrslay->n, stdin);
+      assert(ret == attrslay->n);
+      ret = fread(lofreqbuf + mbi * lofreqlay->n, sizeof(double), lofreqlay->n, stdin);
+      assert(ret == lofreqlay->n);
 
+      if (control_source == CONTROL_SOURCE_STDIN) {
+        ret = fread(controlbuf + mbi * controlslay->n, sizeof(double), controlslay->n, stdin);
+        assert(ret == controlslay->n);
+      }
+    }
     break;
+
   default:
     assert(0);
   }
@@ -624,11 +617,13 @@ void ZoomProject::generate(
 
   switch (control_source) {
   case CONTROL_SOURCE_STDIN:
-    ret = fread(controlbuf, sizeof(double), controlslay->n * mbn, stdin);
-    assert(ret == controlslay->n * mbn);
     break;
 
   case CONTROL_SOURCE_TRAINING:
+    if (!picked) {
+      attrs->pick_minibatch(mbn, mbbuf);
+      picked = true;
+    }
     attrs->encude_minibatch(mbbuf, mbn, encin, 0, outputlay->n);
     lofreq->encude_minibatch(mbbuf, mbn, encin, attrslay->n, outputlay->n);
     hifreq->encude_minibatch(mbbuf, mbn, encin, attrslay->n + lofreqlay->n, outputlay->n);
@@ -639,25 +634,11 @@ void ZoomProject::generate(
   case CONTROL_SOURCE_CENTER:
     for (unsigned int j = 0; j < controlslay->n * mbn; ++j)
       controlbuf[j] = 0;
-    for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
-      encude(
-        controlbuf + mbi * controlslay->n,
-        controlslay->n,
-        genin + mbi * (contextlay->n + controlslay->n) + contextlay->n
-      );
-    }
     break;
 
   case CONTROL_SOURCE_RANDOM:
     for (unsigned int j = 0; j < controlslay->n * mbn; ++j)
       controlbuf[j] = randgauss();
-    for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
-      encude(
-        controlbuf + mbi * controlslay->n,
-        controlslay->n,
-        genin + mbi * (contextlay->n + controlslay->n) + contextlay->n
-      );
-    }
     break;
 
   default:
@@ -665,20 +646,27 @@ void ZoomProject::generate(
     break;
   }
 
-  const double *genout = gentron->feed(genin, NULL);
+  for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
+    encude(
+      controlbuf + mbi * controlslay->n,
+      controlslay->n,
+      genin + mbi * (contextlay->n + controlslay->n) + contextlay->n
+    );
+  }
 
+  const double *genout = gentron->feed(genin, NULL);
   decude(genout, hifreqlay->n * mbn, hifreqbuf);
 
   for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
     memcpy(
       outputbuf + mbi * outputlay->n,
       attrsbuf + mbi * attrslay->n, 
-      attrslay->n
+      attrslay->n * sizeof(double)
     );
 
     untwiddle3(
       lofreqbuf + mbi * lofreqlay->n,
-      hifreqbuf + mbi * lofreqlay->n,
+      hifreqbuf + mbi * hifreqlay->n,
       dim, dim,
       outputbuf + mbi * outputlay->n + attrslay->n
     );
@@ -712,6 +700,14 @@ void ZoomProject::save() {
 void ZoomProject::load() {
   enctron->sync(0);
   gentron->sync(0);
+}
+
+void ZoomProject::report(unsigned int i) {
+  fprintf(
+    stderr,
+    "i=%u gen_err2=%lf gen_errm=%lf encgen_err2=%lf encgen_errm=%lf\n",
+    i, gentron->err2, gentron->errm, encgentron->err2, encgentron->errm
+  );
 }
 
 

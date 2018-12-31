@@ -1,7 +1,7 @@
 CXX = g++
 NVCC = nvcc
-NVCCFLAGS = -O6
-CXXFLAGS = -O6
+NVCCFLAGS = -g
+CXXFLAGS = -g
 LDFLAGS = -lm
 CULDFLAGS = -lcuda -lcudart
  
@@ -186,6 +186,9 @@ makemap: makemap.o $(LIB)
 
 makemore.o: $(LIBHDR)
 makemore: makemore.o $(LIB)
+	$(CXX) -o $@ $(CXXFLAGS) $^ $(LDFLAGS) $(CULDFLAGS)
+learnmore.o: $(LIBHDR)
+learnmore: learnmore.o $(LIB)
 	$(CXX) -o $@ $(CXXFLAGS) $^ $(LDFLAGS) $(CULDFLAGS)
 testmore.o: $(LIBHDR)
 testmore: testmore.o $(LIB)
