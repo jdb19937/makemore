@@ -34,65 +34,69 @@ Dataset::Dataset(const char *fn, unsigned int _k) {
   assert(st.st_size % (k * sizeof(double)) == 0);
   n = st.st_size / (k * sizeof(double));
 
-  map_size = (st.st_size + 4095) & ~4095;
-#if 1
-  map = mmap(NULL, map_size, PROT_READ, MAP_PRIVATE, fileno(fp), 0);
-  assert(map != MAP_FAILED);
-  assert(map);
-#else
-fprintf(stderr, "reading data\n");
-  map = (double *)(new uint8_t[st.st_size]);
-  ret = fread((uint8_t *)map, 1, st.st_size, fp);
-fprintf(stderr, "read data ret=%d\n", ret);
-  assert(ret == st.st_size);
-#endif
-
-  dataptr = (double *)map;
+  buf = new double[k];
+  iseq = 0;
 }
 
 Dataset::~Dataset() {
+#if 0
 #if 1
   munmap(map, map_size);
 #else
   delete[] ((uint8_t *)map);
 #endif
+#endif
   fclose(fp);
 }
 
-bool Dataset::mlock() {
-  int ret = ::mlock(map, map_size);
-  if (ret != 0) {
-    return false;
+
+unsigned int Dataset::pick(bool seq) {
+  if (seq) {
+    unsigned int i = iseq % n;
+    ++iseq;
+    iseq %= n;
+
+    return i;
   } else {
-    return true;
+    return (randuint() % n);
   }
 }
 
-unsigned int Dataset::pick() const {
-  return (randuint() % n);
-}
-
-void Dataset::pick_minibatch(unsigned int mbn, unsigned int *mb) const {
-  for (unsigned int mbi = 0; mbi < mbn; ++mbi)
-    mb[mbi] = randuint() % n;
-}
-
-const double *Dataset::data(unsigned int i) const {
-  assert(i < n);
-  return (dataptr + i * k);
+void Dataset::pick_minibatch(unsigned int mbn, unsigned int *mb, bool seq) {
+  if (seq) {
+    for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
+      mb[mbi] = iseq % n;
+      ++iseq;
+      iseq %= n;
+    }
+  } else {
+    for (unsigned int mbi = 0; mbi < mbn; ++mbi)
+      mb[mbi] = randuint() % n;
+  }
 }
 
 void Dataset::copy(unsigned int i, double *d) const {
   assert(i < n);
-  memcpy(d, dataptr + i * k, k * sizeof(double));
+
+  int ret;
+  ret = fseek(fp, (uint64_t)i * (uint64_t)k * sizeof(double), SEEK_SET);
+  assert(ret == 0);
+  ret = fread(d, sizeof(double), k, fp);
+  assert(ret == k);
 }
 
 void Dataset::encude(unsigned int i, double *d) const {
   assert(i < n);
-  ::encude(dataptr + i * k, k, d);
+  int ret;
+  ret = fseek(fp, (uint64_t)i * (uint64_t)k * sizeof(double), SEEK_SET);
+  assert(ret == 0);
+  ret = fread(buf, sizeof(double), k, fp);
+  assert(ret == k);
+  ::encude(buf, k, d);
 }
 
 void Dataset::copy_minibatch(const unsigned int *mb, unsigned int mbn, double *d, unsigned int off, unsigned int len) const {
+  int ret;
   if (len == 0)
     len = k;
   assert(len - off >= k);
@@ -100,11 +104,16 @@ void Dataset::copy_minibatch(const unsigned int *mb, unsigned int mbn, double *d
   for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
     unsigned int i = mb[mbi];
     assert(i < n);
-    memcpy(d + mbi * len + off, dataptr + i * k, k * sizeof(double));
+
+    ret = fseek(fp, (uint64_t)i * (uint64_t)k * sizeof(double), SEEK_SET);
+    assert(ret == 0);
+    ret = fread(d + mbi * len + off, sizeof(double), k, fp);
+    assert(ret == k);
   }
 }
 
 void Dataset::encude_minibatch(const unsigned int *mb, unsigned int mbn, double *d, unsigned int off, unsigned int len) const {
+  int ret;
   if (len == 0)
     len = k;
   assert(len - off >= k);
@@ -112,7 +121,13 @@ void Dataset::encude_minibatch(const unsigned int *mb, unsigned int mbn, double 
   for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
     unsigned int i = mb[mbi];
     assert(i < n);
-    ::encude(dataptr + i * k, k, d + mbi * len + off);
+
+    ret = fseek(fp, (uint64_t)i * (uint64_t)k * sizeof(double), SEEK_SET);
+    assert(ret == 0);
+    ret = fread(buf, sizeof(double), k, fp);
+    assert(ret == k);
+
+    ::encude(buf, k, d + mbi * len + off);
   }
 }
 

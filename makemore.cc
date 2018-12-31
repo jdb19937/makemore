@@ -6,7 +6,7 @@
 #include <math.h>
 
 int usage() {
-  fprintf(stderr, "Usage: makemore <--center|--random|--fidelity> dir.proj\n");
+  fprintf(stderr, "Usage: makemore [--random|--center|--fidelity] [--train|--stdin] [--raw|--ppm] dir.proj\n");
   return 1;
 }
 

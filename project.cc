@@ -191,10 +191,10 @@ SimpleProject::~SimpleProject() {
   cufree(gentgt);
 }
 
-void SimpleProject::learn(ControlSource control_source, double nu, unsigned int i) {
+void SimpleProject::learn(ControlSource control_source, double nu, unsigned int i, bool seqbatch) {
   size_t ret;
 
-  context->pick_minibatch(mbn, mbbuf);
+  context->pick_minibatch(mbn, mbbuf, seqbatch);
   samples->encude_minibatch(mbbuf, mbn, gentgt);
 
   switch (control_source) {
@@ -253,7 +253,8 @@ void SimpleProject::report(const char *prog, unsigned int i) {
 
 void SimpleProject::generate(
   ContextSource context_source,
-  ControlSource control_source
+  ControlSource control_source,
+  bool seqbatch
 ) {
   size_t ret;
   const double *encout;
@@ -270,7 +271,7 @@ void SimpleProject::generate(
   switch (context_source) {
   case CONTEXT_SOURCE_TRAINING:
     if (!picked) {
-      context->pick_minibatch(mbn, mbbuf);
+      context->pick_minibatch(mbn, mbbuf, seqbatch);
       picked = true;
     }
     context->copy_minibatch(mbbuf, mbn, contextbuf);
@@ -307,7 +308,7 @@ void SimpleProject::generate(
 
   case CONTROL_SOURCE_TRAINING:
     if (!picked) {
-      context->pick_minibatch(mbn, mbbuf);
+      context->pick_minibatch(mbn, mbbuf, seqbatch);
       picked = true;
     }
     context->encude_minibatch(mbbuf, mbn, encin, 0, contextlay->n + sampleslay->n);
@@ -501,10 +502,10 @@ ZoomProject::~ZoomProject() {
 }
 
 
-void ZoomProject::learn(ControlSource control_source, double nu, unsigned int i) {
+void ZoomProject::learn(ControlSource control_source, double nu, unsigned int i, bool seqbatch) {
   size_t ret;
 
-  attrs->pick_minibatch(mbn, mbbuf);
+  attrs->pick_minibatch(mbn, mbbuf, seqbatch);
   hifreq->encude_minibatch(mbbuf, mbn, gentgt);
 
   switch (control_source) {
@@ -558,7 +559,8 @@ void ZoomProject::learn(ControlSource control_source, double nu, unsigned int i)
 
 void ZoomProject::generate(
   ContextSource context_source,
-  ControlSource control_source
+  ControlSource control_source,
+  bool seqbatch
 ) {
   size_t ret;
   const double *encout;
@@ -577,7 +579,7 @@ void ZoomProject::generate(
   switch (context_source) {
   case CONTEXT_SOURCE_TRAINING:
     if (!picked) {
-      attrs->pick_minibatch(mbn, mbbuf);
+      attrs->pick_minibatch(mbn, mbbuf, seqbatch);
       picked = true;
     }
     attrs->copy_minibatch(mbbuf, mbn, attrsbuf);
@@ -622,7 +624,7 @@ void ZoomProject::generate(
 
   case CONTROL_SOURCE_TRAINING:
     if (!picked) {
-      attrs->pick_minibatch(mbn, mbbuf);
+      attrs->pick_minibatch(mbn, mbbuf, seqbatch);
       picked = true;
     }
     attrs->encude_minibatch(mbbuf, mbn, encin, 0, outputlay->n);

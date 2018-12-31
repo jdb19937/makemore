@@ -42,12 +42,14 @@ struct Project {
   virtual void learn(
     ControlSource control_source,
     double nu,
-    unsigned int i
+    unsigned int i,
+    bool seqbatch = false
   ) = 0;
 
   virtual void generate(
     ContextSource context_source,
-    ControlSource control_source
+    ControlSource control_source,
+    bool seqbatch = false
   ) = 0;
 
   virtual const double *output() const = 0;
@@ -92,12 +94,14 @@ struct SimpleProject : Project {
   virtual void learn(
     ControlSource control_source,
     double nu,
-    unsigned int i
+    unsigned int i,
+    bool seqbatch = false
   );
 
   virtual void generate(
     ContextSource context_source,
-    ControlSource control_source
+    ControlSource control_source,
+    bool seqbatch = false
   );
 
   virtual void write_ppm(FILE *fp = stdout);
@@ -132,12 +136,14 @@ struct ZoomProject : Project {
   virtual void learn(
     ControlSource control_source,
     double nu,
-    unsigned int i
+    unsigned int i,
+    bool seqbatch = false
   );
 
   virtual void generate(
     ContextSource context_source,
-    ControlSource control_source
+    ControlSource control_source,
+    bool seqbatch = false
   );
 
   virtual void write_ppm(FILE *fp = stdout);
