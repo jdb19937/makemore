@@ -39,7 +39,7 @@ int main(int argc, char **argv) {
       ++argv;
       --argc;
       if (argc < 1)
-        usage();
+        return usage();
       nu = strtod(arg, NULL);
 
     } else {
@@ -53,7 +53,7 @@ int main(int argc, char **argv) {
   }
 
   if (control_source == Project::CONTROL_SOURCE_UNKNOWN)
-    usage();
+    return usage();
   if (argc < 1)
     return usage();
 

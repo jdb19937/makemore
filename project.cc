@@ -689,6 +689,10 @@ void ZoomProject::write_ppm(FILE *fp) {
   assert(dim * dim * 3 == labn);
   assert(dim * dim * 9 == hifreqlay->n * 4);
 
+  // unsigned int ldim = round(sqrt(mbn));
+  // if (ldim * ldim < mbn)
+  //   ++ldim;
+
   PPM p;
   p.unvectorize(outputbuf + attrslay->n, dim, dim);
   p.write(fp);
