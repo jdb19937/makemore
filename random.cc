@@ -35,7 +35,7 @@ double randrange(double a, double b) {
   return uniform(generator);
 }
 
-int randrange(int a, int b) {
-  static std::uniform_int_distribution<int> uniform(a, b);
+unsigned int randuint() {
+  static std::uniform_int_distribution<unsigned int> uniform(0, 1UL<<31);
   return uniform(generator);
 }
