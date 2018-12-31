@@ -5,8 +5,8 @@ CXXFLAGS = -O6
 LDFLAGS = -lm
 CULDFLAGS = -lcuda -lcudart
  
-LIBHDR = cudamem.hh random.hh tron.hh ppm.hh layout.hh megatron.hh wiring.hh persist.hh dataset.hh topology.hh multitron.hh project.hh
-LIBOBJ = cudamem.o random.o tron.o ppm.o layout.o megatron.o wiring.o persist.o dataset.o topology.o multitron.o project.o
+LIBHDR = cudamem.hh random.hh tron.hh ppm.hh layout.hh megatron.hh wiring.hh persist.hh dataset.hh topology.hh multitron.hh project.hh twiddle.hh
+LIBOBJ = cudamem.o random.o tron.o ppm.o layout.o megatron.o wiring.o persist.o dataset.o topology.o multitron.o project.o twiddle.o
 LIB = libmakemore.a
 
 DATASETS = face-attrs.dat face-gender.dat \
@@ -14,14 +14,20 @@ DATASETS = face-attrs.dat face-gender.dat \
   face-16x16-lab-full.dat face-16x16-gray-full.dat \
   face-16x16-lab-hifreq.dat face-16x16-gray-hifreq.dat \
   face-32x32-lab-full.dat face-32x32-gray-full.dat \
-  face-32x32-lab-hifreq.dat face-32x32-gray-hifreq.dat
+  face-32x32-lab-hifreq.dat face-32x32-gray-hifreq.dat \
+  face-64x64-lab-hifreq.dat
+
+#  face-64x64-lab-full.dat face-64x64-gray-full.dat \
+#  face-64x64-lab-hifreq.dat face-64x64-gray-hifreq.dat
 
 LAYOUTS = face-attrs.lay face-gender.lay \
   face-8x8-lab-full.lay face-8x8-gray-full.lay \
   face-16x16-lab-full.lay face-16x16-gray-full.lay \
   face-16x16-lab-hifreq.lay face-16x16-gray-hifreq.lay \
   face-32x32-lab-full.lay face-32x32-gray-full.lay \
-  face-32x32-lab-hifreq.lay face-32x32-gray-hifreq.lay
+  face-32x32-lab-hifreq.lay face-32x32-gray-hifreq.lay \
+  face-64x64-lab-full.lay face-64x64-gray-full.lay \
+  face-64x64-lab-hifreq.lay face-64x64-gray-hifreq.lay
 
 
 LABTOOLS = \
@@ -116,6 +122,23 @@ face-32x32-gray-hifreq.dat:
 face-32x32-gray-hifreq.lay:
 	./mkfacelay.pl 16 3 > $@
 
+face-64x64-lab-full.dat:
+	./mkfacedat.pl -dim=64  > $@
+face-64x64-lab-full.lay:
+	./mkfacelay.pl 64 3 > $@
+face-64x64-gray-full.dat:
+	./mkfacedat.pl -dim=64 -gray > $@
+face-64x64-gray-full.lay:
+	./mkfacelay.pl 64 1 > $@
+face-64x64-lab-hifreq.dat:
+	./mkfacedat.pl -dim=64 -hifreq  > $@
+face-64x64-lab-hifreq.lay:
+	./mkfacelay.pl 32 9 > $@
+face-64x64-gray-hifreq.dat:
+	./mkfacedat.pl -dim=64 -gray -hifreq > $@
+face-64x64-gray-hifreq.lay:
+	./mkfacelay.pl 32 3 > $@
+
 
 ppmtolab.o: ppm.hh
 ppmtolab: ppmtolab.o ppm.o
@@ -167,8 +190,17 @@ makemore: makemore.o $(LIB)
 testmore.o: $(LIBHDR)
 testmore: testmore.o $(LIB)
 	$(CXX) -o $@ $(CXXFLAGS) $^ $(LDFLAGS) $(CULDFLAGS)
+trainfaith.o: $(LIBHDR)
+trainfaith: trainfaith.o $(LIB)
+	$(CXX) -o $@ $(CXXFLAGS) $^ $(LDFLAGS) $(CULDFLAGS)
 seefaith.o: $(LIBHDR)
 seefaith: seefaith.o $(LIB)
+	$(CXX) -o $@ $(CXXFLAGS) $^ $(LDFLAGS) $(CULDFLAGS)
+gencenter.o: $(LIBHDR)
+gencenter: gencenter.o $(LIB)
+	$(CXX) -o $@ $(CXXFLAGS) $^ $(LDFLAGS) $(CULDFLAGS)
+pipecenter.o: $(LIBHDR)
+pipecenter: pipecenter.o $(LIB)
 	$(CXX) -o $@ $(CXXFLAGS) $^ $(LDFLAGS) $(CULDFLAGS)
 seecenter.o: $(LIBHDR)
 seecenter: seecenter.o $(LIB)

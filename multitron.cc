@@ -70,9 +70,15 @@ Multitron::Multitron(const Topology &top, unsigned int _mbn, const char *mapfn) 
   assert(mt1->outn == outn);
 }
 
-void Multitron::randomize(double disp) {
-  for (auto ti = megatrons.begin(); ti != megatrons.end(); ++ti)
+void Multitron::randomize(double dispa, double dispb) {
+  assert(megatrons.size() > 0);
+  double disp = dispa;
+  double ddisp = (dispb - dispa) / megatrons.size();
+
+  for (auto ti = megatrons.begin(); ti != megatrons.end(); ++ti) {
     (*ti)->randomize(disp);
+    disp += ddisp;
+  }
 }
 
 Multitron::~Multitron() {

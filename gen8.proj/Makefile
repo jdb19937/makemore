@@ -1,8 +1,8 @@
 #!/bin/bash
 
-DATASETS = context.dat samples.dat
+DATASETS = samples.dat context.dat
 LAYOUTS = \
-  context.lay samples.lay controls.lay \
+  context.lay samples.lay controls.lay output.lay \
   encinput.lay enchidden1.lay enchidden2.lay encoutput.lay \
   geninput.lay genhidden1.lay genhidden2.lay genoutput.lay \
   disinput.lay dishidden1.lay dishidden2.lay disoutput.lay
@@ -38,27 +38,33 @@ local-controls.lay:
 	../makelay -grid 8 > $@
 
 
-context.dat:
+context.dat: attrs.dat
+	cp -f $^ $@
+attrs.dat:
 	ln -sf ../face-attrs.dat $@
-context.lay:
+attrs.lay:
 	ln -sf ../face-attrs.lay $@
 samples.dat:
 	ln -sf ../face-8x8-lab-full.dat $@
 samples.lay:
 	ln -sf ../face-8x8-lab-full.lay $@
-
-controls.lay: global-controls.lay local-controls.lay
+output.lay: context.lay samples.lay
 	../catlay $^ > $@
 
 
+controls.lay: global-controls.lay local-controls.lay
+	../catlay $^ > $@
+context.lay: attrs.lay
+	../catlay $^ > $@
+
 encinput.lay: context.lay samples.lay
-	../catlay context.lay samples.lay > $@
+	../catlay $^ > $@
 enchidden1.wire: encinput.lay enchidden1.lay
 	../wireup $^ > $@
 enchidden2.wire: enchidden1.lay enchidden2.lay
 	../wireup $^ > $@
 encoutput.lay: controls.lay
-	cp -f controls.lay $@
+	../catlay $^ > $@
 encoutput.wire: enchidden2.lay encoutput.lay
 	../wireup $^ > $@
 enc.top: enchidden1.wire enchidden2.wire encoutput.wire
@@ -68,13 +74,13 @@ enc.map: enc.top
 
 
 geninput.lay: context.lay controls.lay
-	../catlay context.lay controls.lay > $@
+	../catlay $^ > $@
 genhidden1.wire: geninput.lay genhidden1.lay
 	../wireup $^ > $@
 genhidden2.wire: genhidden1.lay genhidden2.lay
 	../wireup $^ > $@
 genoutput.lay: samples.lay
-	cp -f samples.lay $@
+	../catlay $^ > $@
 genoutput.wire: genhidden2.lay genoutput.lay
 	../wireup $^ > $@
 gen.top: genhidden1.wire genhidden2.wire genoutput.wire
@@ -83,8 +89,8 @@ gen.map: gen.top
 	../makemap gen.top gen.map
 
 
-disinput.lay: context.lay samples.lay
-	../catlay context.lay samples.lay > $@
+disinput.lay: context.lay controls.lay
+	../catlay context.lay controls.lay > $@
 dishidden1.wire: disinput.lay dishidden1.lay
 	../wireup $^ > $@
 dishidden2.wire: dishidden1.lay dishidden2.lay
@@ -98,5 +104,8 @@ dis.top: dishidden1.wire dishidden2.wire disoutput.wire
 dis.map: dis.top
 	../makemap dis.top dis.map
 
+config.tsv:
+	cp -f ../config-simple.tsv $@
+
 clean:
-	rm -f *.lay *.dat *.wire *.top *.map
+	rm -f *.lay *.dat *.wire *.top *.map config.tsv

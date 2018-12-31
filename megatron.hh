@@ -42,7 +42,7 @@ struct Megatron : Tron {
 
 
   void _makemaps();
-  void randomize(double disp = 4.0);
+  void randomize(double disp);
 };
 
 #endif

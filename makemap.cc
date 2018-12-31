@@ -5,7 +5,7 @@
 
 int main(int argc, char **argv) {
   if (argc < 3) {
-    fprintf(stderr, "Usage: makemap file.top file.map [disp]\n");
+    fprintf(stderr, "Usage: makemap file.top file.map [dispa [dispb]]\n");
     exit(1);
   }
 
@@ -16,11 +16,14 @@ int main(int argc, char **argv) {
   const char *mapfn = argv[2];
   Multitron *tron = new Multitron(*top, 1, mapfn);
 
-  double disp = 1.0;
+  double dispa = 1.0;
   if (argc > 3)
-    disp = strtod(argv[3], NULL);
+    dispa = strtod(argv[3], NULL);
+  double dispb = dispa;
+  if (argc > 4)
+    dispb = strtod(argv[4], NULL);
 
-  tron->randomize(disp);
+  tron->randomize(dispa, dispb);
   tron->sync(1);
 
   delete tron;

@@ -37,7 +37,7 @@ struct Multitron : Tron {
 
 
   void _makemaps();
-  void randomize(double disp = 4.0);
+  void randomize(double dispa, double dispb);
 };
 
 #endif

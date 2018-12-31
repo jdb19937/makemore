@@ -361,7 +361,8 @@ void Megatron::randomize(double disp) {
     double iss = disp / sqrt(w.size() + 1);
     double sw = 0;
     for (unsigned int i = 0; i < w.size() - 1; ++i) {
-      double ww = iss * rnd(-1, 1);
+      // double ww = iss * rnd(-1, 1);
+      double ww = iss * randgauss();
       cweight[w[i]] = ww;
       sw += ww;
     }
