@@ -717,5 +717,36 @@ void ZoomProject::report(const char *prog, unsigned int i) {
 
 
 
+PipelineProject::PipelineProject(const char *_dir, unsigned int _mbn) : Project(_dir, _mbn) {
+  // read tsv, build projects
+
+  p0 = projects[0];
+  p1 = projects[projects.size() - 1];
+}
+
+PipelineProject::~PipelineProject() {
+  for (auto pi = projects.begin(); pi != projects.end(); ++pi)
+    delete *pi;
+}
+
+void PipelineProject::generate(
+  ContextSource context_source,
+  ControlSource control_source
+) {
+  assert(0);
+}
+
+void PipelineProject::write_ppm(FILE *fp) {
+  p1->write_ppm(stdout);
+}
+
+const double *PipelineProject::output() const {
+  return p1->output();
+}
+
+void PipelineProject::load() {
+  for (auto pi = projects.begin(); pi != projects.end(); ++pi)
+    (*pi)->load();
+}
 
 

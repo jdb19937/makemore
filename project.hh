@@ -113,7 +113,7 @@ struct SimpleProject : Project {
 
 
 struct ZoomProject : Project {
-  ZoomProject(const char *_dir, unsigned int _mbn = 4);
+  ZoomProject(const char *_dir, unsigned int _mbn);
   virtual ~ZoomProject();
 
   Topology *enctop, *gentop, *distop;
@@ -150,6 +150,37 @@ struct ZoomProject : Project {
   virtual void save();
   virtual void report(const char *prog, unsigned int i);
 };
+
+struct PipelineProject : Project {
+  PipelineProject(const char *_dir, unsigned int _mbn);
+  virtual ~PipelineProject();
+
+  std::vector<Project*> projects;
+  Project *p0, *p1;
+
+  virtual void learn(
+    ControlSource control_source,
+    double nu,
+    unsigned int i
+  ) {
+    fprintf(stderr, "can't learn pipeline\n");
+  }
+
+  virtual void generate(
+    ContextSource context_source,
+    ControlSource control_source
+  );
+
+  virtual void write_ppm(FILE *fp = stdout);
+  virtual const double *output() const;
+  virtual void load();
+
+  virtual void save() {
+    fprintf(stderr, "won't save pipeline\n");
+  }
+};
+
+
 
 
 #endif
