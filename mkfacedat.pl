@@ -44,21 +44,30 @@ scalar <$attrfp>;
 my $count = 0;
 
 for my $id ('000001' .. '202599') {
+  my $attrtxt = <$attrfp>;
+  $attrtxt =~ s/\r//g;
+  chomp $attrtxt;
+  my @attr = split /,/, $attrtxt;
+  shift(@attr) eq "$id.jpg" or die "attrs don't match $id $attrtxt";
+  @attr == 40 or die "bad attrs $attrtxt";
+  for (@attr) { die "bad attr [$_]" unless $_ eq 1 or $_ eq -1; }
+  @attr = map { $_ > 0 ? 1 : 0 } @attr;
+  my $attrbytes = pack('C*', @attr);
+
   my $jpgfn = "$celeba/img_align_celeba/$id.jpg";
-  my $jpgdata;
-  {
-    open(my $jpgfp, "< $jpgfn") or die "$0: $jpgfn: $!";
-    undef local $/;
-    $jpgdata = <$jpgfp>;
-  }
+  my $cmd = "djpeg -ppm < $jpgfn |pnmcut -top 20 -bottom 197 |pnmscale -width 128 |./ppmtolab $pipe";
+  my $labdata = `$cmd`;
+  length($labdata) == 3 * 8 * $dim * $dim or die;
 
-  open(my $outfp, "| djpeg -ppm |pnmcut -top 20 -bottom 197 |pnmscale -width 128 |./ppmtolab $pipe") or die;
-  print $outfp $jpgdata;
-  close($outfp);
+  my $labbytes = pack('C*', 
+    map { $_ > 255 ? 255 : $_ < 0 ? 0 : $_ }
+    map { int($_ * 256) }
+    unpack('d*', $labdata)
+  );
 
-  ++$count;
-  if (defined($::max) && $count >= $::max) {
-    print STDERR "all done count=$count\n";
-    last;
-  }
+  length($attrbytes) == 40 or die "huh";
+  length($labbytes) == 3 * $dim * $dim or die "huh2";
+
+  print $attrbytes;
+  print $labbytes;
 }

@@ -13,9 +13,9 @@ int usage() {
 int main(int argc, char **argv) {
   seedrand();
 
-  unsigned int mbn = 1;
+  unsigned int mbn = 25;
   Project::ControlSource control_source = Project::CONTROL_SOURCE_UNKNOWN;
-  Project::ContextSource context_source = Project::CONTEXT_SOURCE_UNKNOWN;
+  Project::ContextSource context_source = Project::CONTEXT_SOURCE_STDIN;
   Project::OutputFormat output_format = Project::OUTPUT_FORMAT_UNKNOWN;
 
   ++argv;
@@ -39,10 +39,6 @@ int main(int argc, char **argv) {
       assert(context_source == Project::CONTEXT_SOURCE_UNKNOWN);
       context_source = Project::CONTEXT_SOURCE_STDIN;
 
-    } else if (!strcmp(arg, "--train")) {
-      assert(context_source == Project::CONTEXT_SOURCE_UNKNOWN);
-      context_source = Project::CONTEXT_SOURCE_TRAINING;
-
     } else if (!strcmp(arg, "--ppm")) {
       assert(output_format == Project::OUTPUT_FORMAT_UNKNOWN);
       output_format = Project::OUTPUT_FORMAT_PPM;
@@ -61,27 +57,25 @@ int main(int argc, char **argv) {
       return usage();
   }
 
-  if (context_source == Project::CONTEXT_SOURCE_UNKNOWN)
-    context_source = Project::CONTEXT_SOURCE_TRAINING;
   if (control_source == Project::CONTROL_SOURCE_UNKNOWN)
     control_source = Project::CONTROL_SOURCE_RANDOM;
   if (output_format == Project::OUTPUT_FORMAT_UNKNOWN)
     output_format = Project::OUTPUT_FORMAT_RAW;
 
   const char *project_dir = argv[0];
-  Project *p = open_project(project_dir, 1);
+  Project *p = open_project(project_dir, mbn);
 
   unsigned int i = 0;
   while (1) {
     p->generate(
-      context_source,
+      stdin,
       control_source
     );
 
     if (output_format == Project::OUTPUT_FORMAT_PPM) {
       p->write_ppm(stdout);
     } else if (output_format == Project::OUTPUT_FORMAT_RAW) {
-      size_t ret = fwrite(p->output(), sizeof(double), mbn * p->outputlay->n, stdout);
+      size_t ret = fwrite(p->output(), 1, mbn * p->outputlay->n, stdout);
       assert(ret == mbn * p->outputlay->n);
     }
 

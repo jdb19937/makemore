@@ -104,6 +104,42 @@ void PPM::unvectorizegray(const double *vec, unsigned int _w, unsigned int _h) {
   }
 }
 
+void PPM::make(unsigned int _w, unsigned int _h, uint8_t v) {
+  unsigned int n = _w * _h * 3;
+  w = _w;
+  h = _h;
+
+  if (data)
+    delete[] data;
+  data = new uint8_t[n];
+
+  for (unsigned int i = 0; i < n; ++i)
+    data[i] = v;
+}
+
+void PPM::pastelab(const double *vec, unsigned int vw, unsigned int vh, unsigned int x0, unsigned int y0) {
+  assert(y0 + vh <= h);
+  assert(x0 + vw <= w);
+
+  unsigned int i = 0;
+  for (unsigned int vy = 0; vy < vh; ++vy) {
+    unsigned int y = y0 + vy;
+    unsigned int yw3 = y * w * 3;
+
+    for (unsigned int vx = 0; vx < vw; ++vx) {
+      unsigned int x = x0 + vx;
+      unsigned int x3 = x * 3;
+
+      labtorgb(
+        vec[i+0], vec[i+1], vec[i+2], 
+        data+yw3+x3+0, data+yw3+x3+1, data+yw3+x3+2
+      );
+
+      i += 3;
+    }
+  }
+}
+
 void PPM::unvectorize(const double *vec, unsigned int _w, unsigned int _h) {
   unsigned int n = _w * _h * 3;
 

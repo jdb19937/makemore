@@ -5,7 +5,6 @@
 
 #include <string>
 
-#include "dataset.hh"
 #include "layout.hh"
 #include "topology.hh"
 #include "multitron.hh"
@@ -40,19 +39,18 @@ struct Project {
   } OutputFormat;
 
   virtual void learn(
+    FILE *infp,
     ControlSource control_source,
     double nu,
-    unsigned int i,
-    bool seqbatch = false
+    unsigned int i
   ) = 0;
 
   virtual void generate(
-    ContextSource context_source,
-    ControlSource control_source,
-    bool seqbatch = false
+    FILE *infp,
+    ControlSource control_source
   ) = 0;
 
-  virtual const double *output() const = 0;
+  virtual const uint8_t *output() const = 0;
 
   virtual void write_ppm(FILE *fp = stdout) {
     assert(0);
@@ -84,30 +82,30 @@ struct SimpleProject : Project {
 
   Tron *encpasstron, *encgentron, *encdistron;
 
-  Dataset *samples, *context;
-
 
   double *genin, *encin, *gentgt;
   double *samplesbuf, *contextbuf, *controlbuf, *outputbuf;
+  uint8_t *bcontextbuf, *boutputbuf;
   unsigned int *mbbuf;
 
+  unsigned int labn, dim;
+
   virtual void learn(
+    FILE *infp,
     ControlSource control_source,
     double nu,
-    unsigned int i,
-    bool seqbatch = false
+    unsigned int i
   );
 
   virtual void generate(
-    ContextSource context_source,
-    ControlSource control_source,
-    bool seqbatch = false
+    FILE *infp,
+    ControlSource control_source
   );
 
   virtual void write_ppm(FILE *fp = stdout);
 
-  virtual const double *output() const {
-    return outputbuf;
+  virtual const uint8_t *output() const {
+    return boutputbuf;
   }
 
   virtual void load();
@@ -126,30 +124,30 @@ struct ZoomProject : Project {
   Tron *encpasstron, *encgentron, *encdistron;
 
   Layout *lofreqlay, *hifreqlay, *attrslay;
-  Dataset *lofreq, *hifreq, *attrs;
 
 
   double *genin, *encin, *gentgt;
-  double *attrsbuf, *lofreqbuf, *hifreqbuf, *controlbuf, *outputbuf;
-  unsigned int *mbbuf;
+  double *lofreqbuf, *hifreqbuf, *controlbuf, *outputbuf, *contextbuf;
+  uint8_t *bcontextbuf, *boutputbuf;
+
+  unsigned int labn, dim;
 
   virtual void learn(
+    FILE *infp,
     ControlSource control_source,
     double nu,
-    unsigned int i,
-    bool seqbatch = false
+    unsigned int i
   );
 
   virtual void generate(
-    ContextSource context_source,
-    ControlSource control_source,
-    bool seqbatch = false
+    FILE *infp,
+    ControlSource control_source
   );
 
   virtual void write_ppm(FILE *fp = stdout);
 
-  virtual const double *output() const {
-    return outputbuf;
+  virtual const uint8_t *output() const {
+    return boutputbuf;
   }
 
   virtual void load();
@@ -165,6 +163,7 @@ struct PipelineProject : Project {
   Project *p0, *p1;
 
   virtual void learn(
+    FILE *infp,
     ControlSource control_source,
     double nu,
     unsigned int i
@@ -173,12 +172,12 @@ struct PipelineProject : Project {
   }
 
   virtual void generate(
-    ContextSource context_source,
+    FILE *infp,
     ControlSource control_source
   );
 
   virtual void write_ppm(FILE *fp = stdout);
-  virtual const double *output() const;
+  virtual const uint8_t *output() const;
   virtual void load();
 
   virtual void save() {

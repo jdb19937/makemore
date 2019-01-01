@@ -21,6 +21,12 @@ struct PPM {
       delete[] data;
   }
 
+  PPM(unsigned int _w, unsigned int _h, uint8_t v) {
+    w = h = 0;
+    data = NULL;
+    make(_w, _h, v);
+  }
+
   PPM(const PPM &ppm) {
     w = ppm.w;
     h = ppm.h;
@@ -41,6 +47,9 @@ struct PPM {
   void zoom();
   void rawzoom();
   void pad();
+
+  void pastelab(const double *vec, unsigned int vw, unsigned int vh, unsigned int x0, unsigned int y0);
+  void make(unsigned int _w, unsigned int _h, uint8_t v);
 };
 
 void rgbtoxyz(uint8_t r, uint8_t g, uint8_t b, double *xp, double *yp, double *zp);

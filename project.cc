@@ -141,31 +141,30 @@ SimpleProject::SimpleProject(const char *_dir, unsigned int _mbn) : Project(_dir
   distron = new Multitron(*distop, mbn, dismapfn);
   encdistron = compositron(encpasstron, distron);
 
-  char samplesdatfn[4096];
-  sprintf(samplesdatfn, "%s/samples.dat", _dir);
-  samples = new Dataset(samplesdatfn, sampleslay->n);
 
-  char contextdatfn[4096];
-  sprintf(contextdatfn, "%s/context.dat", _dir);
-  context = new Dataset(contextdatfn, contextlay->n);
-
-  assert(context->n == samples->n);
-  assert(context->k == contextlay->n);
-  assert(samples->k == sampleslay->n);
   assert(outputlay->n == contextlay->n + sampleslay->n);
   assert(gentron->inn == mbn * (contextlay->n + controlslay->n));
   assert(gentron->outn == mbn * sampleslay->n);
   assert(enctron->inn == mbn * (contextlay->n + sampleslay->n));
   assert(enctron->outn == mbn * controlslay->n);
 
+  labn = sampleslay->n;
+  assert(contextlay->n + labn == outputlay->n);
+  assert(labn % 3 == 0);
+
+  dim = round(sqrt(labn / 3));
+  assert(dim * dim * 3 == labn);
+
+
   cumake(&encin, mbn * (contextlay->n + sampleslay->n));
   cumake(&genin, mbn * (contextlay->n + controlslay->n));
   cumake(&gentgt, mbn * sampleslay->n);
+  bcontextbuf = new uint8_t[contextlay->n * mbn];
   contextbuf = new double[contextlay->n * mbn];
   controlbuf = new double[controlslay->n * mbn];
   samplesbuf = new double[sampleslay->n * mbn];
   outputbuf = new double[outputlay->n * mbn];
-  mbbuf = new unsigned int[mbn];
+  boutputbuf = new uint8_t[outputlay->n * mbn];
 }
 
 SimpleProject::~SimpleProject() {
@@ -176,40 +175,44 @@ SimpleProject::~SimpleProject() {
   delete encpasstron; 
   delete encgentron;
 
-  delete samples; 
-  delete context;
-
   delete sampleslay;
 
   delete[] mbbuf;
   delete[] outputbuf;
+  delete[] boutputbuf;
   delete[] samplesbuf;
   delete[] controlbuf;
   delete[] contextbuf;
+  delete[] bcontextbuf;
   cufree(encin);
   cufree(genin);
   cufree(gentgt);
 }
 
-void SimpleProject::learn(ControlSource control_source, double nu, unsigned int i, bool seqbatch) {
+void SimpleProject::learn(FILE *infp, ControlSource control_source, double nu, unsigned int i) {
   size_t ret;
 
-  context->pick_minibatch(mbn, mbbuf, seqbatch);
-  samples->encude_minibatch(mbbuf, mbn, gentgt);
+
+  ret = fread(boutputbuf, 1, outputlay->n * mbn, infp);
+  assert(ret == outputlay->n * mbn);
+  for (unsigned int j = 0, jn = mbn * outputlay->n; j < jn; ++j)
+    outputbuf[j] = (0.5 + (double)boutputbuf[j]) / 256.0;
+
+  for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
+    encude(
+      outputbuf + mbi * outputlay->n + contextlay->n,
+      sampleslay->n,
+      gentgt + mbi * sampleslay->n
+    );
+  }
 
   switch (control_source) {
   case CONTROL_SOURCE_TRAINING:
-    context->encude_minibatch(mbbuf, mbn, encin, 0, outputlay->n);
-    samples->encude_minibatch(mbbuf, mbn, encin, contextlay->n, outputlay->n);
+    encude(outputbuf, mbn * outputlay->n, encin);
     encgentron->feed(encin, NULL);
     encgentron->target(gentgt);
     encgentron->train(nu);
     return; // !
-
-  case CONTROL_SOURCE_STDIN:
-    ret = fread(controlbuf, sizeof(double), controlslay->n * mbn, stdin);
-    assert(ret == controlslay->n * mbn);
-    break;
 
   case CONTROL_SOURCE_CENTER:
     for (unsigned int j = 0; j < controlslay->n * mbn; ++j)
@@ -228,13 +231,16 @@ void SimpleProject::learn(ControlSource control_source, double nu, unsigned int 
 
   for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
     encude(
+      outputbuf + mbi * outputlay->n,
+      contextlay->n,
+      genin + mbi * (contextlay->n + controlslay->n)
+    );
+    encude(
       controlbuf + mbi * controlslay->n,
       controlslay->n,
       genin + mbi * (contextlay->n + controlslay->n) + contextlay->n
     );
   }
-
-  context->encude_minibatch(mbbuf, mbn, genin, 0, contextlay->n + controlslay->n);
 
   gentron->feed(genin, NULL);
   gentron->target(gentgt);
@@ -252,77 +258,47 @@ void SimpleProject::report(const char *prog, unsigned int i) {
 
 
 void SimpleProject::generate(
-  ContextSource context_source,
-  ControlSource control_source,
-  bool seqbatch
+  FILE *infp,
+  ControlSource control_source
 ) {
   size_t ret;
   const double *encout;
 
-  unsigned int labn = sampleslay->n;
-  assert(contextlay->n + labn == outputlay->n);
-  assert(labn % 3 == 0);
-
-  unsigned int dim = round(sqrt(labn / 3));
-  assert(dim * dim * 3 == labn);
-
-  bool picked = 0;
-
-  switch (context_source) {
-  case CONTEXT_SOURCE_TRAINING:
-    if (!picked) {
-      context->pick_minibatch(mbn, mbbuf, seqbatch);
-      picked = true;
-    }
-    context->copy_minibatch(mbbuf, mbn, contextbuf);
-    break;
-    
-  case CONTEXT_SOURCE_STDIN:
-    for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
-      ret = fread(contextbuf + mbi * contextlay->n, sizeof(double), contextlay->n, stdin);
-      assert(ret == contextlay->n);
-
-      if (control_source == CONTROL_SOURCE_STDIN) {
-        ret = fread(controlbuf + mbi * controlslay->n, sizeof(double), controlslay->n, stdin);
-        assert(ret == controlslay->n * mbn);
-      }
-    }
-    break;
-
-  default:
-    assert(0);
-  }
-
-  for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
-    encude(
-      contextbuf + mbi * contextlay->n,
-      contextlay->n,
-      genin + mbi * (contextlay->n + controlslay->n)
-    );
-  }
-
-
   switch (control_source) {
-  case CONTROL_SOURCE_STDIN:
-    break;
-
   case CONTROL_SOURCE_TRAINING:
-    if (!picked) {
-      context->pick_minibatch(mbn, mbbuf, seqbatch);
-      picked = true;
+    ret = fread(boutputbuf, 1, outputlay->n * mbn, infp);
+    assert(ret == outputlay->n * mbn);
+    for (unsigned int j = 0, jn = mbn * outputlay->n; j < jn; ++j)
+      outputbuf[j] = (0.5 + (double)boutputbuf[j]) / 256.0;
+    for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
+      memcpy(
+        contextbuf + mbi * contextlay->n,
+        outputbuf + mbi * outputlay->n,
+        contextlay->n * sizeof(double)
+      );
     }
-    context->encude_minibatch(mbbuf, mbn, encin, 0, contextlay->n + sampleslay->n);
-    samples->encude_minibatch(mbbuf, mbn, encin, contextlay->n, contextlay->n + sampleslay->n);
+
+    encude(outputbuf, mbn * outputlay->n, encin);
     encout = enctron->feed(encin, NULL);
     decude(encout, controlslay->n * mbn, controlbuf);
     break;
 
   case CONTROL_SOURCE_CENTER:
+    ret = fread(bcontextbuf, 1, contextlay->n * mbn, infp);
+    assert(ret == contextlay->n * mbn);
+    for (unsigned int j = 0, jn = mbn * contextlay->n; j < jn; ++j)
+      contextbuf[j] = (0.5 + (double)bcontextbuf[j]) / 256.0;
+
     for (unsigned int j = 0; j < controlslay->n * mbn; ++j)
       controlbuf[j] = 0;
     break;
 
   case CONTROL_SOURCE_RANDOM:
+    ret = fread(bcontextbuf, 1, contextlay->n * mbn, infp);
+    assert(ret == contextlay->n * mbn);
+    for (unsigned int j = 0, jn = mbn * contextlay->n; j < jn; ++j)
+      contextbuf[j] = (0.5 + (double)bcontextbuf[j]) / 256.0;
+
     for (unsigned int j = 0; j < controlslay->n * mbn; ++j)
       controlbuf[j] = randgauss();
     break;
@@ -333,6 +309,12 @@ void SimpleProject::generate(
   }
 
   for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
+    encude(
+      contextbuf + mbi * contextlay->n,
+      contextlay->n,
+      genin + mbi * (contextlay->n + controlslay->n)
+    );
+
     encude(
       controlbuf + mbi * controlslay->n,
       controlslay->n,
@@ -356,22 +338,27 @@ void SimpleProject::generate(
       sampleslay->n * sizeof(double)
     );
   }
+  for (unsigned int j = 0, jn = mbn * outputlay->n; j < jn; ++j) {
+    int v = (int)(outputbuf[j] * 256.0);
+    boutputbuf[j] = v < 0 ? 0 : v > 255 ? 255 : v;
+  }
 }
 
 void SimpleProject::write_ppm(FILE *fp) {
   assert(mbn > 0);
 
+  unsigned int ldim = round(sqrt(mbn));
+  if (ldim * ldim < mbn)
+    ++ldim;
 
-  unsigned int labn = sampleslay->n;
-  assert(contextlay->n + sampleslay->n == outputlay->n);
-  assert(labn % 3 == 0);
+  PPM ppm(ldim * dim, ldim * dim, 0);
+  for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
+    unsigned int xpos = mbi % ldim;
+    unsigned int ypos = mbi / ldim;
+    ppm.pastelab(outputbuf + mbi * outputlay->n + contextlay->n, dim, dim, xpos * dim, ypos * dim);
+  }
 
-  unsigned int dim = round(sqrt(labn / 3));
-  assert(dim * dim * 3 == labn);
-
-  PPM p;
-  p.unvectorize(outputbuf + contextlay->n, dim, dim);
-  p.write(fp);
+  ppm.write(fp);
 }
 
 
@@ -421,35 +408,16 @@ ZoomProject::ZoomProject(const char *_dir, unsigned int _mbn) : Project(_dir, _m
   hifreqlay = new Layout;
   hifreqlay->load_file(hifreqlayfn);
 
-  char hifreqdatfn[4096];
-  sprintf(hifreqdatfn, "%s/hifreq.dat", _dir);
-  hifreq = new Dataset(hifreqdatfn, hifreqlay->n);
-
   char lofreqlayfn[4096];
   sprintf(lofreqlayfn, "%s/lofreq.lay", _dir);
   lofreqlay = new Layout;
   lofreqlay->load_file(lofreqlayfn);
-
-  char lofreqdatfn[4096];
-  sprintf(lofreqdatfn, "%s/lofreq.dat", _dir);
-  lofreq = new Dataset(lofreqdatfn, lofreqlay->n);
 
   char attrslayfn[4096];
   sprintf(attrslayfn, "%s/attrs.lay", _dir);
   attrslay = new Layout;
   attrslay->load_file(attrslayfn);
 
-  char attrsdatfn[4096];
-  sprintf(attrsdatfn, "%s/attrs.dat", _dir);
-  attrs = new Dataset(attrsdatfn, attrslay->n);
-
-
-  assert(attrs->n == lofreq->n);
-  assert(attrs->n == hifreq->n);
-
-  assert(attrs->k == attrslay->n);
-  assert(lofreq->k == lofreqlay->n);
-  assert(hifreq->k == hifreqlay->n);
   assert(contextlay->n == lofreqlay->n + attrslay->n);
   assert(outputlay->n == lofreqlay->n + hifreqlay->n + attrslay->n);
   assert(hifreqlay->n == 3 * lofreqlay->n);
@@ -459,16 +427,26 @@ ZoomProject::ZoomProject(const char *_dir, unsigned int _mbn) : Project(_dir, _m
   assert(enctron->inn == mbn * outputlay->n);
   assert(enctron->outn == mbn * controlslay->n);
 
+  labn = lofreqlay->n + hifreqlay->n;
+  assert(attrslay->n + labn == outputlay->n);
+  assert(labn % 3 == 0);
+
+  dim = round(sqrt(labn / 3));
+  assert(dim * dim * 3 == labn);
+  assert(dim * dim * 9 == hifreqlay->n * 4);
+
 
   cumake(&encin, mbn * (contextlay->n + hifreqlay->n));
   cumake(&genin, mbn * (contextlay->n + controlslay->n));
   cumake(&gentgt, mbn * (hifreqlay->n));
-  attrsbuf = new double[attrslay->n * mbn];
-  lofreqbuf = new double[lofreqlay->n * mbn];
   controlbuf = new double[controlslay->n * mbn];
-  hifreqbuf = new double[hifreqlay->n * mbn];
   outputbuf = new double[outputlay->n * mbn];
-  mbbuf = new unsigned int[mbn];
+  contextbuf = new double[contextlay->n * mbn];
+  boutputbuf = new uint8_t[outputlay->n * mbn];
+  bcontextbuf = new uint8_t[contextlay->n * mbn];
+
+  lofreqbuf = new double[lofreqlay->n * mbn];
+  hifreqbuf = new double[hifreqlay->n * mbn];
 }
 
 ZoomProject::~ZoomProject() {
@@ -479,13 +457,8 @@ ZoomProject::~ZoomProject() {
   delete encpasstron; 
   delete encgentron;
 
-  delete lofreq;
   delete lofreqlay;
-
-  delete attrs;
   delete attrslay;
-
-  delete hifreq;
   delete hifreqlay;
 
 
@@ -493,36 +466,39 @@ ZoomProject::~ZoomProject() {
   cufree(encin);
   cufree(genin);
   cufree(gentgt);
-  delete[] attrsbuf;
+  delete[] contextbuf;
+  delete[] bcontextbuf;
   delete[] lofreqbuf;
   delete[] controlbuf;
   delete[] hifreqbuf;
-  delete[] mbbuf;
   delete[] outputbuf;
+  delete[] boutputbuf;
 }
 
 
-void ZoomProject::learn(ControlSource control_source, double nu, unsigned int i, bool seqbatch) {
+void ZoomProject::learn(FILE *infp, ControlSource control_source, double nu, unsigned int i) {
   size_t ret;
 
-  attrs->pick_minibatch(mbn, mbbuf, seqbatch);
-  hifreq->encude_minibatch(mbbuf, mbn, gentgt);
+  ret = fread(boutputbuf, 1, outputlay->n * mbn, infp);
+  assert(ret == outputlay->n * mbn);
+  for (unsigned int j = 0, jn = mbn * outputlay->n; j < jn; ++j)
+    outputbuf[j] = (0.5 + (double)boutputbuf[j]) / 256.0;
+
+  for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
+    twiddle3(outputbuf + mbi * outputlay->n + attrslay->n, dim, dim, lofreqbuf, hifreqbuf);
+    memcpy(outputbuf + mbi * outputlay->n + attrslay->n, lofreqbuf, lofreqlay->n * sizeof(double));
+    memcpy(outputbuf + mbi * outputlay->n + contextlay->n, hifreqbuf, hifreqlay->n * sizeof(double));
+
+    encude(outputbuf + mbi * outputlay->n + contextlay->n, hifreqlay->n, gentgt + mbi * hifreqlay->n);
+  }
 
   switch (control_source) {
   case CONTROL_SOURCE_TRAINING:
-    attrs->encude_minibatch(mbbuf, mbn, encin, 0, outputlay->n);
-    lofreq->encude_minibatch(mbbuf, mbn, encin, attrslay->n, outputlay->n);
-    hifreq->encude_minibatch(mbbuf, mbn, encin, attrslay->n + lofreqlay->n, outputlay->n);
-
+    encude(outputbuf, mbn * outputlay->n, encin);
     encgentron->feed(encin, NULL);
     encgentron->target(gentgt);
     encgentron->train(nu);
     return; // !
-
-  case CONTROL_SOURCE_STDIN:
-    ret = fread(controlbuf, sizeof(double), controlslay->n * mbn, stdin);
-    assert(ret == controlslay->n * mbn);
-    break;
 
   case CONTROL_SOURCE_CENTER:
     for (unsigned int j = 0; j < controlslay->n * mbn; ++j)
@@ -541,14 +517,16 @@ void ZoomProject::learn(ControlSource control_source, double nu, unsigned int i,
 
   for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
     encude(
+      outputbuf + mbi * outputlay->n,
+      contextlay->n,
+      genin + mbi * (contextlay->n + controlslay->n)
+    );
+    encude(
       controlbuf + mbi * controlslay->n,
       controlslay->n,
       genin + mbi * (contextlay->n + controlslay->n) + contextlay->n
     );
   }
-
-  attrs->encude_minibatch(mbbuf, mbn, genin, 0, contextlay->n + controlslay->n);
-  lofreq->encude_minibatch(mbbuf, mbn, genin, attrslay->n, contextlay->n + controlslay->n);
 
   gentron->feed(genin, NULL);
   gentron->target(gentgt);
@@ -558,88 +536,55 @@ void ZoomProject::learn(ControlSource control_source, double nu, unsigned int i,
 
 
 void ZoomProject::generate(
-  ContextSource context_source,
-  ControlSource control_source,
-  bool seqbatch
+  FILE *infp,
+  ControlSource control_source
 ) {
   size_t ret;
   const double *encout;
 
-  unsigned int labn = lofreqlay->n + hifreqlay->n;
-  assert(attrslay->n + labn == outputlay->n);
-  assert(labn % 3 == 0);
-
-  unsigned int dim = round(sqrt(labn / 3));
-  assert(dim * dim * 3 == labn);
-  assert(dim * dim * 9 == hifreqlay->n * 4);
-
-  bool picked = false;
-
-
-  switch (context_source) {
-  case CONTEXT_SOURCE_TRAINING:
-    if (!picked) {
-      attrs->pick_minibatch(mbn, mbbuf, seqbatch);
-      picked = true;
-    }
-    attrs->copy_minibatch(mbbuf, mbn, attrsbuf);
-    lofreq->copy_minibatch(mbbuf, mbn, lofreqbuf);
-    break;
-    
-  case CONTEXT_SOURCE_STDIN:
-    for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
-      ret = fread(attrsbuf + mbi * attrslay->n, sizeof(double), attrslay->n, stdin);
-      assert(ret == attrslay->n);
-      ret = fread(lofreqbuf + mbi * lofreqlay->n, sizeof(double), lofreqlay->n, stdin);
-      assert(ret == lofreqlay->n);
-
-      if (control_source == CONTROL_SOURCE_STDIN) {
-        ret = fread(controlbuf + mbi * controlslay->n, sizeof(double), controlslay->n, stdin);
-        assert(ret == controlslay->n);
-      }
-    }
-    break;
-
-  default:
-    assert(0);
-  }
-
-  for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
-    encude(
-      attrsbuf + mbi * attrslay->n,
-      attrslay->n,
-      genin + mbi * (contextlay->n + controlslay->n)
-    );
-    encude(
-      lofreqbuf + mbi * lofreqlay->n,
-      lofreqlay->n,
-      genin + mbi * (contextlay->n + controlslay->n) + attrslay->n
-    );
-  }
-
 
   switch (control_source) {
-  case CONTROL_SOURCE_STDIN:
-    break;
-
   case CONTROL_SOURCE_TRAINING:
-    if (!picked) {
-      attrs->pick_minibatch(mbn, mbbuf, seqbatch);
-      picked = true;
+    ret = fread(boutputbuf, 1, outputlay->n * mbn, infp);
+    assert(ret == outputlay->n * mbn);
+    for (unsigned int j = 0, jn = mbn * outputlay->n; j < jn; ++j)
+      outputbuf[j] = (0.5 + (double)boutputbuf[j]) / 256.0;
+
+    for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
+      twiddle3(outputbuf + mbi * outputlay->n + attrslay->n, dim, dim, lofreqbuf, hifreqbuf);
+      memcpy(outputbuf + mbi * outputlay->n + attrslay->n, lofreqbuf, lofreqlay->n * sizeof(double));
+      memcpy(outputbuf + mbi * outputlay->n + attrslay->n + lofreqlay->n, hifreqbuf, hifreqlay->n * sizeof(double));
     }
-    attrs->encude_minibatch(mbbuf, mbn, encin, 0, outputlay->n);
-    lofreq->encude_minibatch(mbbuf, mbn, encin, attrslay->n, outputlay->n);
-    hifreq->encude_minibatch(mbbuf, mbn, encin, attrslay->n + lofreqlay->n, outputlay->n);
+
+    for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
+      memcpy(
+        contextbuf + mbi * contextlay->n,
+        outputbuf + mbi * outputlay->n,
+        contextlay->n * sizeof(double)
+      );
+    }
+
+    encude(outputbuf, mbn * outputlay->n, encin);
     encout = enctron->feed(encin, NULL);
     decude(encout, controlslay->n * mbn, controlbuf);
     break;
 
   case CONTROL_SOURCE_CENTER:
+    ret = fread(bcontextbuf, 1, contextlay->n * mbn, infp);
+    assert(ret == contextlay->n * mbn);
+    for (unsigned int j = 0, jn = mbn * contextlay->n; j < jn; ++j)
+      contextbuf[j] = (0.5 + (double)bcontextbuf[j]) / 256.0;
+
     for (unsigned int j = 0; j < controlslay->n * mbn; ++j)
       controlbuf[j] = 0;
     break;
 
   case CONTROL_SOURCE_RANDOM:
+    ret = fread(bcontextbuf, 1, contextlay->n * mbn, infp);
+    assert(ret == contextlay->n * mbn);
+    for (unsigned int j = 0, jn = mbn * contextlay->n; j < jn; ++j)
+      contextbuf[j] = (0.5 + (double)bcontextbuf[j]) / 256.0;
+
     for (unsigned int j = 0; j < controlslay->n * mbn; ++j)
       controlbuf[j] = randgauss();
     break;
@@ -651,11 +596,22 @@ void ZoomProject::generate(
 
   for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
     encude(
+      contextbuf + mbi * contextlay->n,
+      contextlay->n,
+      genin + mbi * (contextlay->n + controlslay->n)
+    );
+
+    encude(
       controlbuf + mbi * controlslay->n,
       controlslay->n,
       genin + mbi * (contextlay->n + controlslay->n) + contextlay->n
     );
   }
+
+
+
+
+
 
   const double *genout = gentron->feed(genin, NULL);
   decude(genout, hifreqlay->n * mbn, hifreqbuf);
@@ -663,16 +619,21 @@ void ZoomProject::generate(
   for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
     memcpy(
       outputbuf + mbi * outputlay->n,
-      attrsbuf + mbi * attrslay->n, 
+      contextbuf + mbi * contextlay->n, 
       attrslay->n * sizeof(double)
     );
 
     untwiddle3(
-      lofreqbuf + mbi * lofreqlay->n,
+      contextbuf + mbi * contextlay->n + attrslay->n,
       hifreqbuf + mbi * hifreqlay->n,
       dim, dim,
       outputbuf + mbi * outputlay->n + attrslay->n
     );
+  }
+
+  for (unsigned int j = 0, jn = mbn * outputlay->n; j < jn; ++j) {
+    int v = (int)(outputbuf[j] * 256.0);
+    boutputbuf[j] = v < 0 ? 0 : v > 255 ? 255 : v;
   }
 }
 
@@ -681,21 +642,18 @@ void ZoomProject::generate(
 void ZoomProject::write_ppm(FILE *fp) {
   assert(mbn > 0);
 
-  unsigned int labn = lofreqlay->n + hifreqlay->n;
-  assert(attrslay->n + labn == outputlay->n);
-  assert(labn % 3 == 0);
+  unsigned int ldim = round(sqrt(mbn));
+  if (ldim * ldim < mbn)
+    ++ldim;
 
-  unsigned int dim = round(sqrt(labn / 3));
-  assert(dim * dim * 3 == labn);
-  assert(dim * dim * 9 == hifreqlay->n * 4);
+  PPM ppm(ldim * dim, ldim * dim, 0);
+  for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
+    unsigned int xpos = mbi % ldim;
+    unsigned int ypos = mbi / ldim;
+    ppm.pastelab(outputbuf + mbi * outputlay->n + attrslay->n, dim, dim, xpos * dim, ypos * dim);
+  }
 
-  // unsigned int ldim = round(sqrt(mbn));
-  // if (ldim * ldim < mbn)
-  //   ++ldim;
-
-  PPM p;
-  p.unvectorize(outputbuf + attrslay->n, dim, dim);
-  p.write(fp);
+  ppm.write(fp);
 }
 
 
@@ -736,17 +694,17 @@ PipelineProject::~PipelineProject() {
 }
 
 void PipelineProject::generate(
-  ContextSource context_source,
+  FILE *infp,
   ControlSource control_source
 ) {
   assert(0);
 }
 
 void PipelineProject::write_ppm(FILE *fp) {
-  p1->write_ppm(stdout);
+  p1->write_ppm(fp);
 }
 
-const double *PipelineProject::output() const {
+const uint8_t *PipelineProject::output() const {
   return p1->output();
 }
 

@@ -5,20 +5,11 @@ CXXFLAGS = -g
 LDFLAGS = -lm
 CULDFLAGS = -lcuda -lcudart
  
-LIBHDR = cudamem.hh random.hh tron.hh ppm.hh layout.hh megatron.hh wiring.hh persist.hh dataset.hh topology.hh multitron.hh project.hh twiddle.hh
-LIBOBJ = cudamem.o random.o tron.o ppm.o layout.o megatron.o wiring.o persist.o dataset.o topology.o multitron.o project.o twiddle.o
+LIBHDR = cudamem.hh random.hh tron.hh ppm.hh layout.hh megatron.hh wiring.hh persist.hh dataset.hh topology.hh multitron.hh project.hh twiddle.hh sampler.hh
+LIBOBJ = cudamem.o random.o tron.o ppm.o layout.o megatron.o wiring.o persist.o dataset.o topology.o multitron.o project.o twiddle.o sampler.o
 LIB = libmakemore.a
 
-DATASETS = face-attrs.dat face-gender.dat \
-  face-8x8-lab-full.dat face-8x8-gray-full.dat \
-  face-16x16-lab-full.dat face-16x16-gray-full.dat \
-  face-16x16-lab-hifreq.dat face-16x16-gray-hifreq.dat \
-  face-32x32-lab-full.dat face-32x32-gray-full.dat \
-  face-32x32-lab-hifreq.dat face-32x32-gray-hifreq.dat \
-  face-64x64-lab-hifreq.dat
-
-#  face-64x64-lab-full.dat face-64x64-gray-full.dat \
-#  face-64x64-lab-hifreq.dat face-64x64-gray-hifreq.dat
+DATASETS = face8.dat face16.dat face32.dat face64.dat face128.dat
 
 LAYOUTS = face-attrs.lay face-gender.lay \
   face-8x8-lab-full.lay face-8x8-gray-full.lay \
@@ -73,12 +64,8 @@ face-attrs.dat:
 	./mkattrsdat.pl > $@
 face-attrs.lay:
 	./mkattrslay.pl > $@
-face-gender.dat:
-	./mkgenderdat.pl > $@
-face-gender.lay:
-	./mkunitlay.pl > $@
 
-face-8x8-lab-full.dat:
+face8.dat:
 	./mkfacedat.pl -dim=8  > $@
 face-8x8-lab-full.lay:
 	./mkfacelay.pl 8 3 > $@
@@ -88,57 +75,49 @@ face-8x8-gray-full.lay:
 	./mkfacelay.pl 8 1 > $@
 
 
-face-16x16-lab-full.dat:
+face16.dat:
 	./mkfacedat.pl -dim=16  > $@
 face-16x16-lab-full.lay:
 	./mkfacelay.pl 16 3 > $@
-face-16x16-gray-full.dat:
-	./mkfacedat.pl -dim=16 -gray > $@
 face-16x16-gray-full.lay:
 	./mkfacelay.pl 16 1 > $@
-face-16x16-lab-hifreq.dat:
-	./mkfacedat.pl -dim=16 -hifreq  > $@
 face-16x16-lab-hifreq.lay:
 	./mkfacelay.pl 8 9 > $@
-face-16x16-gray-hifreq.dat:
-	./mkfacedat.pl -dim=16 -gray -hifreq > $@
 face-16x16-gray-hifreq.lay:
 	./mkfacelay.pl 8 3 > $@
 
-face-32x32-lab-full.dat:
+face32.dat:
 	./mkfacedat.pl -dim=32  > $@
 face-32x32-lab-full.lay:
 	./mkfacelay.pl 32 3 > $@
-face-32x32-gray-full.dat:
-	./mkfacedat.pl -dim=32 -gray > $@
 face-32x32-gray-full.lay:
 	./mkfacelay.pl 32 1 > $@
-face-32x32-lab-hifreq.dat:
-	./mkfacedat.pl -dim=32 -hifreq  > $@
 face-32x32-lab-hifreq.lay:
 	./mkfacelay.pl 16 9 > $@
-face-32x32-gray-hifreq.dat:
-	./mkfacedat.pl -dim=32 -gray -hifreq > $@
 face-32x32-gray-hifreq.lay:
 	./mkfacelay.pl 16 3 > $@
 
-face-64x64-lab-full.dat:
-	./mkfacedat.pl -dim=64  > $@
+face64.dat:
+	./mkfacedat.pl -dim=64 > $@
 face-64x64-lab-full.lay:
 	./mkfacelay.pl 64 3 > $@
-face-64x64-gray-full.dat:
-	./mkfacedat.pl -dim=64 -gray > $@
 face-64x64-gray-full.lay:
 	./mkfacelay.pl 64 1 > $@
-face-64x64-lab-hifreq.dat:
-	./mkfacedat.pl -dim=64 -hifreq  > $@
 face-64x64-lab-hifreq.lay:
 	./mkfacelay.pl 32 9 > $@
-face-64x64-gray-hifreq.dat:
-	./mkfacedat.pl -dim=64 -gray -hifreq > $@
 face-64x64-gray-hifreq.lay:
 	./mkfacelay.pl 32 3 > $@
 
+face128.dat:
+	./mkfacedat.pl -dim=128 > $@
+face-128x128-lab-full.lay:
+	./mkfacelay.pl 128 3 > $@
+face-128x128-gray-full.lay:
+	./mkfacelay.pl 128 1 > $@
+face-128x128-lab-hifreq.lay:
+	./mkfacelay.pl 64 9 > $@
+face-128x128-gray-hifreq.lay:
+	./mkfacelay.pl 64 3 > $@
 
 ppmtolab.o: ppm.hh
 ppmtolab: ppmtolab.o ppm.o

@@ -6,7 +6,7 @@
 #include <math.h>
 
 int usage() {
-  fprintf(stderr, "Usage: learnmore <--center|--fidelity> [--sequential] [--rate nu] dir.proj\n");
+  fprintf(stderr, "Usage: learnmore <--center|--fidelity> [--rate nu] dir.proj\n");
   return 1;
 }
 
@@ -15,7 +15,6 @@ int main(int argc, char **argv) {
 
   unsigned int mbn = 8;
   double nu = 0.005;
-  bool sequential = false;
   Project::ControlSource control_source = Project::CONTROL_SOURCE_UNKNOWN;
 
   ++argv;
@@ -31,9 +30,6 @@ int main(int argc, char **argv) {
     } else if (!strcmp(arg, "--fidelity")) {
       assert(control_source == Project::CONTROL_SOURCE_UNKNOWN);
       control_source = Project::CONTROL_SOURCE_TRAINING;
-
-    } else if (!strcmp(arg, "--sequential")) {
-      sequential = true;
 
     } else if (!strcmp(arg, "--rate")) {
       ++argv;
@@ -62,7 +58,8 @@ int main(int argc, char **argv) {
 
   unsigned int i = 0;
   while (1) {
-    p->learn(control_source, nu, i, sequential);
+    p->learn(stdin, control_source, nu, i);
+
     if (i % 100 == 0) {
       p->report("learnmore", i);
       p->save();
