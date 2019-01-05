@@ -40,14 +40,15 @@ struct Project {
 
   virtual void learn(
     FILE *infp,
-    ControlSource control_source,
     double nu,
+    double dpres, double fpres, double cpres, double zpres,
+    double fcut, double dcut,
     unsigned int i
   ) = 0;
 
   virtual void generate(
     FILE *infp,
-    ControlSource control_source
+    double dev, int fidelity
   ) = 0;
 
   virtual const uint8_t *output() const = 0;
@@ -75,31 +76,38 @@ struct SimpleProject : Project {
   SimpleProject(const char *_dir, unsigned int _mbn);
   virtual ~SimpleProject();
 
+  bool genwoke;
+
   Layout *sampleslay;
 
   Topology *enctop, *gentop, *distop;
   Multitron *enctron, *gentron, *distron;
 
-  Tron *encpasstron, *encgentron, *encdistron;
+  Tron *encpasstron, *encgentron;
+  Tron *genpasstron, *gendistron;
 
 
   double *genin, *encin, *gentgt;
   double *samplesbuf, *contextbuf, *controlbuf, *outputbuf;
+  double *genoutbuf;
   uint8_t *bcontextbuf, *boutputbuf;
-  unsigned int *mbbuf;
+
+  double *disin, *distgt, *distgtbuf;
+  double *enctgt;
 
   unsigned int labn, dim;
 
   virtual void learn(
     FILE *infp,
-    ControlSource control_source,
     double nu,
+    double dpres, double fpres, double cpres, double zpres,
+    double fcut, double dcut,
     unsigned int i
   );
 
   virtual void generate(
     FILE *infp,
-    ControlSource control_source
+    double dev, int fidelity
   );
 
   virtual void write_ppm(FILE *fp = stdout);
@@ -121,7 +129,8 @@ struct ZoomProject : Project {
   Topology *enctop, *gentop, *distop;
   Multitron *enctron, *gentron, *distron;
 
-  Tron *encpasstron, *encgentron, *encdistron;
+  Tron *encpasstron, *encgentron;
+  Tron *genpasstron, *gendistron;
 
   Layout *lofreqlay, *hifreqlay, *attrslay;
 
@@ -130,18 +139,22 @@ struct ZoomProject : Project {
   double *lofreqbuf, *hifreqbuf, *controlbuf, *outputbuf, *contextbuf;
   uint8_t *bcontextbuf, *boutputbuf;
 
+  double *disin, *distgt, *distgtbuf;
+  double *enctgt;
+
   unsigned int labn, dim;
 
   virtual void learn(
     FILE *infp,
-    ControlSource control_source,
     double nu,
+    double dpres, double fpres, double cpres, double zpres,
+    double fcut, double dcut,
     unsigned int i
   );
 
   virtual void generate(
     FILE *infp,
-    ControlSource control_source
+    double dev, int fidelity
   );
 
   virtual void write_ppm(FILE *fp = stdout);
@@ -154,39 +167,6 @@ struct ZoomProject : Project {
   virtual void save();
   virtual void report(const char *prog, unsigned int i);
 };
-
-struct PipelineProject : Project {
-  PipelineProject(const char *_dir, unsigned int _mbn);
-  virtual ~PipelineProject();
-
-  std::vector<Project*> projects;
-  Project *p0, *p1;
-
-  virtual void learn(
-    FILE *infp,
-    ControlSource control_source,
-    double nu,
-    unsigned int i
-  ) {
-    fprintf(stderr, "can't learn pipeline\n");
-  }
-
-  virtual void generate(
-    FILE *infp,
-    ControlSource control_source
-  );
-
-  virtual void write_ppm(FILE *fp = stdout);
-  virtual const uint8_t *output() const;
-  virtual void load();
-
-  virtual void save() {
-    fprintf(stderr, "won't save pipeline\n");
-  }
-};
-
-
-
 
 #endif
 

@@ -6,16 +6,17 @@
 #include <math.h>
 
 int usage() {
-  fprintf(stderr, "Usage: makemore [--random|--center|--fidelity] [--train|--stdin] [--raw|--ppm] dir.proj\n");
+  fprintf(stderr, "Usage: makemore [--raw|--ppm] [--dev deviation] [--fidelity] [--batch mbn] dir.proj\n");
   return 1;
 }
 
 int main(int argc, char **argv) {
   seedrand();
 
-  unsigned int mbn = 25;
-  Project::ControlSource control_source = Project::CONTROL_SOURCE_UNKNOWN;
-  Project::ContextSource context_source = Project::CONTEXT_SOURCE_STDIN;
+  unsigned int mbn = 1;
+  unsigned int loadint = 100;
+  double dev = 0.0;
+  int fidelity = 0;
   Project::OutputFormat output_format = Project::OUTPUT_FORMAT_UNKNOWN;
 
   ++argv;
@@ -25,19 +26,10 @@ int main(int argc, char **argv) {
   while (*argv[0] == '-') {
     const char *arg = argv[0];
 
-    if (!strcmp(arg, "--center")) {
-      assert(control_source == Project::CONTROL_SOURCE_UNKNOWN);
-      control_source = Project::CONTROL_SOURCE_CENTER;
-    } else if (!strcmp(arg, "--random")) {
-      assert(control_source == Project::CONTROL_SOURCE_UNKNOWN);
-      control_source = Project::CONTROL_SOURCE_RANDOM;
-    } else if (!strcmp(arg, "--fidelity")) {
-      assert(control_source == Project::CONTROL_SOURCE_UNKNOWN);
-      control_source = Project::CONTROL_SOURCE_TRAINING;
-
-    } else if (!strcmp(arg, "--stdin")) {
-      assert(context_source == Project::CONTEXT_SOURCE_UNKNOWN);
-      context_source = Project::CONTEXT_SOURCE_STDIN;
+    if (!strcmp(arg, "--fidelity")) {
+      fidelity = 1;
+    } else if (!strcmp(arg, "--target")) {
+      fidelity = 2;
 
     } else if (!strcmp(arg, "--ppm")) {
       assert(output_format == Project::OUTPUT_FORMAT_UNKNOWN);
@@ -47,6 +39,29 @@ int main(int argc, char **argv) {
       assert(output_format == Project::OUTPUT_FORMAT_UNKNOWN);
       output_format = Project::OUTPUT_FORMAT_RAW;
 
+    } else if (!strcmp(arg, "--batch")) {
+      ++argv;
+     --argc;
+     if (argc < 1)
+       return usage();
+      mbn = (unsigned)atoi(argv[0]);
+      assert(mbn > 0);
+    } else if (!strcmp(arg, "--dev")) {
+      ++argv;
+     --argc;
+     if (argc < 1)
+       return usage();
+
+      dev = strtod(argv[0], NULL);
+      assert(dev >= 0);
+    } else if (!strcmp(arg, "--loadint")) {
+      ++argv;
+     --argc;
+     if (argc < 1)
+       return usage();
+
+      loadint = (unsigned)atoi(argv[0]);
+      assert(loadint > 0);
     } else {
       return usage();
     }
@@ -57,8 +72,6 @@ int main(int argc, char **argv) {
       return usage();
   }
 
-  if (control_source == Project::CONTROL_SOURCE_UNKNOWN)
-    control_source = Project::CONTROL_SOURCE_RANDOM;
   if (output_format == Project::OUTPUT_FORMAT_UNKNOWN)
     output_format = Project::OUTPUT_FORMAT_RAW;
 
@@ -69,7 +82,7 @@ int main(int argc, char **argv) {
   while (1) {
     p->generate(
       stdin,
-      control_source
+      dev, fidelity
     );
 
     if (output_format == Project::OUTPUT_FORMAT_PPM) {
@@ -81,6 +94,8 @@ int main(int argc, char **argv) {
 
     if (i % 100 == 0) {
       fprintf(stderr, "makemore i=%d\n", i);
+    }
+    if (i % loadint == 0) {
       p->load();
     }
 

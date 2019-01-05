@@ -9,7 +9,7 @@ LIBHDR = cudamem.hh random.hh tron.hh ppm.hh layout.hh megatron.hh wiring.hh per
 LIBOBJ = cudamem.o random.o tron.o ppm.o layout.o megatron.o wiring.o persist.o dataset.o topology.o multitron.o project.o twiddle.o sampler.o
 LIB = libmakemore.a
 
-DATASETS = face8.dat face16.dat face32.dat face64.dat face128.dat
+DATASETS = face-attrs.dat face8.dat face16.dat face32.dat face64.dat face128.dat
 
 LAYOUTS = face-attrs.lay face-gender.lay \
   face-8x8-lab-full.lay face-8x8-gray-full.lay \
@@ -18,7 +18,9 @@ LAYOUTS = face-attrs.lay face-gender.lay \
   face-32x32-lab-full.lay face-32x32-gray-full.lay \
   face-32x32-lab-hifreq.lay face-32x32-gray-hifreq.lay \
   face-64x64-lab-full.lay face-64x64-gray-full.lay \
-  face-64x64-lab-hifreq.lay face-64x64-gray-hifreq.lay
+  face-64x64-lab-hifreq.lay face-64x64-gray-hifreq.lay \
+  face-128x128-lab-full.lay face-128x128-gray-full.lay \
+  face-128x128-lab-hifreq.lay face-128x128-gray-hifreq.lay
 
 
 LABTOOLS = \
@@ -26,7 +28,7 @@ LABTOOLS = \
   labshrink labhifreq labtogray grayhifreq \
   reconlab recongray
 
-MORETOOLS = testmore makemore makelay catlay wireup maketop makemap seezoom
+MORETOOLS = makemore makelay catlay wireup maketop makemap learnmore
 
 .PHONY: all
 all: $(LIB) $(MORETOOLS)
@@ -169,8 +171,8 @@ makemore: makemore.o $(LIB)
 learnmore.o: $(LIBHDR)
 learnmore: learnmore.o $(LIB)
 	$(CXX) -o $@ $(CXXFLAGS) $^ $(LDFLAGS) $(CULDFLAGS)
-testmore.o: $(LIBHDR)
-testmore: testmore.o $(LIB)
+traindis.o: $(LIBHDR)
+traindis: traindis.o $(LIB)
 	$(CXX) -o $@ $(CXXFLAGS) $^ $(LDFLAGS) $(CULDFLAGS)
 trainfaith.o: $(LIBHDR)
 trainfaith: trainfaith.o $(LIB)

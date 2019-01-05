@@ -51,7 +51,7 @@ for my $id ('000001' .. '202599') {
   shift(@attr) eq "$id.jpg" or die "attrs don't match $id $attrtxt";
   @attr == 40 or die "bad attrs $attrtxt";
   for (@attr) { die "bad attr [$_]" unless $_ eq 1 or $_ eq -1; }
-  @attr = map { $_ > 0 ? 1 : 0 } @attr;
+  @attr = map { $_ > 0 ? 255 : 0 } @attr;
   my $attrbytes = pack('C*', @attr);
 
   my $jpgfn = "$celeba/img_align_celeba/$id.jpg";

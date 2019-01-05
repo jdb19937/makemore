@@ -237,3 +237,66 @@ double cumaxabs(
 
   return s;
 }
+
+__global__ void gpu_meandevcols(
+  const double *a, unsigned int rows, unsigned int cols, double *m, double *d
+) {
+  unsigned int col = blockIdx.x * blockDim.x + threadIdx.x;
+  if (col >= cols)
+    return;
+
+  double mean = 0;
+  for (unsigned int row = 0; row < rows; ++rows)
+    mean += a[row * cols + col]; 
+  mean /= (double)rows;
+  m[col] = mean;
+
+  double dev = 0;
+  for (unsigned int row = 0; row < rows; ++rows) {
+    double z = a[row * cols + col] - mean;
+    dev += z * z;
+  }
+  dev /= (double)rows;
+  dev = sqrt(dev);
+  d[col] = dev;
+}
+
+void cumeandevcols(
+  const double *a, unsigned int rows, unsigned int cols, double *m, double *d
+) {
+  assert(rows > 0);
+  assert(cols > 0);
+
+  int bs = 128;
+  int gs = ((cols + bs - 1) / bs);
+  gpu_meandevcols<<<gs, bs>>>(a, rows, cols, m, d);
+}
+
+
+__global__ void gpu_normalize(
+  const double *a, unsigned int rows, unsigned int cols,
+  const double *m, const double *d, double *b
+) {
+  unsigned int i = blockIdx.x * blockDim.x + threadIdx.x;
+  if (i >= rows * cols)
+    return;
+  unsigned int col = i % cols;
+
+  double x = a[i];
+  x -= m[col];
+  x /= d[col];
+  b[i] = x;
+}
+
+void cunormalize(
+  const double *a, unsigned int rows, unsigned int cols,
+  const double *m, const double *d, double *b
+) {
+  assert(rows > 0);
+  assert(cols > 0);
+  unsigned int n = rows * cols;
+
+  int bs = 128;
+  int gs = ((n + bs - 1) / bs);
+  gpu_normalize<<<gs, bs>>>(a, rows, cols, m, d, b);
+}

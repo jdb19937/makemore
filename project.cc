@@ -107,6 +107,9 @@ Project::~Project() {
 
 
 SimpleProject::SimpleProject(const char *_dir, unsigned int _mbn) : Project(_dir, _mbn) {
+  genwoke = false;
+
+
   char sampleslayfn[4096];
   sprintf(sampleslayfn, "%s/samples.lay", _dir);
   sampleslay = new Layout;
@@ -131,6 +134,7 @@ SimpleProject::SimpleProject(const char *_dir, unsigned int _mbn) : Project(_dir
   gentop->load_file(gentopfn);
   gentron = new Multitron(*gentop, mbn, genmapfn);
   gentron->mt1->activated = false;
+  genpasstron = passthrutron(contextlay->n, mbn, gentron);
   encgentron = compositron(encpasstron, gentron);
 
   char dismapfn[4096], distopfn[4096];
@@ -139,14 +143,16 @@ SimpleProject::SimpleProject(const char *_dir, unsigned int _mbn) : Project(_dir
   distop = new Topology;
   distop->load_file(distopfn);
   distron = new Multitron(*distop, mbn, dismapfn);
-  encdistron = compositron(encpasstron, distron);
-
+  // distron->err2 = 0.5;
+  gendistron = compositron(genpasstron, distron);
 
   assert(outputlay->n == contextlay->n + sampleslay->n);
   assert(gentron->inn == mbn * (contextlay->n + controlslay->n));
   assert(gentron->outn == mbn * sampleslay->n);
   assert(enctron->inn == mbn * (contextlay->n + sampleslay->n));
   assert(enctron->outn == mbn * controlslay->n);
+  assert(distron->inn == outputlay->n * mbn);
+  assert(distron->outn == mbn);
 
   labn = sampleslay->n;
   assert(contextlay->n + labn == outputlay->n);
@@ -165,6 +171,11 @@ SimpleProject::SimpleProject(const char *_dir, unsigned int _mbn) : Project(_dir
   samplesbuf = new double[sampleslay->n * mbn];
   outputbuf = new double[outputlay->n * mbn];
   boutputbuf = new uint8_t[outputlay->n * mbn];
+
+  distgtbuf = new double[mbn];
+  cumake(&disin, mbn * outputlay->n);
+  cumake(&distgt, mbn);
+  cumake(&enctgt, mbn * controlslay->n);
 }
 
 SimpleProject::~SimpleProject() {
@@ -177,99 +188,229 @@ SimpleProject::~SimpleProject() {
 
   delete sampleslay;
 
-  delete[] mbbuf;
   delete[] outputbuf;
   delete[] boutputbuf;
   delete[] samplesbuf;
   delete[] controlbuf;
   delete[] contextbuf;
   delete[] bcontextbuf;
+  delete[] distgtbuf;
+  cufree(disin);
+  cufree(distgt);
   cufree(encin);
   cufree(genin);
   cufree(gentgt);
+  cufree(enctgt);
 }
 
-void SimpleProject::learn(FILE *infp, ControlSource control_source, double nu, unsigned int i) {
+void SimpleProject::learn(FILE *infp, double nu, double dpres, double fpres, double cpres, double zpres, double fcut, double dcut, unsigned int i) {
   size_t ret;
 
+  double genwake = 0.1;
+  double gensleep = 0.4;
 
-  ret = fread(boutputbuf, 1, outputlay->n * mbn, infp);
-  assert(ret == outputlay->n * mbn);
-  for (unsigned int j = 0, jn = mbn * outputlay->n; j < jn; ++j)
-    outputbuf[j] = (0.5 + (double)boutputbuf[j]) / 256.0;
+  double ferr2 = encgentron->err2;
+  double derr2 = distron->err2;
 
-  for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
-    encude(
-      outputbuf + mbi * outputlay->n + contextlay->n,
-      sampleslay->n,
-      gentgt + mbi * sampleslay->n
-    );
+  if (genwoke && derr2 > gensleep) {
+    fprintf(stderr, "putting generator to bed\n");
+    distron->randomize(8, 8);
+    genwoke = false;
+  }
+  if (!genwoke && derr2 < genwake) {
+    fprintf(stderr, "waking generator\n");
+    genwoke = true;
   }
 
-  switch (control_source) {
-  case CONTROL_SOURCE_TRAINING:
+  if (zpres > 0) {
+    ret = fread(boutputbuf, 1, outputlay->n * mbn, infp);
+    assert(ret == outputlay->n * mbn);
+    for (unsigned int j = 0, jn = mbn * outputlay->n; j < jn; ++j)
+      outputbuf[j] = (0.5 + (double)boutputbuf[j]) / 256.0;
+    for (unsigned int j = 0, jn = controlslay->n * mbn; j < jn; ++j)
+      controlbuf[j] = randgauss();
+
+    for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
+      encude(
+        outputbuf + mbi * outputlay->n + contextlay->n,
+        sampleslay->n,
+        gentgt + mbi * sampleslay->n
+      );
+      encude(
+        outputbuf + mbi * outputlay->n,
+        contextlay->n,
+        genin + mbi * (contextlay->n + controlslay->n)
+      );
+      encude(
+        controlbuf + mbi * controlslay->n,
+        controlslay->n,
+        genin + mbi * (contextlay->n + controlslay->n) + contextlay->n
+      );
+    }
+
+    gentron->feed(genin, NULL);
+    gentron->target(gentgt);
+    gentron->train(nu * zpres);
+  }
+
+  if (fpres > 0 && genwoke) {
+    ret = fread(boutputbuf, 1, outputlay->n * mbn, infp);
+    assert(ret == outputlay->n * mbn);
+    for (unsigned int j = 0, jn = mbn * outputlay->n; j < jn; ++j)
+      outputbuf[j] = (0.5 + (double)boutputbuf[j]) / 256.0;
+
+    for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
+      encude(
+        outputbuf + mbi * outputlay->n + contextlay->n,
+        sampleslay->n,
+        gentgt + mbi * sampleslay->n
+      );
+    }
+
     encude(outputbuf, mbn * outputlay->n, encin);
     encgentron->feed(encin, NULL);
     encgentron->target(gentgt);
-    encgentron->train(nu);
-    return; // !
+ 
+    if (ferr2 > fcut)
+      encgentron->train(nu * fpres); // * (ferr2 - fcut));
+  }
 
-  case CONTROL_SOURCE_CENTER:
-    for (unsigned int j = 0; j < controlslay->n * mbn; ++j)
-      controlbuf[j] = 0;
-    break;
+  if (dpres > 0) {
+    assert(mbn % 2 == 0);
+  
+    ret = fread(boutputbuf, 1, outputlay->n * mbn, infp);
+    assert(ret == outputlay->n * mbn);
+    for (unsigned int j = 0, jn = mbn * outputlay->n; j < jn; ++j)
+      outputbuf[j] = (0.5 + (double)boutputbuf[j]) / 256.0;
 
-  case CONTROL_SOURCE_RANDOM:
-    for (unsigned int j = 0; j < controlslay->n * mbn; ++j)
+    encude(outputbuf, mbn * outputlay->n, encin);
+    const double *encout = enctron->feed(encin, NULL);
+    decude(encout, mbn * controlslay->n, controlbuf);
+
+
+    for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
+      encude(
+        outputbuf + mbi * outputlay->n,
+        contextlay->n,
+        genin + mbi * (contextlay->n + controlslay->n)
+      );
+
+      if (mbi % 2 == 0) {
+        for (unsigned int j = 0, jn = controlslay->n; j < jn; ++j) {
+          controlbuf[mbi * jn + j] = randgauss();
+        }
+      }
+
+      encude(
+        controlbuf + mbi * controlslay->n,
+        controlslay->n,
+        genin + mbi * (contextlay->n + controlslay->n) + contextlay->n
+      );
+    }
+
+    for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
+      if (mbi % 2) {
+        distgtbuf[mbi] = 1.0;
+      } else {
+        distgtbuf[mbi] = 0.0;
+      }
+    }
+    encude(distgtbuf, mbn, distgt);
+
+    gendistron->feed(genin, NULL);
+    distron->target(distgt);
+    distron->train(nu * dpres);
+  }
+
+
+
+  if (cpres > 0 && genwoke) {
+    ret = fread(boutputbuf, 1, outputlay->n * mbn, infp);
+    assert(ret == outputlay->n * mbn);
+    for (unsigned int j = 0, jn = mbn * outputlay->n; j < jn; ++j)
+      outputbuf[j] = (0.5 + (double)boutputbuf[j]) / 256.0;
+    for (unsigned int j = 0, jn = controlslay->n * mbn; j < jn; ++j)
       controlbuf[j] = randgauss();
-    break;
 
-  default:
-    assert(0);
-    break;
+    for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
+      encude(
+        outputbuf + mbi * outputlay->n,
+        contextlay->n,
+        genin + mbi * (contextlay->n + controlslay->n)
+      );
+
+      encude(
+        controlbuf + mbi * controlslay->n,
+        controlslay->n,
+        genin + mbi * (contextlay->n + controlslay->n) + contextlay->n
+      );
+    }
+
+    for (unsigned int mbi = 0; mbi < mbn; ++mbi)
+      distgtbuf[mbi] = 1.0;
+    encude(distgtbuf, mbn, distgt);
+
+
+    gendistron->feed(genin, NULL);
+    gendistron->target(distgt, false);
+    distron->train(0);
+//fprintf(stderr, "cpres=%lf\n", cpres);
+    genpasstron->train(nu * cpres);
+
+
+
+
+#if 0
+    ret = fread(boutputbuf, 1, outputlay->n * mbn, infp);
+    assert(ret == outputlay->n * mbn);
+    for (unsigned int j = 0, jn = mbn * outputlay->n; j < jn; ++j)
+      outputbuf[j] = (0.5 + (double)boutputbuf[j]) / 256.0;
+    encude(outputbuf, mbn * outputlay->n, encin);
+
+    for (unsigned int mbi = 0; mbi < mbn; ++mbi)
+      distgtbuf[mbi] = 0.0;
+    encude(distgtbuf, mbn, distgt);
+
+    encpasstron->feed(encin, NULL);
+    gendistron->feed(encpasstron->output(), encpasstron->foutput());
+    gendistron->train(0);
+    encpasstron->train(nu * (fcut - ferr2) * (dcut - derr2) * cpres);
+#endif
   }
-
-  for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
-    encude(
-      outputbuf + mbi * outputlay->n,
-      contextlay->n,
-      genin + mbi * (contextlay->n + controlslay->n)
-    );
-    encude(
-      controlbuf + mbi * controlslay->n,
-      controlslay->n,
-      genin + mbi * (contextlay->n + controlslay->n) + contextlay->n
-    );
-  }
-
-  gentron->feed(genin, NULL);
-  gentron->target(gentgt);
-  gentron->train(nu);
 }
 
 void SimpleProject::report(const char *prog, unsigned int i) {
   fprintf(
     stderr,
-    "%s %s i=%u gen_err2=%lf gen_errm=%lf encgen_err2=%lf encgen_errm=%lf\n",
-    prog, dir.c_str(), i,
-    gentron->err2, gentron->errm, encgentron->err2, encgentron->errm
+    "%s SimpleProject %s i=%u genwoke=%u\n"
+    "gen_err2=%lf    gen_errm=%lf\n"
+    "encgen_err2=%lf encgen_errm=%lf\n"
+    "dis_err2=%lf    dis_errm=%lf\n"
+    "\n",
+    prog, dir.c_str(), i, (unsigned)genwoke,
+    gentron->err2, gentron->errm, 
+    encgentron->err2, encgentron->errm,
+    distron->err2, distron->errm
   );
 }
 
 
 void SimpleProject::generate(
   FILE *infp,
-  ControlSource control_source
+  double dev,
+  int fidelity
 ) {
   size_t ret;
   const double *encout;
 
-  switch (control_source) {
-  case CONTROL_SOURCE_TRAINING:
+  if (fidelity) {
     ret = fread(boutputbuf, 1, outputlay->n * mbn, infp);
     assert(ret == outputlay->n * mbn);
     for (unsigned int j = 0, jn = mbn * outputlay->n; j < jn; ++j)
       outputbuf[j] = (0.5 + (double)boutputbuf[j]) / 256.0;
+    if (fidelity == 2)
+      return;
+
     for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
       memcpy(
         contextbuf + mbi * contextlay->n,
@@ -281,32 +422,16 @@ void SimpleProject::generate(
     encude(outputbuf, mbn * outputlay->n, encin);
     encout = enctron->feed(encin, NULL);
     decude(encout, controlslay->n * mbn, controlbuf);
-    break;
+  } else {
 
-  case CONTROL_SOURCE_CENTER:
     ret = fread(bcontextbuf, 1, contextlay->n * mbn, infp);
     assert(ret == contextlay->n * mbn);
     for (unsigned int j = 0, jn = mbn * contextlay->n; j < jn; ++j)
       contextbuf[j] = (0.5 + (double)bcontextbuf[j]) / 256.0;
-
-    for (unsigned int j = 0; j < controlslay->n * mbn; ++j)
-      controlbuf[j] = 0;
-    break;
-
-  case CONTROL_SOURCE_RANDOM:
-    ret = fread(bcontextbuf, 1, contextlay->n * mbn, infp);
-    assert(ret == contextlay->n * mbn);
-    for (unsigned int j = 0, jn = mbn * contextlay->n; j < jn; ++j)
-      contextbuf[j] = (0.5 + (double)bcontextbuf[j]) / 256.0;
-
-    for (unsigned int j = 0; j < controlslay->n * mbn; ++j)
-      controlbuf[j] = randgauss();
-    break;
-
-  default:
-    assert(0);
-    break;
+    for (unsigned int j = 0, jn = mbn * controlslay->n; j < jn; ++j)
+      controlbuf[j] = randgauss() * dev;
   }
+
 
   for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
     encude(
@@ -347,6 +472,24 @@ void SimpleProject::generate(
 void SimpleProject::write_ppm(FILE *fp) {
   assert(mbn > 0);
 
+bool wide = 0;
+
+  if (wide) {
+    unsigned int wdim = round(sqrt(mbn * 2));
+    unsigned int hdim = (int)(wdim/2);
+    if (wdim * hdim < mbn)
+      ++wdim;
+    assert(wdim * hdim >= mbn);
+
+  PPM ppm(wdim * dim, hdim * dim, 0);
+  for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
+    unsigned int xpos = mbi % wdim;
+    unsigned int ypos = mbi / wdim;
+    ppm.pastelab(outputbuf + mbi * outputlay->n + contextlay->n, dim, dim, xpos * dim, ypos * dim);
+  }
+  ppm.write(fp);
+
+  } else {
   unsigned int ldim = round(sqrt(mbn));
   if (ldim * ldim < mbn)
     ++ldim;
@@ -357,19 +500,21 @@ void SimpleProject::write_ppm(FILE *fp) {
     unsigned int ypos = mbi / ldim;
     ppm.pastelab(outputbuf + mbi * outputlay->n + contextlay->n, dim, dim, xpos * dim, ypos * dim);
   }
-
   ppm.write(fp);
+  }
 }
 
 
 void SimpleProject::save() {
   enctron->sync(1);
   gentron->sync(1);
+  distron->sync(1);
 }
 
 void SimpleProject::load() {
   enctron->sync(0);
   gentron->sync(0);
+  distron->sync(0);
 }
 
 
@@ -394,6 +539,7 @@ ZoomProject::ZoomProject(const char *_dir, unsigned int _mbn) : Project(_dir, _m
   gentron = new Multitron(*gentop, mbn, genmapfn);
   gentron->mt1->activated = false;
   encgentron = compositron(encpasstron, gentron);
+  genpasstron = passthrutron(contextlay->n, mbn, gentron);
 
   char dismapfn[4096], distopfn[4096];
   sprintf(distopfn, "%s/dis.top", _dir);
@@ -401,7 +547,8 @@ ZoomProject::ZoomProject(const char *_dir, unsigned int _mbn) : Project(_dir, _m
   distop = new Topology;
   distop->load_file(distopfn);
   distron = new Multitron(*distop, mbn, dismapfn);
-  encdistron = compositron(encpasstron, distron);
+  // distron->err2 = 0.5;
+  gendistron = compositron(genpasstron, distron);
 
   char hifreqlayfn[4096];
   sprintf(hifreqlayfn, "%s/hifreq.lay", _dir);
@@ -447,6 +594,11 @@ ZoomProject::ZoomProject(const char *_dir, unsigned int _mbn) : Project(_dir, _m
 
   lofreqbuf = new double[lofreqlay->n * mbn];
   hifreqbuf = new double[hifreqlay->n * mbn];
+
+  distgtbuf = new double[mbn];
+  cumake(&disin, mbn * (contextlay->n + controlslay->n));
+  cumake(&distgt, mbn);
+  cumake(&enctgt, mbn * controlslay->n);
 }
 
 ZoomProject::~ZoomProject() {
@@ -463,6 +615,9 @@ ZoomProject::~ZoomProject() {
 
 
 
+  delete[] distgtbuf;
+  cufree(disin);
+  cufree(distgt);
   cufree(encin);
   cufree(genin);
   cufree(gentgt);
@@ -473,82 +628,185 @@ ZoomProject::~ZoomProject() {
   delete[] hifreqbuf;
   delete[] outputbuf;
   delete[] boutputbuf;
+  delete[] enctgt;
 }
 
 
-void ZoomProject::learn(FILE *infp, ControlSource control_source, double nu, unsigned int i) {
+void ZoomProject::learn(FILE *infp, double nu, double dpres, double fpres, double cpres, double zpres, double fcut, double dcut, unsigned int i) {
   size_t ret;
 
-  ret = fread(boutputbuf, 1, outputlay->n * mbn, infp);
-  assert(ret == outputlay->n * mbn);
-  for (unsigned int j = 0, jn = mbn * outputlay->n; j < jn; ++j)
-    outputbuf[j] = (0.5 + (double)boutputbuf[j]) / 256.0;
+  double ferr2 = encgentron->err2;
+  double derr2 = distron->err2;
 
-  for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
-    twiddle3(outputbuf + mbi * outputlay->n + attrslay->n, dim, dim, lofreqbuf, hifreqbuf);
-    memcpy(outputbuf + mbi * outputlay->n + attrslay->n, lofreqbuf, lofreqlay->n * sizeof(double));
-    memcpy(outputbuf + mbi * outputlay->n + contextlay->n, hifreqbuf, hifreqlay->n * sizeof(double));
+  if (fpres > 0) {
+    ret = fread(boutputbuf, 1, outputlay->n * mbn, infp);
+    assert(ret == outputlay->n * mbn);
+    for (unsigned int j = 0, jn = mbn * outputlay->n; j < jn; ++j)
+      outputbuf[j] = (0.5 + (double)boutputbuf[j]) / 256.0;
+    for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
+      twiddle3(outputbuf + mbi * outputlay->n + attrslay->n, dim, dim, lofreqbuf, hifreqbuf);
+      memcpy(outputbuf + mbi * outputlay->n + attrslay->n, lofreqbuf, lofreqlay->n * sizeof(double));
+      memcpy(outputbuf + mbi * outputlay->n + contextlay->n, hifreqbuf, hifreqlay->n * sizeof(double));
+    }
 
-    encude(outputbuf + mbi * outputlay->n + contextlay->n, hifreqlay->n, gentgt + mbi * hifreqlay->n);
-  }
+    for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
+      encude(
+        outputbuf + mbi * outputlay->n + contextlay->n,
+        hifreqlay->n,
+        gentgt + mbi * hifreqlay->n
+      );
+    }
 
-  switch (control_source) {
-  case CONTROL_SOURCE_TRAINING:
     encude(outputbuf, mbn * outputlay->n, encin);
     encgentron->feed(encin, NULL);
     encgentron->target(gentgt);
-    encgentron->train(nu);
-    return; // !
 
-  case CONTROL_SOURCE_CENTER:
-    for (unsigned int j = 0; j < controlslay->n * mbn; ++j)
-      controlbuf[j] = 0;
-    break;
+    if (ferr2 > fcut)
+      encgentron->train(nu * fpres);
+  }
 
-  case CONTROL_SOURCE_RANDOM:
-    for (unsigned int j = 0; j < controlslay->n * mbn; ++j)
+
+
+
+
+
+  if (dpres > 0) {
+    assert(mbn % 2 == 0);
+  
+    ret = fread(boutputbuf, 1, outputlay->n * mbn, infp);
+    assert(ret == outputlay->n * mbn);
+    for (unsigned int j = 0, jn = mbn * outputlay->n; j < jn; ++j)
+      outputbuf[j] = (0.5 + (double)boutputbuf[j]) / 256.0;
+    for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
+      twiddle3(outputbuf + mbi * outputlay->n + attrslay->n, dim, dim, lofreqbuf, hifreqbuf);
+      memcpy(outputbuf + mbi * outputlay->n + attrslay->n, lofreqbuf, lofreqlay->n * sizeof(double));
+      memcpy(outputbuf + mbi * outputlay->n + contextlay->n, hifreqbuf, hifreqlay->n * sizeof(double));
+    }
+
+    encude(outputbuf, mbn * outputlay->n, encin);
+    const double *encout = enctron->feed(encin, NULL);
+    decude(encout, mbn * controlslay->n, controlbuf);
+
+
+    for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
+      encude(
+        outputbuf + mbi * outputlay->n,
+        contextlay->n,
+        genin + mbi * (contextlay->n + controlslay->n)
+      );
+
+      if (mbi % 2 == 0) {
+        for (unsigned int j = 0, jn = controlslay->n; j < jn; ++j) {
+          controlbuf[mbi * jn + j] = randgauss();
+        }
+      }
+
+      encude(
+        controlbuf + mbi * controlslay->n,
+        controlslay->n,
+        genin + mbi * (contextlay->n + controlslay->n) + contextlay->n
+      );
+    }
+
+    for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
+      if (mbi % 2) {
+        distgtbuf[mbi] = 1.0;
+      } else {
+        distgtbuf[mbi] = 0.0;
+      }
+    }
+    encude(distgtbuf, mbn, distgt);
+
+    gendistron->feed(genin, NULL);
+    distron->target(distgt);
+    if (derr2 > dcut)
+      distron->train(nu * dpres);
+  }
+
+
+
+
+
+  if (ferr2 < fcut && derr2 < dcut && cpres > 0) {
+    ret = fread(boutputbuf, 1, outputlay->n * mbn, infp);
+    assert(ret == outputlay->n * mbn);
+    for (unsigned int j = 0, jn = mbn * outputlay->n; j < jn; ++j)
+      outputbuf[j] = (0.5 + (double)boutputbuf[j]) / 256.0;
+    for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
+      twiddle3(outputbuf + mbi * outputlay->n + attrslay->n, dim, dim, lofreqbuf, hifreqbuf);
+      memcpy(outputbuf + mbi * outputlay->n + attrslay->n, lofreqbuf, lofreqlay->n * sizeof(double));
+      memcpy(outputbuf + mbi * outputlay->n + contextlay->n, hifreqbuf, hifreqlay->n * sizeof(double));
+    }
+    for (unsigned int j = 0, jn = controlslay->n * mbn; j < jn; ++j)
       controlbuf[j] = randgauss();
-    break;
 
-  default:
-    assert(0);
-    break;
+    for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
+      encude(
+        outputbuf + mbi * outputlay->n,
+        contextlay->n,
+        genin + mbi * (contextlay->n + controlslay->n)
+      );
+
+      encude(
+        controlbuf + mbi * controlslay->n,
+        controlslay->n,
+        genin + mbi * (contextlay->n + controlslay->n) + contextlay->n
+      );
+    }
+
+    for (unsigned int mbi = 0; mbi < mbn; ++mbi)
+      distgtbuf[mbi] = 1.0;
+    encude(distgtbuf, mbn, distgt);
+
+
+    gendistron->feed(genin, NULL);
+    gendistron->target(distgt);
+    distron->train(0);
+//fprintf(stderr, "cpres=%lf\n", cpres);
+    genpasstron->train(nu * (dcut - derr2) * (fcut - ferr2) * cpres);
+
+
+
+    ret = fread(boutputbuf, 1, outputlay->n * mbn, infp);
+    assert(ret == outputlay->n * mbn);
+    for (unsigned int j = 0, jn = mbn * outputlay->n; j < jn; ++j)
+      outputbuf[j] = (0.5 + (double)boutputbuf[j]) / 256.0;
+    for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
+      twiddle3(outputbuf + mbi * outputlay->n + attrslay->n, dim, dim, lofreqbuf, hifreqbuf);
+      memcpy(outputbuf + mbi * outputlay->n + attrslay->n, lofreqbuf, lofreqlay->n * sizeof(double));
+      memcpy(outputbuf + mbi * outputlay->n + contextlay->n, hifreqbuf, hifreqlay->n * sizeof(double));
+    }
+    encude(outputbuf, mbn * outputlay->n, encin);
+
+    for (unsigned int mbi = 0; mbi < mbn; ++mbi)
+      distgtbuf[mbi] = 0.0;
+    encude(distgtbuf, mbn, distgt);
+
+    encpasstron->feed(encin, NULL);
+    gendistron->feed(encpasstron->output(), encpasstron->foutput());
+    gendistron->train(0);
+    encpasstron->train(nu * (dcut - derr2) * (fcut - ferr2) * cpres);
   }
-
-  for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
-    encude(
-      outputbuf + mbi * outputlay->n,
-      contextlay->n,
-      genin + mbi * (contextlay->n + controlslay->n)
-    );
-    encude(
-      controlbuf + mbi * controlslay->n,
-      controlslay->n,
-      genin + mbi * (contextlay->n + controlslay->n) + contextlay->n
-    );
-  }
-
-  gentron->feed(genin, NULL);
-  gentron->target(gentgt);
-  gentron->train(nu);
 }
-
 
 
 void ZoomProject::generate(
   FILE *infp,
-  ControlSource control_source
+  double dev,
+  int fidelity
 ) {
   size_t ret;
   const double *encout;
 
 
-  switch (control_source) {
-  case CONTROL_SOURCE_TRAINING:
+  if (fidelity) {
     ret = fread(boutputbuf, 1, outputlay->n * mbn, infp);
     assert(ret == outputlay->n * mbn);
     for (unsigned int j = 0, jn = mbn * outputlay->n; j < jn; ++j)
       outputbuf[j] = (0.5 + (double)boutputbuf[j]) / 256.0;
+
+    if (fidelity == 2)
+      return;
 
     for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
       twiddle3(outputbuf + mbi * outputlay->n + attrslay->n, dim, dim, lofreqbuf, hifreqbuf);
@@ -567,31 +825,13 @@ void ZoomProject::generate(
     encude(outputbuf, mbn * outputlay->n, encin);
     encout = enctron->feed(encin, NULL);
     decude(encout, controlslay->n * mbn, controlbuf);
-    break;
-
-  case CONTROL_SOURCE_CENTER:
+  } else {
     ret = fread(bcontextbuf, 1, contextlay->n * mbn, infp);
     assert(ret == contextlay->n * mbn);
     for (unsigned int j = 0, jn = mbn * contextlay->n; j < jn; ++j)
       contextbuf[j] = (0.5 + (double)bcontextbuf[j]) / 256.0;
-
     for (unsigned int j = 0; j < controlslay->n * mbn; ++j)
-      controlbuf[j] = 0;
-    break;
-
-  case CONTROL_SOURCE_RANDOM:
-    ret = fread(bcontextbuf, 1, contextlay->n * mbn, infp);
-    assert(ret == contextlay->n * mbn);
-    for (unsigned int j = 0, jn = mbn * contextlay->n; j < jn; ++j)
-      contextbuf[j] = (0.5 + (double)bcontextbuf[j]) / 256.0;
-
-    for (unsigned int j = 0; j < controlslay->n * mbn; ++j)
-      controlbuf[j] = randgauss();
-    break;
-
-  default:
-    assert(0);
-    break;
+      controlbuf[j] = randgauss() * dev;
   }
 
   for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
@@ -642,6 +882,24 @@ void ZoomProject::generate(
 void ZoomProject::write_ppm(FILE *fp) {
   assert(mbn > 0);
 
+bool wide = 0;
+
+  if (wide) {
+    unsigned int wdim = round(sqrt(mbn * 2));
+    unsigned int hdim = (int)(wdim/2);
+    if (wdim * hdim < mbn)
+      ++wdim;
+    assert(wdim * hdim >= mbn);
+
+  PPM ppm(wdim * dim, hdim * dim, 0);
+  for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
+    unsigned int xpos = mbi % wdim;
+    unsigned int ypos = mbi / wdim;
+    ppm.pastelab(outputbuf + mbi * outputlay->n + attrslay->n, dim, dim, xpos * dim, ypos * dim);
+  }
+  ppm.write(fp);
+} else {
+
   unsigned int ldim = round(sqrt(mbn));
   if (ldim * ldim < mbn)
     ++ldim;
@@ -655,24 +913,33 @@ void ZoomProject::write_ppm(FILE *fp) {
 
   ppm.write(fp);
 }
+}
 
 
 void ZoomProject::save() {
   enctron->sync(1);
   gentron->sync(1);
+  distron->sync(1);
 }
 
 void ZoomProject::load() {
   enctron->sync(0);
   gentron->sync(0);
+  distron->sync(0);
 }
 
 void ZoomProject::report(const char *prog, unsigned int i) {
   fprintf(
     stderr,
-    "%s %s i=%u gen_err2=%lf gen_errm=%lf encgen_err2=%lf encgen_errm=%lf\n",
+    "%s ZoomProject %s i=%u\n"
+    "gen_err2=%lf    gen_errm=%lf\n"
+    "encgen_err2=%lf encgen_errm=%lf\n"
+    "dis_err2=%lf    dis_errm=%lf\n"
+    "\n",
     prog, dir.c_str(), i,
-    gentron->err2, gentron->errm, encgentron->err2, encgentron->errm
+    gentron->err2, gentron->errm, 
+    encgentron->err2, encgentron->errm,
+    distron->err2, distron->errm
   );
 }
 
@@ -681,36 +948,5 @@ void ZoomProject::report(const char *prog, unsigned int i) {
 
 
 
-PipelineProject::PipelineProject(const char *_dir, unsigned int _mbn) : Project(_dir, _mbn) {
-  // read tsv, build projects
-
-  p0 = projects[0];
-  p1 = projects[projects.size() - 1];
-}
-
-PipelineProject::~PipelineProject() {
-  for (auto pi = projects.begin(); pi != projects.end(); ++pi)
-    delete *pi;
-}
-
-void PipelineProject::generate(
-  FILE *infp,
-  ControlSource control_source
-) {
-  assert(0);
-}
-
-void PipelineProject::write_ppm(FILE *fp) {
-  p1->write_ppm(fp);
-}
-
-const uint8_t *PipelineProject::output() const {
-  return p1->output();
-}
-
-void PipelineProject::load() {
-  for (auto pi = projects.begin(); pi != projects.end(); ++pi)
-    (*pi)->load();
-}
 
 

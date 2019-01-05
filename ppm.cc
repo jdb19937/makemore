@@ -488,15 +488,21 @@ void xyztolab(double x, double y, double z, double *lp, double *ap, double *bp) 
 }
 
 void labtoxyz(double l, double a, double b, double *xp, double *yp, double *zp) {
+  if (l <  0.0) l = 0.0;
+  if (l >= 1.0) l = 1.0;
   l -= 0.5;
 //  l /= tl;
   l *= 100.0;
   l += 50.0;
 
+  if (a <  0.0) a = 0.0;
+  if (a >= 1.0) a = 1.0;
   a -= 0.5;
 //  a /= tab;
   a *= 100.0;
 
+  if (b <  0.0) b = 0.0;
+  if (b >= 1.0) b = 1.0;
   b -= 0.5;
 //  b /= tab;
   b *= 100.0;

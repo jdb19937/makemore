@@ -21,9 +21,9 @@ for my $id ('000001' .. '202599') {
   shift(@attr) eq "$id.jpg" or die "attrs don't match $id $attrtxt";
   @attr == 40 or die "bad attrs $attrtxt";
   for (@attr) { die "bad attr [$_]" unless $_ eq 1 or $_ eq -1; }
-  @attr = map { $_ > 0 ? 1 : 0 } @attr;
-  my $attrdat = pack('d*', @attr);
-  length($attrdat) == 40 * 8 or die "huh";
+  @attr = map { $_ > 0 ? 255 : 0 } @attr;
+  my $attrdat = pack('C*', @attr);
+  length($attrdat) == 40 or die "huh";
 
   print STDOUT $attrdat;
 

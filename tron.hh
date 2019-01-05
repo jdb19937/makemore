@@ -14,6 +14,7 @@ struct Tron {
   unsigned int inn, outn;
 
   double err2, errm;
+  unsigned int rounds;
 
   Tron() {
     inn = 0;
@@ -21,12 +22,14 @@ struct Tron {
     err2 = 0;
     errm = 0;
     errdecay = 0.001;
+    rounds = 0;
   }
 
   Tron(unsigned int _inn, unsigned int _outn) : inn(_inn), outn(_outn) {
     err2 = 0;
     errm = 0;
     errdecay = 0.001;
+    rounds = 0;
   }
 
   virtual const double *feed(const double *in, double *fin) = 0;
@@ -41,7 +44,7 @@ struct Tron {
     train(0.001);
   }
 
-  virtual void target(const double *tgt);
+  virtual void target(const double *tgt, bool update_stats = true);
 
   virtual const double *input() = 0;
   virtual const double *output() = 0;

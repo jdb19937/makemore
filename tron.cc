@@ -8,19 +8,29 @@
 #include "random.hh"
 #include "cudamem.hh"
 
-void Tron::target(const double *tgt) {
+void Tron::target(const double *tgt, bool update_stats) {
   const double *out = output();
   double *fout = foutput();
 
   cusubvec(tgt, out, outn, fout);
 
-  double nerr2 = sqrt(cusumsq(fout, outn) / outn);
-  err2 *= (1.0 - errdecay);
-  err2 += errdecay * nerr2;
+  if (update_stats) {
+    double z = pow(1.0 - errdecay, (double)rounds);
 
-  double nerrm = cumaxabs(fout, outn);
-  errm *= (1.0 - errdecay);
-  errm += errdecay * nerrm;
+    double nerr2 = sqrt(cusumsq(fout, outn) / outn);
+    err2 *= (1.0 - z);
+    err2 *= (1.0 - errdecay);
+    err2 += errdecay * nerr2;
+    err2 *= 1.0 / (1.0 - z * (1.0 - errdecay));
+
+    double nerrm = cumaxabs(fout, outn);
+    errm *= (1.0 - z);
+    errm *= (1.0 - errdecay);
+    errm += errdecay * nerrm;
+    errm *= 1.0 / (1.0 - z * (1.0 - errdecay));
+
+    ++rounds;
+  }
 }
 
 Passthrutron::Passthrutron(unsigned int _k, unsigned int _mbn, Tron *_t) {
