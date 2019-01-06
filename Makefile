@@ -26,9 +26,9 @@ LAYOUTS = face-attrs.lay face-gender.lay \
 LABTOOLS = \
   ppmtolab labtoppm \
   labshrink labhifreq labtogray grayhifreq \
-  reconlab recongray
+  reconlab recongray 
 
-MORETOOLS = makemore makelay catlay wireup maketop makemap learnmore
+MORETOOLS = makemore makelay catlay wireup maketop makemap learnmore genicon
 
 .PHONY: all
 all: $(LIB) $(MORETOOLS)
@@ -154,6 +154,18 @@ catlay: catlay.o $(LIB)
 makelay.o: $(LIBHDR)
 makelay: makelay.o $(LIB)
 	$(CXX) -o $@ $(CXXFLAGS) $^ $(LDFLAGS)
+
+genicon.o: $(LIBHDR)
+genicon: genicon.o $(LIB)
+	$(CXX) -o $@ $(CXXFLAGS) $^ $(LDFLAGS)
+spectrum.ppm: genicon
+	./genicon spectrum > $@
+spectrum.png: spectrum.ppm
+	convert $^ $@
+random.ppm: genicon
+	./genicon random > $@
+random.png: random.ppm
+	convert $^ $@
 
 wireup.o: $(LIBHDR)
 wireup: wireup.o $(LIB)

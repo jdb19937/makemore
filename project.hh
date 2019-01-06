@@ -18,8 +18,9 @@ struct Project {
   std::map<std::string, std::string> *config;
 
   std::string dir;
-  Layout *contextlay, *controlslay, *outputlay;
-  double *outputbuf, *contextbuf, *controlbuf;
+  Layout *contextlay, *controlslay, *outputlay, *adjustlay;
+  double *outputbuf, *contextbuf, *controlbuf, *adjustbuf;
+  uint8_t *boutputbuf, *bcontextbuf, *bcontrolbuf, *badjustbuf;
 
   typedef enum {
     CONTEXT_SOURCE_UNKNOWN,
@@ -97,7 +98,6 @@ struct ImageProject : Project {
 
   double *genin, *encin, *gentgt;
   double *genoutbuf;
-  uint8_t *bcontextbuf, *boutputbuf;
 
   double *disin, *distgt, *distgtbuf;
   double *enctgt;
@@ -146,8 +146,6 @@ struct ZoomProject : ImageProject {
 
   virtual void separate();
   virtual void reconstruct();
-
-  virtual void write_ppm(FILE *fp = stdout);
   virtual void report(const char *prog, unsigned int i);
 };
 

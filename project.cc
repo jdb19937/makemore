@@ -92,7 +92,6 @@ Project::Project(const char *_dir, unsigned int _mbn, map<string,string> *_confi
   contextlay = new Layout;
   contextlay->load_file(contextlayfn);
 
-
   char controlslayfn[4096];
   sprintf(controlslayfn, "%s/controls.lay", _dir);
   controlslay = new Layout;
@@ -103,15 +102,28 @@ Project::Project(const char *_dir, unsigned int _mbn, map<string,string> *_confi
   outputlay = new Layout;
   outputlay->load_file(outputlayfn);
 
-  contextbuf = new double[contextlay->n * mbn];
-  controlbuf = new double[controlslay->n * mbn];
-  outputbuf = new double[outputlay->n * mbn];
+  char adjustlayfn[4096];
+  sprintf(adjustlayfn, "%s/adjust.lay", _dir);
+  adjustlay = new Layout;
+  adjustlay->load_file(adjustlayfn);
+
+  contextbuf = new double[contextlay->n * mbn]();
+  controlbuf = new double[controlslay->n * mbn]();
+  outputbuf = new double[outputlay->n * mbn]();
+  adjustbuf = new double[adjustlay->n * mbn]();
+
+  bcontextbuf = new uint8_t[contextlay->n * mbn]();
+  bcontrolbuf = new uint8_t[controlslay->n * mbn]();
+  boutputbuf = new uint8_t[outputlay->n * mbn]();
+  badjustbuf = new uint8_t[adjustlay->n * mbn]();
+
 }
 
 Project::~Project() {
   delete contextlay;
   delete controlslay;
   delete outputlay;
+  delete adjustlay;
 
   if (config)
     delete config;
@@ -119,6 +131,12 @@ Project::~Project() {
   delete[] contextbuf;
   delete[] controlbuf;
   delete[] outputbuf;
+  delete[] adjustbuf;
+
+  delete[] bcontextbuf;
+  delete[] bcontrolbuf;
+  delete[] boutputbuf;
+  delete[] badjustbuf;
 }
 
 
@@ -175,8 +193,6 @@ ImageProject::ImageProject(const char *_dir, unsigned int _mbn, map<string,strin
   cumake(&encin, mbn * (contextlay->n + sampleslay->n));
   cumake(&genin, mbn * (contextlay->n + controlslay->n));
   cumake(&gentgt, mbn * sampleslay->n);
-  bcontextbuf = new uint8_t[contextlay->n * mbn];
-  boutputbuf = new uint8_t[outputlay->n * mbn];
 
   distgtbuf = new double[mbn];
   cumake(&disin, mbn * outputlay->n);
@@ -195,8 +211,6 @@ ImageProject::~ImageProject() {
   delete sampleslay;
   delete[] samplesbuf;
 
-  delete[] boutputbuf;
-  delete[] bcontextbuf;
   delete[] distgtbuf;
   cufree(disin);
   cufree(distgt);
@@ -407,10 +421,11 @@ void ImageProject::regenerate(
     );
   }
 
-  const double *genout = gentron->feed(genin, NULL);
-  decude(genout, sampleslay->n * mbn, samplesbuf);
-
+  const double *genpassout = genpasstron->feed(genin, NULL);
+  decude(genpassout, outputlay->n * mbn, outputbuf);
   reconstruct();
+
+
   encodeout();
 }
 
@@ -443,10 +458,10 @@ void ImageProject::generate(
     );
   }
 
-  const double *genout = gentron->feed(genin, NULL);
-  decude(genout, sampleslay->n * mbn, samplesbuf);
-
+  const double *genpassout = genpasstron->feed(genin, NULL);
+  decude(genpassout, outputlay->n * mbn, outputbuf);
   reconstruct();
+
   encodeout();
 }
 
@@ -454,9 +469,12 @@ void ImageProject::generate(
 void ImageProject::write_ppm(FILE *fp) {
   assert(mbn > 0);
 
-  unsigned int labn = sampleslay->n;
+  unsigned int labn = adjustlay->n;
   assert(labn % 3 == 0);
   unsigned int dim = round(sqrt(labn / 3));
+
+  assert(adjustlay->n <= outputlay->n);
+  unsigned int laboff = outputlay->n - adjustlay->n;
 
 bool wide = 0;
 
@@ -471,7 +489,7 @@ bool wide = 0;
   for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
     unsigned int xpos = mbi % wdim;
     unsigned int ypos = mbi / wdim;
-    ppm.pastelab(outputbuf + mbi * outputlay->n + contextlay->n, dim, dim, xpos * dim, ypos * dim);
+    ppm.pastelab(outputbuf + mbi * outputlay->n + laboff, dim, dim, xpos * dim, ypos * dim);
   }
   ppm.write(fp);
 
@@ -484,7 +502,7 @@ bool wide = 0;
   for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
     unsigned int xpos = mbi % ldim;
     unsigned int ypos = mbi / ldim;
-    ppm.pastelab(outputbuf + mbi * outputlay->n + contextlay->n, dim, dim, xpos * dim, ypos * dim);
+    ppm.pastelab(outputbuf + mbi * outputlay->n + laboff, dim, dim, xpos * dim, ypos * dim);
   }
   ppm.write(fp);
   }
@@ -555,10 +573,11 @@ void ZoomProject::reconstruct() {
 
   for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
     memcpy(
-      outputbuf + mbi * outputlay->n,
-      contextbuf + mbi * contextlay->n, 
-      attrslay->n * sizeof(double)
+      samplesbuf + mbi * sampleslay->n,
+      outputbuf + mbi * outputlay->n + contextlay->n, 
+      sampleslay->n * sizeof(double)
     );
+
     untwiddle3(
       contextbuf + mbi * contextlay->n + attrslay->n,
       samplesbuf + mbi * sampleslay->n,
@@ -569,18 +588,7 @@ void ZoomProject::reconstruct() {
 }
 
 void ImageProject::reconstruct() {
-  for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
-    memcpy(
-      outputbuf + (mbi * outputlay->n) + 0,
-      contextbuf + (mbi * contextlay->n), 
-      contextlay->n * sizeof(double)
-    );
-    memcpy(
-      outputbuf + (mbi * outputlay->n) + contextlay->n,
-      samplesbuf + (mbi * sampleslay->n),
-      sampleslay->n * sizeof(double)
-    );
-  }
+
 }
 
 void ImageProject::loadbatch(FILE *infp) {
@@ -607,48 +615,6 @@ void ImageProject::encodeout() {
 }
 
 
-
-void ZoomProject::write_ppm(FILE *fp) {
-  assert(mbn > 0);
-
-  unsigned int labn = sampleslay->n + lofreqlay->n;
-  assert(labn % 3 == 0);
-
-  unsigned int dim = round(sqrt(labn / 3));
-  assert(dim * dim * 3 == labn);
-
-bool wide = 0;
-
-  if (wide) {
-    unsigned int wdim = round(sqrt(mbn * 2));
-    unsigned int hdim = (int)(wdim/2);
-    if (wdim * hdim < mbn)
-      ++wdim;
-    assert(wdim * hdim >= mbn);
-
-  PPM ppm(wdim * dim, hdim * dim, 0);
-  for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
-    unsigned int xpos = mbi % wdim;
-    unsigned int ypos = mbi / wdim;
-    ppm.pastelab(outputbuf + mbi * outputlay->n + attrslay->n, dim, dim, xpos * dim, ypos * dim);
-  }
-  ppm.write(fp);
-} else {
-
-  unsigned int ldim = round(sqrt(mbn));
-  if (ldim * ldim < mbn)
-    ++ldim;
-
-  PPM ppm(ldim * dim, ldim * dim, 0);
-  for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
-    unsigned int xpos = mbi % ldim;
-    unsigned int ypos = mbi / ldim;
-    ppm.pastelab(outputbuf + mbi * outputlay->n + attrslay->n, dim, dim, xpos * dim, ypos * dim);
-  }
-
-  ppm.write(fp);
-}
-}
 
 void ZoomProject::report(const char *prog, unsigned int i) {
   fprintf(stderr, "[ZoomProject] ");
@@ -688,6 +654,12 @@ PipelineProject::PipelineProject(const char *_dir, unsigned int _mbn, map<string
   }
 
   assert(stages.size());
+
+  unsigned int n_controls = 0;
+  for (unsigned int i = 0; i < stages.size(); ++i) {
+    n_controls += stages[i]->controlslay->n;
+  }
+  assert(n_controls == controlslay->n);
 }
 
 PipelineProject::~PipelineProject() {
@@ -715,6 +687,7 @@ void PipelineProject::generate(
 
     proj->generate(NULL, dev);
   }
+
 }
  
 const uint8_t *PipelineProject::output() const {
