@@ -80,10 +80,14 @@ int main(int argc, char **argv) {
 
   unsigned int i = 0;
   while (1) {
-    p->generate(
-      stdin,
-      dev, fidelity
-    );
+    if (fidelity == 0) {
+      p->generate(stdin, dev);
+    } else if (fidelity == 1) {
+      p->regenerate(stdin);
+    } else {
+      assert(0);
+    }
+      
 
     if (output_format == Project::OUTPUT_FORMAT_PPM) {
       p->write_ppm(stdout);

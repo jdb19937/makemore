@@ -4,19 +4,22 @@
 #include <stdio.h>
 
 #include <string>
+#include <map>
 
 #include "layout.hh"
 #include "topology.hh"
 #include "multitron.hh"
 
 struct Project {
-  Project(const char *_dir, unsigned int _mbn);
+  Project(const char *_dir, unsigned int _mbn, std::map<std::string,std::string> *_config = NULL);
   virtual ~Project();
 
   unsigned int mbn;
+  std::map<std::string, std::string> *config;
 
   std::string dir;
   Layout *contextlay, *controlslay, *outputlay;
+  double *outputbuf, *contextbuf, *controlbuf;
 
   typedef enum {
     CONTEXT_SOURCE_UNKNOWN,
@@ -48,7 +51,11 @@ struct Project {
 
   virtual void generate(
     FILE *infp,
-    double dev, int fidelity
+    double dev = 1.0
+  ) = 0;
+
+  virtual void regenerate(
+    FILE *infp
   ) = 0;
 
   virtual const uint8_t *output() const = 0;
@@ -72,13 +79,14 @@ struct Project {
 
 extern Project *open_project(const char *dir, unsigned int mbn);
 
-struct SimpleProject : Project {
-  SimpleProject(const char *_dir, unsigned int _mbn);
-  virtual ~SimpleProject();
+struct ImageProject : Project {
+  ImageProject(const char *_dir, unsigned int _mbn, std::map<std::string,std::string> *);
+  virtual ~ImageProject();
 
   bool genwoke;
 
   Layout *sampleslay;
+  double *samplesbuf;
 
   Topology *enctop, *gentop, *distop;
   Multitron *enctron, *gentron, *distron;
@@ -88,14 +96,11 @@ struct SimpleProject : Project {
 
 
   double *genin, *encin, *gentgt;
-  double *samplesbuf, *contextbuf, *controlbuf, *outputbuf;
   double *genoutbuf;
   uint8_t *bcontextbuf, *boutputbuf;
 
   double *disin, *distgt, *distgtbuf;
   double *enctgt;
-
-  unsigned int labn, dim;
 
   virtual void learn(
     FILE *infp,
@@ -107,7 +112,11 @@ struct SimpleProject : Project {
 
   virtual void generate(
     FILE *infp,
-    double dev, int fidelity
+    double dev = 1.0
+  );
+
+  virtual void regenerate(
+    FILE *infp
   );
 
   virtual void write_ppm(FILE *fp = stdout);
@@ -115,6 +124,12 @@ struct SimpleProject : Project {
   virtual const uint8_t *output() const {
     return boutputbuf;
   }
+
+  virtual void separate();
+  virtual void reconstruct();
+  virtual void loadbatch(FILE *);
+  virtual void loadcontext(FILE *);
+  virtual void encodeout();
 
   virtual void load();
   virtual void save();
@@ -122,50 +137,60 @@ struct SimpleProject : Project {
 };
 
 
-struct ZoomProject : Project {
-  ZoomProject(const char *_dir, unsigned int _mbn);
+struct ZoomProject : ImageProject {
+  ZoomProject(const char *_dir, unsigned int _mbn, std::map<std::string,std::string> * = NULL);
   virtual ~ZoomProject();
 
-  Topology *enctop, *gentop, *distop;
-  Multitron *enctron, *gentron, *distron;
+  Layout *lofreqlay, *attrslay;
+  double *lofreqbuf;
 
-  Tron *encpasstron, *encgentron;
-  Tron *genpasstron, *gendistron;
+  virtual void separate();
+  virtual void reconstruct();
 
-  Layout *lofreqlay, *hifreqlay, *attrslay;
+  virtual void write_ppm(FILE *fp = stdout);
+  virtual void report(const char *prog, unsigned int i);
+};
 
+struct PipelineProject : Project {
+  std::vector<Project*> stages;
 
-  double *genin, *encin, *gentgt;
-  double *lofreqbuf, *hifreqbuf, *controlbuf, *outputbuf, *contextbuf;
-  uint8_t *bcontextbuf, *boutputbuf;
-
-  double *disin, *distgt, *distgtbuf;
-  double *enctgt;
-
-  unsigned int labn, dim;
-
+  PipelineProject(const char *_dir, unsigned int _mbn, std::map<std::string,std::string> * = NULL);
+  virtual ~PipelineProject();
+  
   virtual void learn(
     FILE *infp,
     double nu,
     double dpres, double fpres, double cpres, double zpres,
     double fcut, double dcut,
     unsigned int i
-  );
+  ) {
+    assert(0);
+  }
 
   virtual void generate(
     FILE *infp,
-    double dev, int fidelity
+    double dev = 1.0
   );
+
+  virtual void regenerate(
+    FILE *infp
+  ) {
+    assert(0);
+  }
+
+  virtual const uint8_t *output() const;
 
   virtual void write_ppm(FILE *fp = stdout);
 
-  virtual const uint8_t *output() const {
-    return boutputbuf;
+  virtual void load();
+
+  virtual void save() {
+    assert(0);
   }
 
-  virtual void load();
-  virtual void save();
-  virtual void report(const char *prog, unsigned int i);
+  virtual void report(const char *prog, unsigned int i) {
+    fprintf(stderr, "[PipelineProject] %s %s i=%u\n", prog, dir.c_str(), i);
+  }
 };
 
 #endif
