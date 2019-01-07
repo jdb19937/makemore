@@ -28,7 +28,7 @@ LABTOOLS = \
   labshrink labhifreq labtogray grayhifreq \
   reconlab recongray 
 
-MORETOOLS = makemore makelay catlay wireup maketop makemap learnmore genicon
+MORETOOLS = makemore makelay catlay wireup maketop makemap learnmore genicon servemore
 
 .PHONY: all
 all: $(LIB) $(MORETOOLS)
@@ -166,6 +166,10 @@ random.ppm: genicon
 	./genicon random > $@
 random.png: random.ppm
 	convert $^ $@
+static.ppm: genicon
+	./genicon static > $@
+static.png: static.ppm
+	convert $^ $@
 
 wireup.o: $(LIBHDR)
 wireup: wireup.o $(LIB)
@@ -179,6 +183,9 @@ makemap: makemap.o $(LIB)
 
 makemore.o: $(LIBHDR)
 makemore: makemore.o $(LIB)
+	$(CXX) -o $@ $(CXXFLAGS) $^ $(LDFLAGS) $(CULDFLAGS)
+servemore.o: $(LIBHDR)
+servemore: servemore.o $(LIB)
 	$(CXX) -o $@ $(CXXFLAGS) $^ $(LDFLAGS) $(CULDFLAGS)
 learnmore.o: $(LIBHDR)
 learnmore: learnmore.o $(LIB)

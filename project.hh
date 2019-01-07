@@ -51,12 +51,9 @@ struct Project {
   ) = 0;
 
   virtual void generate(
-    FILE *infp,
-    double dev = 1.0
   ) = 0;
 
   virtual void regenerate(
-    FILE *infp
   ) = 0;
 
   virtual const uint8_t *output() const = 0;
@@ -76,6 +73,16 @@ struct Project {
   virtual void report(const char *prog, unsigned int i) {
     fprintf(stderr, "%s %s i=%u\n", prog, dir.c_str(), i);
   }
+
+  virtual void loadcontext(FILE *);
+  virtual void loadcontrols(FILE *);
+  virtual void randcontrols(double dev);
+  virtual void loadadjust(FILE *);
+  virtual void nulladjust();
+  virtual void nullcontrols() { randcontrols(0); }
+  virtual void loadbatch(FILE *);
+
+  virtual void adjustout();
 };
 
 extern Project *open_project(const char *dir, unsigned int mbn);
@@ -111,12 +118,9 @@ struct ImageProject : Project {
   );
 
   virtual void generate(
-    FILE *infp,
-    double dev = 1.0
   );
 
   virtual void regenerate(
-    FILE *infp
   );
 
   virtual void write_ppm(FILE *fp = stdout);
@@ -127,8 +131,6 @@ struct ImageProject : Project {
 
   virtual void separate();
   virtual void reconstruct();
-  virtual void loadbatch(FILE *);
-  virtual void loadcontext(FILE *);
   virtual void encodeout();
 
   virtual void load();
@@ -166,12 +168,9 @@ struct PipelineProject : Project {
   }
 
   virtual void generate(
-    FILE *infp,
-    double dev = 1.0
   );
 
   virtual void regenerate(
-    FILE *infp
   ) {
     assert(0);
   }

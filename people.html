@@ -1,0 +1,764 @@
+<html> <head> <title>makemore</title>
+
+<style>
+.noselect {
+  -webkit-touch-callout: none; /* iOS Safari */
+    -webkit-user-select: none; /* Safari */
+     -khtml-user-select: none; /* Konqueror HTML */
+       -moz-user-select: none; /* Firefox */
+        -ms-user-select: none; /* Internet Explorer/Edge */
+            user-select: none; /* Non-prefixed version, currently
+                                  supported by Chrome and Opera */
+}
+
+
+</style>
+</head>
+
+<!--
+-->
+
+<body bgcolor="darkgray" class="noselect">
+<form name="attrs">
+<table>
+  <tr>
+  <td valign="top" width=40>
+    <div id="attrstatic" style="border-width: 3px; border-color: #606010; border-style: solid; width: 32; height: 32">
+      <img src="static.png" onMouseDown="doubleclick('attrstatic', genrandomattrs, 'attrcon') "/>
+    </div>
+    <div id="attrperson" style="border-width: 3px; border-color: #606010; border-style: solid; width: 32; height: 32">
+      <img src="person.png"  onMouseDown="doubleclick('attrperson', genpersonattrs, 'attrcon')  "/>
+    </div>
+  </td>
+  <td colspan=4>
+
+<div id="attrcon" style="border-width: 3px; border-color: gray; border-style: solid">
+
+<table cellpadding=0 cellspacing=1><tr>
+<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr0' style='border: 3px solid gray; background-color: black; width: 16; height: 16'></div> </td><td> stubble &nbsp;&nbsp; </td></tr></table>   </td>
+<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr1' style='border: 3px solid gray; background-color: black; width: 16; height: 16'></div> </td><td> arched_eyebrows &nbsp;&nbsp; </td></tr></table>   </td>
+<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr2' style='border: 3px solid gray; background-color: black; width: 16; height: 16'></div> </td><td> attractive &nbsp;&nbsp; </td></tr></table>   </td>
+<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr3' style='border: 3px solid gray; background-color: black; width: 16; height: 16'></div> </td><td> bags_under_eyes &nbsp;&nbsp; </td></tr></table>   </td>
+<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr4' style='border: 3px solid gray; background-color: black; width: 16; height: 16'></div> </td><td> bald &nbsp;&nbsp; </td></tr></table>   </td>
+<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr5' style='border: 3px solid gray; background-color: black; width: 16; height: 16'></div> </td><td> bangs &nbsp;&nbsp; </td></tr></table>   </td>
+<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr6' style='border: 3px solid gray; background-color: black; width: 16; height: 16'></div> </td><td> big_lips &nbsp;&nbsp; </td></tr></table>   </td>
+<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr7' style='border: 3px solid gray; background-color: black; width: 16; height: 16'></div> </td><td> big_nose &nbsp;&nbsp; </td></tr></table>   </td></tr><tr>
+<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr8' style='border: 3px solid gray; background-color: black; width: 16; height: 16'></div> </td><td> black_hair &nbsp;&nbsp; </td></tr></table>   </td>
+<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr9' style='border: 3px solid gray; background-color: black; width: 16; height: 16'></div> </td><td> blonde_hair &nbsp;&nbsp; </td></tr></table>   </td>
+<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr10' style='border: 3px solid gray; background-color: black; width: 16; height: 16'></div> </td><td> blurry &nbsp;&nbsp; </td></tr></table>   </td>
+<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr11' style='border: 3px solid gray; background-color: black; width: 16; height: 16'></div> </td><td> brown_hair &nbsp;&nbsp; </td></tr></table>   </td>
+<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr12' style='border: 3px solid gray; background-color: black; width: 16; height: 16'></div> </td><td> bushy_eyebrows &nbsp;&nbsp; </td></tr></table>   </td>
+<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr13' style='border: 3px solid gray; background-color: black; width: 16; height: 16'></div> </td><td> chubby &nbsp;&nbsp; </td></tr></table>   </td>
+<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr14' style='border: 3px solid gray; background-color: black; width: 16; height: 16'></div> </td><td> double_chin &nbsp;&nbsp; </td></tr></table>   </td>
+<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr15' style='border: 3px solid gray; background-color: black; width: 16; height: 16'></div> </td><td> eyeglasses &nbsp;&nbsp; </td></tr></table>   </td></tr><tr>
+<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr16' style='border: 3px solid gray; background-color: black; width: 16; height: 16'></div> </td><td> goatee &nbsp;&nbsp; </td></tr></table>   </td>
+<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr17' style='border: 3px solid gray; background-color: black; width: 16; height: 16'></div> </td><td> gray_hair &nbsp;&nbsp; </td></tr></table>   </td>
+<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr18' style='border: 3px solid gray; background-color: black; width: 16; height: 16'></div> </td><td> heavy_makeup &nbsp;&nbsp; </td></tr></table>   </td>
+<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr19' style='border: 3px solid gray; background-color: black; width: 16; height: 16'></div> </td><td> high_cheekbones &nbsp;&nbsp; </td></tr></table>   </td>
+<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr20' style='border: 3px solid gray; background-color: black; width: 16; height: 16'></div> </td><td> male &nbsp;&nbsp; </td></tr></table>   </td>
+<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr21' style='border: 3px solid gray; background-color: black; width: 16; height: 16'></div> </td><td> mouth_open &nbsp;&nbsp; </td></tr></table>   </td>
+<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr22' style='border: 3px solid gray; background-color: black; width: 16; height: 16'></div> </td><td> mustache &nbsp;&nbsp; </td></tr></table>   </td>
+<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr23' style='border: 3px solid gray; background-color: black; width: 16; height: 16'></div> </td><td> narrow_eyes &nbsp;&nbsp; </td></tr></table>   </td></tr><tr>
+<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr24' style='border: 3px solid gray; background-color: black; width: 16; height: 16'></div> </td><td> no_beard &nbsp;&nbsp; </td></tr></table>   </td>
+<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr25' style='border: 3px solid gray; background-color: black; width: 16; height: 16'></div> </td><td> oval_face &nbsp;&nbsp; </td></tr></table>   </td>
+<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr26' style='border: 3px solid gray; background-color: black; width: 16; height: 16'></div> </td><td> pale_skin &nbsp;&nbsp; </td></tr></table>   </td>
+<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr27' style='border: 3px solid gray; background-color: black; width: 16; height: 16'></div> </td><td> pointy_nose &nbsp;&nbsp; </td></tr></table>   </td>
+<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr28' style='border: 3px solid gray; background-color: black; width: 16; height: 16'></div> </td><td> receding_hairline &nbsp;&nbsp; </td></tr></table>   </td>
+<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr29' style='border: 3px solid gray; background-color: black; width: 16; height: 16'></div> </td><td> rosy_cheeks &nbsp;&nbsp; </td></tr></table>   </td>
+<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr30' style='border: 3px solid gray; background-color: black; width: 16; height: 16'></div> </td><td> sideburns &nbsp;&nbsp; </td></tr></table>   </td>
+<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr31' style='border: 3px solid gray; background-color: black; width: 16; height: 16'></div> </td><td> smiling &nbsp;&nbsp; </td></tr></table>   </td></tr><tr>
+<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr32' style='border: 3px solid gray; background-color: black; width: 16; height: 16'></div> </td><td> straight_hair &nbsp;&nbsp; </td></tr></table>   </td>
+<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr33' style='border: 3px solid gray; background-color: black; width: 16; height: 16'></div> </td><td> wavy_hair &nbsp;&nbsp; </td></tr></table>   </td>
+<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr34' style='border: 3px solid gray; background-color: black; width: 16; height: 16'></div> </td><td> wearing_earrings &nbsp;&nbsp; </td></tr></table>   </td>
+<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr35' style='border: 3px solid gray; background-color: black; width: 16; height: 16'></div> </td><td> wearing_hat &nbsp;&nbsp; </td></tr></table>   </td>
+<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr36' style='border: 3px solid gray; background-color: black; width: 16; height: 16'></div> </td><td> wearing_lipstick &nbsp;&nbsp; </td></tr></table>   </td>
+<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr37' style='border: 3px solid gray; background-color: black; width: 16; height: 16'></div> </td><td> wearing_necklace &nbsp;&nbsp; </td></tr></table>   </td>
+<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr38' style='border: 3px solid gray; background-color: black; width: 16; height: 16'></div> </td><td> wearing_necktie &nbsp;&nbsp; </td></tr></table>   </td>
+<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr39' style='border: 3px solid gray; background-color: black; width: 16; height: 16'></div> </td><td> young &nbsp;&nbsp; </td></tr></table>   </td></tr><tr>
+</tr></table>
+
+
+
+
+
+
+</div>
+
+
+
+
+  </td>
+
+  </tr>
+
+</table>
+</form>
+<table>
+
+  <tr>
+ <td valign=top width=40>
+    <div id="stage1colorshower" style="border-width: 3px; border-color: gray; border-style: solid; width: 32; height: 32; background-color: black">
+    </div>
+    <div id="stage1colorpicker" style="border-width: 3px; border-color: gray; border-style: solid; width: 32; height: 32;">
+      <img src="spectrum.png">
+    </div>
+    <div id="stage1scrambler" style="border-width: 3px; border-color: #606010; border-style: solid; width: 32; height: 32">
+      <img src="random.png" onMouseDown="doubleclick('stage1scrambler', function() { gencontrols(1) }, 'stage1conborder')"/>
+    </div>
+ </td>
+
+ <td width=256><canvas id="stage1" width=256 height=256></canvas></td>
+ <td width=256><canvas id="stage1adj" width=256 height=256></canvas></td>
+  <td width=32 id="stage1conborder" style="border-width: 3px; border-color: gray; border-style: solid; padding: 0px">
+    <canvas id="stage1con" width=32 height=256></canvas></td>
+  <td></td>
+</tr>
+<tr>
+ <td valign=top width=40>
+    <div id="stage2colorshower" style="border-width: 3px; border-color: gray; border-style: solid; width: 32; height: 32; background-color: black">
+    </div>
+    <div id="stage2colorpicker" style="border-width: 3px; border-color: gray; border-style: solid; width: 32; height: 32;">
+      <img src="spectrum.png">
+    </div>
+    <div id="stage2scrambler" style="border-width: 3px; border-color: #606010; border-style: solid; width: 32; height: 32">
+      <img src="random.png" onMouseDown="doubleclick('stage2scrambler', function() { gencontrols(2); }, 'stage2conborder')"/>
+    </div>
+  </td>
+  <td width=256><canvas id="stage2" width=256 height=256></canvas></td>
+  <td width=256><canvas id="stage2adj" width=256 height=256></canvas></td>
+  <td width=32 id="stage2conborder" style="border-width: 3px; border-color: gray; border-style: solid; padding: 0px">
+    <canvas id="stage2con" width=32 height=256></canvas></td>
+  <td></td>
+</tr>
+<tr>
+  <td valign=top width=40>
+    <div id="stage3colorshower" style="border-width: 3px; border-color: gray; border-style: solid; width: 32; height: 32; background-color: black">
+    </div>
+    <div id="stage3colorpicker" style="border-width: 3px; border-color: gray; border-style: solid; width: 32; height: 32;">
+      <img src="spectrum.png">
+    </div>
+    <div id="stage3scrambler" style="border-width: 3px; border-color: #606010; border-style: solid; width: 32; height: 32">
+      <img src="random.png" onMouseDown="doubleclick('stage3scrambler', function() { gencontrols(3); }, 'stage3conborder')"/>
+    </div>
+  </td>
+  <td width=256><canvas id="stage3" width=256 height=256></canvas></td>
+  <td width=256><canvas id="stage3adj" width=256 height=256></canvas></td>
+  <td width=32 id="stage3conborder" style="border-width: 3px; border-color: gray; border-style: solid; padding: 0px">
+    <canvas id="stage3con" width=32 height=256></canvas></td>
+  <td></td>
+</tr>
+
+<tr>
+  <td valign=top width=40>
+    <div id="stage4colorshower" style="border-width: 3px; border-color: gray; border-style: solid; width: 32; height: 32; background-color: black">
+    </div>
+    <div id="stage4colorpicker" style="border-width: 3px; border-color: gray; border-style: solid; width: 32; height: 32;">
+      <img src="spectrum.png">
+    </div>
+    <div id="stage4scrambler" style="border-width: 3px; border-color: #606010; border-style: solid; width: 32; height: 32">
+      <img src="random.png" onMouseDown="doubleclick('stage4scrambler', function() { gencontrols(4) }, 'stage4conborder')"/>
+    </div>
+  </td>
+  <td width=256><canvas id="stage4" width=256 height=256></canvas></td>
+  <td width=256><canvas id="stage4adj" width=256 height=256></canvas></td>
+  <td width=32 id="stage4conborder" style="border-width: 3px; border-color: gray; border-style: solid; padding: 0px">
+    <canvas id="stage4con" width=32 height=256></canvas></td>
+</tr>
+
+</table>
+
+<br/>
+
+
+
+<br/>
+</body>
+
+<script src="color.js"></script>
+
+ <script>
+
+var n_stages = 4
+
+function gencontrols(stage) {
+  var canvas = document.getElementById("stage" + stage + "con")
+  var border = document.getElementById("stage" + stage + "conborder")
+  var seed = Math.floor(Math.random() * 0xFFFFFF)
+  fillbw(canvas, 16, 1)
+  requpdate()
+}
+
+function genpersonattrs() {
+}
+
+function genrandomattrs() {
+  for (var i = 0; i < 40; ++i) {
+    var cb = document.getElementById("attr" + i)
+    var r = Math.floor(Math.random() * 256)
+    cb.curval = r;
+    cb.style.backgroundColor = mkcol([r,r,r])
+  }
+  requpdate()
+}
+
+function mkcol(data) {
+  var col = 'rgb(' + Math.floor(data[0]) + ',' + Math.floor(data[1]) + ',' + Math.floor(data[2]) + ')';
+  return col
+}
+
+function pick_color(r,g,b) {
+  window.curcol = [r,g,b]
+  for (var i = 1; i <= n_stages; i++) {
+    var cs = document.getElementById("stage" + i + "colorshower")
+    cs.style.backgroundColor = mkcol(window.curcol)
+  }
+}
+
+function start_drawing(canvas) {
+  if (window.drawing == canvas) {
+    return;
+  }
+  if (window.drawing) {
+    stop_drawing()
+  }
+  for (var i = 1; i <= n_stages; i++) {
+    var cs = document.getElementById("stage" + i + "colorshower")
+    if (document.getElementById("stage" + i) == canvas) {
+      cs.style.borderColor = 'blue'
+    } else {
+      cs.style.borderColor = 'gray'
+    }
+  }
+  window.drawing = canvas;
+}
+
+//function start_picking(canvas) {
+function start_picking() {
+//  if (window.picking == canvas) {
+//    return;
+//  }
+//  if (window.picking) {
+//    stop_picking()
+//  }
+
+  if (window.picking)
+    return
+
+  for (var i = 1; i <= n_stages; i++) {
+    var cp = document.getElementById("stage" + i + "colorpicker")
+    cp.style.borderColor = 'blue'
+
+    //var cs = document.getElementById("stage" + i + "colorshower")
+    //cs.style.borderColor = 'green'
+  }
+  window.picking = true
+}
+
+function stop_picking() {
+  for (var i = 1; i <= n_stages; i++) {
+    var cp = document.getElementById("stage" + i + "colorpicker")
+    cp.style.borderColor = 'gray'
+    //var cs = document.getElementById("stage" + i + "colorshower")
+    //cs.style.borderColor = 'gray'
+  }
+  window.picking = false
+}
+  
+
+function stop_drawing() {
+  window.drawing = false;
+  for (var i = 1; i <= n_stages; i++) {
+    var cs = document.getElementById("stage" + i + "colorshower")
+    cs.style.borderColor = 'gray'
+  }
+  requpdate()
+}
+
+function fillbw(canvas, dim, dev) {
+  var seed = Math.floor(Math.random() * 0xFFFFFF)
+  var ctx = canvas.getContext('2d')
+  var w = canvas.width
+  var h = canvas.height
+  var i = 0
+  for (var y = 0; y < h; y += dim) {
+    for (var x = 0; x < w; x += dim) {
+      var r = (seed & (1 << i)) ? 255 : 0
+      r = (128 * (1-dev) + r * dev)
+      ctx.fillStyle = mkcol([r,r,r])
+      ctx.fillRect(x, y, dim, dim)
+      ++i
+    }
+  }
+  canvas.seed = seed
+  canvas.dev = dev
+}
+
+
+function setup_canvas(id, dim) {
+  var canvas = document.getElementById(id);
+  var adjcanvas = document.getElementById(id + "adj");
+  var concanvas = document.getElementById(id + "con");
+  var colorpicker = document.getElementById(id + "colorpicker")
+  var colorshower = document.getElementById(id + "colorshower")
+
+  var ctx = canvas.getContext('2d');
+  var adjctx = adjcanvas.getContext('2d');
+  ctx.imageSmoothingEnabled = false;
+  adjctx.imageSmoothingEnabled = false;
+
+  var cdim = canvas.width
+  adjctx.fillStyle = '#808080'
+  adjctx.fillRect(0, 0, cdim, cdim)
+  ctx.fillStyle = 'white'
+  ctx.fillRect(0, 0, cdim, cdim)
+
+  fillbw(concanvas, 16, 1)
+
+  var scale = cdim / dim
+
+  var alldata = ctx.getImageData(0, 0, cdim, cdim).data;
+  var origdata = new Uint8Array(dim * dim * 3)
+  canvas.origlab = new Uint8Array(dim * dim * 3)
+  canvas.rgbdata = new Uint8Array(dim * dim * 3)
+  var adjdata = new Uint8Array(dim * dim * 3)
+  canvas.adjlab = new Uint8Array(dim * dim * 3)
+
+  canvas.scale = scale
+  canvas.dim = dim
+
+  var ndata = dim * dim
+  for (var i = 0; i < ndata; i = i + 1) {
+    var off = i * 3
+    var aoff = i * scale * 3;
+
+    origdata[off+0] = alldata[aoff+0]
+    origdata[off+1] = alldata[aoff+1]
+    origdata[off+2] = alldata[aoff+2]
+
+    var ol = rgbtolab([origdata[off+0],origdata[off+1],origdata[off+2]])
+    canvas.origlab[off+0] = ol[0]
+    canvas.origlab[off+1] = ol[1]
+    canvas.origlab[off+2] = ol[2]
+
+    canvas.rgbdata[off+0] = alldata[aoff+0]
+    canvas.rgbdata[off+1] = alldata[aoff+1]
+    canvas.rgbdata[off+2] = alldata[aoff+2]
+
+    canvas.adjlab[off+0] = 127.5
+    canvas.adjlab[off+1] = 127.5
+    canvas.adjlab[off+2] = 127.5
+
+    var argb = labtorgb([canvas.adjlab[off+0],canvas.adjlab[off+1],canvas.adjlab[off+2]])
+    adjdata[off+0] = argb[0] 
+    adjdata[off+1] = argb[1]
+    adjdata[off+2] = argb[2]
+
+    adjctx.fillStyle = mkcol(argb)
+    adjctx.fillRect((i % dim) * scale, Math.floor(i/dim) * scale, scale, scale);
+  }
+
+  var cdraw = function(px, py) {
+    var off = py * dim * 3 + px * 3
+
+    canvas.rgbdata[off+0] = window.curcol[0]
+    canvas.rgbdata[off+1] = window.curcol[1]
+    canvas.rgbdata[off+2] = window.curcol[2]
+    ctx.fillStyle = mkcol(window.curcol)
+    ctx.fillRect(px * scale, py * scale, scale, scale);
+
+    var curlab = rgbtolab(window.curcol)
+
+    var adjlabcol = new Array(3)
+    adjlabcol[0] = 128 + (curlab[0] - canvas.origlab[off+0]) / 2
+    adjlabcol[1] = 128 + (curlab[1] - canvas.origlab[off+1]) / 2
+    adjlabcol[2] = 128 + (curlab[2] - canvas.origlab[off+2]) / 2
+
+    canvas.adjlab[off+0] = adjlabcol[0]
+    canvas.adjlab[off+1] = adjlabcol[1]
+    canvas.adjlab[off+2] = adjlabcol[2]
+
+    var adjcol = labtorgb(adjlabcol)
+    adjdata[off+0] = adjcol[0]
+    adjdata[off+1] = adjcol[1]
+    adjdata[off+2] = adjcol[2]
+
+    adjctx.fillStyle = mkcol(adjcol)
+    adjctx.fillRect(px * scale, py * scale, scale, scale);
+  }
+
+  canvas.addEventListener('mousedown', function(event) {
+    var x = event.offsetX, y = event.offsetY;
+    var px = parseInt(x / scale);
+    var py = parseInt(y / scale);
+    var off = py * dim * 3 + px * 3
+
+    if (event.shiftKey) {
+      pick_color(canvas.rgbdata[off+0], canvas.rgbdata[off+1], canvas.rgbdata[off+2])
+    } else {
+      start_drawing(canvas)
+      cdraw(px, py)
+    }
+  })
+  canvas.addEventListener('mousemove', function(event) {
+    if (!window.drawing)
+      return;
+    if (window.drawing != canvas)
+      return;
+
+    var x = event.offsetX, y = event.offsetY;
+    var px = parseInt(x / scale);
+    var py = parseInt(y / scale);
+
+    cdraw(px, py)
+  })
+
+}
+
+
+function doubleclick(id, cb, targetdivid) {
+          var div = document.getElementById(id)
+  var targetdiv;
+  if (targetdivid) {
+    targetdiv = document.getElementById(targetdivid)
+  }
+
+          if (div.nclicks == 1) {
+            div.nclicks = 2;
+            div.style.borderColor='#00ff00'
+            if (targetdiv)
+              targetdiv.style.borderColor='orange'
+            setTimeout(function() { div.nclicks = 0; div.style.borderColor='#606010'; if (targetdiv) { targetdiv.style.borderColor = 'gray' } }, 400)
+            cb()
+          } else if (div.nclicks == 2) {
+            return;
+          } else if (div.nclicks == -1) {
+            return;
+          } else { // 0
+            div.nclicks = 1;
+            div.style.borderColor='yellow'
+            if (targetdiv)
+              targetdiv.style.borderColor='yellow'
+
+            setTimeout(function() {
+              if (div.nclicks != 1) return;
+              div.style.borderColor='red';
+              if (targetdiv)
+                targetdiv.style.borderColor='gray'
+              div.nclicks = -1
+
+              setTimeout(function() {
+                div.nclicks = 0
+                div.style.borderColor='#606010'
+              }, 400)
+            }, 400)
+          }
+}
+
+//  https://stackoverflow.com/a/33703102
+function concatTypedArrays(a, b) { // a, b TypedArray of same type
+    var c = new (a.constructor)(a.length + b.length);
+    c.set(a, 0);
+    c.set(b, a.length);
+    return c;
+}
+
+function readTypedArray(a, n) { //
+    var newa = new (a.constructor)(a.length - n);
+    var c = new (a.constructor)(n)
+    c.set(a.slice(0, n));
+    newa.set(a.slice(n, a.length - n))
+    return [newa, c];
+}
+
+
+// https://jsfiddle.net/ssell/qzzvruc4/
+function gaussianRand(rng) {
+      var x1 = 0.0;
+      var x2 = 0.0;
+      var w  = 0.0;
+
+      do {
+          // Math.random() gives value on range [0, 1) but
+          // the Polar Form expects [-1, 1].
+          x1 = (2.0 * rng()) - 1.0;
+          x2 = (2.0 * rng()) - 1.0;
+          w  = (x1 * x1) + (x2 * x2);
+      } while(w >= 1.0);
+
+      w = Math.sqrt((-2.0 * Math.log(w)) / w);
+
+      return x1 * w;
+}
+
+// https://stackoverflow.com/questions/521295/seeding-the-random-number-generator-in-javascript
+function mulberry32(a) {
+    return function() {
+      var t = a += 0x6D2B79F5;
+      t = Math.imul(t ^ t >>> 15, t | 1);
+      t ^= t + Math.imul(t ^ t >>> 7, t | 61);
+      return ((t ^ t >>> 14) >>> 0) / 4294967296;
+    }
+}
+
+
+// https://stackoverflow.com/a/21394730
+function sendMessage(sock, msg){
+    // Wait until the state of the socket is not ready and send the message when it is...
+    waitForSocketConnection(sock, function(){
+//alert('sending msg')
+        sock.send(msg);
+    });
+}
+
+// Make the function wait until the connection is made...
+function waitForSocketConnection(socket, callback){
+    setTimeout(
+        function () {
+            if (socket.readyState === 1) {
+                console.log("connected")
+                callback();
+                return;
+
+            } else {
+                console.log("connecting")
+                waitForSocketConnection(socket, callback);
+            }
+        }, 50);
+}
+
+function requpdate() {
+  if (!window.allready)
+    return;
+
+  var n_controls = [64, 129, 32, 16];
+  var n_adjust = [8*8*3, 16*16*3, 32*32*3, 64*64*3]
+  var tattrs = 40
+  var tadjust = 0
+  var tcontrols = 0
+  for (var i = 0; i < 4; i++) {
+    tadjust += n_adjust[i]
+    tcontrols += n_controls[i]
+  }
+
+  var reqsize = tattrs + tcontrols + tadjust
+
+  var reqbuf = new Uint8Array(reqsize)
+  for (var i = 0; i < tattrs; ++i) {
+    var at = document.getElementById('attr' + i)
+    reqbuf[i] = at.curval
+  }
+  var reqoff = tattrs;
+
+  for (var i = 0; i < 4; i++) {
+    var stagecon = document.getElementById('stage' + (i + 1) + "con")
+    var dev = stagecon.dev
+    var seed = stagecon.seed
+    var rng = mulberry32(seed)
+    var nc = n_controls[i]
+
+    for (var c = 0; c < nc; ++c) {
+      var r = gaussianRand(rng) * dev
+      reqbuf[reqoff + c] = 255.0 / (1.0 + Math.exp(-r))
+    }
+    reqoff += nc
+  }
+
+  for (var i = 0; i < 4; i++) {
+    var stage = document.getElementById('stage' + (i + 1))
+    reqbuf.set(stage.adjlab, reqoff)
+    reqoff += n_adjust[i]
+  }
+
+
+  sendMessage(window.socket, reqbuf)
+}
+
+function doupdate(newlabdata) {
+  var stage4 = document.getElementById('stage4')
+  var stage4ctx = stage4.getContext('2d')
+
+  for (var i = 0; i < 64*64*3; ++i) {
+    stage4.origlab[i] = newlabdata[i] - ((stage4.adjlab[i] - 128) * 2)
+  }
+  for (var i = 0; i < 64*64*3; i += 3) {
+    var col = labtorgb([newlabdata[i+0], newlabdata[i+1], newlabdata[i+2]])
+    stage4.rgbdata[i+0] = col[0]
+    stage4.rgbdata[i+1] = col[1]
+    stage4.rgbdata[i+2] = col[2]
+    stage4ctx.fillStyle = mkcol(col)
+    var px = Math.floor(i/3) % stage4.dim
+    var py = Math.floor(Math.floor(i/3) / stage4.dim)
+    var scale = stage4.scale
+    stage4ctx.fillRect(px * scale, py * scale, scale, scale);
+  }
+  newlabdata = new Uint8Array(32*32*3);
+  for (var y = 0; y < 32; ++y) {
+    for (var x = 0; x < 32; ++x) {
+      for (var c = 0; c < 3; c++) {
+        var i = 32*3*y + 3*x + c;
+        var j = 64*3*(2*y) + 3*(2*x) + c;
+        newlabdata[i] = Math.round((stage4.origlab[j] + stage4.origlab[j+3] + stage4.origlab[j+64*3] + stage4.origlab[j+64*3+3]) / 4.0)
+      }
+    }
+  }
+
+
+  var stage3 = document.getElementById('stage3')
+  var stage3ctx = stage3.getContext('2d')
+  for (var i = 0; i < 32*32*3; i++) {
+    stage3.origlab[i] = newlabdata[i] - ((stage3.adjlab[i] - 128) * 2)
+  }
+  for (var i = 0; i < 32*32*3; i += 3) {
+    var col = labtorgb([newlabdata[i+0], newlabdata[i+1], newlabdata[i+2]])
+    stage3.rgbdata[i+0] = col[0]
+    stage3.rgbdata[i+1] = col[1]
+    stage3.rgbdata[i+2] = col[2]
+    stage3ctx.fillStyle = mkcol(col)
+    var px = Math.floor(i/3) % 32
+    var py = Math.floor(Math.floor(i/3) / 32)
+    var scale = stage3.scale
+    stage3ctx.fillRect(px * scale, py * scale, scale, scale);
+  }
+  newlabdata = new Uint8Array(16*16*3);
+  for (var y = 0; y < 16; ++y) {
+    for (var x = 0; x < 16; ++x) {
+      for (var c = 0; c < 3; c++) {
+        var i = 16*3*y + 3*x + c;
+        var j = 32*3*(2*y) + 3*(2*x) + c;
+        newlabdata[i] = Math.round((stage3.origlab[j] + stage3.origlab[j+3] + stage3.origlab[j+32*3] + stage3.origlab[j+32*3+3]) / 4.0)
+      }
+    }
+  }
+
+  var stage2 = document.getElementById('stage2')
+  var stage2ctx = stage2.getContext('2d')
+  for (var i = 0; i < 16*16*3; i++) {
+    stage2.origlab[i] = newlabdata[i] - ((stage2.adjlab[i] - 128) * 2)
+  }
+  for (var i = 0; i < 16*16*3; i += 3) {
+    var col = labtorgb([newlabdata[i+0], newlabdata[i+1], newlabdata[i+2]])
+    stage2.rgbdata[i+0] = col[0]
+    stage2.rgbdata[i+1] = col[1]
+    stage2.rgbdata[i+2] = col[2]
+    stage2ctx.fillStyle = mkcol(col)
+    var px = Math.floor(i/3) % 16
+    var py = Math.floor(Math.floor(i/3) / 16)
+    var scale = stage2.scale
+    stage2ctx.fillRect(px * scale, py * scale, scale, scale);
+  }
+  newlabdata = new Uint8Array(8*8*3);
+  for (var y = 0; y < 8; ++y) {
+    for (var x = 0; x < 8; ++x) {
+      for (var c = 0; c < 3; c++) {
+        var i = 8*3*y + 3*x + c;
+        var j = 16*3*(2*y) + 3*(2*x) + c;
+        newlabdata[i] = Math.round((stage2.origlab[j] + stage2.origlab[j+3] + stage2.origlab[j+16*3] + stage2.origlab[j+16*3+3]) / 4.0)
+      }
+    }
+  }
+
+
+  var stage1 = document.getElementById('stage1')
+  var stage1ctx = stage1.getContext('2d')
+  for (var i = 0; i < 8*8*3; i++) {
+    stage1.origlab[i] = newlabdata[i] - ((stage1.adjlab[i] - 128) * 2)
+  }
+  for (var i = 0; i < 8*8*3; i += 3) {
+    var col = labtorgb([newlabdata[i+0], newlabdata[i+1], newlabdata[i+2]])
+    stage1.rgbdata[i+0] = col[0]
+    stage1.rgbdata[i+1] = col[1]
+    stage1.rgbdata[i+2] = col[2]
+    stage1ctx.fillStyle = mkcol(col)
+    var px = Math.floor(i/3) % 8 
+    var py = Math.floor(Math.floor(i/3) / 8)
+    var scale = stage1.scale
+    stage1ctx.fillRect(px * scale, py * scale, scale, scale);
+  }
+
+}
+
+
+
+
+window.onload = function() {
+  window.socket = new WebSocket('ws://127.0.0.1:9999', ['binary']);
+  window.socket.binaryType = 'arraybuffer';
+  window.socket.inbuffer = new Uint8Array(0)
+  window.socket.onmessage = function(m) {
+    var md = m.data;
+    var ar = new Uint8Array(md)
+    window.socket.inbuffer = concatTypedArrays(window.socket.inbuffer, ar)
+    while (window.socket.inbuffer.length >= 64*64*3 * 2) {
+      var ret = readTypedArray(window.socket.inbuffer, 64*64*3)
+      window.socket.inbuffer = ret[0]
+    }
+    if (window.socket.inbuffer.length >= 64*64*3) {
+      var ret = readTypedArray(window.socket.inbuffer, 64*64*3)
+      window.socket.inbuffer = ret[0]
+      doupdate(ret[1])
+    }
+  }
+
+  var f = function(i) { 
+    var at0 = document.getElementById('attr' + i)
+    at0.curval = 0
+    at0.addEventListener('click',
+      function(event) {
+          var at1 = document.getElementById('attr' + i)
+          var curval = at1.curval;
+
+          if (event.shiftKey) { pick_color(curval, curval, curval); return }
+
+          var nval;
+          if (curval == 255) { nval = 0; }
+          else { nval = curval + 64; }
+          if (nval > 255) { nval = 255; }
+
+          at1.style.backgroundColor = mkcol([nval, nval, nval])
+          at1.style.borderColor = 'orange'
+          at1.curval = nval
+          setTimeout(function() { at1.style.borderColor = 'gray' }, 400)
+
+          requpdate()
+      }
+    )
+  };
+  for (var i = 0; i < 40; i = i + 1) {
+    f(i)
+  }
+  genrandomattrs()
+
+  window.shiftdown = false
+  window.drawing = false
+  window.picking = false
+
+  setup_canvas('stage1', 8)
+  setup_canvas('stage2', 16)
+  setup_canvas('stage3', 32)
+  setup_canvas('stage4', 64)
+
+  pick_color(0,0,0)
+
+  window.addEventListener('keydown', function(event) {
+    if (event.shiftKey) {
+      stop_drawing()
+      start_picking()
+    }
+  })
+
+  window.addEventListener('keyup', function(event) {
+    if (!event.shiftKey) {
+      stop_picking()
+    }
+  })
+  window.addEventListener('mouseup', function(event) {
+    stop_drawing()
+  })
+
+  window.allready = true;
+  requpdate()
+}
+
+</script>
+
+</html>

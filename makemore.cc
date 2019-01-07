@@ -81,9 +81,14 @@ int main(int argc, char **argv) {
   unsigned int i = 0;
   while (1) {
     if (fidelity == 0) {
-      p->generate(stdin, dev);
+      p->loadcontext(stdin);
+      p->randcontrols(dev);
+      p->nulladjust();
+      p->generate();
     } else if (fidelity == 1) {
-      p->regenerate(stdin);
+      p->loadbatch(stdin);
+      p->nulladjust();
+      p->regenerate();
     } else {
       assert(0);
     }

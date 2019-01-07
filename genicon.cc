@@ -4,8 +4,8 @@
 #include "random.hh"
 
 int main(int argc, char **argv) {
-  int w = 64;
-  int h = 64;
+  int w = 32;
+  int h = 32;
 
   PPM ppm(w, h, 0);
 
@@ -15,6 +15,20 @@ int main(int argc, char **argv) {
         double a = (double)x/(double)w;
         double b = (double)y/(double)h;
         double l = 0.6;
+  
+        labtorgb(l, a, b,
+          ppm.data + y*w*3 + x*3 + 0,
+          ppm.data + y*w*3 + x*3 + 1,
+          ppm.data + y*w*3 + x*3 + 2
+        );
+      }
+    }
+  } else if (!strcmp(argv[1], "static")) {
+    for (unsigned int y = 0; y < h; ++y) {
+      for (unsigned int x = 0; x < w; ++x) {
+        double a = 0.5;
+        double b = 0.5;
+        double l = randrange(0, 1);
   
         labtorgb(l, a, b,
           ppm.data + y*w*3 + x*3 + 0,
