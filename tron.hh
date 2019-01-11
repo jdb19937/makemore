@@ -88,6 +88,29 @@ inline Compositron *compositron(Tron *f, Tron *g) {
 }
 
 
+struct Twiddletron : Tron {
+  Tron *t;
+  unsigned int mbn;
+  unsigned int twoff;
+  unsigned int twlen;
+  unsigned int dim;
+
+  unsigned int inrn, outrn;
+  double *out, *fout;
+
+  double *buf1, *buf2;
+
+  Twiddletron(Tron *_t, unsigned int _mbn, unsigned int _twoff, unsigned int _twlen);
+  virtual ~Twiddletron();
+
+  virtual const double *input() { return t->input(); }
+  virtual const double *output() { return out; }
+  virtual double *foutput() { return fout; }
+
+  virtual const double *feed(const double *in, double *fin);
+  virtual void train(double nu);
+};
+
 
 struct Passthrutron : Tron {
   Tron *t;

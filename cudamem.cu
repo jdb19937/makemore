@@ -72,6 +72,19 @@ void cumulvec(const double *a, double m, unsigned int n, double *b) {
   gpu_cumulvec<<<gs, bs>>>(a, m, n, b);
 }
 
+__global__ void gpu_cuexpand(double *a, int n, double m) {
+  unsigned int i = blockIdx.x * blockDim.x + threadIdx.x;
+  if (i < n)
+    a[i] = (a[i] - 0.5) * m + 0.5;
+}
+
+void cuexpand(double *a, unsigned int n, double m) {
+  int bs = 128;
+  int gs = ((n + bs - 1) / bs);
+  gpu_cuexpand<<<gs, bs>>>(a, n, m);
+}
+
+
 
 __global__ void gpu_cucutpaste(
   const double *a, const double *b,
@@ -300,3 +313,5 @@ void cunormalize(
   int gs = ((n + bs - 1) / bs);
   gpu_normalize<<<gs, bs>>>(a, rows, cols, m, d, b);
 }
+
+

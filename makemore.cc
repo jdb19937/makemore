@@ -1,114 +1,59 @@
-#include "project.hh"
+#include "scrambler.hh"
 #include "topology.hh"
 #include "random.hh"
 #include "cudamem.hh"
+#include "ppm.hh"
 
 #include <math.h>
 
 int usage() {
-  fprintf(stderr, "Usage: makemore [--raw|--ppm] [--dev deviation] [--fidelity] [--batch mbn] dir.proj\n");
+  fprintf(stderr, "Usage: makemore dir.proj\n");
   return 1;
 }
 
 int main(int argc, char **argv) {
+  assert(argc > 1);
   seedrand();
 
   unsigned int mbn = 1;
-  unsigned int loadint = 100;
-  double dev = 0.0;
-  int fidelity = 0;
-  Project::OutputFormat output_format = Project::OUTPUT_FORMAT_UNKNOWN;
+  const char *project_dir = argv[1];
+  Scrambler *proj = new Scrambler(project_dir, mbn);
 
-  ++argv;
-  --argc;
-  if (argc < 1)
-    return usage();
-  while (*argv[0] == '-') {
-    const char *arg = argv[0];
-
-    if (!strcmp(arg, "--fidelity")) {
-      fidelity = 1;
-    } else if (!strcmp(arg, "--target")) {
-      fidelity = 2;
-
-    } else if (!strcmp(arg, "--ppm")) {
-      assert(output_format == Project::OUTPUT_FORMAT_UNKNOWN);
-      output_format = Project::OUTPUT_FORMAT_PPM;
-
-    } else if (!strcmp(arg, "--raw")) {
-      assert(output_format == Project::OUTPUT_FORMAT_UNKNOWN);
-      output_format = Project::OUTPUT_FORMAT_RAW;
-
-    } else if (!strcmp(arg, "--batch")) {
-      ++argv;
-     --argc;
-     if (argc < 1)
-       return usage();
-      mbn = (unsigned)atoi(argv[0]);
-      assert(mbn > 0);
-    } else if (!strcmp(arg, "--dev")) {
-      ++argv;
-     --argc;
-     if (argc < 1)
-       return usage();
-
-      dev = strtod(argv[0], NULL);
-      assert(dev >= 0);
-    } else if (!strcmp(arg, "--loadint")) {
-      ++argv;
-     --argc;
-     if (argc < 1)
-       return usage();
-
-      loadint = (unsigned)atoi(argv[0]);
-      assert(loadint > 0);
-    } else {
-      return usage();
-    }
-
-    ++argv;
-    --argc;
-    if (argc < 1)
-      return usage();
-  }
-
-  if (output_format == Project::OUTPUT_FORMAT_UNKNOWN)
-    output_format = Project::OUTPUT_FORMAT_RAW;
-
-  const char *project_dir = argv[0];
-  Project *p = open_project(project_dir, mbn);
+  unsigned int iters = 1;
+  if (argc > 2)
+    iters = (unsigned)atoi(argv[2]);
 
   unsigned int i = 0;
+
+  unsigned int labn = proj->outlay->n;
+  unsigned int dim = lround(sqrt(labn / 3));
+  assert(dim * dim * 3 == labn);
+  PPM ppm(dim * 5, dim, 0);
+
   while (1) {
-    if (fidelity == 0) {
-      p->loadcontext(stdin);
-      p->randcontrols(dev);
-      p->nulladjust();
-      p->generate();
-    } else if (fidelity == 1) {
-      p->loadbatch(stdin);
-      p->nulladjust();
-      p->regenerate();
-    } else {
-      assert(0);
-    }
-      
+    proj->load_ctxtgt(stdin);
 
-    if (output_format == Project::OUTPUT_FORMAT_PPM) {
-      p->write_ppm(stdout);
-    } else if (output_format == Project::OUTPUT_FORMAT_RAW) {
-      size_t ret = fwrite(p->output(), 1, mbn * p->outputlay->n, stdout);
-      assert(ret == mbn * p->outputlay->n);
-    }
+    proj->passgenerate();
+    ppm.pastelab(proj->outbuf, dim, dim, dim * 0, 0);
 
-    if (i % 100 == 0) {
-      fprintf(stderr, "makemore i=%d\n", i);
-    }
-    if (i % loadint == 0) {
-      p->load();
-    }
+    proj->regenerate();
+    ppm.pastelab(proj->outbuf, dim, dim, dim * 1, 0);
+
+    proj->generate(0, iters);
+    ppm.pastelab(proj->outbuf, dim, dim, dim * 2, 0);
+
+    proj->generate(0.5, iters);
+    ppm.pastelab(proj->outbuf, dim, dim, dim * 3, 0);
+
+    proj->generate(1, iters);
+    ppm.pastelab(proj->outbuf, dim, dim, dim * 4, 0);
+
+    ppm.write(stdout);
 
     ++i;
+    if (i % 100 == 0) {
+      proj->load();
+    }
   }
 
   return 0;

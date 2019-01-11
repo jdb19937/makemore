@@ -2,14 +2,13 @@
 #define __MAKEMORE_MEGATRON_HH__ 1
 
 #include "tron.hh"
-#include "layout.hh"
 #include "wiring.hh"
 
 struct Megatron : Tron {
   const double *in;
   double *fin, *out, *fout;
 
-  const Wiring *wire;
+  const class Wiring *wire;
 
   unsigned int wn;
   unsigned int **iwmap, **owmap;
@@ -28,7 +27,7 @@ struct Megatron : Tron {
 
   std::vector<std::vector<unsigned int> > _mow;
 
-  Megatron(const Wiring *_wire, double *_cweight, unsigned int _mbn = 1, double _eta = 1.0, bool _activated = true);
+  Megatron(const class Wiring *_wire, double *_cweight, unsigned int _mbn = 1, double _eta = 1.0, bool _activated = true);
   virtual ~Megatron();
 
   virtual const double *feed(const double *_in, double *_fin);

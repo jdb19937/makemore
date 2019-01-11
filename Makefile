@@ -1,12 +1,12 @@
 CXX = g++
 NVCC = nvcc
-NVCCFLAGS = -g
-CXXFLAGS = -g
+NVCCFLAGS = -O3
+CXXFLAGS = -O3
 LDFLAGS = -lm
 CULDFLAGS = -lcuda -lcudart
  
-LIBHDR = cudamem.hh random.hh tron.hh ppm.hh layout.hh megatron.hh wiring.hh persist.hh dataset.hh topology.hh multitron.hh project.hh twiddle.hh sampler.hh
-LIBOBJ = cudamem.o random.o tron.o ppm.o layout.o megatron.o wiring.o persist.o dataset.o topology.o multitron.o project.o twiddle.o sampler.o
+LIBHDR = cudamem.hh random.hh tron.hh ppm.hh layout.hh megatron.hh wiring.hh persist.hh dataset.hh topology.hh multitron.hh project.hh twiddle.hh sampler.hh scrambler.hh closest.hh
+LIBOBJ = cudamem.o random.o tron.o ppm.o layout.o megatron.o wiring.o persist.o dataset.o topology.o multitron.o project.o twiddle.o sampler.o scrambler.o closest.o
 LIB = libmakemore.a
 
 DATASETS = face-attrs.dat face8.dat face16.dat face32.dat face64.dat face128.dat
@@ -158,6 +158,18 @@ makelay: makelay.o $(LIB)
 genicon.o: $(LIBHDR)
 genicon: genicon.o $(LIB)
 	$(CXX) -o $@ $(CXXFLAGS) $^ $(LDFLAGS)
+sharp.ppm: genicon
+	./genicon sharp > $@
+sharp.png: sharp.ppm
+	convert $^ $@
+blur.ppm: genicon
+	./genicon blur > $@
+blur.png: blur.ppm
+	convert $^ $@
+fuzz.ppm: genicon
+	./genicon fuzz > $@
+fuzz.png: fuzz.ppm
+	convert $^ $@
 spectrum.ppm: genicon
 	./genicon spectrum > $@
 spectrum.png: spectrum.ppm
@@ -169,6 +181,10 @@ random.png: random.ppm
 static.ppm: genicon
 	./genicon static > $@
 static.png: static.ppm
+	convert $^ $@
+burn.ppm: genicon
+	./genicon burn > $@
+burn.png: burn.ppm
 	convert $^ $@
 
 wireup.o: $(LIBHDR)

@@ -20,10 +20,6 @@ struct Layout : Persist {
   Layout(const Layout &lay) {
     n = lay.n;
 
-    if (x) delete[] x;
-    if (y) delete[] y;
-    if (r) delete[] r;
-
     x = new double[n];
     y = new double[n];
     r = new double[n];

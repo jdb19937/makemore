@@ -6,9 +6,10 @@
 #include <vector>
 #include <set>
 
-struct Wiring : Persist {
+struct Wiring {
   unsigned int inn, outn, wn;
-  std::set<std::pair<unsigned int, unsigned int> > connected;
+  //std::set<std::pair<unsigned int, unsigned int> > connected;
+  std::vector<std::pair<unsigned int, unsigned int> > connected;
 
   Wiring();
   ~Wiring();
@@ -27,8 +28,16 @@ struct Wiring : Persist {
     unsigned int maxv = 65536
   );
  
-  virtual void load(FILE *fp);
-  virtual void save(FILE *fp) const;
+  void load(FILE *fp);
+  void load_file(const char *fn);
+  void save(FILE *fp) const;
+
+  void _makemaps(
+    std::vector< std::vector<unsigned int> > &mio,
+    std::vector< std::vector<unsigned int> > &miw,
+    std::vector< std::vector<unsigned int> > &moi,
+    std::vector< std::vector<unsigned int> > &mow
+  ) const;
 };
 
 #endif

@@ -102,6 +102,11 @@ Project::Project(const char *_dir, unsigned int _mbn, map<string,string> *_confi
   outputlay = new Layout;
   outputlay->load_file(outputlayfn);
 
+  char targetlayfn[4096];
+  sprintf(targetlayfn, "%s/target.lay", _dir);
+  targetlay = new Layout;
+  targetlay->load_file(targetlayfn);
+
   char adjustlayfn[4096];
   sprintf(adjustlayfn, "%s/adjust.lay", _dir);
   adjustlay = new Layout;
@@ -109,12 +114,15 @@ Project::Project(const char *_dir, unsigned int _mbn, map<string,string> *_confi
 
   contextbuf = new double[contextlay->n * mbn]();
   controlbuf = new double[controlslay->n * mbn]();
+  dcontrolbuf = new double[controlslay->n * mbn]();
   outputbuf = new double[outputlay->n * mbn]();
+  targetbuf = new double[targetlay->n * mbn]();
   adjustbuf = new double[adjustlay->n * mbn]();
 
   bcontextbuf = new uint8_t[contextlay->n * mbn]();
   bcontrolbuf = new uint8_t[controlslay->n * mbn]();
   boutputbuf = new uint8_t[outputlay->n * mbn]();
+  btargetbuf = new uint8_t[targetlay->n * mbn]();
   badjustbuf = new uint8_t[adjustlay->n * mbn]();
 
 }
@@ -123,40 +131,57 @@ Project::~Project() {
   delete contextlay;
   delete controlslay;
   delete outputlay;
-  delete adjustlay;
+  delete targetlay;
 
   if (config)
     delete config;
 
   delete[] contextbuf;
   delete[] controlbuf;
+  delete[] dcontrolbuf;
   delete[] outputbuf;
+  delete[] targetbuf;
   delete[] adjustbuf;
 
   delete[] bcontextbuf;
   delete[] bcontrolbuf;
   delete[] boutputbuf;
   delete[] badjustbuf;
+  delete[] btargetbuf;
 }
 
-void Project::loadcontext(FILE *infp) {
+bool Project::loadcontext(FILE *infp) {
   int ret;
   ret = fread(bcontextbuf, 1, contextlay->n * mbn, infp);
-  assert(ret == contextlay->n * mbn);
+  if (ret != contextlay->n * mbn) {
+    return false;
+  }
   for (unsigned int j = 0, jn = mbn * contextlay->n; j < jn; ++j)
-    contextbuf[j] = (0.5 + (double)bcontextbuf[j]) / 256.0;
+    contextbuf[j] = (0.0 + (double)bcontextbuf[j]) / 256.0;
+  return true;
 }
 
-void Project::loadcontrols(FILE *infp) {
+
+bool Project::loadcontrols(FILE *infp) {
   int ret;
   ret = fread(bcontrolbuf, 1, controlslay->n * mbn, infp);
-  assert(ret == controlslay->n * mbn);
+  if (ret != controlslay->n * mbn) {
+    return false;
+  }
   for (unsigned int j = 0, jn = mbn * controlslay->n; j < jn; ++j) {
-    double z = ((double)bcontrolbuf[j] + 0.5) / 256.0;
-    z = log(-(z/(z-1)));
+    double z = ((double)bcontrolbuf[j] + 0.0) / 256.0;
+    z = unsigmoid(z);
     controlbuf[j] = z;
   }
+  return true;
 }
+
+void Project::nulladjust() {
+  for (unsigned int j = 0, jn = mbn * adjustlay->n; j < jn; ++j) {
+    adjustbuf[j] = 0;
+  }
+}
+
 
 void Project::randcontrols(double dev) {
   int ret;
@@ -164,41 +189,86 @@ void Project::randcontrols(double dev) {
     controlbuf[j] = randgauss() * dev;
 }
 
-void Project::loadadjust(FILE *infp) {
+void Project::encodectx() {
+  for (unsigned int j = 0, jn = mbn * outputlay->n; j < jn; ++j) {
+    int v = lround(contextbuf[j] * 256.0);
+    bcontextbuf[j] = v < 0 ? 0 : v > 255 ? 255 : v;
+  }
+}
+
+void Project::encodeout() {
+  for (unsigned int j = 0, jn = mbn * outputlay->n; j < jn; ++j) {
+    int v = lround(outputbuf[j] * 256.0);
+    boutputbuf[j] = v < 0 ? 0 : v > 255 ? 255 : v;
+  }
+}
+
+void Project::encodetgt() {
+  for (unsigned int j = 0, jn = mbn * targetlay->n; j < jn; ++j) {
+    int v = lround(targetbuf[j] * 256.0);
+    btargetbuf[j] = v < 0 ? 0 : v > 255 ? 255 : v;
+  }
+}
+
+void Project::encodeadj() {
+  for (unsigned int j = 0, jn = mbn * adjustlay->n; j < jn; ++j) {
+    double v = adjustbuf[j];
+    v /= 2.0;
+    v += 0.5;
+    v *= 256.0;
+    v = lround(v);
+    badjustbuf[j] = v < 0 ? 0 : v > 255 ? 255 : v;
+  }
+}
+
+void Project::encodectrl() {
+  for (unsigned int j = 0, jn = mbn * controlslay->n; j < jn; ++j) {
+    double v = sigmoid( controlbuf[j] );
+    v *= 256.0;
+    v = round(v);
+    bcontrolbuf[j] = v < 0 ? 0 : v > 255 ? 255 : v;
+  }
+}
+
+bool Project::loadadjust(FILE *infp) {
   int ret;
   ret = fread(badjustbuf, 1, adjustlay->n * mbn, infp);
-  assert(ret == adjustlay->n * mbn);
-  for (unsigned int j = 0, jn = mbn * adjustlay->n; j < jn; ++j)
-    adjustbuf[j] = 2.0 * (-0.5 + (0.5 + (double)badjustbuf[j]) / 256.0);
+  if (ret != adjustlay->n * mbn) {
+    return false;
+  }
+  for (unsigned int j = 0, jn = mbn * adjustlay->n; j < jn; ++j) {
+    double z = ((double)badjustbuf[j] + 0.0) / 256.0;
+    z -= 0.5;
+    z *= 2.0;
+    adjustbuf[j] = z;
+  }
+  return true;
 }
 
-void Project::nulladjust() {
+bool Project::loadtarget(FILE *infp) {
   int ret;
-  memset(adjustbuf, 0, adjustlay->n * mbn * sizeof(double));
+  ret = fread(btargetbuf, 1, targetlay->n * mbn, infp);
+  if (ret != targetlay->n * mbn) {
+    return false;
+  }
+  for (unsigned int j = 0, jn = mbn * targetlay->n; j < jn; ++j) {
+    double z = ((double)btargetbuf[j] + 0.0) / 256.0;
+    targetbuf[j] = z;
+  }
+  return true;
 }
-  
-void Project::loadbatch(FILE *infp) {
+
+
+bool Project::loadbatch(FILE *infp) {
   int ret;
   ret = fread(boutputbuf, 1, outputlay->n * mbn, infp);
-  assert(ret == outputlay->n * mbn);
-  for (unsigned int j = 0, jn = mbn * outputlay->n; j < jn; ++j)
-    outputbuf[j] = (0.5 + (double)boutputbuf[j]) / 256.0;
-}
-
-void Project::adjustout() {
-  assert(outputlay->n >= adjustlay->n);
-  unsigned int off = outputlay->n - adjustlay->n;
-
-  unsigned int i = 0;
-  for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
-    for (unsigned int j = mbi * outputlay->n + off, jn = (mbi+1) * outputlay->n; j < jn; ++j, ++i) {
-      double z = outputbuf[j] + adjustbuf[i];
-      outputbuf[j] = z;
-    }
+  if (ret != outputlay->n * mbn) {
+    return false;
   }
-  assert(i == adjustlay->n * mbn);
+  for (unsigned int j = 0, jn = mbn * outputlay->n; j < jn; ++j)
+    outputbuf[j] = (0.0 + (double)boutputbuf[j]) / 256.0;
+  return true;
 }
-
 
 ImageProject::ImageProject(const char *_dir, unsigned int _mbn, map<string,string> *_config) : Project(_dir, _mbn, _config) {
   genwoke = false;
@@ -251,12 +321,15 @@ ImageProject::ImageProject(const char *_dir, unsigned int _mbn, map<string,strin
 
   cumake(&encin, mbn * (contextlay->n + sampleslay->n));
   cumake(&genin, mbn * (contextlay->n + controlslay->n));
+  cumake(&genfin, mbn * (contextlay->n + controlslay->n));
   cumake(&gentgt, mbn * sampleslay->n);
 
   distgtbuf = new double[mbn];
   cumake(&disin, mbn * outputlay->n);
   cumake(&distgt, mbn);
   cumake(&enctgt, mbn * controlslay->n);
+
+  assert(adjustlay->n == targetlay->n);
 }
 
 ImageProject::~ImageProject() {
@@ -275,6 +348,7 @@ ImageProject::~ImageProject() {
   cufree(distgt);
   cufree(encin);
   cufree(genin);
+  cufree(genfin);
   cufree(gentgt);
   cufree(enctgt);
 }
@@ -488,8 +562,14 @@ void ImageProject::regenerate(
 
 
 void ImageProject::generate(
+  uint8_t *hyper
 ) {
   size_t ret;
+  double nu = hyper ? (0.01 * (double)hyper[0]) : 0;
+  double mu = hyper ? (0.001 * (double)hyper[1]) : 0;
+
+  if (nu > 0)
+    cuzero(genfin, (contextlay->n + controlslay->n) * mbn);
 
   for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
     encude(
@@ -505,10 +585,55 @@ void ImageProject::generate(
     );
   }
 
-  const double *genpassout = genpasstron->feed(genin, NULL);
+  const double *genpassout = genpasstron->feed(genin, nu > 0 ? genfin : NULL);
   decude(genpassout, outputlay->n * mbn, outputbuf);
+  assert(genpassout);
+  assert(genpasstron->outn == outputlay->n * mbn);
+
   reconstruct();
-  adjustout();
+
+  for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
+    unsigned int boff = mbi * adjustlay->n;
+    unsigned int ooff = mbi * outputlay->n + (outputlay->n - adjustlay->n);
+    for (unsigned int j = 0, jn = targetlay->n; j < jn; ++j, ++boff, ++ooff)
+      outputbuf[ooff] += adjustbuf[boff];
+  }
+
+  if (nu > 0 || mu > 0) {
+    separate();
+
+    for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
+      encude(
+        outputbuf + mbi * outputlay->n + contextlay->n,
+        sampleslay->n,
+        gentgt + mbi * sampleslay->n
+      );
+    }
+
+    gentron->target(gentgt);
+    gentron->train(mu);
+
+    if (nu > 0) {
+      for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
+        decude(
+          genfin + mbi * (contextlay->n + controlslay->n) + contextlay->n, 
+          controlslay->n,
+          dcontrolbuf + mbi * controlslay->n
+        );
+      }
+
+      for (unsigned int j = 0, jn = mbn * controlslay->n; j < jn; ++j) {
+//fprintf(stderr, "%lf,", dcontrolbuf[j]);
+        dcontrolbuf[j] *= nu;
+        controlbuf[j] += dcontrolbuf[j];
+      }
+//fprintf(stderr,"\n");
+      encodectrl();
+    }
+
+    reconstruct();
+  }
+
   encodeout();
 }
 
@@ -516,12 +641,12 @@ void ImageProject::generate(
 void ImageProject::write_ppm(FILE *fp) {
   assert(mbn > 0);
 
-  unsigned int labn = adjustlay->n;
+  unsigned int labn = targetlay->n;
   assert(labn % 3 == 0);
   unsigned int dim = round(sqrt(labn / 3));
 
-  assert(adjustlay->n <= outputlay->n);
-  unsigned int laboff = outputlay->n - adjustlay->n;
+  assert(targetlay->n <= outputlay->n);
+  unsigned int laboff = outputlay->n - targetlay->n;
 
 bool wide = 0;
 
@@ -639,13 +764,6 @@ void ImageProject::reconstruct() {
 }
 
 
-void ImageProject::encodeout() {
-  for (unsigned int j = 0, jn = mbn * outputlay->n; j < jn; ++j) {
-    int v = (int)(outputbuf[j] * 256.0);
-    boutputbuf[j] = v < 0 ? 0 : v > 255 ? 255 : v;
-  }
-}
-
 
 
 void ZoomProject::report(const char *prog, unsigned int i) {
@@ -693,11 +811,13 @@ PipelineProject::PipelineProject(const char *_dir, unsigned int _mbn, map<string
   }
   assert(n_controls == controlslay->n);
 
-  unsigned int n_adjust = 0;
+  unsigned int n_adjusts = 0;
   for (unsigned int i = 0; i < stages.size(); ++i) {
-    n_adjust += stages[i]->adjustlay->n;
+    n_adjusts += stages[i]->adjustlay->n;
   }
-  assert(n_adjust == adjustlay->n);
+  assert(adjustlay->n == n_adjusts);
+
+  assert(stages[stages.size() - 1]->targetlay->n == targetlay->n);
 }
 
 PipelineProject::~PipelineProject() {
@@ -708,10 +828,9 @@ PipelineProject::~PipelineProject() {
   
 
 void PipelineProject::generate(
+  uint8_t *hyper
 ) {
   assert(stages.size());
-  assert(stages[0]->contextlay->n == contextlay->n);
-  memcpy(stages[0]->contextbuf, contextbuf, mbn * contextlay->n * sizeof(double));
 
   unsigned int coff = 0;
   for (unsigned int i = 0; i < stages.size(); ++i) {
@@ -720,6 +839,7 @@ void PipelineProject::generate(
     coff += stages[i]->controlslay->n;
   }
   assert(coff == controlslay->n);
+
 
   unsigned int aoff = 0;
   for (unsigned int i = 0; i < stages.size(); ++i) {
@@ -730,21 +850,229 @@ void PipelineProject::generate(
   assert(aoff == adjustlay->n);
 
 
-  stages[0]->generate();
+
+  Project *proj;
+
+  proj = stages[0];
+  assert(contextlay->n == proj->contextlay->n);
+  memcpy(proj->contextbuf, contextbuf, sizeof(double) * mbn * contextlay->n);
+  proj->generate(hyper ? hyper + 0 : NULL);
 
   for (unsigned int i = 1; i < stages.size(); ++i) {
     Project *lastproj = stages[i - 1];
     Project *proj = stages[i];
 
-    unsigned int n = proj->contextlay->n;
-    assert(n == lastproj->outputlay->n);
+    assert(proj->contextlay->n == lastproj->outputlay->n);
     assert(proj->mbn == lastproj->mbn);
-    memcpy(proj->contextbuf, lastproj->outputbuf, n * mbn * sizeof(double));
+    memcpy(proj->contextbuf, lastproj->outputbuf, mbn * sizeof(double) * proj->contextlay->n);
+
+    proj->generate(hyper ? (hyper + (i * 2)) : NULL);
+  }
+
+  proj = stages[stages.size() - 1];
+  assert(outputlay->n == proj->outputlay->n);
+  memcpy(outputbuf, proj->outputbuf, sizeof(double) * mbn * outputlay->n);
+  encodeout();
+
+
+  if (hyper ? (hyper[0] || hyper[2] || hyper[4] || hyper[6]) : false) {
+    coff = 0;
+    for (unsigned int i = 0; i < stages.size(); ++i) {
+      assert(coff < controlslay->n);
+      memcpy(
+        controlbuf + coff * mbn,
+        stages[i]->controlbuf,
+        mbn * stages[i]->controlslay->n * sizeof(double)
+      );
+      coff += stages[i]->controlslay->n;
+    }
+    assert(coff == controlslay->n);
+    encodectrl();
+  }
+}
+
+
+
+
+void PipelineProject::dotarget1(
+) {
+  assert(stages.size());
+
+  unsigned int coff = 0;
+  for (unsigned int i = 0; i < stages.size(); ++i) {
+    assert(coff < controlslay->n);
+    memcpy(stages[i]->controlbuf, controlbuf + coff * mbn, mbn * stages[i]->controlslay->n * sizeof(double));
+    coff += stages[i]->controlslay->n;
+  }
+  assert(coff == controlslay->n);
+
+
+  unsigned int aoff = 0;
+  for (unsigned int i = 0; i < stages.size(); ++i) {
+    assert(aoff < adjustlay->n);
+    memcpy(stages[i]->adjustbuf, adjustbuf + aoff * mbn, mbn * stages[i]->adjustlay->n * sizeof(double));
+    aoff += stages[i]->adjustlay->n;
+  }
+  assert(aoff == adjustlay->n);
+
+
+
+  Project *proj = stages[0];
+  assert(proj->contextlay->n == contextlay->n);
+  memcpy(proj->contextbuf, contextbuf, mbn * contextlay->n * sizeof(double));
+
+  proj->generate();
+  for (unsigned int i = 1; i < stages.size(); ++i) {
+    Project *lastproj = stages[i - 1];
+    Project *proj = stages[i];
+
+    assert(proj->contextlay->n == lastproj->outputlay->n);
+    assert(proj->mbn == lastproj->mbn);
+    memcpy(proj->contextbuf, lastproj->outputbuf, proj->contextlay->n * mbn * sizeof(double));
 
     proj->generate();
   }
 
+  proj = stages[stages.size() - 1];
+  assert(proj->targetlay->n == targetlay->n);
+  for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
+    memcpy(
+      targetbuf + mbi * targetlay->n,
+      proj->outputbuf + mbi * proj->outputlay->n + proj->outputlay->n - proj->targetlay->n,
+      targetlay->n * sizeof(double)
+    );
+  }
+
+  encodetgt();
 }
+
+void PipelineProject::dotarget2() {
+  Project *proj = stages[stages.size() - 1];
+  assert(proj->targetlay->n == targetlay->n);
+  memcpy(proj->targetbuf, targetbuf, mbn * sizeof(double) * targetlay->n);
+
+  for (int i = stages.size() - 2; i >= 0; --i) {
+    Project *lastproj = proj;
+    proj = stages[i];
+    unsigned int dim = lround(sqrt(lastproj->targetlay->n / 3));
+    assert(dim * dim * 3 == lastproj->targetlay->n);
+    assert(dim * dim * 3 == proj->targetlay->n * 4);
+
+    for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
+      twiddle3(
+        lastproj->targetbuf + mbi * proj->targetlay->n,
+        dim, dim,
+        proj->targetbuf + mbi * proj->targetlay->n, NULL
+      );
+    }
+  }
+}
+
+void PipelineProject::readjust() {
+  unsigned int aoff;
+  nulladjust();
+
+
+
+
+  Project *proj = stages[0];
+  assert(proj->contextlay->n == contextlay->n);
+  memcpy(proj->contextbuf, contextbuf, mbn * contextlay->n * sizeof(double));
+
+  unsigned int coff = 0;
+  for (unsigned int i = 0; i < stages.size(); ++i) {
+    assert(coff < controlslay->n);
+    memcpy(stages[i]->controlbuf, controlbuf + coff * mbn, mbn * stages[i]->controlslay->n * sizeof(double));
+    coff += stages[i]->controlslay->n;
+  }
+  assert(coff == controlslay->n);
+
+
+
+
+  for (unsigned int i = 0; i < stages.size(); ++i) {
+    Project *lastproj = i > 0 ? stages[i-1] : NULL;
+    Project *proj = stages[i];
+
+    if (lastproj) {
+      assert(proj->contextlay->n == lastproj->outputlay->n);
+      assert(proj->mbn == lastproj->mbn);
+      memcpy(proj->contextbuf, lastproj->outputbuf, proj->contextlay->n * mbn * sizeof(double));
+    }
+
+//fprintf(stderr, "adj=");
+    proj->generate();
+    for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
+      unsigned int boff = mbi * proj->targetlay->n;
+      unsigned int ooff = mbi * proj->outputlay->n + (proj->outputlay->n - proj->targetlay->n);
+      for (unsigned int j = 0, jn = proj->targetlay->n; j < jn; ++j, ++boff, ++ooff) {
+        proj->adjustbuf[boff] = proj->targetbuf[boff] - proj->outputbuf[ooff];
+//fprintf(stderr, "%lf,", proj->adjustbuf[boff]);
+        proj->outputbuf[ooff] = proj->targetbuf[boff];
+      }
+    }
+//fprintf(stderr, "\n");
+  }
+
+
+
+
+
+
+  aoff = 0;
+  for (unsigned int i = 0; i < stages.size(); ++i) {
+    assert(aoff < adjustlay->n);
+    memcpy(
+      adjustbuf + aoff * mbn,
+      stages[i]->adjustbuf,
+      mbn * stages[i]->adjustlay->n * sizeof(double)
+    );
+    aoff += stages[i]->adjustlay->n;
+#if 0
+    stages[i]->nulladjust();
+#endif
+  }
+
+  assert(aoff == adjustlay->n);
+  encodeadj();
+}
+
+#if 0
+void PipelineProject::burnin(
+) {
+  generate();
+
+
+  for (unsigned int i = 0; i < stages.size(); ++i) {
+    Project *lastproj = i > 0 ? stages[i-1] : NULL;
+    Project *proj = stages[i];
+
+    if (lastproj) {
+      unsigned int n = proj->contextlay->n;
+      assert(n == lastproj->outputlay->n);
+      assert(proj->mbn == lastproj->mbn);
+      memcpy(proj->contextbuf, lastproj->outputbuf, n * mbn * sizeof(double));
+    }
+    memset(proj->adjustbuf, 0, targetlay->n * mbn * sizeof(double));
+
+    proj->generate();
+
+    for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
+      unsigned int boff = mbi * proj->targetlay->n;
+      unsigned int ooff = mbi * proj->outputlay->n + (proj->outputlay->n - proj->targetlay->n);
+      for (unsigned int j = 0, jn = proj->targetlay->n; j < jn; ++j, ++boff, ++ooff) {
+        proj->adjustbuf[boff] = proj->targetbuf[boff] - proj->outputbuf[ooff];
+        proj->outputbuf[ooff] = proj->targetbuf[boff];
+      }
+    }
+  }
+
+
+
+
+  generate();
+}
+#endif
  
 const uint8_t *PipelineProject::output() const {
   assert(stages.size() > 0);
@@ -766,8 +1094,24 @@ void PipelineProject::load() {
   }
 }
 
+void PipelineProject::save() {
+  for (auto pi = stages.begin(); pi != stages.end(); ++pi) {
+    Project *proj = *pi;
+    proj->save();
+  }
+}
 
 
+
+void PipelineProject::nulladjust() {
+  for (unsigned int j = 0, jn = mbn * adjustlay->n; j < jn; ++j) {
+    adjustbuf[j] = 0;
+  }
+  for (auto pi = stages.begin(); pi != stages.end(); ++pi) {
+    Project *proj = *pi;
+    proj->nulladjust();
+  }
+}
 
 
 

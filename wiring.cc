@@ -9,11 +9,13 @@
 
 #include <vector>
 #include <map>
+#include <algorithm>
 
 using namespace std;
 
 Wiring::Wiring() {
   inn = outn = 0;
+  wn = 0;
 }
 
 Wiring::~Wiring() {
@@ -52,11 +54,14 @@ void Wiring::wireup(const Layout *inl, const Layout *outl, unsigned int minv, un
      unsigned int j = 0;
      while (q != dini.end() && j < maxv && (j < minv || q->first < 0)) {
        unsigned int ini = q->second;
-       connected.insert(make_pair(ini, outi));
+       //connected.insert(make_pair(ini, outi));
+       connected.push_back(make_pair(ini, outi));
        ++wn;
        ++q;
      }
   }
+
+  sort(connected.begin(),connected.end());
 
   std::vector<unsigned int> fanout, fanin;
   fanout.resize(inn);
@@ -104,6 +109,9 @@ void Wiring::load(FILE *fp) {
   assert(ret == 1);
   wn = ntohl(tmp);
 
+//std::set<std::pair<unsigned int, unsigned int> > con1;
+//std::vector<std::pair<unsigned int, unsigned int> > con2;
+
   for (unsigned int wi = 0; wi < wn; ++wi) {
     unsigned int ini;
     ret = fread(&ini, 4, 1, fp);
@@ -115,8 +123,13 @@ void Wiring::load(FILE *fp) {
     assert(ret == 1);
     outi = ntohl(outi);
 
-    connected.insert(make_pair(ini, outi));
+    auto v = make_pair(ini, outi);
+    connected.push_back(make_pair(ini, outi));
+    //connected.insert(v);
   }
+
+  sort(connected.begin(), connected.end());
+  assert(connected.size() == wn);
 }
 
 void Wiring::save(FILE *fp) const {
@@ -142,5 +155,35 @@ void Wiring::save(FILE *fp) const {
   }
 }
 
+void Wiring::_makemaps(
+  std::vector< std::vector<unsigned int> > &mio,
+  std::vector< std::vector<unsigned int> > &miw,
+  std::vector< std::vector<unsigned int> > &moi,
+  std::vector< std::vector<unsigned int> > &mow
+) const {
+  unsigned int wi = 0;
+
+  for (auto ci = connected.begin(); ci != connected.end(); ++ci) {
+    unsigned int inri = ci->first;
+    unsigned int outri = ci->second;
+
+    mio[inri].push_back(outri + 1);
+    miw[inri].push_back(wi);
+    mow[outri].push_back(wi);
+    moi[outri].push_back(inri + 1);
+    ++wi;
+  }
+
+  assert(wi == wn);
+}
 
   
+void Wiring::load_file(const char *fn) {
+  FILE *fp = fopen(fn, "r");
+  if (!fp) {
+    fprintf(stderr, "%s: %s\n", fn, strerror(errno));
+    assert(fp);
+  }
+  load(fp);
+  fclose(fp);
+}

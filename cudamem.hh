@@ -47,4 +47,6 @@ extern double cumaxabs(
   const double *a, unsigned int n
 );
 
+extern void cuexpand(double *a, unsigned int n, double m);
+
 #endif

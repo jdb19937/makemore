@@ -1,4 +1,38 @@
-<html> <head> <title>makemore</title>
+#!/usr/bin/perl
+
+use FindBin qw($Bin);
+use lib "$Bin";
+use FunnyName qw(genname);
+
+my $NONCE = int rand(1<<31);
+
+my $NAME;
+if (my $path = $ENV{PATH_INFO}) {
+  $path =~ /^\/([a-z_][a-z0-9_]+$)/ or die;
+  $NAME = $1;
+  length($name) < 32 or die;
+} else {
+  $NAME = genname();
+  print "Location: http://localhost/makemore/peaple.cgi/$NAME\r\n\r\n";
+  exit 0;
+}
+
+print "Content-type: text/html; charset=utf-8\r\n";
+print "\r\n";
+
+my %sub = (
+  'NAME'	=> $NAME,
+  'NONCE'	=> $NONCE
+);
+
+while (<DATA>) {
+  s/\$([A-Z]+)/$sub{$1}/eg;
+  print;
+}
+
+__DATA__
+<html> <head> <title>makemore peaple v0.1</title>
+<base href="..">
 
 <style>
 .noselect {
@@ -31,10 +65,29 @@ body {
 
 <body bgcolor="darkgray" class="noselect">
 
-<table width=1200 cellpadding=4 cellspacing=0 border=3 bordercolor=gray><tr><td>
-<b><a href="https://github.com/jdb19937/makemore">makemore</a> peaple v0.1</b>
-</td></tr></table>
+<table width=1200 cellpadding=4 cellspacing=0 border=3 bordercolor=gray><tr>
+<td align=left valign=center style='border: 0; font-size: xx-large'>
+<b>$NAME</b>
+<br/>
+<img width=256 height=256 src="profile.cgi/$NAME.jpg?nonce=$NONCE">
+
+</td>
+<td align=right valign=top style='border: 0'><b><a href="https://github.com/jdb19937/makemore">makemore</a> peaple v0.1</b><br/>by Dan Brumleve</td>
+</tr></table>
+
+
+<br/><br/>
+
+
 <table height="5" width=1"><tr><td></td></tr></table>
+
+
+<!--
+<table width=1200 cellpadding=4 cellspacing=0 border=3 bordercolor=gray><tr>
+<td align=left style='border: 0'><b>$NAME</b>'s maintenance panel</td>
+</tr></table>
+<table height="5" width=1"><tr><td></td></tr></table>
+-->
 
 
 
@@ -50,56 +103,56 @@ body {
 
 
 
-<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr19' style='border: 3px solid gray; background-color: black; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> high_cheekbones  </td></tr></table>   </td>
-<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr29' style='border: 3px solid gray; background-color: black; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> rosy_cheeks  </td></tr></table>   </td>
-<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr25' style='border: 3px solid gray; background-color: black; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> oval_face  </td></tr></table>   </td>
-<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr26' style='border: 3px solid gray; background-color: black; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> pale_skin  </td></tr></table>   </td>
-<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr24' style='border: 3px solid gray; background-color: black; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> no_beard  </td></tr></table>   </td>
-<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr0' style='border: 3px solid gray; background-color: black; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> stubble  </td></tr></table>   </td>
-<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr30' style='border: 3px solid gray; background-color: black; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> sideburns  </td></tr></table>   </td>
-<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr16' style='border: 3px solid gray; background-color: black; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> goatee  </td></tr></table>   </td>
+<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr19' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> high_cheekbones  </td></tr></table>   </td>
+<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr29' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> rosy_cheeks  </td></tr></table>   </td>
+<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr25' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> oval_face  </td></tr></table>   </td>
+<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr26' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> pale_skin  </td></tr></table>   </td>
+<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr24' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> no_beard  </td></tr></table>   </td>
+<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr0' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> stubble  </td></tr></table>   </td>
+<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr30' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> sideburns  </td></tr></table>   </td>
+<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr16' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> goatee  </td></tr></table>   </td>
 </tr><tr>
 
 
-<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr22' style='border: 3px solid gray; background-color: black; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> mustache  </td></tr></table>   </td>
-<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr12' style='border: 3px solid gray; background-color: black; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> bushy_eyebrows  </td></tr></table>   </td>
-<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr1' style='border: 3px solid gray; background-color: black; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> arched_eyebrows  </td></tr></table>   </td>
-<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr23' style='border: 3px solid gray; background-color: black; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> narrow_eyes  </td></tr></table>   </td>
-<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr28' style='border: 3px solid gray; background-color: black; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> balding  </td></tr></table>   </td>
-<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr4' style='border: 3px solid gray; background-color: black; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> bald  </td></tr></table>   </td>
-<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr32' style='border: 3px solid gray; background-color: black; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> straight_hair  </td></tr></table>   </td>
-<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr33' style='border: 3px solid gray; background-color: black; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> wavy_hair  </td></tr></table>   </td>
+<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr22' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> mustache  </td></tr></table>   </td>
+<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr12' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> bushy_eyebrows  </td></tr></table>   </td>
+<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr1' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> arched_eyebrows  </td></tr></table>   </td>
+<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr23' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> narrow_eyes  </td></tr></table>   </td>
+<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr28' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> balding  </td></tr></table>   </td>
+<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr4' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> bald  </td></tr></table>   </td>
+<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr32' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> straight_hair  </td></tr></table>   </td>
+<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr33' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> wavy_hair  </td></tr></table>   </td>
 </tr><tr>
 
-<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr5' style='border: 3px solid gray; background-color: black; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> bangs  </td></tr></table>   </td>
-<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr8' style='border: 3px solid gray; background-color: black; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> black_hair  </td></tr></table>   </td>
-<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr9' style='border: 3px solid gray; background-color: black; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> blonde_hair  </td></tr></table>   </td>
-<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr11' style='border: 3px solid gray; background-color: black; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> brown_hair  </td></tr></table>   </td>
-<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr17' style='border: 3px solid gray; background-color: black; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> gray_hair  </td></tr></table>   </td>
-<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr13' style='border: 3px solid gray; background-color: black; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> chubby  </td></tr></table>   </td>
-<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr14' style='border: 3px solid gray; background-color: black; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> double_chin  </td></tr></table>   </td>
-<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr21' style='border: 3px solid gray; background-color: black; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> mouth_open  </td></tr></table>   </td>
+<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr5' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> bangs  </td></tr></table>   </td>
+<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr8' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> black_hair  </td></tr></table>   </td>
+<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr9' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> blonde_hair  </td></tr></table>   </td>
+<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr11' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> brown_hair  </td></tr></table>   </td>
+<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr17' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> gray_hair  </td></tr></table>   </td>
+<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr13' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> chubby  </td></tr></table>   </td>
+<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr14' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> double_chin  </td></tr></table>   </td>
+<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr21' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> mouth_open  </td></tr></table>   </td>
 </tr><tr>
 
-<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr20' style='border: 3px solid gray; background-color: black; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> male  </td></tr></table>   </td>
-<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr39' style='border: 3px solid gray; background-color: black; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> young  </td></tr></table>   </td>
-<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr10' style='border: 3px solid gray; background-color: black; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> blurry  </td></tr></table>   </td>
-<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr2' style='border: 3px solid gray; background-color: black; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> attractive  </td></tr></table>   </td>
-<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr3' style='border: 3px solid gray; background-color: black; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> tired  </td></tr></table>   </td>
-<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr6' style='border: 3px solid gray; background-color: black; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> big_lips  </td></tr></table>   </td>
-<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr7' style='border: 3px solid gray; background-color: black; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> big_nose  </td></tr></table>   </td>
-<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr27' style='border: 3px solid gray; background-color: black; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> pointy_nose  </td></tr></table>   </td>
+<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr20' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> male  </td></tr></table>   </td>
+<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr39' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> young  </td></tr></table>   </td>
+<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr10' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> blurry  </td></tr></table>   </td>
+<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr2' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> attractive  </td></tr></table>   </td>
+<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr3' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> tired  </td></tr></table>   </td>
+<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr6' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> big_lips  </td></tr></table>   </td>
+<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr7' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> big_nose  </td></tr></table>   </td>
+<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr27' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> pointy_nose  </td></tr></table>   </td>
 </tr><tr>
 
 
-<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr31' style='border: 3px solid gray; background-color: black; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> smiling  </td></tr></table>   </td>
-<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr15' style='border: 3px solid gray; background-color: black; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> eyeglasses  </td></tr></table>   </td>
-<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr18' style='border: 3px solid gray; background-color: black; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> makeup  </td></tr></table>   </td>
-<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr34' style='border: 3px solid gray; background-color: black; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> earrings  </td></tr></table>   </td>
-<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr35' style='border: 3px solid gray; background-color: black; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> hat  </td></tr></table>   </td>
-<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr36' style='border: 3px solid gray; background-color: black; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> lipstick  </td></tr></table>   </td>
-<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr37' style='border: 3px solid gray; background-color: black; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> necklace  </td></tr></table>   </td>
-<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr38' style='border: 3px solid gray; background-color: black; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> necktie  </td></tr></table>   </td>
+<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr31' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> smiling  </td></tr></table>   </td>
+<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr15' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> eyeglasses  </td></tr></table>   </td>
+<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr18' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> makeup  </td></tr></table>   </td>
+<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr34' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> earrings  </td></tr></table>   </td>
+<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr35' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> hat  </td></tr></table>   </td>
+<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr36' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> lipstick  </td></tr></table>   </td>
+<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr37' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> necklace  </td></tr></table>   </td>
+<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr38' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> necktie  </td></tr></table>   </td>
 </tr><tr>
 
 <tr><td colspan=8 border=1></td></tr>
@@ -112,7 +165,7 @@ function unvis(id) { document.getElementById(id).style.visibility = 'hidden' }
 <td colspan=2> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='tag0' style='border: 3px solid gray; background-color: black; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> <input id="tag0in" size="24" maxlength=24 value="" onFocus="vis('taghint')" onFocusout="unvis('taghint')"/>  </td></tr></table>   </td>
 
 <td colspan=2> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='tag1' style='border: 3px solid gray; background-color: black; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> <input id="tag1in" size="24" maxlength=24 value="" onFocus="vis('taghint')" onFocusout="unvis('taghint')"/>  </td></tr></table>   </td>
-<td id=taghint colspan=4 style='visibility: hidden'> [enter any 2 tags matching regex /^[a-z][a-z0-9_]*$/] </td>
+<td id=taghint colspan=4 style='visibility: hidden'> [enter any two tags matching regex /^[a-z][a-z0-9_]*$/] </td>
 
 </table>
 
@@ -168,6 +221,13 @@ doubleclick('attrstatic', genrandomattrs, 'attrcon')
       <div id="fuzztool" style="border-width: 3px; border-color: gray; border-style: solid; width: 64; height: 64;"> <img src="fuzz.png" onClick="changetool('f')"> </div>
     </td>
 
+  <td align=left><input type=button onclick="requpdate()" value="requpdate"/></td>
+  <td align=left>
+<label for="file">upload target</label><br/>
+<input type="file" size="60" id="imageLoader" name="imageLoader" accept="image/png, image/jpeg"/>
+<div style="display: none"><canvas id="imageCanvas" width=64 height=64></canvas></div>
+
+
   <td></td>
 
   <td width=64>
@@ -191,18 +251,19 @@ doubleclick('attrstatic', genrandomattrs, 'attrcon')
 
   <tr>
 
- <td width=256><canvas id="stage1" width=256 height=256></canvas></td>
+ <td width=320><canvas id="stage1gen" width=320 height=320></canvas></td>
+ <td width=320><canvas id="stage1" width=320 height=320></canvas></td>
 
- <td width=256 id="stage1adjborder" style="border-width: 3px; border-color: gray; border-style: solid; padding: 0px">
-    <canvas id="stage1adj" width=256 height=256
+ <td width=320 id="stage1adjborder" style="border-width: 3px; border-color: gray; border-style: solid; padding: 0px">
+    <canvas id="stage1adj" width=320 height=320
 onMouseDown="doubleclick('stage1adjborder', function() { clearadj(1); })"
     ></canvas>
   </td>
 
-  <td>
+  <td valign=top>
 
   <table cellspacing=0 cellpadding=0><tr>
-  <td>
+  <td valign=top>
     <div id="stage1scramborder" style="border-width: 3px; border-color: gray; border-style: solid; padding: 0px">
     <img src="static.png" onMouseDown=
 "doubleclick('stage1scramborder', function() { gencontrols('stage1', 64, 1) }, 'stage1conborder')"
@@ -211,7 +272,7 @@ onMouseDown="doubleclick('stage1adjborder', function() { clearadj(1); })"
   </td>
   </tr><tr>
   <td width=64 id="stage1conborder" style="border-width: 3px; border-color: gray; border-style: solid; padding: 0px">
-    <canvas id="stage1con" width=64 height=192 onMouseDown="requpdatecon('stage1')">
+    <canvas id="stage1con" width=64 height=248 onMouseDown="requpdatecon(1)">
 </canvas>
   </td></tr></table>
 
@@ -219,20 +280,25 @@ onMouseDown="doubleclick('stage1adjborder', function() { clearadj(1); })"
 
 
   </td>
-
   <td width=24> </td>
+</tr><tr>
 
-  <td width=256><canvas id="stage2" width=256 height=256></canvas></td>
- <td width=256 id="stage2adjborder" style="border-width: 3px; border-color: gray; border-style: solid; padding: 0px">
-    <canvas id="stage2adj" width=256 height=256
+
+
+
+
+  <td width=320><canvas id="stage2gen" width=320 height=320></canvas></td>
+  <td width=320><canvas id="stage2" width=320 height=320></canvas></td>
+ <td width=320 id="stage2adjborder" style="border-width: 3px; border-color: gray; border-style: solid; padding: 0px">
+    <canvas id="stage2adj" width=320 height=320
 onMouseDown="doubleclick('stage2adjborder', function() { clearadj(2); })"
     ></canvas>
   </td>
 
 
-  <td>
+  <td valign=top>
   <table cellspacing=0 cellpadding=0><tr>
-  <td>
+  <td valign=top>
     <div id="stage2scramborder" style="border-width: 3px; border-color: gray; border-style: solid; padding: 0px">
     <img src="static.png" onMouseDown=
 "doubleclick('stage2scramborder', function() { gencontrols('stage2', 129, 1) }, 'stage2conborder')"
@@ -241,49 +307,81 @@ onMouseDown="doubleclick('stage2adjborder', function() { clearadj(2); })"
   </td>
   </tr><tr>
   <td width=64 id="stage2conborder" style="border-width: 3px; border-color: gray; border-style: solid; padding: 0px">
-    <canvas id="stage2con" width=64 height=192 onMouseDown="requpdatecon('stage2')">
+    <canvas id="stage2con" width=64 height=248 onMouseDown="requpdatecon(2)">
 </canvas>
   </td></tr></table>
   </td>
 </tr>
+
+<!--
 </table>
-
 <br/>
-
-
 <table>
+-->
+
 <tr>
-  <td width=512><canvas id="stage3" width=512 height=512></canvas></td>
- <td width=512 id="stage3adjborder" style="border-width: 3px; border-color: gray; border-style: solid; padding: 0px">
-    <canvas id="stage3adj" width=512 height=512
+ <td width=320><canvas id="stage3gen" width=320 height=320></canvas></td>
+  <td width=320><canvas id="stage3" width=320 height=320></canvas></td>
+ <td width=320 id="stage3adjborder" style="border-width: 3px; border-color: gray; border-style: solid; padding: 0px">
+    <canvas id="stage3adj" width=320 height=320
 onMouseDown="doubleclick('stage3adjborder', function() { clearadj(3); })"
     ></canvas>
   </td>
-  <td width=32 id="stage3conborder" style="border-width: 3px; border-color: gray; border-style: solid; padding: 0px">
-    <canvas id="stage3con" width=64 height=512
-onMouseDown="doubleclick('stage3conborder', function() { gencontrols('stage3', 32, 1) })">
-</canvas></td>
+
+<td valign=top>
+  <table cellspacing=0 cellpadding=0><tr valign=top>
+  <td>
+    <div id="stage3scramborder" style="border-width: 3px; border-color: gray; border-style: solid; padding: 0px">
+    <img src="static.png" onMouseDown=
+"doubleclick('stage3scramborder', function() { gencontrols('stage3', 32, 1) }, 'stage3conborder')"
+/>
+    </div>
+  </td>
+  </tr><tr>
+  <td width=64 id="stage3conborder" style="border-width: 3px; border-color: gray; border-style: solid; padding: 0px">
+    <canvas id="stage3con" width=64 height=248 onMouseDown="requpdatecon(3)">
+</canvas>
+  </td></tr></table>
+</td>
+
+
+
+
+
+
   <td></td>
 </tr>
 
+<!--
 </table>
-
 <br/>
-
-
 <table>
+-->
+
 <tr>
 
-  <td width=512><canvas id="stage4" width=512 height=512></canvas></td>
- <td width=512 id="stage4adjborder" style="border-width: 3px; border-color: gray; border-style: solid; padding: 0px">
-    <canvas id="stage4adj" width=512 height=512
+ <td width=320><canvas id="stage4gen" width=320 height=320></canvas></td>
+  <td width=320><canvas id="stage4" width=320 height=320></canvas></td>
+ <td width=320 id="stage4adjborder" style="border-width: 3px; border-color: gray; border-style: solid; padding: 0px">
+    <canvas id="stage4adj" width=320 height=320
 onMouseDown="doubleclick('stage4adjborder', function() { clearadj(4); })"
     ></canvas>
   </td>
-  <td width=32 id="stage4conborder" style="border-width: 3px; border-color: gray; border-style: solid; padding: 0px">
-    <canvas id="stage4con" width=64 height=512
-onMouseDown="doubleclick('stage4conborder', function() { gencontrols('stage4', 16, 1) })">
-</canvas></td>
+<td valign=top>
+  <table cellspacing=0 cellpadding=0><tr valign=top>
+  <td>
+    <div id="stage4scramborder" style="border-width: 3px; border-color: gray; border-style: solid; padding: 0px">
+    <img src="static.png" onMouseDown=
+"doubleclick('stage4scramborder', function() { gencontrols('stage4', 16, 1) }, 'stage4conborder')"
+/>
+    </div>
+  </td>
+  </tr><tr>
+  <td width=64 id="stage4conborder" style="border-width: 3px; border-color: gray; border-style: solid; padding: 0px">
+    <canvas id="stage4con" width=64 height=248 onMouseDown="requpdatecon(4)">
+</canvas>
+  </td></tr></table>
+</td>
 </tr>
 
 </table>
@@ -293,9 +391,80 @@ onMouseDown="doubleclick('stage4conborder', function() { gencontrols('stage4', 1
 
 
 <br/>
+
+
+<table><tr><td>
+
+
+</td></tR></table>
+
 </body>
 
  <script>
+
+
+
+// https://stackoverflow.com/a/10906961
+function handleImage(e){
+var canvas = document.getElementById('imageCanvas');
+var ctx = canvas.getContext('2d');
+    var reader = new FileReader();
+    reader.onload = function(event){
+        var img = new Image();
+        img.onload = function(){
+            ctx.drawImage(img,0,0,64,64);
+            var rgbdata = ctx.getImageData(0, 0, 64, 64).data;
+            applyloaded(rgbdata)
+        }
+        img.src = event.target.result;
+    }
+    reader.readAsDataURL(e.target.files[0]);     
+}
+
+function applyloaded(rgbdata) {
+  var stage4 = document.getElementById('stage4');
+  var adjctx = document.getElementById('stage4adj').getContext('2d')
+  var scale = stage4.scale
+
+  for (var j = 0, k = 0; j < 64*64*3; j += 3, k += 4) {
+    var col = [rgbdata[k+0], rgbdata[k+1], rgbdata[k+2]]
+    var newlab = rgbtolab(col)
+
+    var oldlab = [stage4.origlab[j+0], stage4.origlab[j+1], stage4.origlab[j+2]]
+
+    var adjlabcol = [
+      128 + (newlab[0] - oldlab[0]) / 2.0,
+      128 + (newlab[1] - oldlab[1]) / 2.0,
+      128 + (newlab[2] - oldlab[2]) / 2.0
+    ];
+
+    stage4.adjlab[j+0] = adjlabcol[0]
+    stage4.adjlab[j+1] = adjlabcol[1]
+    stage4.adjlab[j+2] = adjlabcol[2]
+
+    var px = Math.floor((j % (64 * 3)) / 3)
+    var py = Math.floor(j / (64 * 3));
+    var adjcol = labtorgb(adjlabcol)
+    adjctx.fillStyle = mkcol(adjcol)
+    adjctx.fillRect(px * scale, py * scale, scale, scale);
+  }
+  requpdate()
+}
+
+
+
+function namebuf() {
+  var myname = '$NAME'
+  var buf = new Uint8Array(32)
+  buf.fill(0)
+  if (myname.length > 31) {
+    return buf
+  }
+  for (var i = 0; i < myname.length; ++i) {
+    buf[i] = myname.charCodeAt(i)
+  }
+  return buf
+}
 
 var n_stages = 4
 
@@ -760,6 +929,15 @@ function doubleclick(id, cb, targetdivid) {
 }
 
 function doburnin(nclicks) {
+  var hyper = new Uint8Array(8);
+  hyper.fill(0);
+  for (var i = 0; i < 8; ++i) {
+    hyper[i] = 16 * nclicks
+  }
+  requpdate(hyper)
+
+  var border = document.getElementById("burnin")
+  border.style.borderColor = orangestr[1]
 }
 
 function doubleclick2(id, cb) {
@@ -866,11 +1044,25 @@ function waitForSocketConnection(socket, callback){
 }
 
 function requpdatecon(stage) {
+  var hyper = new Uint8Array(8);
+  hyper.fill(0);
+  hyper[(stage - 1) * 2] = 16
+  requpdate(hyper)
+
+  var border = document.getElementById("stage" + stage + "conborder");
+  border.style.borderColor = orangestr[1]
 }
 
 function updatecon(newcon) {
   var tattrs = 40
   var reqoff = 0 + tattrs;
+
+  for (var stage = 1; stage <= 4; ++stage) {
+    var border = document.getElementById("stage" + stage + "conborder");
+    border.style.borderColor = 'gray'
+  }
+  var border = document.getElementById("burnin")
+  border.style.borderColor = 'gray'
 
   var j = 0
   for (var i = 0; i < 4; i++) {
@@ -887,7 +1079,49 @@ function updatecon(newcon) {
   }
 }
 
-function requpdate() {
+function reqgen() {
+  var tattrs = 40
+  var tcontrols = window.tcontrols;
+  var nbuf = namebuf()
+
+  var reqsize = 1 + nbuf.length + tattrs + tcontrols
+
+  var reqbuf = new Uint8Array(reqsize)
+  var reqoff = 0
+
+  reqbuf[0] = 0
+  ++reqoff
+
+  reqbuf.set(nbuf, reqoff)
+  reqoff += nbuf.length
+
+  for (var i = 0; i < tattrs; ++i) {
+    var at = document.getElementById('attr' + i)
+    reqbuf[reqoff + i] = at.curval
+  }
+  reqoff += tattrs
+
+  for (var i = 0; i < 4; i++) {
+    var stagecon = document.getElementById('stage' + (i + 1) + "con")
+    var nc = window.n_controls[i]
+
+    for (var c = 0; c < nc; ++c) {
+      reqbuf[reqoff + c] = stagecon.cbuf[c]
+    }
+    reqoff += nc
+  }
+
+  if (reqoff != reqsize) {
+    alert('huh')
+  }
+
+  sendMessage(window.socket, reqbuf)
+}
+
+
+
+
+function requpdate(hyper) {
   if (!window.allready)
     return;
 
@@ -898,15 +1132,36 @@ function requpdate() {
     tadjust += n_adjust[i]
     tcontrols += window.n_controls[i]
   }
+  var ttarget = 64*64*3
+  var nbuf = namebuf()
+  var thyper = 8
 
-  var reqsize = 0 + tattrs + tcontrols + tadjust
+  var reqsize = 1 + nbuf.length + thyper + tattrs + tcontrols + tadjust
+  var reqoff = 0
 
   var reqbuf = new Uint8Array(reqsize)
+  reqbuf[0] = 1
+  ++reqoff
+
+  reqbuf.set(nbuf, reqoff)
+  reqoff += nbuf.length
+
+  if (hyper) {
+    for (var i = 0; i < thyper; ++i) {
+      reqbuf[reqoff + i] = hyper[i]
+    }
+  } else {
+    for (var i = 0; i < thyper; ++i) {
+      reqbuf[reqoff + i] = 0
+    }
+  }
+  reqoff += thyper
+
   for (var i = 0; i < tattrs; ++i) {
     var at = document.getElementById('attr' + i)
-    reqbuf[0 + i] = at.curval
+    reqbuf[reqoff + i] = at.curval
   }
-  var reqoff = 0 + tattrs;
+  reqoff += tattrs
 
   for (var i = 0; i < 4; i++) {
     var stagecon = document.getElementById('stage' + (i + 1) + "con")
@@ -928,6 +1183,12 @@ function requpdate() {
     reqoff += n_adjust[i]
   }
 
+
+  if (reqoff != reqsize) {
+    alert('huh reqoff=' + reqoff + ' reqsize=' + reqsize);
+  }
+
+  //window.allready = false
   sendMessage(window.socket, reqbuf)
 }
 
@@ -945,8 +1206,122 @@ function unsigmoid(y) {
   return Math.log(-x/(x-1)) * 256.0;
 }
 
-function doupdate(newlabdata, newcontroldata, newadjdata) {
+
+function updatectx(newattrs) {
+  for (var i = 0; i < 40; ++i) {
+          var at1 = document.getElementById('attr' + i)
+          var nval = newattrs[i];
+          at1.style.backgroundColor = mkcol([nval, nval, nval])
+          at1.curval = nval
+
+  }
+}
+
+
+function updategen(newgendata) {
+  var stage = document.getElementById('stage4');
+  var stagegen = document.getElementById('stage4gen');
+  var ctx = stagegen.getContext('2d')
+
+  for (var i = 0; i < 64*64*3; i += 3) {
+    var col = labtorgb([newgendata[i+0], newgendata[i+1], newgendata[i+2]])
+
+    var px = Math.floor(i/3) % stage.dim
+    var py = Math.floor(Math.floor(i/3) / stage.dim)
+    var scale = stage.scale
+    ctx.fillStyle = mkcol(col)
+    ctx.fillRect(px * scale, py * scale, scale, scale);
+  }
+
+
+  var fnewgendata = new Float64Array(32*32*3);
+  for (var y = 0; y < 32; ++y) {
+    for (var x = 0; x < 32; ++x) {
+      for (var c = 0; c < 3; c++) {
+        var i = 32*3*y + 3*x + c;
+        var j = 64*3*(2*y) + 3*(2*x) + c;
+        var z = (newgendata[j] + newgendata[j+3] + newgendata[j+64*3] + newgendata[j+64*3+3]) / 4.0
+        fnewgendata[i] = z;
+      }
+    }
+  }
+
+  stage = document.getElementById('stage3');
+  stagegen = document.getElementById('stage3gen');
+  ctx = stagegen.getContext('2d')
+
+  for (var i = 0; i < 32*32*3; i += 3) {
+    var col = labtorgb([fnewgendata[i+0], fnewgendata[i+1], fnewgendata[i+2]])
+
+    var px = Math.floor(i/3) % stage.dim
+    var py = Math.floor(Math.floor(i/3) / stage.dim)
+    var scale = stage.scale
+    ctx.fillStyle = mkcol(col)
+    ctx.fillRect(px * scale, py * scale, scale, scale);
+  }
+
+  var gnewgendata = new Float64Array(16*16*3);
+  for (var y = 0; y < 16; ++y) {
+    for (var x = 0; x < 16; ++x) {
+      for (var c = 0; c < 3; c++) {
+        var i = 16*3*y + 3*x + c;
+        var j = 32*3*(2*y) + 3*(2*x) + c;
+        var z = (fnewgendata[j] + fnewgendata[j+3] + fnewgendata[j+32*3] + fnewgendata[j+32*3+3]) / 4.0
+        gnewgendata[i] = z;
+      }
+    }
+  }
+
+  stage = document.getElementById('stage2');
+  stagegen = document.getElementById('stage2gen');
+  ctx = stagegen.getContext('2d')
+
+  for (var i = 0; i < 16*16*3; i += 3) {
+    var col = labtorgb([gnewgendata[i+0], gnewgendata[i+1], gnewgendata[i+2]])
+
+    var px = Math.floor(i/3) % stage.dim
+    var py = Math.floor(Math.floor(i/3) / stage.dim)
+    var scale = stage.scale
+    ctx.fillStyle = mkcol(col)
+    ctx.fillRect(px * scale, py * scale, scale, scale);
+  }
+
+
+  var hnewgendata = new Float64Array(8*8*3);
+  for (var y = 0; y < 8; ++y) {
+    for (var x = 0; x < 8; ++x) {
+      for (var c = 0; c < 3; c++) {
+        var i = 8*3*y + 3*x + c;
+        var j = 16*3*(2*y) + 3*(2*x) + c;
+        var z = (gnewgendata[j] + gnewgendata[j+3] + gnewgendata[j+16*3] + gnewgendata[j+16*3+3]) / 4.0
+        hnewgendata[i] = z;
+      }
+    }
+  }
+
+  stage = document.getElementById('stage1');
+  stagegen = document.getElementById('stage1gen');
+  ctx = stagegen.getContext('2d')
+
+  for (var i = 0; i < 8*8*3; i += 3) {
+    var col = labtorgb([hnewgendata[i+0], hnewgendata[i+1], hnewgendata[i+2]])
+
+    var px = Math.floor(i/3) % stage.dim
+    var py = Math.floor(Math.floor(i/3) / stage.dim)
+    var scale = stage.scale
+    ctx.fillStyle = mkcol(col)
+    ctx.fillRect(px * scale, py * scale, scale, scale);
+  }
+
+}
+
+
+function doupdate(newlabdata, newcontextdata, newcontroldata, newadjdata, newgendata) {
+  window.allready = true
+
+  updatectx(newcontextdata)
   updatecon(newcontroldata)
+  updategen(newgendata)
 
   var stage4 = document.getElementById('stage4')
   var stage4ctx = stage4.getContext('2d')
@@ -1138,7 +1513,7 @@ window.onload = function() {
     window.tcontrols += window.n_controls[i]
   }
 
-  var packet = 64*64*3 + window.tcontrols + window.tadjust;
+  var packet = 64*64*3 + 40 + window.tcontrols + window.tadjust + 64*64*3;
 
   window.socket = new WebSocket('ws://127.0.0.1:9999', ['binary']);
   window.socket.binaryType = 'arraybuffer';
@@ -1157,10 +1532,12 @@ window.onload = function() {
       var ret = readTypedArray(window.socket.inbuffer, packet)
       window.socket.inbuffer = ret[0]
       var labdata = ret[1].subarray(0, 64*64*3);
-      var newctrldata = ret[1].subarray(64*64*3, 64*64*3+window.tcontrols)
-      var newadjdata = ret[1].subarray(64*64*3+window.tcontrols, 64*64*3+window.tcontrols+window.tadjust)
+      var newctxdata = ret[1].subarray(64*64*3, 64*64*3+40)
+      var newctrldata = ret[1].subarray(64*64*3+40, 64*64*3+40+window.tcontrols)
+      var newadjdata = ret[1].subarray(64*64*3+40+window.tcontrols, 64*64*3+40+window.tcontrols+window.tadjust)
+      var newgendata = ret[1].subarray(64*64*3+40+window.tcontrols+window.tadjust, 64*64*3+40+window.tcontrols+window.tadjust+64*64*3)
 
-      doupdate(labdata, newctrldata, newadjdata)
+      doupdate(labdata, newctxdata, newctrldata, newadjdata, newgendata)
     }
   }
 
@@ -1223,7 +1600,7 @@ window.onload = function() {
   for (var i = 0; i < 2; i = i + 1) {
     g(i)
   }
-  genrandomattrs()
+  //genrandomattrs()
 
   changetool('d')
 
@@ -1260,8 +1637,13 @@ window.onload = function() {
     stop_drawing()
   })
 
-  window.allready = true;
-  requpdate()
+
+
+  var imageLoader = document.getElementById('imageLoader');
+  imageLoader.addEventListener('change', handleImage, false);
+
+//  window.allready = true;
+  reqgen()
 }
 
 </script>

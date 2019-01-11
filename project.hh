@@ -18,9 +18,9 @@ struct Project {
   std::map<std::string, std::string> *config;
 
   std::string dir;
-  Layout *contextlay, *controlslay, *outputlay, *adjustlay;
-  double *outputbuf, *contextbuf, *controlbuf, *adjustbuf;
-  uint8_t *boutputbuf, *bcontextbuf, *bcontrolbuf, *badjustbuf;
+  Layout *contextlay, *controlslay, *outputlay, *targetlay, *adjustlay;
+  double *outputbuf, *contextbuf, *dcontrolbuf, *controlbuf, *adjustbuf, *targetbuf;
+  uint8_t *boutputbuf, *bcontextbuf, *bcontrolbuf, *badjustbuf, *btargetbuf;
 
   typedef enum {
     CONTEXT_SOURCE_UNKNOWN,
@@ -51,7 +51,11 @@ struct Project {
   ) = 0;
 
   virtual void generate(
+    uint8_t *hyper = NULL
   ) = 0;
+  virtual void dotarget1() { assert(0); }
+  virtual void dotarget2() { assert(0); }
+  virtual void readjust() { assert(0); }
 
   virtual void regenerate(
   ) = 0;
@@ -74,15 +78,20 @@ struct Project {
     fprintf(stderr, "%s %s i=%u\n", prog, dir.c_str(), i);
   }
 
-  virtual void loadcontext(FILE *);
-  virtual void loadcontrols(FILE *);
+  virtual bool loadcontext(FILE *);
+  virtual bool loadcontrols(FILE *);
+  virtual bool loadadjust(FILE *);
   virtual void randcontrols(double dev);
-  virtual void loadadjust(FILE *);
-  virtual void nulladjust();
+  virtual bool loadtarget(FILE *);
   virtual void nullcontrols() { randcontrols(0); }
-  virtual void loadbatch(FILE *);
+  virtual void nulladjust();
+  virtual bool loadbatch(FILE *);
 
-  virtual void adjustout();
+  virtual void encodeout();
+  virtual void encodetgt();
+  virtual void encodeadj();
+  virtual void encodectrl();
+  virtual void encodectx();
 };
 
 extern Project *open_project(const char *dir, unsigned int mbn);
@@ -103,7 +112,7 @@ struct ImageProject : Project {
   Tron *genpasstron, *gendistron;
 
 
-  double *genin, *encin, *gentgt;
+  double *genin, *encin, *gentgt, *genfin;
   double *genoutbuf;
 
   double *disin, *distgt, *distgtbuf;
@@ -118,6 +127,7 @@ struct ImageProject : Project {
   );
 
   virtual void generate(
+    uint8_t *hyper = NULL
   );
 
   virtual void regenerate(
@@ -131,7 +141,6 @@ struct ImageProject : Project {
 
   virtual void separate();
   virtual void reconstruct();
-  virtual void encodeout();
 
   virtual void load();
   virtual void save();
@@ -168,7 +177,14 @@ struct PipelineProject : Project {
   }
 
   virtual void generate(
+    uint8_t *hyper = NULL
   );
+
+  virtual void dotarget1();
+  virtual void dotarget2();
+  virtual void readjust(
+  );
+
 
   virtual void regenerate(
   ) {
@@ -180,14 +196,13 @@ struct PipelineProject : Project {
   virtual void write_ppm(FILE *fp = stdout);
 
   virtual void load();
-
-  virtual void save() {
-    assert(0);
-  }
+  virtual void save();
 
   virtual void report(const char *prog, unsigned int i) {
     fprintf(stderr, "[PipelineProject] %s %s i=%u\n", prog, dir.c_str(), i);
   }
+
+  virtual void nulladjust();
 };
 
 #endif

@@ -19,6 +19,7 @@ void Topology::save(FILE *fp) const {
 
 void Topology::load(FILE *fp) {
   wirings.clear();
+  nweights = 0;
 
   uint32_t tmp;
   assert(1 == fread(&tmp, 4, 1, fp));

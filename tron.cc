@@ -7,6 +7,7 @@
 #include "tron.hh"
 #include "random.hh"
 #include "cudamem.hh"
+#include "twiddle.hh"
 
 void Tron::target(const double *tgt, bool update_stats) {
   const double *out = output();
@@ -33,6 +34,82 @@ void Tron::target(const double *tgt, bool update_stats) {
   }
 }
 
+Twiddletron::Twiddletron(Tron *_t, unsigned int _mbn, unsigned int _twoff, unsigned int _twlen) {
+  t = _t;
+  mbn = _mbn;
+  twoff = _twoff;
+  twlen = _twlen;
+
+  assert(t->inn % mbn == 0);
+  inrn = t->inn / mbn;
+  assert(t->outn % mbn == 0);
+  outrn = t->outn / mbn;
+  assert(twoff + twlen <= outrn);
+  assert(twlen % 12 == 0);
+
+  dim = lround(sqrt(twlen / 3));
+  assert(dim * dim * 3 == twlen);
+
+  inn = t->inn;
+  outn = t->outn;
+
+  buf1 = new double[outn];
+  buf2 = new double[outn];
+
+  cumake(&out, outn);
+  cumake(&fout, outn);
+}
+
+
+Twiddletron::~Twiddletron() {
+  cufree(out);
+  cufree(fout);
+
+  delete[] buf1;
+  delete[] buf2;
+}
+
+
+const double *Twiddletron::feed(const double *in, double *fin) {
+  const double *tout = t->feed(in, fin);
+  assert(twlen % 4 == 0);
+
+  decude(tout, outn, buf1);
+  for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
+    memcpy(buf2 + mbi * outrn, buf1 + mbi * outrn, twoff * sizeof(double));
+
+    double *lo = buf1 + mbi * outrn + twoff;
+    double *hi = buf1 + mbi * outrn + twoff + (twlen / 4); 
+    double *recon = buf2 + mbi * outrn + twoff;
+
+    untwiddle3(lo, hi, dim, dim, buf2);
+  }
+
+  cuzero(fout, outn);
+  encude(buf2, outn, out);
+}
+
+void Twiddletron::train(double nu) {
+  if (double *tfout = t->foutput()) {
+    assert(twlen % 4 == 0);
+
+    decude(fout, outn, buf1);
+    for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
+      memcpy(buf2 + mbi * outrn, buf1 + mbi * outrn, twoff * sizeof(double));
+
+      double *recon = buf1 + mbi * outrn + twoff;
+      double *lo = buf2 + mbi * outrn + twoff;
+      double *hi = buf2 + mbi * outrn + twoff + (twlen / 4); 
+
+      twiddle3(recon, dim, dim, lo, hi);
+    }
+    encude(buf2, outn, tfout);
+  }
+
+  t->train(nu);
+}
+  
+
 Passthrutron::Passthrutron(unsigned int _k, unsigned int _mbn, Tron *_t) {
   err2 = 0;
   errm = 0;
@@ -55,6 +132,7 @@ Passthrutron::Passthrutron(unsigned int _k, unsigned int _mbn, Tron *_t) {
   cumake(&out, outn);
   cumake(&fout, outn);
 }
+
 
 Passthrutron::~Passthrutron() {
   cufree(out);

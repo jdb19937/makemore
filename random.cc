@@ -8,7 +8,7 @@
 
 #include "random.hh"
 
-static std::default_random_engine generator;
+static std::mt19937 generator;
 
 void seedrand(unsigned int n) {
   fprintf(stderr, "using fixed random seed %u\n", n);
@@ -26,6 +26,7 @@ void seedrand() {
 
 double randgauss() {
   static std::normal_distribution<double> gaussian(0, 1);
+  double x = gaussian(generator); // for consistent random sequences
   return gaussian(generator);
 }
 

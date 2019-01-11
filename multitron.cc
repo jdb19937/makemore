@@ -11,8 +11,6 @@
 
 #include "topology.hh"
 #include "multitron.hh"
-#include "cudamem.hh"
-
 #include <vector>
 
 Multitron::Multitron(const Topology &top, unsigned int _mbn, const char *mapfn) : Tron(0, 0) {

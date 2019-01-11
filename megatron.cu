@@ -271,17 +271,8 @@ void Megatron::_makemaps() {
   miw.resize(wire->inn);
 
   unsigned int wi = 0;
-  for (auto ci = wire->connected.begin(); ci != wire->connected.end(); ++ci) {
-    unsigned int inri = ci->first;
-    unsigned int outri = ci->second;
-
-    mio[inri].push_back(outri + 1);
-    miw[inri].push_back(wi);
-    mow[outri].push_back(wi);
-    moi[outri].push_back(inri + 1);
-
-    ++wi;
-  }
+  wire->_makemaps(mio, miw, moi, mow);
+  wi += wire->wn;
 
   for (unsigned int outri = 0; outri < wire->outn; ++outri) {
     moi[outri].push_back(0);
@@ -318,12 +309,13 @@ void Megatron::_makemaps() {
   for (unsigned int outri = 0; outri < outrn; ++outri) {
     const vector<unsigned int>& v = moi[outri];
     const vector<unsigned int>& w = mow[outri];
-    assert(w.size());
 
+    assert(v.size());
     cumake(&tmp, v.size());
     encude(v.data(), v.size(), tmp);
     encude(&tmp, 1, oimap + outri);
 
+    assert(w.size());
     cumake(&tmp, w.size());
     encude(w.data(), w.size(), tmp);
     encude(&tmp, 1, owmap + outri);
@@ -333,10 +325,12 @@ void Megatron::_makemaps() {
     const vector<unsigned int>& v = mio[inri];
     const vector<unsigned int>& w = miw[inri];
 
+    assert(v.size());
     cumake(&tmp, v.size());
     encude(v.data(), v.size(), tmp);
     encude(&tmp, 1, iomap + inri);
 
+    assert(w.size());
     cumake(&tmp, w.size());
     encude(w.data(), w.size(), tmp);
     encude(&tmp, 1, iwmap + inri);
