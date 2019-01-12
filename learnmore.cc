@@ -20,7 +20,7 @@ int main(int argc, char **argv) {
   seedrand();
 
   unsigned int mbn = 8;
-  double nu = 0.005, mu = 0.005, xi = 0.0;
+  double nu = 0.005, mu = 0.005, xi = 0.0, tau = 1.0;
 
   ++argv;
   --argc;
@@ -56,6 +56,13 @@ int main(int argc, char **argv) {
         return usage();
       xi = strtod(argv[0], NULL);
 
+    } else if (!strcmp(arg, "--tau")) {
+      ++argv;
+      --argc;
+      if (argc < 1)
+        return usage();
+      tau = strtod(argv[0], NULL);
+
     } else {
       return usage();
     }
@@ -72,12 +79,12 @@ int main(int argc, char **argv) {
   const char *project_dir = argv[0];
   Project *proj = new Project(project_dir, mbn);
 
-  fprintf(stderr, "learnmore project=%s mu=%lf nu=%lf xi=%lf\n", project_dir, mu, nu, xi);
+  fprintf(stderr, "learnmore project=%s mu=%lf nu=%lf xi=%lf tau=%lf\n", project_dir, mu, nu, xi, tau);
 
   unsigned int i = 0;
   while (1) {
     proj->load_ctxtgt(stdin);
-    proj->present(nu, mu, xi);
+    proj->present(nu, mu, xi, tau);
 
     if (i % 1000 == 0) {
       proj->report("learnmore");

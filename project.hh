@@ -41,7 +41,7 @@ struct Project {
   ~Project();
 
   void load_ctxtgt(FILE *infp);
-  void present(double nu, double mu, double xi);
+  void present(double nu, double mu, double xi, double tau);
 
   void load_ctx(FILE *infp);
   void generate(unsigned int reps = 1);

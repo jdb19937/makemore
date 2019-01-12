@@ -249,8 +249,8 @@ void Project::reconstruct() {
   }
 }
 
-void Project::present(double nu, double mu, double xi) {
-  if (nu > 0 || mu > 0) {
+void Project::present(double nu, double mu, double xi, double tau) {
+  if (nu > 0 || mu > 0 || xi > 0) {
     for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
       encude(ctxbuf + mbi * ctxlay->n, ctxlay->n, cuencin + mbi * encinlay->n + 0);
       encude(tgtbuf + mbi * tgtlay->n, tgtlay->n, cuencin + mbi * encinlay->n + ctxlay->n);
@@ -264,6 +264,7 @@ void Project::present(double nu, double mu, double xi) {
     encgen->target(cugentgt);
     encgen->train(nu);
   }
+  // have realctr and cugentgt
   
 
   if (mu > 0) {
@@ -274,15 +275,25 @@ void Project::present(double nu, double mu, double xi) {
       encude( ctxbuf + mbi * ctxlay->n, ctxlay->n, cugenin + mbi * geninlay->n + 0);
       encude(fakectr + mbi * ctrlay->n, ctrlay->n, cugenin + mbi * geninlay->n + ctxlay->n);
     }
+    // random -> identity (gen)
+    encude(fakectr, enc->outn, cuenctgt);
 
-#if 0
-    // random -> 0
+    genenc->feed(cugenin, NULL);
+    enc->target(cuenctgt, false);
+    enc->train(0);
+    genpass->update_stats();
+    genpass->train(mu);
+
+
+
     for (unsigned int j = 0, jn = mbn * ctrlay->n; j < jn; ++j)
-      fakectr[j] = 0;
-#endif
-    // random -> 0.5
+      fakectr[j] = sigmoid(randgauss());
+    for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
+      encude(fakectr + mbi * ctrlay->n, ctrlay->n, cugenin + mbi * geninlay->n + ctxlay->n);
+    }
+    // random -> tau * identity (enc)
     for (unsigned int j = 0, jn = mbn * ctrlay->n; j < jn; ++j)
-      fakectr[j] = 0.5;
+      fakectr[j] = 0.5 + (fakectr[j] - 0.5) * tau;
     encude(fakectr, enc->outn, cuenctgt);
 
     genenc->feed(cugenin, NULL);
@@ -291,15 +302,12 @@ void Project::present(double nu, double mu, double xi) {
 
 
 
+
+
     for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
       encude(realctr + mbi * ctrlay->n, ctrlay->n, cugenin + mbi * geninlay->n + ctxlay->n);
     }
-#if 0
-    // faithful -> 1
-    for (unsigned int j = 0, jn = mbn * ctrlay->n; j < jn; ++j)
-      realctr[j] = 1;
-#endif
-    // faithful -> identity
+    // faithful -> identity (enc)
     encude(realctr, enc->outn, cuenctgt);
 
     genenc->feed(cugenin, NULL);
@@ -309,40 +317,18 @@ void Project::present(double nu, double mu, double xi) {
 
 
   if (xi > 0) {
-    for (unsigned int j = 0, jn = mbn * ctrlay->n; j < jn; ++j)
-      fakectr[j] = sigmoid(randgauss());
 
-    for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
-      encude( ctxbuf + mbi * ctxlay->n, ctxlay->n, cugenin + mbi * geninlay->n + 0);
-      encude(fakectr + mbi * ctrlay->n, ctrlay->n, cugenin + mbi * geninlay->n + ctxlay->n);
-    }
-
-    // random -> identity
-    encude(fakectr, enc->outn, cuenctgt);
-#if 0
-    // random -> 1
-    for (unsigned int j = 0, jn = mbn * ctrlay->n; j < jn; ++j)
-      realctr[j] = 1;
-    encude(realctr, enc->outn, cuenctgt);
-#endif
-
-    genenc->feed(cugenin, NULL);
-    enc->target(cuenctgt, false);
-    enc->train(0);
-    genpass->update_stats();
-    genpass->train(xi);
-
-
-
+    // center
     for (unsigned int j = 0, jn = mbn * ctrlay->n; j < jn; ++j)
       fakectr[j] = 0.5;
     for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
+      encude( ctxbuf + mbi * ctxlay->n, ctxlay->n, cugenin + mbi * geninlay->n + 0);
       encude(fakectr + mbi * ctrlay->n, ctrlay->n, cugenin + mbi * geninlay->n + ctxlay->n);
     }
     encude(tgtbuf, gen->outn, cugentgt);
     gen->feed(cugenin, NULL);
     gen->target(cugentgt);
-    gen->train(xi);
+    gen->train(nu);
   }
 
 
