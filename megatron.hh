@@ -16,6 +16,7 @@ struct Megatron : Tron {
   unsigned int *wimap, *womap;
 
   double *weight;
+  unsigned int *mapbuf;
 
   unsigned int inrn, outrn;
   unsigned int mbn;

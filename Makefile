@@ -158,6 +158,22 @@ makelay: makelay.o $(LIB)
 genicon.o: $(LIBHDR)
 genicon: genicon.o $(LIB)
 	$(CXX) -o $@ $(CXXFLAGS) $^ $(LDFLAGS)
+spread.ppm: genicon
+	./genicon spread > $@
+spread.png: spread.ppm
+	convert $^ $@
+fade.ppm: genicon
+	./genicon fade > $@
+fade.png: fade.ppm
+	convert $^ $@
+darken.ppm: genicon
+	./genicon darken > $@
+darken.png: darken.ppm
+	convert $^ $@
+brighten.ppm: genicon
+	./genicon brighten > $@
+brighten.png: brighten.ppm
+	convert $^ $@
 sharp.ppm: genicon
 	./genicon sharp > $@
 sharp.png: sharp.ppm

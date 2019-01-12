@@ -304,37 +304,72 @@ void Megatron::_makemaps() {
   }
 
     
-  unsigned int *tmp;
+  unsigned int mapbufn = 0;
+  for (unsigned int outri = 0; outri < outrn; ++outri) {
+    const vector<unsigned int>& v = moi[outri];
+    const vector<unsigned int>& w = mow[outri];
+    assert(v.size());
+    mapbufn += v.size();
+    assert(w.size());
+    mapbufn += w.size();
+  }
+
+  for (unsigned int inri = 0; inri < inrn; ++inri) {
+    const vector<unsigned int>& v = mio[inri];
+    const vector<unsigned int>& w = miw[inri];
+    assert(v.size());
+    mapbufn += v.size();
+    assert(w.size());
+    mapbufn += w.size();
+  }
+
+  cumake(&mapbuf, mapbufn);
+  unsigned int mapbufi = 0;
+  unsigned int *cmapbuf = new unsigned int[mapbufn];
+
+  unsigned int **coimap = new unsigned int *[outrn];
+  unsigned int **cowmap = new unsigned int *[outrn];
+  unsigned int **ciomap = new unsigned int *[inrn];
+  unsigned int **ciwmap = new unsigned int *[inrn];
 
   for (unsigned int outri = 0; outri < outrn; ++outri) {
     const vector<unsigned int>& v = moi[outri];
     const vector<unsigned int>& w = mow[outri];
 
-    assert(v.size());
-    cumake(&tmp, v.size());
-    encude(v.data(), v.size(), tmp);
-    encude(&tmp, 1, oimap + outri);
+    memcpy(cmapbuf + mapbufi, v.data(), v.size() * sizeof(unsigned int));
+    coimap[outri] = mapbuf + mapbufi;
+    mapbufi += v.size();
 
-    assert(w.size());
-    cumake(&tmp, w.size());
-    encude(w.data(), w.size(), tmp);
-    encude(&tmp, 1, owmap + outri);
+    memcpy(cmapbuf + mapbufi, w.data(), w.size() * sizeof(unsigned int));
+    cowmap[outri] = mapbuf + mapbufi;
+    mapbufi += w.size();
   }
 
   for (unsigned int inri = 0; inri < inrn; ++inri) {
     const vector<unsigned int>& v = mio[inri];
     const vector<unsigned int>& w = miw[inri];
 
-    assert(v.size());
-    cumake(&tmp, v.size());
-    encude(v.data(), v.size(), tmp);
-    encude(&tmp, 1, iomap + inri);
+    memcpy(cmapbuf + mapbufi, v.data(), v.size() * sizeof(unsigned int));
+    ciomap[inri] = mapbuf + mapbufi;
+    mapbufi += v.size();
 
-    assert(w.size());
-    cumake(&tmp, w.size());
-    encude(w.data(), w.size(), tmp);
-    encude(&tmp, 1, iwmap + inri);
+    memcpy(cmapbuf + mapbufi, w.data(), w.size() * sizeof(unsigned int));
+    ciwmap[inri] = mapbuf + mapbufi;
+    mapbufi += w.size();
   }
+  assert(mapbufi == mapbufn);
+
+  encude(cmapbuf, mapbufn, mapbuf);
+  delete[] cmapbuf; 
+
+  encude(coimap, outrn, oimap);
+  encude(cowmap, outrn, owmap);
+  encude(ciomap, inrn, iomap);
+  encude(ciwmap, inrn, iwmap);
+  delete[] ciomap;
+  delete[] ciwmap;
+  delete[] coimap;
+  delete[] cowmap;
 
   _mow = mow;
 

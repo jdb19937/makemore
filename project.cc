@@ -275,8 +275,14 @@ void Project::present(double nu, double mu, double xi) {
       encude(fakectr + mbi * ctrlay->n, ctrlay->n, cugenin + mbi * geninlay->n + ctxlay->n);
     }
 
+#if 0
+    // random -> 0
     for (unsigned int j = 0, jn = mbn * ctrlay->n; j < jn; ++j)
       fakectr[j] = 0;
+#endif
+    // random -> 0.5
+    for (unsigned int j = 0, jn = mbn * ctrlay->n; j < jn; ++j)
+      fakectr[j] = 0.5;
     encude(fakectr, enc->outn, cuenctgt);
 
     genenc->feed(cugenin, NULL);
@@ -288,8 +294,12 @@ void Project::present(double nu, double mu, double xi) {
     for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
       encude(realctr + mbi * ctrlay->n, ctrlay->n, cugenin + mbi * geninlay->n + ctxlay->n);
     }
+#if 0
+    // faithful -> 1
     for (unsigned int j = 0, jn = mbn * ctrlay->n; j < jn; ++j)
       realctr[j] = 1;
+#endif
+    // faithful -> identity
     encude(realctr, enc->outn, cuenctgt);
 
     genenc->feed(cugenin, NULL);
@@ -311,9 +321,15 @@ void Project::present(double nu, double mu, double xi) {
         encude( ctxbuf + mbi * ctxlay->n, ctxlay->n, cugenin + mbi * geninlay->n + 0);
         encude(fakectr + mbi * ctrlay->n, ctrlay->n, cugenin + mbi * geninlay->n + ctxlay->n);
       }
+
+      // random -> identity
+      encude(fakectr, enc->outn, cuenctgt);
+#if 0
+      // random -> 1
       for (unsigned int j = 0, jn = mbn * ctrlay->n; j < jn; ++j)
         realctr[j] = 1;
       encude(realctr, enc->outn, cuenctgt);
+#endif
     }
 
     genenc->feed(cugenin, NULL);

@@ -55,9 +55,13 @@ bool Parson::female_nom(const char *nom) {
   const char *p = nom;
   while (*p == '_')
     ++p;
+
   p = strchr(nom, '_');
   if (!p)
-    p = nom + strlen(nom) - 1;
+    p = nom + strlen(nom);
+  --p;
+  assert(p > nom);
+  assert(p[1] == 0 || p[1] == '_');
 
   return (*p == 'a' || *p == 'i');
 }
