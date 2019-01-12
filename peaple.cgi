@@ -266,7 +266,7 @@ onMouseDown="doubleclick('stage1adjborder', function() { clearadj(1); })"
   <td valign=top>
     <div id="stage1scramborder" style="border-width: 3px; border-color: gray; border-style: solid; padding: 0px">
     <img src="static.png" onMouseDown=
-"doubleclick('stage1scramborder', function() { gencontrols('stage1', 64, 1) }, 'stage1conborder')"
+"doubleclick('stage1scramborder', function() { gencontrols('stage1', 128, 1) }, 'stage1conborder')"
 />
     </div>
   </td>
@@ -301,7 +301,7 @@ onMouseDown="doubleclick('stage2adjborder', function() { clearadj(2); })"
   <td valign=top>
     <div id="stage2scramborder" style="border-width: 3px; border-color: gray; border-style: solid; padding: 0px">
     <img src="static.png" onMouseDown=
-"doubleclick('stage2scramborder', function() { gencontrols('stage2', 129, 1) }, 'stage2conborder')"
+"doubleclick('stage2scramborder', function() { gencontrols('stage2', 256, 1) }, 'stage2conborder')"
 />
     </div>
   </td>
@@ -333,7 +333,7 @@ onMouseDown="doubleclick('stage3adjborder', function() { clearadj(3); })"
   <td>
     <div id="stage3scramborder" style="border-width: 3px; border-color: gray; border-style: solid; padding: 0px">
     <img src="static.png" onMouseDown=
-"doubleclick('stage3scramborder', function() { gencontrols('stage3', 32, 1) }, 'stage3conborder')"
+"doubleclick('stage3scramborder', function() { gencontrols('stage3', 512, 1) }, 'stage3conborder')"
 />
     </div>
   </td>
@@ -372,7 +372,7 @@ onMouseDown="doubleclick('stage4adjborder', function() { clearadj(4); })"
   <td>
     <div id="stage4scramborder" style="border-width: 3px; border-color: gray; border-style: solid; padding: 0px">
     <img src="static.png" onMouseDown=
-"doubleclick('stage4scramborder', function() { gencontrols('stage4', 16, 1) }, 'stage4conborder')"
+"doubleclick('stage4scramborder', function() { gencontrols('stage4', 1024, 1) }, 'stage4conborder')"
 />
     </div>
   </td>
@@ -934,7 +934,8 @@ function doburnin(nclicks) {
   for (var i = 0; i < 8; ++i) {
     hyper[i] = 16 * nclicks
   }
-  requpdate(hyper)
+return;
+//  requpdate(hyper)
 
   var border = document.getElementById("burnin")
   border.style.borderColor = orangestr[1]
@@ -1046,7 +1047,7 @@ function waitForSocketConnection(socket, callback){
 function requpdatecon(stage) {
   var hyper = new Uint8Array(8);
   hyper.fill(0);
-  hyper[(stage - 1) * 2] = 16
+  hyper[0] = (1 << (stage - 1));
   requpdate(hyper)
 
   var border = document.getElementById("stage" + stage + "conborder");
@@ -1084,7 +1085,7 @@ function reqgen() {
   var tcontrols = window.tcontrols;
   var nbuf = namebuf()
 
-  var reqsize = 1 + nbuf.length + tattrs + tcontrols
+  var reqsize = 1 + nbuf.length
 
   var reqbuf = new Uint8Array(reqsize)
   var reqoff = 0
@@ -1095,6 +1096,7 @@ function reqgen() {
   reqbuf.set(nbuf, reqoff)
   reqoff += nbuf.length
 
+if (0) {
   for (var i = 0; i < tattrs; ++i) {
     var at = document.getElementById('attr' + i)
     reqbuf[reqoff + i] = at.curval
@@ -1110,6 +1112,7 @@ function reqgen() {
     }
     reqoff += nc
   }
+}
 
   if (reqoff != reqsize) {
     alert('huh')
@@ -1504,7 +1507,7 @@ function changetool(newtool) {
 
 
 window.onload = function() {
-  window.n_controls = [64, 129, 32, 16];
+  window.n_controls = [128, 256, 512, 1024];
   window.n_adjust = [8*8*3, 16*16*3, 32*32*3, 64*64*3]
   window.tadjust = 0;
   window.tcontrols = 0

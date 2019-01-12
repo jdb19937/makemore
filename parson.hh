@@ -8,14 +8,19 @@
 #include <map>
 
 struct Parson {
+  static bool valid_nom(const char *);
+  static uint64_t hash_nom(const char *nom);
+  static bool female_nom(const char *);
+
   const static unsigned int nfrens = 16;
-  const static unsigned int ntags = 2;
+  const static unsigned int ntags = 0;
   const static unsigned int dim = 64;
-  const static unsigned int nctrls = 1920;
-  typedef char Name[32];
+  const static unsigned int ncontrols = 1920;
+  const static unsigned int nattrs = 40;
+  typedef char Nom[32];
 
   uint64_t hash;
-  Name name;
+  Nom nom;
 
   uint32_t created;
   uint32_t revised;
@@ -23,21 +28,28 @@ struct Parson {
   uint32_t revisor;
 
   uint16_t tags[ntags];
-  uint64_t attrs;
+  uint8_t attrs[nattrs];
 
-  uint8_t controls[nctrls];
+  uint8_t controls[ncontrols];
   uint8_t target[dim * dim * 3];
 
-  Name frens[nfrens];
+  Nom frens[nfrens];
 
   bool exists() {
-    return (name[0] != 0);
+    return (nom[0] != 0);
   }
+
+  void initialize(const char *_nom, double mean, double dev);
 };
 
 struct ParsonDB {
   std::string fn;
   int fd;
+
+  Parson *db;
+  unsigned int n;
+
+  static void create(const char *_fn, unsigned int _n);
 
   ParsonDB(const char *_fn);
   ~ParsonDB();

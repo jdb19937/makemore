@@ -1,4 +1,5 @@
-#include "scrambler.hh"
+#include "project.hh"
+#include "pipeline.hh"
 #include "topology.hh"
 #include "random.hh"
 #include "cudamem.hh"
@@ -7,7 +8,7 @@
 #include <math.h>
 
 int usage() {
-  fprintf(stderr, "Usage: makemore dir.proj\n");
+  fprintf(stderr, "Usage: makemore dir.proj ...\n");
   return 1;
 }
 
@@ -16,8 +17,11 @@ int main(int argc, char **argv) {
   seedrand();
 
   unsigned int mbn = 1;
-  const char *project_dir = argv[1];
-  Scrambler *proj = new Scrambler(project_dir, mbn);
+  Pipeline *pipe = new Pipeline(1);
+  for (unsigned int i = 1; i < argc; ++i) {
+    Project *proj = new Project(argv[i], mbn);
+    pipe->add_stage(proj);
+  }
 
   unsigned int iters = 1;
   if (argc > 2)
@@ -25,12 +29,27 @@ int main(int argc, char **argv) {
 
   unsigned int i = 0;
 
-  unsigned int labn = proj->outlay->n;
+  unsigned int labn = pipe->outlay->n;
   unsigned int dim = lround(sqrt(labn / 3));
   assert(dim * dim * 3 == labn);
-  PPM ppm(dim * 5, dim, 0);
+  PPM ppm(dim * 3, dim, 0);
 
   while (1) {
+    pipe->load_ctx(stdin);
+
+    pipe->scramble(0, 0);
+    pipe->generate();
+    ppm.pastelab(pipe->outbuf, dim, dim, dim * 0, 0);
+
+    pipe->scramble(0, 0.5);
+    pipe->generate();
+    ppm.pastelab(pipe->outbuf, dim, dim, dim * 1, 0);
+
+    pipe->scramble(0, 1);
+    pipe->generate();
+    ppm.pastelab(pipe->outbuf, dim, dim, dim * 2, 0);
+
+#if 0
     proj->load_ctxtgt(stdin);
 
     proj->passgenerate();
@@ -39,20 +58,24 @@ int main(int argc, char **argv) {
     proj->regenerate();
     ppm.pastelab(proj->outbuf, dim, dim, dim * 1, 0);
 
-    proj->generate(0, iters);
+    proj->scramble(0, 0);
+    proj->generate();
     ppm.pastelab(proj->outbuf, dim, dim, dim * 2, 0);
 
-    proj->generate(0.5, iters);
+    proj->scramble(0, 0.5);
+    proj->generate();
     ppm.pastelab(proj->outbuf, dim, dim, dim * 3, 0);
 
-    proj->generate(1, iters);
+    proj->scramble(0, 1);
+    proj->generate(iters);
     ppm.pastelab(proj->outbuf, dim, dim, dim * 4, 0);
+#endif
 
     ppm.write(stdout);
 
     ++i;
     if (i % 100 == 0) {
-      proj->load();
+      pipe->load();
     }
   }
 

@@ -3,6 +3,7 @@
 
 #include <assert.h>
 #include <stdio.h>
+#include <stdint.h>
 
 void encudev(const void *a, unsigned int n, void *da) {
   cudaMemcpy(da, a, n, cudaMemcpyHostToDevice);
@@ -20,6 +21,12 @@ void cumakev(void **dp, unsigned int n) {
   assert(d != NULL);
   assert(dp != NULL);
   *dp = d;
+}
+
+void cucarvev(void **dp, unsigned int n, void **base, void *top) {
+  assert(*(uint8_t **)base + n <= (uint8_t *)top);
+  *(uint8_t **)dp = *(uint8_t **)base;
+  *(uint8_t **)base += n;
 }
 
 void cufreev(void *x) {

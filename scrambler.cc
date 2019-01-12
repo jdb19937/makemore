@@ -312,6 +312,7 @@ void Scrambler::present(double nu, double mu, double xi) {
     genenc->feed(cugenin, NULL);
     enc->target(cuenctgt, false);
     enc->train(0);
+    genpass->update_stats();
     genpass->train(xi);
   }
 

@@ -88,6 +88,9 @@ void twiddle3(const double *z, unsigned int w, unsigned int h, double *lo, doubl
 
   unsigned int ilo = 0, ihi = 0;
   unsigned int w3 = w * 3;
+
+  if (hi) {
+
   for (unsigned int y = 0; y < h; y += 2) {
     for (unsigned int x = 0; x < w; x += 2) {
       for (unsigned int c = 0; c < 3; ++c) {
@@ -104,5 +107,21 @@ void twiddle3(const double *z, unsigned int w, unsigned int h, double *lo, doubl
         hi[ihi++] = 0.5 + s / 2.0;
       }
     }
+  }
+
+  } else {
+
+  for (unsigned int y = 0; y < h; y += 2) {
+    for (unsigned int x = 0; x < w; x += 2) {
+      for (unsigned int c = 0; c < 3; ++c) {
+        unsigned int p = y * w3 + x * 3 + c;
+
+        double m = (z[p] + z[p + 3] + z[p + w3] + z[p + w3 + 3]) / 4.0;
+
+        lo[ilo++] = m;
+      }
+    }
+  }
+
   }
 }

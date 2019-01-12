@@ -2,7 +2,7 @@
 #include "topology.hh"
 #include "random.hh"
 #include "cudamem.hh"
-#include "scrambler.hh"
+#include "project.hh"
 
 #include <math.h>
 
@@ -70,7 +70,7 @@ int main(int argc, char **argv) {
     return usage();
 
   const char *project_dir = argv[0];
-  Scrambler *proj = new Scrambler(project_dir, mbn);
+  Project *proj = new Project(project_dir, mbn);
 
   fprintf(stderr, "learnmore project=%s mu=%lf nu=%lf xi=%lf\n", project_dir, mu, nu, xi);
 

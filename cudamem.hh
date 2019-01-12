@@ -15,6 +15,10 @@ template <class T> inline void cumake(T **x, unsigned int n = 1)
 template <class T> T *cunew(unsigned int n = 1)
   { T *x; cumake(&x, n); return x; }
 
+extern void cucarvev(void **, unsigned int n, void **, void *);
+template <class T> inline void cucarve(T **x, unsigned int n, void **base, void *top)
+  { cucarvev((void **)x, n * sizeof(T), base, top); }
+
 extern void cufreev(void *);
 template <class T> void cufree(T *x)
   { cufreev(x); }

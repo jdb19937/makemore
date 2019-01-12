@@ -10,7 +10,8 @@
 #include <string>
 
 #include "cudamem.hh"
-#include "project.hh"
+#include "pipeline.hh"
+#include "parson.hh"
 
 #include "sha256.c"
 
@@ -23,17 +24,28 @@
 
 using namespace std;
 
-void handle(Project *proj, FILE *infp, FILE *outfp) {
+Pipeline *open_pipeline() {
+  Pipeline *pipe = new Pipeline(1);
+  pipe->add_stage(new Project("new8.proj", 1));
+  pipe->add_stage(new Project("new16.proj", 1));
+  pipe->add_stage(new Project("new32.proj", 1));
+  pipe->add_stage(new Project("new64.proj", 1));
+  return pipe;
+}
+
+ParsonDB *open_parsons() {
+  return new ParsonDB("parsons.dat");
+}
+
+void handle(Pipeline *pipe, ParsonDB *parsons, FILE *infp, FILE *outfp) {
   uint8_t cmd;
-  char nom[32], nomfn[4096];
+  char nom[32];
   int ret;
 
-  uint8_t *zero = new uint8_t[proj->targetlay->n]();
-
   while (1) {
-    fprintf(stderr, "syncing proj (load)\n");
-    proj->load();
-    fprintf(stderr, "synced proj (load)\n");
+    fprintf(stderr, "syncing pipeline (load)\n");
+    pipe->load();
+    fprintf(stderr, "synced pipeline (load)\n");
 
     fprintf(stderr, "loading cmd n=1\n");
     ensure(1 == fread(&cmd, 1, 1, infp));
@@ -41,242 +53,182 @@ void handle(Project *proj, FILE *infp, FILE *outfp) {
 
     fprintf(stderr, "loading nom n=32\n");
     ensure(32 == fread(nom, 1, 32, infp));
-    if (nom[31]) {
-      fprintf(stderr, "bad nom 1\n");
-      return;
-    }
-    if (nom[0] >= '0' && nom[0] <= '9') {
-      fprintf(stderr, "bad nom 2\n");
-      return;
-    }
-    for (unsigned int i = 0; i < 32; ++i) {
-      if (!nom[i])
-        break;
-      if (!(nom[i] >= 'a' && nom[i] <= 'z' || nom[i] == '_' || nom[i] >= '0' && nom[i] <= '9')) {
-        fprintf(stderr, "bad nom 3\n");
-        return;
-      }
-    }
-    if (!nom[0]) {
-      fprintf(stderr, "bad nom 4\n");
-      return;
-    }
-
     fprintf(stderr, "loaded nom=%s\n", nom);
-    sprintf(nomfn, "%s/saved/%s.dat", proj->dir.c_str(), nom);
+
+    ensure(Parson::valid_nom(nom));
+
+    Parson *parson = parsons->find(nom);
+    ensure(parson);
+    ensure(!strcmp(parson->nom, nom));
+
+
+    assert(pipe->ctxlay->n == Parson::nattrs);
+    pipe->load_ctx(parson->attrs);
+
+    assert(pipe->ctrlay->n == Parson::ncontrols);
+    pipe->load_ctr(parson->controls);
+
+    assert(sizeof(parson->target) == pipe->outlay->n);
+
+    const uint8_t *response;
+    unsigned int responsen;
 
     switch (cmd) {
     case 0: {
-      fprintf(stderr, "loading context n=%u\n", proj->contextlay->n);
-      ensure( proj->loadcontext(infp) );
-      fprintf(stderr, "loaded context n=%u\n", proj->contextlay->n);
-
-      fprintf(stderr, "loading controls n=%u\n", proj->controlslay->n);
-      ensure( proj->loadcontrols(infp) );
-      fprintf(stderr, "loaded controls n=%u\n", proj->controlslay->n);
-
-      const uint8_t *response;
-      unsigned int responsen;
-
-      if (FILE *nomfp = fopen(nomfn, "r")) {
-        ensure(proj->loadcontext(nomfp));
-        ensure(proj->loadcontrols(nomfp));
-        ensure(proj->loadadjust(nomfp));
-        ensure(proj->loadtarget(nomfp));
-        fclose(nomfp);
-
-        fprintf(stderr, "readjusting\n");
-        proj->dotarget2();
-        proj->readjust();
-        fprintf(stderr, "readjusted\n");
-
-        response = proj->btargetbuf;
-        responsen = proj->targetlay->n;
+      if (parson->created) {
+        pipe->load_out(parson->target);
       } else {
-        uint8_t hash[32];
-        SHA256_CTX sha;
-        sha256_init(&sha);
-        sha256_update(&sha, (const uint8_t *)nom, strlen(nom));
-        sha256_final(&sha, hash);
-
-        unsigned int s;
-        memcpy(&s, hash, sizeof(s));
-        seedrand(s);
-
-        proj->nulladjust();
-        proj->randcontrols(1);
-        for (int i = 0; i < proj->contextlay->n; ++i)
-          proj->contextbuf[i] = randrange(0, 1);
-
-        fprintf(stderr, "generating\n");
-        proj->generate();
-        fprintf(stderr, "generated\n");
-
-        seedrand();
-
-        response = proj->output() + proj->contextlay->n;
-        responsen = proj->outputlay->n - proj->contextlay->n;
+        pipe->generate();
+        memcpy(parson->target, pipe->boutbuf, pipe->outlay->n);
       }
 
+      fprintf(stderr, "readjusting\n");
+      pipe->readjust();
+      fprintf(stderr, "readjusted\n");
+
+      response = parson->target;
+      responsen = sizeof(parson->target);
       fprintf(stderr, "writing n=%u\n", responsen);
       ret = fwrite(response, 1, responsen, outfp);
       ensure(ret == responsen);
       fprintf(stderr, "wrote n=%d\n", responsen);
-fprintf(stderr, "tgtresponse: "); for (int i = 0; i < 40; ++i) { fprintf(stderr, "%u,", response[i]); } fprintf(stderr, "\n");
+//fprintf(stderr, "tgtresponse: "); for (int i = 0; i < 40; ++i) { fprintf(stderr, "%u,", response[i]); } fprintf(stderr, "\n");
 
 
-      proj->encodectx();
 
-      response = proj->bcontextbuf;
-      responsen = proj->contextlay->n;
-      fprintf(stderr, "writing n=%u\n", responsen);
-      ret = fwrite(response, 1, responsen, outfp);
-      ensure(ret == responsen);
-      fprintf(stderr, "wrote n=%d\n", responsen);
-
-
-      proj->encodectrl();
-
-      response = proj->bcontrolbuf;
-      responsen = proj->controlslay->n;
+      response = parson->attrs;
+      responsen = Parson::nattrs;
       fprintf(stderr, "writing n=%u\n", responsen);
       ret = fwrite(response, 1, responsen, outfp);
       ensure(ret == responsen);
       fprintf(stderr, "wrote n=%d\n", responsen);
 
-      proj->encodeadj();
-    
-      response = proj->badjustbuf;
-      responsen = proj->adjustlay->n;
+
+
+      response = parson->controls;
+      responsen = Parson::ncontrols;
       fprintf(stderr, "writing n=%u\n", responsen);
       ret = fwrite(response, 1, responsen, outfp);
       ensure(ret == responsen);
       fprintf(stderr, "wrote n=%d\n", responsen);
-fprintf(stderr, "adjresponse: "); for (int i = 0; i < 40; ++i) { fprintf(stderr, "%u,", response[i]); } fprintf(stderr, "\n");
 
 
 
-      proj->nulladjust();
+      response = pipe->badjbuf;
+      responsen = pipe->adjlay->n;
+      fprintf(stderr, "writing n=%u\n", responsen);
+      ret = fwrite(response, 1, responsen, outfp);
+      ensure(ret == responsen);
+      fprintf(stderr, "wrote n=%d\n", responsen);
+//fprintf(stderr, "adjresponse: "); for (int i = 0; i < 40; ++i) { fprintf(stderr, "%u,", response[i]); } fprintf(stderr, "\n");
+
+
+
       fprintf(stderr, "generating\n");
-      proj->generate();
+      pipe->generate();
       fprintf(stderr, "generated\n");
 
-      assert(proj->outputlay->n == proj->contextlay->n + proj->targetlay->n);
-      response = proj->output() + proj->contextlay->n;
-      responsen = proj->targetlay->n;
+
+      assert(pipe->outlay->n == sizeof(Parson::target));
+      response = pipe->boutbuf;
+      responsen = pipe->outlay->n;
 
       fprintf(stderr, "writing n=%u\n", responsen);
       ret = fwrite(response, 1, responsen, outfp);
       ensure(ret == responsen);
       fprintf(stderr, "wrote n=%d\n", responsen);
 
-fprintf(stderr, "genresponse: "); for (int i = 0; i < 40; ++i) { fprintf(stderr, "%u,", response[i]); } fprintf(stderr, "\n");
+//fprintf(stderr, "genresponse: "); for (int i = 0; i < 40; ++i) { fprintf(stderr, "%u,", response[i]); } fprintf(stderr, "\n");
 
       break;
     }
 
     case 1: {
-      uint8_t hyper[8];
+
+      uint8_t hyper[8], zero[8];
+      memset(zero, 0, 8);
 
       assert(sizeof(hyper) == 8);
       fprintf(stderr, "loading hyper n=%lu\n", sizeof(hyper));
       ensure(8 == fread(hyper, 1, 8, infp));
       fprintf(stderr, "loaded hyper\n");
 
-      fprintf(stderr, "loading context n=%u\n", proj->contextlay->n);
-      ensure( proj->loadcontext(infp) );
-      fprintf(stderr, "loaded context n=%u\n", proj->contextlay->n);
+      fprintf(stderr, "loading context n=%u\n", pipe->ctxlay->n);
+      ensure( pipe->load_ctx(infp) );
+      fprintf(stderr, "loaded context n=%u\n", pipe->ctxlay->n);
 
-      fprintf(stderr, "loading controls n=%u\n", proj->controlslay->n);
-      ensure( proj->loadcontrols(infp) );
-      fprintf(stderr, "loaded controls n=%u\n", proj->controlslay->n);
+      fprintf(stderr, "loading controls n=%u\n", pipe->ctrlay->n);
+      ensure( pipe->load_ctr(infp) );
+      fprintf(stderr, "loaded controls n=%u\n", pipe->ctrlay->n);
 
-      fprintf(stderr, "loading adjust n=%u\n", proj->adjustlay->n);
-      ensure( proj->loadadjust(infp) );
-      fprintf(stderr, "loaded adjust n=%u\n", proj->adjustlay->n);
+      fprintf(stderr, "loading adjust n=%u\n", pipe->adjlay->n);
+      ensure( pipe->load_adj(infp) );
+      fprintf(stderr, "loaded adjust n=%u\n", pipe->adjlay->n);
 
-      fprintf(stderr, "dotargeting\n");
+      fprintf(stderr, "retargeting\n");
+      pipe->retarget();
+      fprintf(stderr, "retargeted\n");
+
       fprintf(stderr, "readjusting\n");
-      proj->dotarget1();
-      proj->dotarget2();
-      proj->readjust();
+      pipe->readjust();
       fprintf(stderr, "readjusted\n");
 
-      if (memcmp(hyper, zero, 8)) {
-        for (int i = 0; i < 16; ++i) {
-          fprintf(stderr, "generating\n");
-          proj->generate(hyper);
-          fprintf(stderr, "generated\n");
-
-          fprintf(stderr, "readjusting\n");
-          proj->readjust();
-          fprintf(stderr, "readjusted\n");
-        }
+      if (hyper[0]) {
+        pipe->reencode(hyper[0]);
+        pipe->readjust();
       }
 
-      if (hyper[1] || hyper[3] || hyper[5] || hyper[7]) {
-        fprintf(stderr, "syncing proj (save)\n");
-        proj->save();
-        fprintf(stderr, "synced proj (save)\n");
-      }
- 
+      assert(Parson::nattrs == pipe->ctxlay->n);
+      memcpy(parson->attrs, pipe->bctxbuf, Parson::nattrs);
 
-      if (FILE *nomfp = fopen(nomfn, "w")) {
-        ret = fwrite(proj->bcontextbuf, 1, proj->contextlay->n, nomfp);
-        assert(ret == proj->contextlay->n);
-        ret = fwrite(proj->bcontrolbuf, 1, proj->controlslay->n, nomfp);
-        assert(ret == proj->controlslay->n);
-        ret = fwrite(proj->badjustbuf, 1, proj->adjustlay->n, nomfp);
-        assert(ret == proj->adjustlay->n);
-        ret = fwrite(proj->btargetbuf, 1, proj->targetlay->n, nomfp);
-        assert(ret == proj->targetlay->n);
+      assert(Parson::ncontrols == pipe->ctrlay->n);
+      memcpy(parson->controls, pipe->bctrbuf, Parson::ncontrols);
 
-        fclose(nomfp);
+      assert(sizeof(Parson::target) == pipe->outlay->n);
+      memcpy(parson->target, pipe->boutbuf, sizeof(Parson::target));
+      if (!parson->created) {
+        parson->created = time(NULL);
       }
 
-
-
-      const uint8_t *response = proj->btargetbuf;
-      unsigned int responsen = proj->targetlay->n;
+      response = parson->target;
+      responsen = sizeof(parson->target);
       fprintf(stderr, "writing n=%u\n", responsen);
       ret = fwrite(response, 1, responsen, outfp);
       ensure(ret == responsen);
       fprintf(stderr, "wrote n=%d\n", responsen);
 
 
-      response = proj->bcontextbuf;
-      responsen = proj->contextlay->n;
+      response = parson->attrs;
+      responsen = Parson::nattrs;
       fprintf(stderr, "writing n=%u\n", responsen);
       ret = fwrite(response, 1, responsen, outfp);
       ensure(ret == responsen);
       fprintf(stderr, "wrote n=%d\n", responsen);
 
 
-      response = proj->bcontrolbuf;
-      responsen = proj->controlslay->n;
+      response = parson->controls;
+      responsen = Parson::ncontrols;
       fprintf(stderr, "writing n=%u\n", responsen);
       ret = fwrite(response, 1, responsen, outfp);
       ensure(ret == responsen);
       fprintf(stderr, "wrote n=%d\n", responsen);
 
-      response = proj->badjustbuf;
-      responsen = proj->adjustlay->n;
+      response = pipe->badjbuf;
+      responsen = pipe->adjlay->n;
       fprintf(stderr, "writing n=%u\n", responsen);
       ret = fwrite(response, 1, responsen, outfp);
       ensure(ret == responsen);
       fprintf(stderr, "wrote n=%d\n", responsen);
 
 
-
-      proj->nulladjust();
       fprintf(stderr, "generating\n");
-      proj->generate();
+      pipe->generate();
       fprintf(stderr, "generated\n");
 
-      assert(proj->outputlay->n == proj->contextlay->n + proj->targetlay->n);
-      response = proj->output() + proj->contextlay->n;
-      responsen = proj->targetlay->n;
 
+      assert(pipe->outlay->n == sizeof(Parson::target));
+      response = pipe->boutbuf;
+      responsen = pipe->outlay->n;
       fprintf(stderr, "writing n=%u\n", responsen);
       ret = fwrite(response, 1, responsen, outfp);
       ensure(ret == responsen);
@@ -285,48 +237,20 @@ fprintf(stderr, "genresponse: "); for (int i = 0; i < 40; ++i) { fprintf(stderr,
       break;
     }
 
+
+
+
     case 3: {
       const uint8_t *response;
       unsigned int responsen;
 
-      if (FILE *nomfp = fopen(nomfn, "r")) {
-        ensure(proj->loadcontext(nomfp));
-        ensure(proj->loadcontrols(nomfp));
-        fclose(nomfp);
+      fprintf(stderr, "generating\n");
+      pipe->generate();
+      fprintf(stderr, "generated\n");
 
-        proj->nulladjust();
-
-        fprintf(stderr, "generating\n");
-        proj->generate();
-        fprintf(stderr, "generated\n");
-
-      } else {
-        uint8_t hash[32];
-        SHA256_CTX sha;
-        sha256_init(&sha);
-        sha256_update(&sha, (const uint8_t *)nom, strlen(nom));
-        sha256_final(&sha, hash);
-
-        unsigned int s;
-        memcpy(&s, hash, sizeof(s));
-        seedrand(s);
-
-        proj->nulladjust();
-        proj->randcontrols(1);
-        for (int i = 0; i < proj->contextlay->n; ++i)
-          proj->contextbuf[i] = randrange(0, 1);
-
-        fprintf(stderr, "generating\n");
-        proj->generate();
-        fprintf(stderr, "generated\n");
-
-        seedrand();
-      }
-
-      assert(proj->outputlay->n == proj->contextlay->n + proj->targetlay->n);
-      response = proj->output() + proj->contextlay->n;
-      responsen = proj->targetlay->n;
-
+      assert(pipe->outlay->n == sizeof(Parson::target));
+      response = pipe->boutbuf;
+      responsen = pipe->outlay->n;
       fprintf(stderr, "writing n=%u\n", responsen);
       ret = fwrite(response, 1, responsen, outfp);
       ensure(ret == responsen);
@@ -349,10 +273,9 @@ int usage() {
 }
 
 int main(int argc, char **argv) {
-  if (argc < 3)
+  if (argc < 2)
     return usage();
-  string project_dir = argv[1];
-  uint16_t port = atoi(argv[2]);
+  uint16_t port = atoi(argv[1]);
 
   int s, ret;
   struct sockaddr_in sin;
@@ -381,7 +304,7 @@ int main(int argc, char **argv) {
 
 
 #if 1
-  int max_children = 3;
+  int max_children = 2;
 
   for (unsigned int i = 0; i < max_children; ++i) {
     fprintf(stderr, "forking\n");
@@ -390,9 +313,13 @@ int main(int argc, char **argv) {
       continue;
     }
 
-    fprintf(stderr, "opening\n");
-    Project *proj = open_project(project_dir.c_str(), 1);
-    fprintf(stderr, "opened\n");
+    fprintf(stderr, "opening pipeline\n");
+    Pipeline *pipe = open_pipeline();
+    fprintf(stderr, "opened pipeline\n");
+
+    fprintf(stderr, "opening parsons\n");
+    ParsonDB *parsons = open_parsons();
+    fprintf(stderr, "opened parsons\n");
 
 
     while (1) {
@@ -475,7 +402,7 @@ int main(int argc, char **argv) {
       FILE *outfp = fdopen(c2, "wb");
 
       fprintf(stderr, "handling\n");
-      handle(proj, infp, outfp);
+      handle(pipe, parsons, infp, outfp);
       fprintf(stderr, "handled\n");
 
       fclose(infp);
