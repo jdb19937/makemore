@@ -20,7 +20,7 @@ int main(int argc, char **argv) {
   seedrand();
 
   unsigned int mbn = 8;
-  double nu = 0.005, mu = 0.005, xi = 0.0, tau = 1.0;
+  double nu = 0.001, mu = 0.001, xi = 0, pi = 0, dcut = 0.3, zeta = 0;
 
   ++argv;
   --argc;
@@ -56,12 +56,19 @@ int main(int argc, char **argv) {
         return usage();
       xi = strtod(argv[0], NULL);
 
-    } else if (!strcmp(arg, "--tau")) {
+    } else if (!strcmp(arg, "--pi")) {
       ++argv;
       --argc;
       if (argc < 1)
         return usage();
-      tau = strtod(argv[0], NULL);
+      pi = strtod(argv[0], NULL);
+
+    } else if (!strcmp(arg, "--zeta")) {
+      ++argv;
+      --argc;
+      if (argc < 1)
+        return usage();
+      zeta = strtod(argv[0], NULL);
 
     } else {
       return usage();
@@ -79,13 +86,30 @@ int main(int argc, char **argv) {
   const char *project_dir = argv[0];
   Project *proj = new Project(project_dir, mbn);
 
-  fprintf(stderr, "learnmore project=%s mu=%lf nu=%lf xi=%lf tau=%lf\n", project_dir, mu, nu, xi, tau);
+  fprintf(stderr, "learnmore project=%s mu=%lf nu=%lf pi=%lf xi=%lf dcut=%lf\n", project_dir, mu, nu, pi, xi, dcut);
 
   unsigned int i = 0;
   while (1) {
-    proj->load_ctxtgt(stdin);
-    proj->present(nu, mu, xi, tau);
+    if (nu > 0 || pi > 0) {
+      proj->load_ctxtgt(stdin);
+      proj->train_fidelity(nu, pi, dcut);
+    }
 
+    if (mu > 0) {
+      proj->load_ctxtgt(stdin);
+      proj->train_judgement(mu, dcut);
+    }
+
+    if (xi > 0) {
+      proj->load_ctxtgt(stdin);
+      proj->train_creativity(xi, dcut);
+    }
+
+    if (zeta > 0) {
+      proj->load_ctxtgt(stdin);
+      proj->train_recombine(zeta);
+    }
+ 
     if (i % 1000 == 0) {
       proj->report("learnmore");
       proj->save();

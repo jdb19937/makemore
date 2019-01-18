@@ -29,7 +29,7 @@ template <class T> inline void cuzero(T *x, unsigned int n)
   
 extern void cucopyv(const void *, unsigned int, void *);
 template <class T> inline void cucopy(const T *da, unsigned int n, T *db)
-  { cucopy(da, n * sizeof(T), db); }
+  { cucopyv(da, n * sizeof(T), db); }
 
 extern void cuaddvec(const double *a, const double *b, unsigned int n, double *c);
 extern void cusubvec(const double *a, const double *b, unsigned int n, double *c);

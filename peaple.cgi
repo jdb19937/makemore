@@ -65,14 +65,65 @@ body {
 
 <body bgcolor="darkgray" class="noselect">
 
-<table width=1200 cellpadding=4 cellspacing=0 border=3 bordercolor=gray><tr>
+<table width=1200 cellpadding=4 cellspacing=0 border=3 bordercolor=gray>
+<tr>
 <td align=left valign=center style='border: 0; font-size: xx-large'>
 <b>$NAME</b>
-<br/>
-<img width=256 height=256 src="profile.cgi/$NAME.jpg?nonce=$NONCE">
+</td>
+
+<td align=right valign=top style='border: 0'><b><a href="https://github.com/jdb19937/makemore">makemore</a> peaple v0.1</b><br/>by Dan Brumleve</td>
+</tr>
+</table>
+
+<table width=1200 cellpadding=4 cellspacing=0 border=0>
+<tr>
+<td width=350>
+<img width=350 height=350 id="profile" src="profile.cgi/$NAME.jpg?nonce=$NONCE" style="image-rendering: pixelated">
+</td>
+
+<td style='background-color: lightgray; border: 0' valign="top">
+
+<font size=+2><b>frens of $NAME</b></font>
+<table width=900 height=320 style="border:0; overflow: hidden" cellspacing=0>
+<tr valign=top height=110>
+<td id=fren0 style="border-style: none; border-width: 2px; white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width: 100px; min-width: 100px; font-size: small"> </td>
+<td id=fren1 style="border-style: none; border-width: 2px; white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width: 100px; min-width: 100px; font-size: small"> </td>
+<td id=fren2 style="border-style: none; border-width: 2px; white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width: 100px; min-width: 100px; font-size: small"> </td>
+<td id=fren3 style="border-style: none; border-width: 2px; white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width: 100px; min-width: 100px; font-size: small"> </td>
+<td id=fren4 style="border-style: none; border-width: 2px; white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width: 100px; min-width: 100px; font-size: small"> </td>
+<td id=fren5 style="border-style: none; border-width: 2px; white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width: 100px; min-width: 100px; font-size: small"> </td>
+<td id=fren6 style="border-style: none; border-width: 2px; white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width: 100px; min-width: 100px; font-size: small"> </td>
+<td id=fren7 style="border-style: none; border-width: 2px; white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width: 100px; min-width: 100px; font-size: small"> </td>
+</tr>
+<tr valign=top height=110>
+<td id=fren8 style="border-style: none; border-width: 2px; white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width: 100px; min-width: 100px; font-size: small"> </td>
+<td id=fren9 style="border-style: none; border-width: 2px; white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width: 100px; min-width: 100px; font-size: small"> </td>
+<td id=fren10 style="border-style: none; border-width: 2px; white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width: 100px; min-width: 100px; font-size: small"> </td>
+<td id=fren11 style="border-style: none; border-width: 2px; white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width: 100px; min-width: 100px; font-size: small"> </td>
+<td id=fren12 style="border-style: none; border-width: 2px; white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width: 100px; min-width: 100px; font-size: small"> </td>
+<td id=fren13 style="border-style: none; border-width: 2px; white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width: 100px; min-width: 100px; font-size: small"> </td>
+<td id=fren14 style="border-style: none; border-width: 2px; white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width: 100px; min-width: 100px; font-size: small"> </td>
+<td id=fren15 style="border-style: none; border-width: 2px; white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width: 100px; min-width: 100px; font-size: small"> </td>
+</tr>
+
+<tr>
+
+  <td colspan=8>
+    <hr/>
+    <input type=text id=frenbuf name=frenbuf onChange="frenbufhilite()" onKeyDown="frenbufhilite()" oninput="frenbufhilite()" onpaste="frenbufhilite()" value="" size=32 maxlength=32/>
+    <input type=button onClick="document.getElementById('frenbuf').value = gennom(); frenbufhilite()" value="gen nom"/>
+    <input type=button onClick="addfren()" value="add fren"/>
+    <input type=button onClick="setparsontarget()" value="set target"/>
+    <input type=button onClick="gotofile()" value="goto file"/>
+    <input type=button onClick="makebread()" value="bread"/>
+    <input type=button onClick="cloneto()" value="clone to"/>
+
+  </td>
+</tr>
+</table>
+
 
 </td>
-<td align=right valign=top style='border: 0'><b><a href="https://github.com/jdb19937/makemore">makemore</a> peaple v0.1</b><br/>by Dan Brumleve</td>
 </tr></table>
 
 
@@ -221,7 +272,14 @@ doubleclick('attrstatic', genrandomattrs, 'attrcon')
       <div id="fuzztool" style="border-width: 3px; border-color: gray; border-style: solid; width: 64; height: 64;"> <img src="fuzz.png" onClick="changetool('f')"> </div>
     </td>
 
-  <td align=left><input type=button onclick="requpdate()" value="requpdate"/></td>
+  <td align=left>
+    <input type=button onclick="requpdate()" value="request update"/> <br/>
+
+    <input type=button id=ctrlockbutton onClick="lockallcontrols()" value="lock all controls">
+    <input type=button id=tgtlockbutton onClick="lockalltargets()" value="lock all targets">
+    <input type=button id=ctrlockbutton onClick="unlockallcontrols()" value="unlock all controls">
+    <input type=button id=ctrlockbutton onClick="unlockalltargets()" value="unlock all targets">
+  </td>
   <td align=left>
 <label for="file">upload target</label><br/>
 <input type="file" size="60" id="imageLoader" name="imageLoader" accept="image/png, image/jpeg"/>
@@ -252,27 +310,21 @@ doubleclick('attrstatic', genrandomattrs, 'attrcon')
   <tr>
 
  <td width=320><canvas id="stage1gen" width=320 height=320></canvas></td>
+ <td width=320><canvas id="palette" onClick="clickpalette(event)" width=320 height=320></canvas></td>
  <td width=320><canvas id="stage1" width=320 height=320></canvas></td>
 
  <td width=320 id="stage1adjborder" style="border-width: 3px; border-color: gray; border-style: solid; padding: 0px">
     <canvas id="stage1adj" width=320 height=320
-onMouseDown="doubleclick('stage1adjborder', function() { clearadj(1); })"
+onClick="toggletgtlock(1)"
     ></canvas>
   </td>
 
-  <td valign=top>
+  <td width=64 valign=top>
 
-  <table cellspacing=0 cellpadding=0><tr>
-  <td valign=top>
-    <div id="stage1scramborder" style="border-width: 3px; border-color: gray; border-style: solid; padding: 0px">
-    <img src="static.png" onMouseDown=
-"doubleclick('stage1scramborder', function() { gencontrols('stage1', 128, 1) }, 'stage1conborder')"
-/>
-    </div>
-  </td>
-  </tr><tr>
+  <table cellspacing=0 cellpadding=0>
+  <tr>
   <td width=64 id="stage1conborder" style="border-width: 3px; border-color: gray; border-style: solid; padding: 0px">
-    <canvas id="stage1con" width=64 height=248 onMouseDown="requpdatecon(1)">
+    <canvas id="stage1con" width=64 height=320 onClick="togglectrlock(1)">
 </canvas>
   </td></tr></table>
 
@@ -280,7 +332,13 @@ onMouseDown="doubleclick('stage1adjborder', function() { clearadj(1); })"
 
 
   </td>
-  <td width=24> </td>
+  <td valign=top>
+    <table cellspacing=0 cellpadding=0>
+    <tr><td><img src="static.png" onClick="requpdatecon(1, 1)"/></td></tr>
+    <tr><td><img src="spread.png" onClick="requpdatecon(1, 2)"/></td></tr>
+    <tr><td><img src="fade.png" onClick="requpdatecon(1, 3)"/></td></tr>
+    </table>
+  </td>
 </tr><tr>
 
 
@@ -288,28 +346,29 @@ onMouseDown="doubleclick('stage1adjborder', function() { clearadj(1); })"
 
 
   <td width=320><canvas id="stage2gen" width=320 height=320></canvas></td>
+  <td width=320><canvas id="stage2orig" width=320 height=320></canvas></td>
   <td width=320><canvas id="stage2" width=320 height=320></canvas></td>
  <td width=320 id="stage2adjborder" style="border-width: 3px; border-color: gray; border-style: solid; padding: 0px">
     <canvas id="stage2adj" width=320 height=320
-onMouseDown="doubleclick('stage2adjborder', function() { clearadj(2); })"
+onClick="toggletgtlock(2)"
     ></canvas>
   </td>
 
 
   <td valign=top>
   <table cellspacing=0 cellpadding=0><tr>
-  <td valign=top>
-    <div id="stage2scramborder" style="border-width: 3px; border-color: gray; border-style: solid; padding: 0px">
-    <img src="static.png" onMouseDown=
-"doubleclick('stage2scramborder', function() { gencontrols('stage2', 256, 1) }, 'stage2conborder')"
-/>
-    </div>
-  </td>
-  </tr><tr>
   <td width=64 id="stage2conborder" style="border-width: 3px; border-color: gray; border-style: solid; padding: 0px">
-    <canvas id="stage2con" width=64 height=248 onMouseDown="requpdatecon(2)">
+    <canvas id="stage2con" width=64 height=320 onClick="togglectrlock(2)">
 </canvas>
   </td></tr></table>
+  </td>
+
+  <td valign=top>
+    <table cellspacing=0 cellpadding=0>
+    <tr><td><img src="static.png" onClick="requpdatecon(2, 1)"/></td></tr>
+    <tr><td><img src="spread.png" onClick="requpdatecon(2, 2)"/></td></tr>
+    <tr><td><img src="fade.png" onClick="requpdatecon(2, 3)"/></td></tr>
+    </table>
   </td>
 </tr>
 
@@ -321,35 +380,34 @@ onMouseDown="doubleclick('stage2adjborder', function() { clearadj(2); })"
 
 <tr>
  <td width=320><canvas id="stage3gen" width=320 height=320></canvas></td>
+  <td width=320><canvas id="stage3orig" width=320 height=320></canvas></td>
   <td width=320><canvas id="stage3" width=320 height=320></canvas></td>
  <td width=320 id="stage3adjborder" style="border-width: 3px; border-color: gray; border-style: solid; padding: 0px">
     <canvas id="stage3adj" width=320 height=320
-onMouseDown="doubleclick('stage3adjborder', function() { clearadj(3); })"
+onClick="toggletgtlock(3)"
     ></canvas>
   </td>
 
 <td valign=top>
   <table cellspacing=0 cellpadding=0><tr valign=top>
-  <td>
-    <div id="stage3scramborder" style="border-width: 3px; border-color: gray; border-style: solid; padding: 0px">
-    <img src="static.png" onMouseDown=
-"doubleclick('stage3scramborder', function() { gencontrols('stage3', 512, 1) }, 'stage3conborder')"
-/>
-    </div>
-  </td>
-  </tr><tr>
   <td width=64 id="stage3conborder" style="border-width: 3px; border-color: gray; border-style: solid; padding: 0px">
-    <canvas id="stage3con" width=64 height=248 onMouseDown="requpdatecon(3)">
+    <canvas id="stage3con" width=64 height=320 onClick="togglectrlock(3)">
 </canvas>
   </td></tr></table>
 </td>
 
+  <td valign=top>
+    <table cellspacing=0 cellpadding=0>
+    <tr><td><img src="static.png" onClick="requpdatecon(3, 1)"/></td></tr>
+    <tr><td><img src="spread.png" onClick="requpdatecon(3, 2)"/></td></tr>
+    <tr><td><img src="fade.png" onClick="requpdatecon(3, 3)"/></td></tr>
+    </table>
+  </td>
 
 
 
 
 
-  <td></td>
 </tr>
 
 <!--
@@ -361,27 +419,27 @@ onMouseDown="doubleclick('stage3adjborder', function() { clearadj(3); })"
 <tr>
 
  <td width=320><canvas id="stage4gen" width=320 height=320></canvas></td>
+  <td width=320><canvas id="stage4orig" width=320 height=320></canvas></td>
   <td width=320><canvas id="stage4" width=320 height=320></canvas></td>
  <td width=320 id="stage4adjborder" style="border-width: 3px; border-color: gray; border-style: solid; padding: 0px">
     <canvas id="stage4adj" width=320 height=320
-onMouseDown="doubleclick('stage4adjborder', function() { clearadj(4); })"
+onClick="toggletgtlock(4)"
     ></canvas>
   </td>
 <td valign=top>
   <table cellspacing=0 cellpadding=0><tr valign=top>
-  <td>
-    <div id="stage4scramborder" style="border-width: 3px; border-color: gray; border-style: solid; padding: 0px">
-    <img src="static.png" onMouseDown=
-"doubleclick('stage4scramborder', function() { gencontrols('stage4', 1024, 1) }, 'stage4conborder')"
-/>
-    </div>
-  </td>
-  </tr><tr>
   <td width=64 id="stage4conborder" style="border-width: 3px; border-color: gray; border-style: solid; padding: 0px">
-    <canvas id="stage4con" width=64 height=248 onMouseDown="requpdatecon(4)">
+    <canvas id="stage4con" width=64 height=320 onClick="togglectrlock(4)">
 </canvas>
   </td></tr></table>
 </td>
+  <td valign=top>
+    <table cellspacing=0 cellpadding=0>
+    <tr><td><img src="static.png" onClick="requpdatecon(4, 1)"/></td></tr>
+    <tr><td><img src="spread.png" onClick="requpdatecon(4, 2)"/></td></tr>
+    <tr><td><img src="fade.png" onClick="requpdatecon(4, 3)"/></td></tr>
+    </table>
+  </td>
 </tr>
 
 </table>
@@ -402,6 +460,123 @@ onMouseDown="doubleclick('stage4adjborder', function() { clearadj(4); })"
 
  <script>
 
+function gennom(gen) {  
+  var pre1 = [
+     'jay', 'crys', 'jun', 'holl', 'harv', 'thund', 'bowl', 'haz', 'zinc', 'surf',
+     'dun', 'jol', 'mar', 'fren', 'frod', 'froom',
+     'grun', 'herk', 'jark', 'kev', 'lem', 'mel', 'norm',
+    'ned', 'rugg', 'frap', 'sorr', 'trop', 'vern', 'wum',
+    'bob', 'frood'
+  ];
+  
+  var msuf1 = ['io', 'ius', 'ader', 'on', 'son', 'y', 'athan', 'opher'];
+  var fsuf1 = ['ia', 'ina', 'ona', 'adra', 'iona', 'i'];
+  
+  var pre2 = [
+    'frep', 'mup', 'tran', 'string', 'synth',
+    'dun', 'sami', 'gork', 'free', 'blar', 'gan', 'net',
+    'fron', 'long', 'tarp', 'lor', 'norm', 'neur', 'blur',
+    'nimble', 'luck', 'just', 'fair', 'pool', 'hoop', 'milk'
+  ];
+  
+  var suf2 = [
+    'bean', 'stone', 'barn', 'tree',
+    'rock', 'screen', 'fake', 'null', 'grond', 'bun',
+    'nam', 'plain', 'real', 'sticker', 'picker',
+    'packer', 'macker', 'maker', 'bane', 'son',
+    'wood', 'bull', 'ster',
+    'friend', 'raver', 'rover', 'mark', 'hawk', 'razor', 'weed', 'walker',
+    'burger'
+  ]
+    
+  var pick = function(x) { return x[Math.floor(Math.random() * x.length)] }
+
+  var p1 = pick(pre1)
+  var s1
+  if (gen == 'm') {
+    s1 = pick(msuf1)
+  } else if (gen == 'f') {
+    s1 = pick(fsuf1)
+  } else {
+    s1 = pick(pick([msuf1, fsuf1]))
+  }
+
+  var p2 = pick(pre2)
+  if (Math.random() < 0.05) {
+    p2 = "mc" + p2
+  }
+  if (Math.random() < 0.03) {
+    p2 = pick(["von_", "van_", "van_der_", "al", "o_"]) + p2
+  }
+  var s2 = pick(suf2)
+    
+  return p1 + s1 + "_" + p2 + s2
+}
+
+
+function frenbufhilite() {
+  var nom = document.getElementById('frenbuf').value
+  for (var i = 0; i < 15; ++i) {
+    var frentd = document.getElementById('fren' + i)
+    frentd.style.borderColor = (nom == window.frens[i] ? 'blue' : 'gray');
+  }
+}
+
+function addfren() {
+  var nom = document.getElementById('frenbuf').value
+  if (nom == '') {
+    return false
+  }
+
+  window.mynewfren = nom
+  document.getElementById('frenbuf').value = gennom()
+
+  requpdate()
+
+  window.mynewfren = ''
+  frenbufhilite()
+  return true
+}
+
+function cloneto() {
+  var hyper = new Uint8Array(8);
+  hyper[0] = 4
+
+  var nom = document.getElementById('frenbuf').value
+  if (nom == '') {
+    return false
+  }
+
+  window.dirtyfren = nom
+  window.mynewfren = nom
+  document.getElementById('frenbuf').value = gennom()
+
+  requpdate(hyper)
+
+  window.mynewfren = ''
+  frenbufhilite()
+  return true
+}
+
+function makebread() {
+  var hyper = new Uint8Array(8);
+  hyper[0] = 5
+
+  var nom = document.getElementById('frenbuf').value
+  if (nom == '') {
+    return false
+  }
+
+  window.dirtyfren = nom
+  window.mynewfren = nom
+  //document.getElementById('frenbuf').value = gennom()
+
+  requpdate(hyper)
+
+  window.mynewfren = ''
+  //frenbufhilite()
+  return true
+}
 
 
 // https://stackoverflow.com/a/10906961
@@ -421,16 +596,40 @@ var ctx = canvas.getContext('2d');
     reader.readAsDataURL(e.target.files[0]);     
 }
 
+function gotofile() {
+  var frenbuf = document.getElementById("frenbuf");
+  if (frenbuf.value == "") {
+    return;
+  }
+  window.location = "peaple.cgi/" + frenbuf.value
+}
+
+function setparsontarget() {
+  var canvas = document.getElementById('imageCanvas');
+  var ctx = canvas.getContext('2d');
+  var img = new Image();
+  img.onload = function(){
+      ctx.drawImage(img,0,0,64,64);
+      var rgbdata = ctx.getImageData(0, 0, 64, 64).data;
+      applyloaded(rgbdata)
+  }
+  var frenbuf = document.getElementById("frenbuf");
+  if (frenbuf.value != "") {
+    img.src = "profile.cgi/" + frenbuf.value + "?nonce=" + Math.floor(Math.random() * 1000000);
+  }
+}
+
 function applyloaded(rgbdata) {
   var stage4 = document.getElementById('stage4');
   var adjctx = document.getElementById('stage4adj').getContext('2d')
   var scale = stage4.scale
+  var oldlabdata = window.gendata;
 
   for (var j = 0, k = 0; j < 64*64*3; j += 3, k += 4) {
     var col = [rgbdata[k+0], rgbdata[k+1], rgbdata[k+2]]
     var newlab = rgbtolab(col)
 
-    var oldlab = [stage4.origlab[j+0], stage4.origlab[j+1], stage4.origlab[j+2]]
+    var oldlab = [oldlabdata[j+0], oldlabdata[j+1], oldlabdata[j+2]]
 
     var adjlabcol = [
       128 + (newlab[0] - oldlab[0]) / 2.0,
@@ -448,6 +647,60 @@ function applyloaded(rgbdata) {
     adjctx.fillStyle = mkcol(adjcol)
     adjctx.fillRect(px * scale, py * scale, scale, scale);
   }
+
+  var stage3 = document.getElementById('stage3');
+  adjctx = document.getElementById('stage3adj').getContext('2d')
+  scale = stage3.scale
+  for (var j = 0; j < 32*32*3; j += 3) {
+    var adjlabcol = [128,128,128]
+
+    stage3.adjlab[j+0] = adjlabcol[0]
+    stage3.adjlab[j+1] = adjlabcol[1]
+    stage3.adjlab[j+2] = adjlabcol[2]
+
+    var px = Math.floor((j % (32 * 3)) / 3)
+    var py = Math.floor(j / (32 * 3));
+    var adjcol = labtorgb(adjlabcol)
+    adjctx.fillStyle = mkcol(adjcol)
+    adjctx.fillRect(px * scale, py * scale, scale, scale);
+  }
+
+  var stage2 = document.getElementById('stage2');
+  adjctx = document.getElementById('stage2adj').getContext('2d')
+  scale = stage2.scale
+  for (var j = 0; j < 16*16*3; j += 3) {
+    var adjlabcol = [128,128,128]
+
+    stage2.adjlab[j+0] = adjlabcol[0]
+    stage2.adjlab[j+1] = adjlabcol[1]
+    stage2.adjlab[j+2] = adjlabcol[2]
+
+    var px = Math.floor((j % (16 * 3)) / 3)
+    var py = Math.floor(j / (16 * 3));
+    var adjcol = labtorgb(adjlabcol)
+    adjctx.fillStyle = mkcol(adjcol)
+    adjctx.fillRect(px * scale, py * scale, scale, scale);
+  }
+
+  var stage1 = document.getElementById('stage1');
+  adjctx = document.getElementById('stage1adj').getContext('2d')
+  scale = stage1.scale
+  for (var j = 0; j < 8*8*3; j += 3) {
+    var adjlabcol = [128,128,128]
+
+    stage1.adjlab[j+0] = adjlabcol[0]
+    stage1.adjlab[j+1] = adjlabcol[1]
+    stage1.adjlab[j+2] = adjlabcol[2]
+
+    var px = Math.floor((j % (8 * 3)) / 3)
+    var py = Math.floor(j / (8 * 3));
+    var adjcol = labtorgb(adjlabcol)
+    adjctx.fillStyle = mkcol(adjcol)
+    adjctx.fillRect(px * scale, py * scale, scale, scale);
+  }
+
+  window.tgtlock = 15
+
   requpdate()
 }
 
@@ -561,6 +814,115 @@ function gencontrols(stage, nc, dev) {
   requpdate()
 }
 
+function tgtlockon(stage) {
+  var adjcanvas = document.getElementById("stage" + stage + "adjborder")
+
+  adjcanvas.style.borderColor = 'blue'
+  window.tgtlock |= (1 << (stage - 1));
+}
+
+
+function toggletgtlock(stage) {
+  var adjcanvas = document.getElementById("stage" + stage + "adjborder")
+
+  if (window.tgtlock & (1 << (stage - 1))) {
+    adjcanvas.style.borderColor = 'gray'
+    window.tgtlock &= ~(1 << (stage - 1));
+
+    if (!(window.ctrlock & (1 << (stage - 1)))) {
+      window.ctrlock |= (1 << (stage - 1));
+    }
+  } else {
+    adjcanvas.style.borderColor = 'blue'
+    window.tgtlock |= (1 << (stage - 1));
+  }
+
+  requpdate();
+}
+
+function togglectrlock(stage) {
+  var concanvas = document.getElementById("stage" + stage + "conborder")
+
+  if (window.ctrlock & (1 << (stage - 1))) {
+    concanvas.style.borderColor = 'gray'
+    window.ctrlock &= ~(1 << (stage - 1));
+
+    if (!(window.tgtlock & (1 << (stage -  1)))) {
+      window.tgtlock |= (1 << (stage - 1));
+    }
+  } else {
+    concanvas.style.borderColor = 'blue'
+    window.ctrlock |= (1 << (stage - 1));
+  }
+
+  requpdate();
+}
+
+function lockallcontrols() {
+  var changed = 0
+  for (var stage = 1; stage <= 4; ++stage) {
+    if (!(window.ctrlock & (1 << (stage - 1)))) {
+      window.ctrlock |= (1 << (stage - 1));
+      ++changed
+    }
+  }
+
+  if (changed) {
+    requpdate()
+  }
+}
+
+function unlockallcontrols() {
+  var changed = 0
+  for (var stage = 1; stage <= 4; ++stage) {
+    if (window.ctrlock & (1 << (stage - 1))) {
+      ++changed
+      window.ctrlock &= ~(1 << (stage - 1));
+
+      if (!(window.tgtlock & (1 << (stage -  1)))) {
+        window.tgtlock |= (1 << (stage - 1));
+      }
+    }
+  }
+
+  if (changed) {
+    requpdate()
+  }
+}
+
+function lockalltargets() {
+  var changed = 0
+  for (var stage = 1; stage <= 4; ++stage) {
+    if (!(window.tgtlock & (1 << (stage - 1)))) {
+      window.tgtlock |= (1 << (stage - 1));
+      ++changed
+    }
+  }
+
+  if (changed) {
+    requpdate()
+  }
+}
+
+function unlockalltargets() {
+  var changed = 0
+  for (var stage = 1; stage <= 4; ++stage) {
+    if (window.tgtlock & (1 << (stage - 1))) {
+      window.tgtlock &= ~(1 << (stage - 1));
+      ++changed
+
+      if (!(window.ctrlock & (1 << (stage - 1)))) {
+        window.ctrlock |= (1 << (stage - 1));
+      }
+    }
+  }
+
+  if (changed) {
+    requpdate()
+  }
+}
+  
+
 function clearadj(stage) {
   var canvas = document.getElementById("stage" + stage)
   canvas.adjlab.fill(128)
@@ -590,6 +952,62 @@ function genrandomattrs() {
 function mkcol(data) {
   var col = 'rgb(' + Math.floor(data[0]) + ',' + Math.floor(data[1]) + ',' + Math.floor(data[2]) + ')';
   return col
+}
+
+function makepalette(l, perm) {
+  var pal = document.getElementById('palette');
+  var palctx = pal.getContext('2d')
+  var md2 = (pal.width/2)*(pal.width/2) + (pal.height/2)*(pal.height/2)
+  var md = Math.sqrt(md2)
+
+  pal.l = l
+  pal.perm = perm
+
+  for (var y = 0; y < pal.height; ++y) {
+    for (var x = 0; x < pal.width; ++x) {
+      var dx = (x - pal.width/2)
+      var dy = (y - pal.height/2)
+      var d2 = dx*dx+dy*dy
+      var d = Math.sqrt(d2)
+
+      var r = l * (x / pal.width)
+      var g = l * (y / pal.height)
+      var b = l * (d / md)
+
+      if (perm == 1) {
+        [r,g,b] = [g,b,r];
+      } else if (perm == 2) {
+        [r,g,b] = [b,r,g];
+      }
+
+      palctx.fillStyle = mkcol([r,g,b])
+      palctx.fillRect(x, y, 1, 1)
+    }
+  }
+}
+
+function clickpalette(event) {
+  var pal = document.getElementById('palette');
+  var palctx = pal.getContext('2d')
+
+  if (event.shiftKey) {
+    var x = event.offsetX, y = event.offsetY;
+    var rgbdata = palctx.getImageData(x, y, 1, 1).data;
+    pick_color(rgbdata[0], rgbdata[1], rgbdata[2])
+  } else if (event.ctrlKey) {
+    var l = pal.l
+    var perm = pal.perm
+    if (l == 255) { l = 64 }
+    else if (l == 64) { l = 128; }
+    else if (l == 128) { l = 192; }
+    else { l = 255 }
+    makepalette(l, perm)
+  } else {
+    var l = pal.l
+    var perm = pal.perm
+    ++perm; perm %= 3;
+    makepalette(l, perm)
+  }
 }
 
 function pick_color(r,g,b) {
@@ -626,6 +1044,7 @@ function start_drawing(canvas) {
     var bt = document.getElementById("blurtool")
     bt.style.borderColor = orangestr[window.strength]
   }
+  tgtlockon(canvas.stage);
   window.drawing = canvas;
 }
 
@@ -679,7 +1098,8 @@ function setup_canvas(id, dim) {
   var colorpicker = document.getElementById("colorpicker")
   var colorshower = document.getElementById("colorshower")
 
-  gencontrols(stageid, window.n_controls[id-1], 1)
+  canvas.stage = id
+  concanvas.cbuf = new Float64Array(window.n_controls[id-1])
 
   var ctx = canvas.getContext('2d');
   var adjctx = adjcanvas.getContext('2d');
@@ -695,7 +1115,6 @@ function setup_canvas(id, dim) {
   var scale = cdim / dim
 
   var alldata = ctx.getImageData(0, 0, cdim, cdim).data;
-  var origdata = new Uint8Array(dim * dim * 3)
   canvas.origlab = new Float64Array(dim * dim * 3)
   canvas.rgbdata = new Float64Array(dim * dim * 3)
   canvas.adjlab = new Float64Array(dim * dim * 3)
@@ -708,11 +1127,7 @@ function setup_canvas(id, dim) {
     var off = i * 3
     var aoff = i * scale * 3;
 
-    origdata[off+0] = alldata[aoff+0]
-    origdata[off+1] = alldata[aoff+1]
-    origdata[off+2] = alldata[aoff+2]
-
-    var ol = rgbtolab([origdata[off+0],origdata[off+1],origdata[off+2]])
+    var ol = rgbtolab([alldata[aoff+0],alldata[aoff+1],alldata[aoff+2]])
     canvas.origlab[off+0] = ol[0]
     canvas.origlab[off+1] = ol[1]
     canvas.origlab[off+2] = ol[2]
@@ -1044,10 +1459,11 @@ function waitForSocketConnection(socket, callback){
         }, 200);
 }
 
-function requpdatecon(stage) {
+function requpdatecon(stage, hcmd) {
   var hyper = new Uint8Array(8);
   hyper.fill(0);
-  hyper[0] = (1 << (stage - 1));
+  hyper[0] = hcmd
+  hyper[1] = (1 << (stage - 1));
   requpdate(hyper)
 
   var border = document.getElementById("stage" + stage + "conborder");
@@ -1085,34 +1501,17 @@ function reqgen() {
   var tcontrols = window.tcontrols;
   var nbuf = namebuf()
 
-  var reqsize = 1 + nbuf.length
+  var reqsize = 8 + nbuf.length
 
   var reqbuf = new Uint8Array(reqsize)
   var reqoff = 0
 
   reqbuf[0] = 0
-  ++reqoff
+  for (var i = 1; i < 8; ++i) reqbuf[i] = 0;
+  reqoff += 8;
 
   reqbuf.set(nbuf, reqoff)
   reqoff += nbuf.length
-
-if (0) {
-  for (var i = 0; i < tattrs; ++i) {
-    var at = document.getElementById('attr' + i)
-    reqbuf[reqoff + i] = at.curval
-  }
-  reqoff += tattrs
-
-  for (var i = 0; i < 4; i++) {
-    var stagecon = document.getElementById('stage' + (i + 1) + "con")
-    var nc = window.n_controls[i]
-
-    for (var c = 0; c < nc; ++c) {
-      reqbuf[reqoff + c] = stagecon.cbuf[c]
-    }
-    reqoff += nc
-  }
-}
 
   if (reqoff != reqsize) {
     alert('huh')
@@ -1139,12 +1538,17 @@ function requpdate(hyper) {
   var nbuf = namebuf()
   var thyper = 8
 
-  var reqsize = 1 + nbuf.length + thyper + tattrs + tcontrols + tadjust
+  var reqsize = 8 + nbuf.length + thyper + tattrs + 8*tcontrols + 8*tadjust + 32
   var reqoff = 0
 
   var reqbuf = new Uint8Array(reqsize)
   reqbuf[0] = 1
-  ++reqoff
+  for (var i = 1; i < 8; ++i) {
+    reqbuf[i] = 0
+  }
+  reqbuf[1] = window.tgtlock;
+  reqbuf[2] = window.ctrlock;
+  reqoff += 8
 
   reqbuf.set(nbuf, reqoff)
   reqoff += nbuf.length
@@ -1160,32 +1564,51 @@ function requpdate(hyper) {
   }
   reqoff += thyper
 
+  var reqattrs = new Uint8Array(reqbuf.buffer, reqoff, tattrs)
+  reqoff += tattrs
   for (var i = 0; i < tattrs; ++i) {
     var at = document.getElementById('attr' + i)
-    reqbuf[reqoff + i] = at.curval
+    reqattrs[i] = at.curval
   }
-  reqoff += tattrs
 
+  var reqcons = new Float64Array(reqbuf.buffer, reqoff, tcontrols)
+  reqoff += tcontrols * 8
+  var coff = 0
   for (var i = 0; i < 4; i++) {
     var stagecon = document.getElementById('stage' + (i + 1) + "con")
     var nc = window.n_controls[i]
 
     for (var c = 0; c < nc; ++c) {
-      reqbuf[reqoff + c] = stagecon.cbuf[c]
+      reqcons[coff + c] = stagecon.cbuf[c]
     }
-    reqoff += nc
+    coff += nc
   }
+  if (coff != tcontrols) { window.alert('what1') }
 
+  var reqadj = new Float64Array(reqbuf.buffer, reqoff, tadjust)
+  reqoff += tadjust * 8
+  var soff = 0
   for (var i = 0; i < 4; i++) {
     var stage = document.getElementById('stage' + (i + 1))
     for (var j = 0, jn = stage.adjlab.length; j < jn; ++j) {
-      var s = stage.adjlab[j]; 
-      if (s > 255) s = 255; if (s < 0) s = 0
-      reqbuf[reqoff + j] = s;
+      reqadj[soff + j] = (stage.adjlab[j] - 128.0) / 128.0;
     }
-    reqoff += n_adjust[i]
+    soff += stage.adjlab.length
   }
+  if (soff != tadjust) { window.alert('what') }
 
+  var reqfrens = new Uint8Array(reqbuf.buffer, reqoff, 32)
+  reqoff += 32
+  for (var i = 0; i < 32; ++i) {
+    var f = window.mynewfren;
+    var k = i % 32
+    var c = f.charCodeAt(k)
+    if (k == 31 || isNaN(c) || !(c > 0 && c < 128)) {
+      reqfrens[i] = 0
+    } else {
+      reqfrens[i] = c
+    }
+  }
 
   if (reqoff != reqsize) {
     alert('huh reqoff=' + reqoff + ' reqsize=' + reqsize);
@@ -1225,6 +1648,8 @@ function updategen(newgendata) {
   var stage = document.getElementById('stage4');
   var stagegen = document.getElementById('stage4gen');
   var ctx = stagegen.getContext('2d')
+
+  window.gendata = newgendata;
 
   for (var i = 0; i < 64*64*3; i += 3) {
     var col = labtorgb([newgendata[i+0], newgendata[i+1], newgendata[i+2]])
@@ -1318,18 +1743,105 @@ function updategen(newgendata) {
 
 }
 
+function updatelocks(newlocks) {
+  window.tgtlock = newlocks[0]
+  window.ctrlock = newlocks[1]
 
-function doupdate(newlabdata, newcontextdata, newcontroldata, newadjdata, newgendata) {
+  for (var stage = 1; stage <= 4; ++stage) {
+    var adjcanvas = document.getElementById("stage" + stage + "adjborder")
+    var concanvas = document.getElementById("stage" + stage + "conborder")
+
+    if (window.tgtlock & (1 << (stage - 1))) {
+      adjcanvas.style.borderColor = 'blue'
+    } else {
+      adjcanvas.style.borderColor = 'gray'
+    }
+
+    if (window.ctrlock & (1 << (stage - 1))) {
+      concanvas.style.borderColor = 'blue'
+    } else {
+      concanvas.style.borderColor = 'gray'
+    }
+  }
+}
+
+function updatefrens(newfrensbuf) {
+  var newfrens = new Array(16)
+
+  for (var i = 0; i < 512; ++i) {
+    var j = Math.floor(i / 32);
+    var f = window.frens[j];
+    var c = newfrensbuf[i]
+    if (i % 32 == 0) {
+      newfrens[j] = ''
+    }
+    if (c > 0) {
+      newfrens[j] = newfrens[j] + String.fromCharCode(c);
+    }
+  }
+
+  for (var i = 0; i < 16; ++i) {
+    if (window.frens[i] != newfrens[i] || (window.dirtyfren && newfrens[i] == window.dirtyfren)) {
+      var td = document.getElementById("fren" + i)
+      window.frens[i] = newfrens[i]
+      var nom = window.frens[i]
+      if (nom == '') {
+        td.innerHTML = ""
+        td.style.borderStyle = 'none'
+        td.style.borderWidth = '2px'
+      } else {
+        var newhtml =  "<img width=100 height=100 id='image_" + nom + "' onMouseOver='mouseoverfren(" + i + ")' " +
+           " onMouseOut='mouseoutfren(" + i + ")' " +
+           " onClick='clickfren(" + i + ")' src='profile.cgi/" + nom;
+        if (newfrens[i] == window.dirtyfren) {
+          newhtml += "?nonce=" + Math.floor(Math.random() * 999999);
+        }
+        newhtml += "'><br/>" + nom
+        td.innerHTML = newhtml
+        td.style.borderStyle = 'solid'
+        td.style.borderColor = 'gray'
+        td.style.borderWidth = '2px'
+      }
+    }
+  }
+
+  frenbufhilite()
+}
+
+function mouseoverfren(i) {
+  var frentd = document.getElementById('fren' + i)
+  frentd.style.borderColor =  (document.getElementById('frenbuf').value == window.frens[i] ? 'blue' : 'yellow');
+}
+function mouseoutfren(i) {
+  var frentd = document.getElementById('fren' + i)
+  frentd.style.borderColor = (document.getElementById('frenbuf').value == window.frens[i] ? 'blue' : 'gray');
+}
+
+function clickfren(i) {
+  var frenbuf = document.getElementById('frenbuf')
+  if (frenbuf.value == window.frens[i]) {
+    gotofile()
+    return
+  }
+  frenbuf.value = window.frens[i]
+  frenbufhilite()
+}
+
+function doupdate(newlabdata, newcontextdata, newcontroldata, newadjdata, newgendata, newlocks, newfrens) {
   window.allready = true
 
   updatectx(newcontextdata)
   updatecon(newcontroldata)
   updategen(newgendata)
+  updatelocks(newlocks)
+  updatefrens(newfrens)
 
   var stage4 = document.getElementById('stage4')
   var stage4ctx = stage4.getContext('2d')
   var stage4adj = document.getElementById('stage4adj')
   var stage4adjctx = stage4adj.getContext('2d')
+  var stage4orig = document.getElementById('stage4orig')
+  var stage4origctx = stage4orig.getContext('2d')
 
   stage4.adjlab = new Float64Array( newadjdata.slice((8*8+16*16+32*32)*3) );
   for (var i = 0; i < 64*64*3; ++i) {
@@ -1350,6 +1862,10 @@ function doupdate(newlabdata, newcontextdata, newcontroldata, newadjdata, newgen
     var adjrgb = labtorgb([stage4.adjlab[i+0], stage4.adjlab[i+1], stage4.adjlab[i+2]]);
     stage4adjctx.fillStyle = mkcol(adjrgb)
     stage4adjctx.fillRect(px * scale, py * scale, scale, scale);
+
+    var origrgb = labtorgb([stage4.origlab[i+0], stage4.origlab[i+1],stage4.origlab[i+2]]);
+    stage4origctx.fillStyle = mkcol(origrgb)
+    stage4origctx.fillRect(px * scale, py * scale, scale, scale);
   }
   fnewlabdata = new Float64Array(32*32*3);
   for (var y = 0; y < 32; ++y) {
@@ -1368,6 +1884,8 @@ function doupdate(newlabdata, newcontextdata, newcontroldata, newadjdata, newgen
   var stage3ctx = stage3.getContext('2d')
   var stage3adj = document.getElementById('stage3adj')
   var stage3adjctx = stage3adj.getContext('2d')
+  var stage3orig = document.getElementById('stage3orig')
+  var stage3origctx = stage3orig.getContext('2d')
 
   stage3.adjlab = new Float64Array( newadjdata.slice((8*8+16*16)*3, (8*8+16*16+32*32)*3) );
   for (var i = 0; i < 32*32*3; i++) {
@@ -1388,6 +1906,10 @@ function doupdate(newlabdata, newcontextdata, newcontroldata, newadjdata, newgen
     var adjrgb = labtorgb([stage3.adjlab[i+0], stage3.adjlab[i+1], stage3.adjlab[i+2]]);
     stage3adjctx.fillStyle = mkcol(adjrgb)
     stage3adjctx.fillRect(px * scale, py * scale, scale, scale);
+
+    var origrgb = labtorgb([stage3.origlab[i+0], stage3.origlab[i+1],stage3.origlab[i+2]]);
+    stage3origctx.fillStyle = mkcol(origrgb)
+    stage3origctx.fillRect(px * scale, py * scale, scale, scale);
   }
   fnewlabdata = new Float64Array(16*16*3);
   for (var y = 0; y < 16; ++y) {
@@ -1405,6 +1927,8 @@ function doupdate(newlabdata, newcontextdata, newcontroldata, newadjdata, newgen
   var stage2ctx = stage2.getContext('2d')
   var stage2adj = document.getElementById('stage2adj')
   var stage2adjctx = stage2adj.getContext('2d')
+  var stage2orig = document.getElementById('stage2orig')
+  var stage2origctx = stage2orig.getContext('2d')
 
   stage2.adjlab = new Float64Array( newadjdata.slice((8*8)*3, (8*8+16*16)*3) );
   for (var i = 0; i < 16*16*3; i++) {
@@ -1425,6 +1949,10 @@ function doupdate(newlabdata, newcontextdata, newcontroldata, newadjdata, newgen
     var adjrgb = labtorgb([stage2.adjlab[i+0], stage2.adjlab[i+1], stage2.adjlab[i+2]]);
     stage2adjctx.fillStyle = mkcol(adjrgb)
     stage2adjctx.fillRect(px * scale, py * scale, scale, scale);
+
+    var origrgb = labtorgb([stage2.origlab[i+0], stage2.origlab[i+1],stage2.origlab[i+2]]);
+    stage2origctx.fillStyle = mkcol(origrgb)
+    stage2origctx.fillRect(px * scale, py * scale, scale, scale);
   }
   fnewlabdata = new Float64Array(8*8*3);
   for (var y = 0; y < 8; ++y) {
@@ -1465,6 +1993,8 @@ function doupdate(newlabdata, newcontextdata, newcontroldata, newadjdata, newgen
     stage1adjctx.fillRect(px * scale, py * scale, scale, scale);
   }
 
+  var pimg = document.getElementById('profile')
+  pimg.src = "profile.cgi/$NAME?nonce=" + Math.floor(Math.random() * 1000000);
 }
 
 
@@ -1507,6 +2037,16 @@ function changetool(newtool) {
 
 
 window.onload = function() {
+  makepalette(255, 0)
+  document.getElementById('frenbuf').value = gennom()
+  window.frens = new Array(16);
+  window.mynewfren = ''
+  for (var i = 0; i < 16; ++i) {
+    window.frens[i] = '';
+  }
+
+
+
   window.n_controls = [128, 256, 512, 1024];
   window.n_adjust = [8*8*3, 16*16*3, 32*32*3, 64*64*3]
   window.tadjust = 0;
@@ -1516,7 +2056,15 @@ window.onload = function() {
     window.tcontrols += window.n_controls[i]
   }
 
-  var packet = 64*64*3 + 40 + window.tcontrols + window.tadjust + 64*64*3;
+  var part1 = 8*(64*64*3)
+  var part2 = 40
+  var part3 = window.tcontrols * 8
+  var part4 = window.tadjust * 8
+  var part5 = 8*(64*64*3)
+  var part6 = 8
+  var part7 = 512
+  
+  var packet = part1 + part2 + part3 + part4 + part5 + part6 + part7
 
   window.socket = new WebSocket('ws://127.0.0.1:9999', ['binary']);
   window.socket.binaryType = 'arraybuffer';
@@ -1532,15 +2080,25 @@ window.onload = function() {
     }
 
     if (window.socket.inbuffer.length >= packet) {
+      var buf = window.socket.inbuffer
+
+      var labdata = new Float64Array(buf.buffer, 0, part1/8)
+      var newctxdata = new Uint8Array(buf.buffer, part1, part2)
+      var newctrldata = new Float64Array(buf.buffer, part1+part2, part3/8)
+      var newadjdata = new Float64Array(buf.buffer, part1+part2+part3, part4/8)
+      var newgendata =  new Float64Array(buf.buffer, part1+part2+part3+part4, part5/8)
+      var newlocks = new Uint8Array(buf.buffer, part1+part2+part3+part4+part5, part6)
+      var newfrens = new Uint8Array(buf.buffer, part1+part2+part3+part4+part5+part6, part7)
+
       var ret = readTypedArray(window.socket.inbuffer, packet)
       window.socket.inbuffer = ret[0]
-      var labdata = ret[1].subarray(0, 64*64*3);
-      var newctxdata = ret[1].subarray(64*64*3, 64*64*3+40)
-      var newctrldata = ret[1].subarray(64*64*3+40, 64*64*3+40+window.tcontrols)
-      var newadjdata = ret[1].subarray(64*64*3+40+window.tcontrols, 64*64*3+40+window.tcontrols+window.tadjust)
-      var newgendata = ret[1].subarray(64*64*3+40+window.tcontrols+window.tadjust, 64*64*3+40+window.tcontrols+window.tadjust+64*64*3)
 
-      doupdate(labdata, newctxdata, newctrldata, newadjdata, newgendata)
+for (var i = 0; i < labdata.length; ++i) { labdata[i] = 256 * labdata[i]; }
+for (var i = 0; i < newctrldata.length; ++i) { newctrldata[i] = 256 * newctrldata[i]; }
+for (var i = 0; i < newadjdata.length; ++i) { newadjdata[i] = 128 + 128 * newadjdata[i]; }
+for (var i = 0; i < newgendata.length; ++i) { newgendata[i] = 256 * newgendata[i]; }
+
+      doupdate(labdata, newctxdata, newctrldata, newadjdata, newgendata, newlocks, newfrens)
     }
   }
 
@@ -1557,8 +2115,8 @@ window.onload = function() {
           if (event.shiftKey) { pick_color(curval, curval, curval); return }
 
           var nval;
-          if (curval >= 0 && curval < 128) { nval = 128; }
-          else if (curval >= 128 && curval < 255) { nval = 255; }
+          if (curval >= 0 && curval < 127) { nval = 127; }
+          else if (curval >= 127 && curval < 255) { nval = 255; }
           else if (curval == 255) { nval = 0; }
 
           at1.style.backgroundColor = mkcol([nval, nval, nval])

@@ -17,7 +17,7 @@ struct Pipeline {
   const Layout *outlay, *ctxlay;
 
   double *ctrbuf, *adjbuf, *outbuf, *ctxbuf;
-  uint8_t *bctrbuf, *badjbuf, *boutbuf, *bctxbuf;
+  uint32_t tgtlock, ctrlock;
 
   Pipeline(unsigned int _mbn);
   void _setup();
@@ -27,9 +27,11 @@ struct Pipeline {
   Project *initial();
   Project *final();
 
-  void reencode(uint32_t which);
+  void fix(unsigned int iters, double blend);
+  void reencode();
   void burnmask(uint32_t which, double nu);
   void generate();
+  void uptarget();
   void retarget();
   void readjust();
 
@@ -38,22 +40,11 @@ struct Pipeline {
 
   void scramble(double mean, double dev);
 
-  void encode_out();
-  void encode_adj();
-  void encode_ctx();
-  void encode_ctr();
-
-  bool load_ctx(FILE *);
-  bool load_ctx(const uint8_t *);
-
-  bool load_ctr(FILE *);
-  bool load_ctr(const uint8_t *);
-
-  bool load_out(FILE *);
-  bool load_out(const uint8_t *);
-
-  bool load_adj(FILE *);
-  bool load_adj(const uint8_t *);
+  void save_ctx_bytes(uint8_t *bbuf);
+  void load_ctx_bytes(const uint8_t *bbuf);
+  bool load_ctx_bytes(FILE *infp);
+  void load_out_bytes(const uint8_t *bbuf);
+  bool load_out_bytes(FILE *infp);
 };
 
 #endif

@@ -20,17 +20,18 @@ struct Project {
   Layout *tgtlay, *ctrlay, *ctxlay, *outlay;
   Layout *encinlay, *geninlay;
 
-  Topology *enctop, *gentop;
+  Topology *enctop, *gentop, *distop;
 
-  Multitron *enc, *gen, *genbak;
+  Multitron *enc, *gen, *dis;
   Tron *encpass, *genpass;
-  Tron *encgen, *genenc;
+  Tron *encgen, *genenc, *gendis;
 
-  double *cuencin, *cuenctgt;
-  double *cugenin, *cugentgt;
-  double *realctr, *fakectr, *morectr;
+  double *cuencin, *cuenctgt, *cudistgt;
+  double *cugenin, *cugentgt, *cudisin;
+  double *realctr, *fakectr, *morectr, *distgt, *fakectx;
 
-  uint8_t *bctxbuf, *btgtbuf, *boutbuf, *bsepbuf, *bctrbuf, *badjbuf;
+  uint8_t *bctxbuf, *btgtbuf, *boutbuf, *bsepbuf, *bctrbuf;
+  uint16_t *sadjbuf;
   double *ctxbuf, *ctrbuf;
   double *tgtbuf, *sepbuf;
   double *outbuf, *adjbuf;
@@ -41,7 +42,10 @@ struct Project {
   ~Project();
 
   void load_ctxtgt(FILE *infp);
-  void present(double nu, double mu, double xi, double tau);
+  void train_recombine(double zeta);
+  void train_fidelity(double nu, double pi, double dcut);
+  void train_judgement(double mu, double dcut);
+  void train_creativity(double xi, double dcut);
 
   void load_ctx(FILE *infp);
   void generate(unsigned int reps = 1);
@@ -50,7 +54,7 @@ struct Project {
 
 
   void burnmask(double nu);
-  void reencode();
+  void reencode(bool force);
   void separate();
   void reconstruct();
 

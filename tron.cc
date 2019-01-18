@@ -9,18 +9,22 @@
 #include "cudamem.hh"
 #include "twiddle.hh"
 
-void Tron::target(const double *tgt, bool do_update_stats) {
+void Tron::target(const double *tgt, bool do_update_stats, int errsignif) {
   const double *out = output();
   double *fout = foutput();
   cusubvec(tgt, out, outn, fout);
 
   if (do_update_stats)
-    update_stats();
+    update_stats(errsignif);
 }
 
-void Tron::update_stats() {
+void Tron::update_stats(int errsignif) {
   const double *out = output();
   double *fout = foutput();
+
+  if (errsignif > 0) {
+    err2 *= sqrt((double)errsignif / (double)outn);
+  }
 
   double z = pow(1.0 - errdecay, (double)rounds);
 
@@ -35,6 +39,10 @@ void Tron::update_stats() {
   errm *= (1.0 - errdecay);
   errm += errdecay * nerrm;
   errm *= 1.0 / (1.0 - z * (1.0 - errdecay));
+
+  if (errsignif > 0) {
+    err2 /= sqrt((double)errsignif / (double)outn);
+  }
 
   ++rounds;
 }

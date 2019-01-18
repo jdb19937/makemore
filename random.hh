@@ -1,8 +1,10 @@
 #ifndef __MAKEMORE_RANDOM_HH__
 #define __MAKEMORE_RANDOM_HH__
 
-#include <math.h>
 #include <assert.h>
+#include <stdint.h>
+
+#include <math.h>
 
 extern void seedrand();
 extern void seedrand(unsigned int n);
@@ -19,5 +21,7 @@ inline double unsigmoid(double x) {
   assert(x > 0 && x < 1);
   return log(-(x/(x-1)));
 }
+
+extern uint64_t hash64(const uint8_t *data, unsigned int len);
 
 #endif

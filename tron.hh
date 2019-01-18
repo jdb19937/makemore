@@ -44,8 +44,8 @@ struct Tron {
     train(0.001);
   }
 
-  virtual void target(const double *tgt, bool do_update_stats = true);
-  virtual void update_stats();
+  virtual void target(const double *tgt, bool do_update_stats = true, int errsignif = -1);
+  virtual void update_stats(int errsignif = -1);
 
   virtual const double *input() = 0;
   virtual const double *output() = 0;

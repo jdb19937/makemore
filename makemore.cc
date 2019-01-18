@@ -35,18 +35,28 @@ int main(int argc, char **argv) {
   PPM ppm(dim * 3, dim, 0);
 
   while (1) {
-    pipe->load_ctx(stdin);
+    pipe->load_ctx_bytes(stdin);
+pipe->tgtlock = -1;
 
-    pipe->scramble(0, 0);
+    for (unsigned int j = 0, jn = pipe->ctrlay->n; j < jn; ++j)
+      pipe->ctrbuf[j] = sigmoid(randgauss() * 0.1);
     pipe->generate();
+pipe->reencode();
+pipe->generate();
     ppm.pastelab(pipe->outbuf, dim, dim, dim * 0, 0);
 
-    pipe->scramble(0, 0.5);
+    for (unsigned int j = 0, jn = pipe->ctrlay->n; j < jn; ++j)
+        pipe->ctrbuf[j] = sigmoid(randgauss() * 0.2);
     pipe->generate();
+pipe->reencode();
+pipe->generate();
     ppm.pastelab(pipe->outbuf, dim, dim, dim * 1, 0);
 
-    pipe->scramble(0, 1);
+    for (unsigned int j = 0, jn = pipe->ctrlay->n; j < jn; ++j)
+        pipe->ctrbuf[j] = sigmoid(randgauss());
     pipe->generate();
+pipe->reencode();
+pipe->generate();
     ppm.pastelab(pipe->outbuf, dim, dim, dim * 2, 0);
 
 #if 0

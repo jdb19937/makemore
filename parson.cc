@@ -12,6 +12,7 @@
 #include <fcntl.h>
 
 #include "sha256.c"
+#include "prenoms.c"
 
 #include "parson.hh"
 #include "random.hh"
@@ -60,10 +61,52 @@ bool Parson::female_nom(const char *nom) {
   if (!p)
     p = nom + strlen(nom);
   --p;
-  assert(p > nom);
-  assert(p[1] == 0 || p[1] == '_');
+  assert(p >= nom);
 
-  return (*p == 'a' || *p == 'i');
+  if (*p == 'a' || *p == 'i')
+    return true;
+
+  return (randuint() % 3 == 0);
+}
+
+std::string Parson::bread(const char *nom0, const char *nom1, uint8_t *new_gender) {
+  std::string newnom;
+
+  unsigned int prenomid = randuint() % ((sizeof(prenoms) / sizeof(*prenoms)) - 1);
+  const char *prenom = prenoms[prenomid];
+  if (new_gender)
+    *new_gender = prenom_gender[prenomid];
+
+  newnom = prenom;
+
+  if (const char *p = strrchr(nom1, '_')) {
+    newnom += p;
+  } else {
+    newnom += "_";
+    newnom += nom1;
+  }
+
+  if (const char *p = strrchr(nom0, '_')) {
+    newnom += p;
+  } else {
+    newnom += "_";
+    newnom += nom0;
+  }
+
+  if (newnom.length() > 31)
+    newnom = std::string(newnom.c_str(), 31);
+
+  return newnom;
+}
+  
+void Parson::add_fren(const char *fnom) {
+  assert(valid_nom(fnom));
+  for (int i = 0; i < nfrens; ++i)
+    if (!strcmp(frens[i], fnom))
+      return;
+  memmove(frens + 1, frens, sizeof(Nom) * (nfrens - 1));
+  memset(frens[0], 0, sizeof(Nom));
+  strcpy(frens[0], fnom);
 }
   
 
@@ -71,29 +114,25 @@ void Parson::initialize(const char *_nom, double mean, double dev) {
   assert(!created);
 
   assert(valid_nom(_nom));
-  // if (!strcmp(nom, _nom))
-  //   return;
+  if (!strcmp(nom, _nom)) {
+    return;
+  }
 
-  memcpy(nom, _nom, sizeof(nom));
+  memset(nom, 0, sizeof(Nom));
+  strcpy(nom, _nom);
   hash = hash_nom(_nom);
 
   seedrand(hash);
 
-  for (unsigned int i = 0; i < ncontrols; ++i) {
-    double z = sigmoid(mean + randgauss() * dev);
-
-    z *= 256.0;
-    long lz = lround(z);
-    if (lz > 255) lz = 255;
-    if (lz < 0) lz = 0;
-    controls[i] = lz;
-  }
+  for (unsigned int i = 0; i < ncontrols; ++i)
+    controls[i] = sigmoid(mean + randgauss() * dev);
 
   for (unsigned int i = 0; i < ntags; ++i)
     tags[i] = 0;
 
   for (unsigned int i = 0; i < nattrs; ++i)
     attrs[i] = (randuint() % 2) ? 255 : 0;
+
   if (nattrs >= 21) {
     if (female_nom(nom))
       attrs[20] = 0;
@@ -108,6 +147,8 @@ void Parson::initialize(const char *_nom, double mean, double dev) {
   creator = 0;
   revisor = 0;
 
+  target_lock = 0;
+  control_lock = 0xFF;
   memset(frens, 0, sizeof(frens));
   memset(target, 0, sizeof(target));
 }
@@ -179,10 +220,20 @@ Parson *ParsonDB::find(const char *nom) {
   Parson *p = db + i;
 
   if (!p->created) {
-    p->initialize(nom, 0, 0.5);
+    p->initialize(nom, 0, 1);
+
+    const char *dan_nom = "synthetic_dan_brumleve";
+    if (strcmp(nom, dan_nom)) {
+      p->add_fren(dan_nom);
+      Parson *dan = find(dan_nom);
+      dan->add_fren(nom);
+    }
   }
 
   return p;
 }
 
-//int main(){printf("%lu\n", sizeof(Parson)); }
+//int main(){
+//  Parson p;
+//  printf("%lu\n", (uint8_t *)p.frens - (uint8_t *)&p);
+//}

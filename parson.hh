@@ -11,6 +11,7 @@ struct Parson {
   static bool valid_nom(const char *);
   static uint64_t hash_nom(const char *nom);
   static bool female_nom(const char *);
+  static std::string bread(const char *nom0, const char *nom1, uint8_t * = NULL);
 
   const static unsigned int nfrens = 16;
   const static unsigned int ntags = 0;
@@ -27,11 +28,15 @@ struct Parson {
   uint32_t creator;
   uint32_t revisor;
 
+  uint8_t target_lock;
+  uint8_t control_lock;
+  uint8_t _pad[6];
+
   uint16_t tags[ntags];
   uint8_t attrs[nattrs];
 
-  uint8_t controls[ncontrols];
-  uint8_t target[dim * dim * 3];
+  double controls[ncontrols];
+  double target[dim * dim * 3];
 
   Nom frens[nfrens];
 
@@ -40,6 +45,8 @@ struct Parson {
   }
 
   void initialize(const char *_nom, double mean, double dev);
+
+  void add_fren(const char *fnom);
 };
 
 struct ParsonDB {

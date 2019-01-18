@@ -8,6 +8,20 @@
 
 #include "random.hh"
 
+#include "sha256.c"
+
+uint64_t hash64(const uint8_t *data, unsigned int len) {
+  uint8_t hash[32];
+  SHA256_CTX sha;
+  sha256_init(&sha);
+  sha256_update(&sha, data, len);
+  sha256_final(&sha, hash);
+
+  uint64_t h;
+  memcpy(&h, hash, 8);
+  return h;
+}
+
 static std::mt19937 generator;
 
 void seedrand(unsigned int n) {

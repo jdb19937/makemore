@@ -1,4 +1,7 @@
 #define __MAKEMORE_PIPELINE_CC__ 1
+
+#include <netinet/in.h>
+
 #include "pipeline.hh"
 
 #include "twiddle.hh"
@@ -20,11 +23,8 @@ Pipeline::Pipeline(unsigned int _mbn) {
   outbuf = NULL;
   ctxbuf = NULL;
 
-  bctrbuf = NULL;
-  badjbuf = NULL;
-  boutbuf = NULL;
-  bctxbuf = NULL;
-
+  tgtlock = 0;
+  ctrlock = (unsigned)-1;
 }
 
 Project *Pipeline::initial() {
@@ -64,11 +64,6 @@ void Pipeline::_setup() {
   delete[] ctrbuf; ctrbuf = new double[ctrlay->n * mbn];
   delete[] adjbuf; adjbuf = new double[adjlay->n * mbn];
   delete[] outbuf; outbuf = new double[outlay->n * mbn];
-
-  delete[] bctxbuf; bctxbuf = new uint8_t[ctxlay->n * mbn];
-  delete[] bctrbuf; bctrbuf = new uint8_t[ctrlay->n * mbn];
-  delete[] badjbuf; badjbuf = new uint8_t[adjlay->n * mbn];
-  delete[] boutbuf; boutbuf = new uint8_t[outlay->n * mbn];
 }
 
 Pipeline::~Pipeline() {
@@ -79,11 +74,6 @@ Pipeline::~Pipeline() {
   delete[] ctrbuf;
   delete[] adjbuf;
   delete[] outbuf;
-
-  delete[] bctxbuf;
-  delete[] bctrbuf;
-  delete[] badjbuf;
-  delete[] boutbuf;
 }
   
 
@@ -144,7 +134,6 @@ void Pipeline::generate(
   proj = final();
   assert(outlay->n == proj->outlay->n);
   memcpy(outbuf, proj->outbuf, sizeof(double) * mbn * outlay->n);
-  encode_out();
 
 #if 0
     coff = 0;
@@ -185,6 +174,9 @@ void Pipeline::retarget() {
     unsigned int aoff = 0;
     for (unsigned int i = 0; i < stages.size(); ++i) {
       assert(aoff < adjlay->n);
+      if (!(tgtlock & (1 << i))) {
+        memset(adjbuf + aoff * mbn, 0, mbn * stages[i]->outlay->n * sizeof(double));
+      }
       memcpy(stages[i]->adjbuf, adjbuf + aoff * mbn, mbn * stages[i]->outlay->n * sizeof(double));
       aoff += stages[i]->outlay->n;
     }
@@ -221,20 +213,99 @@ void Pipeline::retarget() {
     }
 
     proj->generate();
-    for (unsigned int j = 0, jn = mbn * proj->outlay->n; j < jn; ++j)
+    for (unsigned int j = 0, jn = mbn * proj->outlay->n; j < jn; ++j) {
+if (isnan(proj->outbuf[j])) { fprintf(stderr, "out[%u] is nan\n", j); }
+if (isnan(proj->adjbuf[j])) { fprintf(stderr, "adj[%u] is nan\n", j); }
       proj->outbuf[j] += proj->adjbuf[j];
+}
   }
 
   proj = stages[stages.size() - 1];
   assert(proj->outlay->n == outlay->n);
   memcpy(outbuf, proj->outbuf, sizeof(double) * mbn * outlay->n);
-  encode_out();
 }
 
+void Pipeline::uptarget() {
+  Project *proj = final();
+  assert(proj->outlay->n == outlay->n);
+  memcpy(proj->adjbuf, outbuf, mbn * sizeof(double) * outlay->n);
+
+  for (int i = stages.size() - 2; i >= 0; --i) {
+    Project *lastproj = proj;
+    proj = stages[i];
+    unsigned int dim = lround(sqrt(lastproj->outlay->n / 3));
+    assert(dim * dim * 3 == lastproj->outlay->n);
+    assert(dim * dim * 3 == proj->outlay->n * 4);
+
+    for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
+      twiddle3(
+        lastproj->adjbuf + mbi * lastproj->outlay->n,
+        dim, dim,
+        proj->adjbuf + mbi * proj->outlay->n, NULL
+      );
+    }
+  }
+  // adjbufs have old target
+
+  {
+    unsigned int coff = 0;
+    for (unsigned int i = 0; i < stages.size(); ++i) {
+      assert(coff < ctrlay->n);
+      memcpy(stages[i]->ctrbuf, ctrbuf + coff * mbn, mbn * stages[i]->ctrlay->n * sizeof(double));
+      coff += stages[i]->ctrlay->n;
+    }
+    assert(coff == ctrlay->n);
+  }
+  // controls are copied
+
+
+  proj = initial();
+  assert(proj->ctxlay->n == ctxlay->n);
+  memcpy(proj->ctxbuf, ctxbuf, mbn * ctxlay->n * sizeof(double));
+
+
+  for (unsigned int i = 0; i < stages.size(); ++i) {
+    Project *lastproj = i > 0 ? stages[i-1] : NULL;
+    Project *proj = stages[i];
+
+    if (lastproj) {
+      assert(proj->ctxlay->n == ctxlay->n + lastproj->outlay->n);
+      assert(proj->mbn == lastproj->mbn);
+
+      for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
+        memcpy(
+          proj->ctxbuf + mbi * proj->ctxlay->n,
+          ctxbuf + mbi * ctxlay->n,
+          ctxlay->n * sizeof(double)
+        );
+        memcpy(
+          proj->ctxbuf + mbi * proj->ctxlay->n + ctxlay->n,
+          lastproj->outbuf + mbi * lastproj->outlay->n,
+          lastproj->outlay->n * sizeof(double)
+        );
+      }
+    }
+
+    proj->generate();
+
+    // set outbuf to target if target locked
+
+    if (tgtlock & (1 << i))
+      for (unsigned int j = 0, jn = mbn * proj->outlay->n; j < jn; ++j) {
+        proj->outbuf[j] = proj->adjbuf[j];
+    }
+  }
+
+  proj = final();
+  assert(proj->outlay->n == outlay->n);
+  memcpy(outbuf, proj->outbuf, sizeof(double) * mbn * outlay->n);
+  // copied new target
+}
 
 
 void Pipeline::readjust() {
   Project *proj = final();
+  assert(proj->outlay->n == outlay->n);
   memcpy(proj->adjbuf, outbuf, mbn * sizeof(double) * outlay->n);
 
   for (int i = stages.size() - 2; i >= 0; --i) {
@@ -281,23 +352,31 @@ void Pipeline::readjust() {
         memcpy(
           proj->ctxbuf + mbi * proj->ctxlay->n,
           ctxbuf + mbi * ctxlay->n,
-          ctxlay->n * mbn * sizeof(double)
+          ctxlay->n * sizeof(double)
         );
         memcpy(
           proj->ctxbuf + mbi * proj->ctxlay->n + ctxlay->n,
           lastproj->outbuf + mbi * lastproj->outlay->n,
-          lastproj->outlay->n * mbn * sizeof(double)
+          lastproj->outlay->n * sizeof(double)
         );
       }
     }
 
     proj->generate();
 
+//fprintf(stderr, "adjbuf: ");
     for (unsigned int j = 0, jn = mbn * proj->outlay->n; j < jn; ++j) {
+if (tgtlock & (1 << i))  {
       double z = proj->adjbuf[j];
       proj->adjbuf[j] -= proj->outbuf[j];
       proj->outbuf[j] = z;
+} else {
+      proj->adjbuf[j] = 0;
+}
+
+//if (j < 20) { fprintf(stderr, "%lf ", proj->adjbuf[j]); }
     }
+//fprintf(stderr, "\n");
   }
 
 
@@ -317,12 +396,32 @@ void Pipeline::readjust() {
       aoff += stages[i]->outlay->n;
     }
     assert(aoff == adjlay->n);
-    encode_adj();
   }
 }
 
+void Pipeline::fix(unsigned int iters, double blend) {
+  double *bak_ctr = new double[ctrlay->n * mbn];
+  double *bak_out = new double[outlay->n * mbn];
 
-void Pipeline::reencode(uint32_t which) {
+  for (int i = 0; i < iters; ++i) {
+    memcpy(bak_ctr, ctrbuf, sizeof(double) * ctrlay->n * mbn);
+    reencode();
+
+    for (unsigned int j = 0, jn = mbn * ctrlay->n; j < jn; ++j)
+      ctrbuf[j] = blend * ctrbuf[j] + (1.0 - blend) * bak_ctr[j];
+
+    memcpy(bak_out, outbuf, sizeof(double) * outlay->n * mbn);
+    generate();
+
+    for (unsigned int j = 0, jn = mbn * outlay->n; j < jn; ++j)
+      outbuf[j] = blend * outbuf[j] + (1.0 - blend) * bak_out[j];
+  }
+
+  delete[] bak_ctr;
+  delete[] bak_out;
+}
+
+void Pipeline::reencode() {
   assert(stages.size());
   Project *proj = final();
   memcpy(proj->adjbuf, outbuf, mbn * sizeof(double) * outlay->n);
@@ -365,10 +464,21 @@ void Pipeline::reencode(uint32_t which) {
         ctxbuf + mbi * ctxlay->n,
         sizeof(double) * ctxlay->n
       );
+      if (i > 0) {
+        Project *lastproj = stages[i - 1];
+        assert(proj->ctxlay->n == ctxlay->n + lastproj->outlay->n);
+        memcpy(
+          proj->ctxbuf + mbi * proj->ctxlay->n + ctxlay->n,
+          lastproj->outbuf + mbi * lastproj->outlay->n,
+          sizeof(double) * lastproj->outlay->n
+        );
+      }
     }
 
-    if (which & (1 << i))
-      proj->reencode();
+    if (!(ctrlock & (1 << i)))
+      proj->reencode(true);
+
+    proj->generate();
   }
 
 
@@ -384,7 +494,6 @@ void Pipeline::reencode(uint32_t which) {
       coff += stages[i]->ctrlay->n;
     }
     assert(coff == ctrlay->n);
-    encode_ctr();
   }
 }
 
@@ -501,112 +610,61 @@ void Pipeline::save() {
   }
 }
 
-
-
-
-void Pipeline::encode_ctx() {
-  for (unsigned int j = 0, jn = mbn * ctxlay->n; j < jn; ++j) {
-    int vl = (int)(ctxbuf[j] * 256.0);
-    bctxbuf[j] = vl < 0 ? 0 : vl > 255 ? 255 : vl;
-  }
-}
-
-void Pipeline::encode_out() {
-  for (unsigned int j = 0, jn = mbn * outlay->n; j < jn; ++j) {
-    int vl = (int)(outbuf[j] * 256.0);
-    boutbuf[j] = vl < 0 ? 0 : vl > 255 ? 255 : vl;
-  }
-}
-
-void Pipeline::encode_adj() {
-  for (unsigned int j = 0, jn = mbn * adjlay->n; j < jn; ++j) {
-    double v = adjbuf[j];
-    v /= 2.0;
-    v += 0.5;
-    v *= 256.0;
-    long vl = lround(v);
-    badjbuf[j] = vl < 0 ? 0 : vl > 255 ? 255 : vl;
-  }
-}
-
-void Pipeline::encode_ctr() {
-  for (unsigned int j = 0, jn = mbn * ctrlay->n; j < jn; ++j) {
-    int vl = (int)(ctrbuf[j] * 256.0);
-    bctrbuf[j] = vl < 0 ? 0 : vl > 255 ? 255 : vl;
-  }
-}
-
-bool Pipeline::load_ctx(const uint8_t *bbuf) {
+void Pipeline::load_ctx_bytes(const uint8_t *bbuf) {
   for (unsigned int j = 0, jn = mbn * ctxlay->n; j < jn; ++j) {
     ctxbuf[j] = ((double)bbuf[j] + 0.5) / 256.0;
   }
-  return true;
 }
 
-bool Pipeline::load_ctx(FILE *infp) {
+void Pipeline::save_ctx_bytes(uint8_t *bbuf) {
+  for (unsigned int j = 0, jn = mbn * ctxlay->n; j < jn; ++j) {
+    long z = (long)(ctxbuf[j] * 256.0);
+    if (z > 255) { z = 255; }
+    if (z < 0) { z = 0; }
+    bbuf[j] = z;
+  }
+}
+
+void Pipeline::load_out_bytes(const uint8_t *bbuf) {
+  for (unsigned int j = 0, jn = mbn * outlay->n; j < jn; ++j) {
+    outbuf[j] = ((double)bbuf[j] + 0.5) / 256.0;
+  }
+}
+
+bool Pipeline::load_ctx_bytes(FILE *infp) {
   int ret;
+
+  uint8_t *bctxbuf = new uint8_t[mbn * ctxlay->n];
 
   for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
     ret = fread(bctxbuf + mbi * ctxlay->n, 1, ctxlay->n, infp);
-    if (ret != ctxlay->n)
+    if (ret != ctxlay->n) {
+      delete[] bctxbuf;
       return false;
+    }
   }
-  return load_ctx(bctxbuf);
-}
 
-bool Pipeline::load_ctr(const uint8_t *bbuf) {
-  for (unsigned int j = 0, jn = mbn * ctrlay->n; j < jn; ++j) {
-    ctrbuf[j] = ((double)bbuf[j] + 0.5) / 256.0;
-  }
+  load_ctx_bytes(bctxbuf);
+  delete[] bctxbuf;
+
   return true;
 }
 
-bool Pipeline::load_ctr(FILE *infp) {
+bool Pipeline::load_out_bytes(FILE *infp) {
   int ret;
 
-  for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
-    ret = fread(bctrbuf + mbi * ctrlay->n, 1, ctrlay->n, infp);
-    if (ret != ctrlay->n)
-      return false;
-  }
-  return load_ctr(bctrbuf);
-}
-
-bool Pipeline::load_out(const uint8_t *bbuf) {
-  for (unsigned int j = 0, jn = mbn * outlay->n; j < jn; ++j)
-    outbuf[j] = ((double)bbuf[j] + 0.5) / 256.0;
-  return true;
-}
-
-bool Pipeline::load_out(FILE *infp) {
-  int ret;
+  uint8_t *boutbuf = new uint8_t[mbn * outlay->n];
 
   for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
     ret = fread(boutbuf + mbi * outlay->n, 1, outlay->n, infp);
-    if (ret != outlay->n)
+    if (ret != outlay->n) {
+      delete[] boutbuf;
       return false;
+    }
   }
-  return load_out(boutbuf);
-}
 
-bool Pipeline::load_adj(const uint8_t *bbuf) {
-  for (unsigned int j = 0, jn = mbn * adjlay->n; j < jn; ++j) {
-    double z = ((double)bbuf[j]) / 256.0;
-    z -= 0.5;
-    z *= 2.0;
-    adjbuf[j] = z;
-  }
+  load_out_bytes(boutbuf);
+  delete[] boutbuf;
+
   return true;
-}
-
-bool Pipeline::load_adj(FILE *infp) {
-  int ret;
-
-  for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
-    ret = fread(badjbuf + mbi * adjlay->n, 1, adjlay->n, infp);
-    if (ret != adjlay->n)
-      return false;
-  }
-
-  return load_adj(badjbuf);
 }
