@@ -28,7 +28,7 @@ LABTOOLS = \
   labshrink labhifreq labtogray grayhifreq \
   reconlab recongray 
 
-MORETOOLS = makemore makelay catlay wireup maketop makemap learnmore genicon servemore makeparsonsdat
+MORETOOLS = makemore makelay catlay wireup maketop makemap learnmore genicon servemore makeparsonsdat sampler
 
 .PHONY: all
 all: $(LIB) $(MORETOOLS)
@@ -224,6 +224,10 @@ learnmore: learnmore.o $(LIB)
 	$(CXX) -o $@ $(CXXFLAGS) $^ $(LDFLAGS) $(CULDFLAGS)
 makeparsonsdat.o: $(LIBHDR)
 makeparsonsdat: makeparsonsdat.o $(LIB)
+	$(CXX) -o $@ $(CXXFLAGS) $^ $(LDFLAGS) $(CULDFLAGS)
+sampler-main.o: sampler.cc
+	$(CXX) -c -o $@ -DSAMPLER_MAIN $(CXXFLAGS) $^
+sampler: sampler-main.o random.o
 	$(CXX) -o $@ $(CXXFLAGS) $^ $(LDFLAGS) $(CULDFLAGS)
 traindis.o: $(LIBHDR)
 traindis: traindis.o $(LIB)
