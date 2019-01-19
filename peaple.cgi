@@ -21,7 +21,7 @@ if (my $path = $ENV{PATH_INFO}) {
   length($name) < 32 or die;
 } else {
   $NAME = genname();
-  print "Location: http://localhost/makemore/peaple.cgi/$NAME\r\n\r\n";
+  print "Location: http://$ENV{SERVER_NAME}/makemore/peaple.cgi/$NAME\r\n\r\n";
   exit 0;
 }
 
@@ -2135,7 +2135,7 @@ window.onload = function() {
   
   var packet = part1 + part2 + part3 + part4 + part5 + part6 + part7
 
-  window.socket = new WebSocket('ws://127.0.0.1:9999', ['binary']);
+  window.socket = new WebSocket('ws://' + location.host + ':9999', ['binary']);
   window.socket.binaryType = 'arraybuffer';
   window.socket.inbuffer = new Uint8Array(0)
   window.socket.onmessage = function(m) {
