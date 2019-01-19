@@ -11,7 +11,7 @@ LIB = libmakemore.a
 
 DATASETS = face-attrs.dat face8.dat face16.dat face32.dat face64.dat face128.dat
 
-LAYOUTS = face-attrs.lay face-gender.lay \
+LAYOUTS = face-attrs.lay \
   face-8x8-lab-full.lay face-8x8-gray-full.lay \
   face-16x16-lab-full.lay face-16x16-gray-full.lay \
   face-16x16-lab-hifreq.lay face-16x16-gray-hifreq.lay \

@@ -21,7 +21,7 @@ if (my $path = $ENV{PATH_INFO}) {
   length($name) < 32 or die;
 } else {
   $NAME = genname();
-  print "Location: http://$ENV{SERVER_NAME}/makemore/peaple.cgi/$NAME\r\n\r\n";
+  print "Location: http://$ENV{SERVER_NAME}/edit/$NAME\r\n\r\n";
   exit 0;
 }
 
@@ -100,7 +100,7 @@ body {
 <table width=1200 cellpadding=4 cellspacing=0 border=0>
 <tr>
 <td width=512>
-<img width=512 height=512 id="profile" src="profile.cgi/$NAME.jpg?nonce=$NONCE" style="image-rendering: pixelated">
+<img width=512 height=512 id="profile" src="image/$NAME.jpg?nonce=$NONCE" style="image-rendering: pixelated">
 </td>
 
 <td style='background-color: lightgray; border: 0' valign="top">
@@ -667,7 +667,7 @@ function gotofile() {
   if (frenbuf.value == "") {
     return;
   }
-  window.location = "peaple.cgi/" + frenbuf.value
+  window.location = "edit/" + frenbuf.value
 }
 
 function setparsontarget() {
@@ -681,7 +681,7 @@ function setparsontarget() {
   }
   var frenbuf = document.getElementById("frenbuf");
   if (frenbuf.value != "") {
-    img.src = "profile.cgi/" + frenbuf.value + "?nonce=" + Math.floor(Math.random() * 1000000);
+    img.src = "image/" + frenbuf.value + "?nonce=" + Math.floor(Math.random() * 1000000);
   }
 }
 
@@ -1861,7 +1861,7 @@ function updatefrens(newfrensbuf) {
       } else {
         var newhtml =  "<img width=100 height=100 id='image_" + nom + "' onMouseOver='mouseoverfren(" + i + ")' " +
            " onMouseOut='mouseoutfren(" + i + ")' " +
-           " onClick='clickfren(" + i + ")' src='profile.cgi/" + nom;
+           " onClick='clickfren(" + i + ")' src='image/" + nom;
         if (newfrens[i] == window.dirtyfren) {
           newhtml += "?nonce=" + Math.floor(Math.random() * 999999);
         }
@@ -2063,7 +2063,7 @@ function doupdate(newlabdata, newcontextdata, newcontroldata, newadjdata, newgen
   }
 
   var pimg = document.getElementById('profile')
-  pimg.src = "profile.cgi/$NAME?nonce=" + Math.floor(Math.random() * 1000000);
+  pimg.src = "image/$NAME?nonce=" + Math.floor(Math.random() * 1000000);
 }
 
 
