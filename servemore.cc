@@ -59,7 +59,15 @@ void makebread(FILE *learnfp, Pipeline *pipe, Parson *p1, Parson *p2, Parson *pa
 
   for (unsigned int i = 0; i < Parson::ncontrols; ++i) {
     double blend = sigmoid(randrange(-8.0, 8.0));
-    parson->controls[i] = blend * p1->controls[i] + (1.0 - blend) * p2->controls[i];
+
+    double cj = p1->controls[i];
+    double ck = p2->controls[i];
+    double cjw = 1.0 - 4.0 * (0.5 - cj) * (0.5 - cj);
+    double ckw = 1.0 - 4.0 * (0.5 - ck) * (0.5 - ck);
+    double jprob = 0.5;
+    if (cjw + ckw > 0) 
+      jprob = cjw / (cjw + ckw);
+    parson->controls[i] = (randrange(0.0, 1.0) < jprob) ? cj : ck;
   }
 
   parson->control_lock = -1;

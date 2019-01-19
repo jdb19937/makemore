@@ -6,6 +6,14 @@ use FunnyName qw(genname);
 
 my $NONCE = int rand(1<<31);
 
+my $README;
+open(my $fp, "cat $Bin/README |fmt -100 |") or die "no README";
+{
+  undef local $/;
+  $README = <$fp>;
+}
+close($fp);
+
 my $NAME;
 if (my $path = $ENV{PATH_INFO}) {
   $path =~ /^\/([a-z_][a-z0-9_]+$)/ or die;
@@ -21,6 +29,7 @@ print "Content-type: text/html; charset=utf-8\r\n";
 print "\r\n";
 
 my %sub = (
+  'README'	=> $README,
   'NAME'	=> $NAME,
   'NONCE'	=> $NONCE
 );
@@ -35,6 +44,19 @@ __DATA__
 <base href="..">
 
 <style>
+input[type="file"] {
+    display: none;
+}
+.custom-file-upload {
+    border: 1px solid #ccc;
+    background-color: white;
+    display: inline-block;
+    padding: 1px 6px;
+    text-align: center;
+    cursor: pointer;
+    font-size: small;
+    width: 150px;
+}
 .noselect {
   -webkit-touch-callout: none; /* iOS Safari */
     -webkit-user-select: none; /* Safari */
@@ -77,14 +99,15 @@ body {
 
 <table width=1200 cellpadding=4 cellspacing=0 border=0>
 <tr>
-<td width=350>
-<img width=350 height=350 id="profile" src="profile.cgi/$NAME.jpg?nonce=$NONCE" style="image-rendering: pixelated">
+<td width=512>
+<img width=512 height=512 id="profile" src="profile.cgi/$NAME.jpg?nonce=$NONCE" style="image-rendering: pixelated">
 </td>
 
 <td style='background-color: lightgray; border: 0' valign="top">
 
-<font size=+2><b>frens of $NAME</b></font>
 <table width=900 height=320 style="border:0; overflow: hidden" cellspacing=0>
+<tr><td height=160px></td></tr>
+<tr><td colspan=8><hr/><font size=+2><b>frens of $NAME</b></font></td><tr>
 <tr valign=top height=110>
 <td id=fren0 style="border-style: none; border-width: 2px; white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width: 100px; min-width: 100px; font-size: small"> </td>
 <td id=fren1 style="border-style: none; border-width: 2px; white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width: 100px; min-width: 100px; font-size: small"> </td>
@@ -110,13 +133,14 @@ body {
 
   <td colspan=8>
     <hr/>
-    <input type=text id=frenbuf name=frenbuf onChange="frenbufhilite()" onKeyDown="frenbufhilite()" oninput="frenbufhilite()" onpaste="frenbufhilite()" value="" size=32 maxlength=32/>
+    <input type=text id=frenbuf name=frenbuf onClick="this.select();" onChange="frenbufhilite()" onKeyDown="frenbufhilite()" oninput="frenbufhilite()" onpaste="frenbufhilite()" value="" size=32 maxlength=32/>
     <input type=button onClick="document.getElementById('frenbuf').value = gennom(); frenbufhilite()" value="gen nom"/>
     <input type=button onClick="addfren()" value="add fren"/>
     <input type=button onClick="setparsontarget()" value="set target"/>
     <input type=button onClick="gotofile()" value="goto file"/>
     <input type=button onClick="makebread()" value="bread"/>
     <input type=button onClick="cloneto()" value="clone to"/>
+    <input type=button onClick="document.getElementById('frenbuf').select(); document.execCommand('copy')" value="copy nom"/>
 
   </td>
 </tr>
@@ -158,7 +182,7 @@ body {
 <td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr29' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> rosy_cheeks  </td></tr></table>   </td>
 <td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr25' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> oval_face  </td></tr></table>   </td>
 <td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr26' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> pale_skin  </td></tr></table>   </td>
-<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr24' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> no_beard  </td></tr></table>   </td>
+<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr24' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> beard  </td></tr></table>   </td>
 <td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr0' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> stubble  </td></tr></table>   </td>
 <td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr30' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> sideburns  </td></tr></table>   </td>
 <td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr16' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> goatee  </td></tr></table>   </td>
@@ -273,17 +297,16 @@ doubleclick('attrstatic', genrandomattrs, 'attrcon')
     </td>
 
   <td align=left>
-    <input type=button onclick="requpdate()" value="request update"/> <br/>
+    <input type=button onclick="requpdate()" value="request update"/>
 
     <input type=button id=ctrlockbutton onClick="lockallcontrols()" value="lock all controls">
     <input type=button id=tgtlockbutton onClick="lockalltargets()" value="lock all targets">
     <input type=button id=ctrlockbutton onClick="unlockallcontrols()" value="unlock all controls">
     <input type=button id=ctrlockbutton onClick="unlockalltargets()" value="unlock all targets">
-  </td>
-  <td align=left>
-<label for="file">upload target</label><br/>
+  <input type="button" for="imageLoader" value="upload target image" onClick="getElementById('imageLoader').click()"/>
 <input type="file" size="60" id="imageLoader" name="imageLoader" accept="image/png, image/jpeg"/>
 <div style="display: none"><canvas id="imageCanvas" width=64 height=64></canvas></div>
+  </td>
 
 
   <td></td>
@@ -305,13 +328,22 @@ doubleclick('attrstatic', genrandomattrs, 'attrcon')
 
 
 
-<table width=1200 cellpadding=0 cellspacing=1>
+<table width=1200 cellpadding=0 cellspacing=4>
+
+  <tr>
+  <th style='font-size: small'>generated from controls</th>
+  <th style='font-size: small'>palette | generated from prev target</th>
+  <th style='font-size: small'>target</th>
+  <th style='font-size: small'>adjustment</th>
+  <th style='font-size: small'>controls</th>
+  <th style='font-size: small'>functions</th>
+  <th></th>
 
   <tr>
 
- <td width=320><canvas id="stage1gen" width=320 height=320></canvas></td>
- <td width=320><canvas id="palette" onClick="clickpalette(event)" width=320 height=320></canvas></td>
- <td width=320><canvas id="stage1" width=320 height=320></canvas></td>
+ <td width=320 style="border-width: 3px; border-color: gray; border-style: solid; padding: 0px"><canvas id="stage1gen" width=320 height=320></canvas></td>
+ <td width=320 style="border-width: 3px; border-color: gray; border-style: solid; padding: 0px"><canvas id="palette" onClick="clickpalette(event)" width=320 height=320></canvas></td>
+ <td width=320 style="border-width: 3px; border-color: gray; border-style: solid; padding: 0px"><canvas id="stage1" width=320 height=320></canvas></td>
 
  <td width=320 id="stage1adjborder" style="border-width: 3px; border-color: gray; border-style: solid; padding: 0px">
     <canvas id="stage1adj" width=320 height=320
@@ -333,10 +365,17 @@ onClick="toggletgtlock(1)"
 
   </td>
   <td valign=top>
-    <table cellspacing=0 cellpadding=0>
-    <tr><td><img src="static.png" onClick="requpdatecon(1, 1)"/></td></tr>
-    <tr><td><img src="spread.png" onClick="requpdatecon(1, 2)"/></td></tr>
-    <tr><td><img src="fade.png" onClick="requpdatecon(1, 3)"/></td></tr>
+    <table cellspacing=4 cellpadding=0>
+    <tr><td><input style="width: 100px" type="button" value="scramble" onClick="requpdatecon(1, 1)"/></td></tr>
+    <tr><td><input style="width: 100px" type="button" value="tone up" onClick="requpdatecon(1, 2)"/></td></tr>
+    <tr><td><input style="width: 100px" type="button" value="tone down" onClick="requpdatecon(1, 3)"/></td></tr>
+    <tr><td><input style="width: 100px" type="button" value="lock controls" onClick=""/></td></tr>
+    <tr><td><input style="width: 100px" type="button" value="unlock controls" onClick=""/></td></tr>
+    <tr><td><input style="width: 100px" type="button" value="lock target" onClick=""/></td></tr>
+    <tr><td><input style="width: 100px" type="button" value="unlock target" onClick=""/></td></tr>
+    <tr><td><input style="width: 100px" type="button" value="recombine" onClick=""/></td></tr>
+    <tr><td><input style="width: 100px" type="button" value="blend" onClick=""/></td></tr>
+    <tr><td><input style="width: 100px" type="button" value="burn in" onClick=""/></td></tr>
     </table>
   </td>
 </tr><tr>
@@ -345,9 +384,9 @@ onClick="toggletgtlock(1)"
 
 
 
-  <td width=320><canvas id="stage2gen" width=320 height=320></canvas></td>
-  <td width=320><canvas id="stage2orig" width=320 height=320></canvas></td>
-  <td width=320><canvas id="stage2" width=320 height=320></canvas></td>
+  <td style="border-width: 3px; border-color: gray; border-style: solid; padding: 0px" width=320><canvas id="stage2gen" width=320 height=320></canvas></td>
+  <td style="border-width: 3px; border-color: gray; border-style: solid; padding: 0px" width=320><canvas id="stage2orig" width=320 height=320></canvas></td>
+  <td style="border-width: 3px; border-color: gray; border-style: solid; padding: 0px" width=320><canvas id="stage2" width=320 height=320></canvas></td>
  <td width=320 id="stage2adjborder" style="border-width: 3px; border-color: gray; border-style: solid; padding: 0px">
     <canvas id="stage2adj" width=320 height=320
 onClick="toggletgtlock(2)"
@@ -364,10 +403,17 @@ onClick="toggletgtlock(2)"
   </td>
 
   <td valign=top>
-    <table cellspacing=0 cellpadding=0>
-    <tr><td><img src="static.png" onClick="requpdatecon(2, 1)"/></td></tr>
-    <tr><td><img src="spread.png" onClick="requpdatecon(2, 2)"/></td></tr>
-    <tr><td><img src="fade.png" onClick="requpdatecon(2, 3)"/></td></tr>
+    <table cellspacing=4 cellpadding=0>
+    <tr><td><input style="width: 100px" type="button" value="scramble" onClick="requpdatecon(2, 1)"/></td></tr>
+    <tr><td><input style="width: 100px" type="button" value="tone up" onClick="requpdatecon(2, 2)"/></td></tr>
+    <tr><td><input style="width: 100px" type="button" value="tone down" onClick="requpdatecon(2, 3)"/></td></tr>
+    <tr><td><input style="width: 100px" type="button" value="lock controls" onClick=""/></td></tr>
+    <tr><td><input style="width: 100px" type="button" value="unlock controls" onClick=""/></td></tr>
+    <tr><td><input style="width: 100px" type="button" value="lock target" onClick=""/></td></tr>
+    <tr><td><input style="width: 100px" type="button" value="unlock target" onClick=""/></td></tr>
+    <tr><td><input style="width: 100px" type="button" value="recombine" onClick=""/></td></tr>
+    <tr><td><input style="width: 100px" type="button" value="blend" onClick=""/></td></tr>
+    <tr><td><input style="width: 100px" type="button" value="burn in" onClick=""/></td></tr>
     </table>
   </td>
 </tr>
@@ -379,9 +425,9 @@ onClick="toggletgtlock(2)"
 -->
 
 <tr>
- <td width=320><canvas id="stage3gen" width=320 height=320></canvas></td>
-  <td width=320><canvas id="stage3orig" width=320 height=320></canvas></td>
-  <td width=320><canvas id="stage3" width=320 height=320></canvas></td>
+ <td style="border-width: 3px; border-color: gray; border-style: solid; padding: 0px" width=320><canvas id="stage3gen" width=320 height=320></canvas></td>
+  <td style="border-width: 3px; border-color: gray; border-style: solid; padding: 0px" width=320><canvas id="stage3orig" width=320 height=320></canvas></td>
+  <td style="border-width: 3px; border-color: gray; border-style: solid; padding: 0px" width=320><canvas id="stage3" width=320 height=320></canvas></td>
  <td width=320 id="stage3adjborder" style="border-width: 3px; border-color: gray; border-style: solid; padding: 0px">
     <canvas id="stage3adj" width=320 height=320
 onClick="toggletgtlock(3)"
@@ -397,10 +443,17 @@ onClick="toggletgtlock(3)"
 </td>
 
   <td valign=top>
-    <table cellspacing=0 cellpadding=0>
-    <tr><td><img src="static.png" onClick="requpdatecon(3, 1)"/></td></tr>
-    <tr><td><img src="spread.png" onClick="requpdatecon(3, 2)"/></td></tr>
-    <tr><td><img src="fade.png" onClick="requpdatecon(3, 3)"/></td></tr>
+    <table cellspacing=4 cellpadding=0>
+    <tr><td><input style="width: 100px" type="button" value="scramble" onClick="requpdatecon(3, 1)"/></td></tr>
+    <tr><td><input style="width: 100px" type="button" value="tone up" onClick="requpdatecon(3, 2)"/></td></tr>
+    <tr><td><input style="width: 100px" type="button" value="tone down" onClick="requpdatecon(3, 3)"/></td></tr>
+    <tr><td><input style="width: 100px" type="button" value="lock controls" onClick=""/></td></tr>
+    <tr><td><input style="width: 100px" type="button" value="unlock controls" onClick=""/></td></tr>
+    <tr><td><input style="width: 100px" type="button" value="lock target" onClick=""/></td></tr>
+    <tr><td><input style="width: 100px" type="button" value="unlock target" onClick=""/></td></tr>
+    <tr><td><input style="width: 100px" type="button" value="recombine" onClick=""/></td></tr>
+    <tr><td><input style="width: 100px" type="button" value="blend" onClick=""/></td></tr>
+    <tr><td><input style="width: 100px" type="button" value="burn in" onClick=""/></td></tr>
     </table>
   </td>
 
@@ -418,9 +471,9 @@ onClick="toggletgtlock(3)"
 
 <tr>
 
- <td width=320><canvas id="stage4gen" width=320 height=320></canvas></td>
-  <td width=320><canvas id="stage4orig" width=320 height=320></canvas></td>
-  <td width=320><canvas id="stage4" width=320 height=320></canvas></td>
+ <td style="border-width: 3px; border-color: gray; border-style: solid; padding: 0px" width=320><canvas id="stage4gen" width=320 height=320></canvas></td>
+  <td style="border-width: 3px; border-color: gray; border-style: solid; padding: 0px" width=320><canvas id="stage4orig" width=320 height=320></canvas></td>
+  <td style="border-width: 3px; border-color: gray; border-style: solid; padding: 0px" width=320><canvas id="stage4" width=320 height=320></canvas></td>
  <td width=320 id="stage4adjborder" style="border-width: 3px; border-color: gray; border-style: solid; padding: 0px">
     <canvas id="stage4adj" width=320 height=320
 onClick="toggletgtlock(4)"
@@ -434,10 +487,17 @@ onClick="toggletgtlock(4)"
   </td></tr></table>
 </td>
   <td valign=top>
-    <table cellspacing=0 cellpadding=0>
-    <tr><td><img src="static.png" onClick="requpdatecon(4, 1)"/></td></tr>
-    <tr><td><img src="spread.png" onClick="requpdatecon(4, 2)"/></td></tr>
-    <tr><td><img src="fade.png" onClick="requpdatecon(4, 3)"/></td></tr>
+    <table cellspacing=4 cellpadding=0>
+    <tr><td><input style="width: 100px" type="button" value="scramble" onClick="requpdatecon(4, 1)"/></td></tr>
+    <tr><td><input style="width: 100px" type="button" value="tone up" onClick="requpdatecon(4, 2)"/></td></tr>
+    <tr><td><input style="width: 100px" type="button" value="tone down" onClick="requpdatecon(4, 3)"/></td></tr>
+    <tr><td><input style="width: 100px" type="button" value="lock controls" onClick=""/></td></tr>
+    <tr><td><input style="width: 100px" type="button" value="unlock controls" onClick=""/></td></tr>
+    <tr><td><input style="width: 100px" type="button" value="lock target" onClick=""/></td></tr>
+    <tr><td><input style="width: 100px" type="button" value="unlock target" onClick=""/></td></tr>
+    <tr><td><input style="width: 100px" type="button" value="recombine" onClick=""/></td></tr>
+    <tr><td><input style="width: 100px" type="button" value="blend" onClick=""/></td></tr>
+    <tr><td><input style="width: 100px" type="button" value="burn in" onClick=""/></td></tr>
     </table>
   </td>
 </tr>
@@ -451,10 +511,15 @@ onClick="toggletgtlock(4)"
 <br/>
 
 
-<table><tr><td>
-
-
+<table bgcolor=white cellpadding=16><tr><td>
+<h1>instructions for makemore peaple v0.1</h1>
+<font size=+2>
+<pre>
+$README
+</pre>
+</font>
 </td></tR></table>
+
 
 </body>
 
@@ -525,15 +590,16 @@ function frenbufhilite() {
 function addfren() {
   var nom = document.getElementById('frenbuf').value
   if (nom == '') {
-    return false
+    nom = gennom()
   }
 
   window.mynewfren = nom
-  document.getElementById('frenbuf').value = gennom()
 
   requpdate()
 
   window.mynewfren = ''
+
+  document.getElementById('frenbuf').value = ''
   frenbufhilite()
   return true
 }
@@ -549,7 +615,7 @@ function cloneto() {
 
   window.dirtyfren = nom
   window.mynewfren = nom
-  document.getElementById('frenbuf').value = gennom()
+  document.getElementById('frenbuf').value = ''
 
   requpdate(hyper)
 
@@ -569,7 +635,7 @@ function makebread() {
 
   window.dirtyfren = nom
   window.mynewfren = nom
-  //document.getElementById('frenbuf').value = gennom()
+  //document.getElementById('frenbuf').value = ''
 
   requpdate(hyper)
 
@@ -970,17 +1036,21 @@ function makepalette(l, perm) {
       var d2 = dx*dx+dy*dy
       var d = Math.sqrt(d2)
 
-      var r = l * (x / pal.width)
-      var g = l * (y / pal.height)
-      var b = l * (d / md)
+      var a = 255 * (x / pal.width);
+      var b = 255 * (y / pal.height);
 
-      if (perm == 1) {
-        [r,g,b] = [g,b,r];
-      } else if (perm == 2) {
-        [r,g,b] = [b,r,g];
-      }
+//      if (perm == 1) {
+//        [l,a,b] = [g,b,r];
+//      } else if (perm == 2) {
+//        [l,a,b] = [b,r,g];
+//      }
 
-      palctx.fillStyle = mkcol([r,g,b])
+      var rgbcol = labtorgb([l,a,b]);
+//      var r = l * (x / pal.width)
+//      var g = l * (y / pal.height)
+//      var b = l * (d / md)
+
+      palctx.fillStyle = mkcol(rgbcol)
       palctx.fillRect(x, y, 1, 1)
     }
   }
@@ -990,23 +1060,22 @@ function clickpalette(event) {
   var pal = document.getElementById('palette');
   var palctx = pal.getContext('2d')
 
-  if (event.shiftKey) {
+  if (event.shiftKey || window.tool == 'p') {
     var x = event.offsetX, y = event.offsetY;
     var rgbdata = palctx.getImageData(x, y, 1, 1).data;
     pick_color(rgbdata[0], rgbdata[1], rgbdata[2])
-  } else if (event.ctrlKey) {
-    var l = pal.l
-    var perm = pal.perm
-    if (l == 255) { l = 64 }
-    else if (l == 64) { l = 128; }
-    else if (l == 128) { l = 192; }
-    else { l = 255 }
-    makepalette(l, perm)
   } else {
     var l = pal.l
     var perm = pal.perm
-    ++perm; perm %= 3;
+    if (l == 192) { l = 32 }
+    else if (l == 32) { l = 128; }
+    else { l = 192 }
     makepalette(l, perm)
+//  } else {
+//    var l = pal.l
+//    var perm = pal.perm
+//    ++perm; perm %= 3;
+//    makepalette(l, perm)
   }
 }
 
@@ -2037,7 +2106,7 @@ function changetool(newtool) {
 
 
 window.onload = function() {
-  makepalette(255, 0)
+  makepalette(128, 0)
   document.getElementById('frenbuf').value = gennom()
   window.frens = new Array(16);
   window.mynewfren = ''

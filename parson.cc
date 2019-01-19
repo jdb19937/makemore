@@ -79,18 +79,25 @@ std::string Parson::bread(const char *nom0, const char *nom1, uint8_t *new_gende
 
   newnom = prenom;
 
+  const char *suf;
   if (const char *p = strrchr(nom1, '_')) {
     newnom += p;
+    suf = p + 1;
   } else {
     newnom += "_";
     newnom += nom1;
+    suf = nom1;
   }
 
   if (const char *p = strrchr(nom0, '_')) {
-    newnom += p;
+    if (strcmp(p + 1, suf)) {
+      newnom += p;
+    }
   } else {
-    newnom += "_";
-    newnom += nom0;
+    if (strcmp(nom0, suf)) {
+      newnom += "_";
+      newnom += nom0;
+    }
   }
 
   if (newnom.length() > 31)

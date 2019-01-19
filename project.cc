@@ -319,8 +319,15 @@ void Project::train_recombine(double zeta) {
       unsigned int k = j + ctrlay->n;
       double cj = fakectr[j];
       double ck = fakectr[k];
-      fakectr[j] = (randuint() % 2) ? cj : ck;
-      fakectr[k] = (randuint() % 2) ? cj : ck;
+
+      double cjw = 1.0 - 4.0 * (0.5 - cj) * (0.5 - cj);
+      double ckw = 1.0 - 4.0 * (0.5 - ck) * (0.5 - ck);
+      double jprob = 0.5;
+      if (cjw + ckw > 0) 
+        jprob = cjw / (cjw + ckw);
+
+      fakectr[j] = (randrange(0, 1) < jprob) ? cj : ck;
+      fakectr[k] = (randrange(0, 1) < jprob) ? cj : ck;
     }
   }
 
