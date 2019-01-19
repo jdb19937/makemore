@@ -262,7 +262,7 @@ void handle(Pipeline *pipe, ParsonDB *parsons, FILE *infp, FILE *outfp) {
       fprintf(stderr, "wrote n=%d\n", responsen);
 
       memset(lockbuf, 0, sizeof(lockbuf));
-      parson->target_lock = -1;
+//      parson->target_lock = -1;
       lockbuf[0] = parson->target_lock;
       lockbuf[1] = parson->control_lock;
       response = lockbuf;
