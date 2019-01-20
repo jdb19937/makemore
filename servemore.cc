@@ -57,17 +57,36 @@ void makebread(FILE *learnfp, Pipeline *pipe, Parson *p1, Parson *p2, Parson *pa
   }
   parson->attrs[20] = gender * 255;
 
-  for (unsigned int i = 0; i < Parson::ncontrols; ++i) {
-    double blend = sigmoid(randrange(-8.0, 8.0));
-
-    double cj = p1->controls[i];
-    double ck = p2->controls[i];
-    double cjw = 1.0 - 4.0 * (0.5 - cj) * (0.5 - cj);
-    double ckw = 1.0 - 4.0 * (0.5 - ck) * (0.5 - ck);
+  unsigned int js = 8;
+  assert(Parson::ncontrols % js == 0);
+  for (unsigned int i = 0; i < Parson::ncontrols; i += js) {
+    double cj = 0;
+    double ck = 0;
+    for (unsigned int q = i, qn = i + js; q < qn; ++q) {
+      double cs = p1->controls[q];
+      double ct = p2->controls[q];
+      cj += 4.0 * (cs - 0.5) * (cs - 0.5);
+      ck += 4.0 * (ct - 0.5) * (ct - 0.5);
+    }
+    cj /= (double)js;
+    ck /= (double)js;
+ 
+    double cjw = 1.0 - cj;
+    double ckw = 1.0 - ck;
     double jprob = 0.5;
     if (cjw + ckw > 0) 
       jprob = cjw / (cjw + ckw);
-    parson->controls[i] = (randrange(0.0, 1.0) < jprob) ? cj : ck;
+    bool fromj = (randrange(0, 1) < jprob);
+
+    if (fromj) {
+      for (unsigned int q = i, qn = i + js; q < qn; ++q) {
+        parson->controls[q] = p1->controls[q];
+      }
+    } else {
+      for (unsigned int q = i, qn = i + js; q < qn; ++q) {
+        parson->controls[q] = p2->controls[q];
+      }
+    }
   }
 
   parson->control_lock = -1;

@@ -95,6 +95,8 @@ static void _run_feeder(int infd, int outfd, unsigned int k, unsigned int batch)
       offret = lseek(infd, off, SEEK_SET);
       assert(offret == off);
     }
+
+    usleep(1000);
     ++i;
   }
 }

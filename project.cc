@@ -304,7 +304,7 @@ static void recenter(double *x, unsigned int n) {
   }
 }
 
-void Project::train_recombine(double yo, unsigned int js) {
+void Project::train_recombine(double yo, double wu, unsigned int js) {
   assert(mbn % 2 == 0);
   assert(ctrlay->n % js == 0);
 
@@ -314,15 +314,15 @@ void Project::train_recombine(double yo, unsigned int js) {
   }
 
   const double *cuencout = enc->feed(cuencin, NULL);
-  decude(cuencout, enc->outn, fakectr);
+  decude(cuencout, enc->outn, realctr);
   for (unsigned int mbi = 0; mbi < mbn; mbi += 2) {
     for (unsigned int j = mbi * ctrlay->n, jn = j + ctrlay->n; j < jn; j += js) {
       double cj = 0;
       double ck = 0;
 
       for (unsigned int s = j, sn = j + js, t = s + ctrlay->n; s < sn; ++s, ++t) {
-        double cs = fakectr[s];
-        double ct = fakectr[t];
+        double cs = realctr[s];
+        double ct = realctr[t];
         cj += 4.0 * (cs - 0.5) * (cs - 0.5);
         ck += 4.0 * (ct - 0.5) * (ct - 0.5);
       }
@@ -335,26 +335,27 @@ void Project::train_recombine(double yo, unsigned int js) {
       double jprob = 0.5;
       if (cjw + ckw > 0) 
         jprob = cjw / (cjw + ckw);
-      bool swapj = !(randrange(0, 1) < jprob);
-      bool swapk = (randrange(0, 1) < jprob);
 
-      if (swapj && swapk) {
-        for (unsigned int s = j, sn = j + js, t = s + ctrlay->n; s < sn; ++s, ++t) {
-          std::swap(fakectr[s], fakectr[t]);
-        }
-      } else if (swapj) {
-        for (unsigned int s = j, sn = j + js, t = s + ctrlay->n; s < sn; ++s, ++t) {
-          fakectr[s] = fakectr[t];
-        }
-      } else if (swapk) {
-        for (unsigned int s = j, sn = j + js, t = s + ctrlay->n; s < sn; ++s, ++t) {
-          fakectr[t] = fakectr[s];
-        }
+      if (randrange(0, 1) < jprob) {
+        for (unsigned int s = j, sn = j + js, t = s + ctrlay->n; s < sn; ++s, ++t)
+          fakectr[s] = realctr[s];
+      } else {
+        for (unsigned int s = j, sn = j + js, t = s + ctrlay->n; s < sn; ++s, ++t)
+          fakectr[s] = realctr[t];
+      }
+
+      if (randrange(0, 1) < jprob) {
+        for (unsigned int s = j, sn = j + js, t = s + ctrlay->n; s < sn; ++s, ++t)
+          fakectr[t] = realctr[s];
+      } else {
+        for (unsigned int s = j, sn = j + js, t = s + ctrlay->n; s < sn; ++s, ++t)
+          fakectr[t] = realctr[t];
       }
     }
   }
 
   memcpy(fakectx, ctxbuf, sizeof(double) * mbn * ctxlay->n);
+#if 0
   for (unsigned int mbi = 0; mbi < mbn; mbi += 2) {
     for (unsigned int j = mbi * ctxlay->n, jn = j + ctxlay->n; j < jn; ++j) {
       unsigned int k = j + ctxlay->n;
@@ -364,16 +365,25 @@ void Project::train_recombine(double yo, unsigned int js) {
       fakectx[k] = (randuint() % 2) ? cj : ck;
     }
   }
+#endif
 
   for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
     encude(fakectx + mbi * ctxlay->n, ctxlay->n, cugenin + mbi * geninlay->n + 0);
     encude(fakectr + mbi * ctrlay->n, ctrlay->n, cugenin + mbi * geninlay->n + ctxlay->n);
   }
 
-  encude(fakectr, enc->outn, cuenctgt);
+  encude(realctr, enc->outn, cuenctgt);
   genenc->feed(cugenin, NULL);
   genenc->target(cuenctgt);
-  genenc->train(yo);
+  enc->train(0);
+  genpass->update_stats();
+  genpass->train(wu);
+
+
+  encude(fakectr, enc->outn, cuenctgt);
+  enc->feed(genpass->output(), NULL);
+  enc->target(cuenctgt);
+  enc->train(yo);
 }
 
 void Project::train_fidelity(double nu, double pi, double dcut) {
