@@ -590,7 +590,7 @@ int main(int argc, char **argv) {
 
 
 #if 1
-  int max_children = 4;
+  int max_children = 16;
 
   for (unsigned int i = 0; i < max_children; ++i) {
     fprintf(stderr, "forking\n");

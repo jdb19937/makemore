@@ -87,17 +87,17 @@ body {
 
 <body bgcolor="darkgray" class="noselect">
 
-<table width=1200 cellpadding=4 cellspacing=0 border=3 bordercolor=gray>
+<table width=1500 cellpadding=4 cellspacing=0 border=3 bordercolor=gray>
 <tr>
 <td align=left valign=center style='border: 0; font-size: xx-large'>
-<b>$NAME</b>
+<b>edit parson</b>
 </td>
 
 <td align=right valign=top style='border: 0'><b><a href="https://github.com/jdb19937/makemore">makemore</a> peaple v0.1</b><br/>by Dan Brumleve</td>
 </tr>
 </table>
 
-<table width=1200 cellpadding=4 cellspacing=0 border=0>
+<table width=1500 cellpadding=4 cellspacing=0 border=0>
 <tr>
 <td width=512>
 <img width=512 height=512 id="profile" src="image/$NAME.jpg?nonce=$NONCE" style="image-rendering: pixelated">
@@ -105,16 +105,15 @@ body {
 
 <td style='background-color: lightgray; border: 0' valign="top">
 
-<table width=900 height=320 style="border:0; overflow: hidden" cellspacing=0>
+<table width=970 height=320 style="border:0; overflow: hidden" cellspacing=0>
 <tr><td colspan=8 valign=top height=160px>
 
-<h1>$NAME</h1>
-
-<table>
-<tr><td>creator</td></tr>
-<tr><td>created</td></tr>
-<tr><td>revised</td></tr>
-<tr><td>revisor</td></tr>
+<table cellpadding=5 style='font-size: large'>
+<tr><td align=right><b>nom</b></td><td>$NAME</td></tr>
+<tr><td align=right><b>creator</b></td></tr>
+<tr><td align=right><b>created</b></td></tr>
+<tr><td align=right><b>revised</b></td></tr>
+<tr><td align=right><b>revisor</b></td></tr>
 </table>
 
 </td></tr>
@@ -179,9 +178,9 @@ body {
 
 
 
-<table width=1200 cellpadding=0 cellspacing=0><tr><td>
+<table style='border-width: 3px; border-color: gray; border-style: solid' width=1500 cellpadding=0 cellspacing=0><tr><td>
 
-<div id="attrcon" style="border-width: 3px; border-color: gray; border-style: solid">
+<div id="attrcon">
 
 <table cellpadding=0 cellspacing=1><tr>
 
@@ -189,56 +188,56 @@ body {
 
 
 
-<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr19' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> high_cheekbones  </td></tr></table>   </td>
-<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr29' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> rosy_cheeks  </td></tr></table>   </td>
-<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr25' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> oval_face  </td></tr></table>   </td>
-<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr26' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> pale_skin  </td></tr></table>   </td>
-<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr24' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> beard  </td></tr></table>   </td>
-<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr0' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> stubble  </td></tr></table>   </td>
-<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr30' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> sideburns  </td></tr></table>   </td>
-<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr16' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> goatee  </td></tr></table>   </td>
+<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr19' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> #high_cheekbones  </td></tr></table>   </td>
+<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr29' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> #rosy_cheeks  </td></tr></table>   </td>
+<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr25' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> #oval_face  </td></tr></table>   </td>
+<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr26' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> #pale_skin  </td></tr></table>   </td>
+<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr24' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> #shaven  </td></tr></table>   </td>
+<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr0' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> #stubble  </td></tr></table>   </td>
+<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr30' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> #sideburns  </td></tr></table>   </td>
+<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr16' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> #goatee  </td></tr></table>   </td>
 </tr><tr>
 
 
-<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr22' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> mustache  </td></tr></table>   </td>
-<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr12' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> bushy_eyebrows  </td></tr></table>   </td>
-<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr1' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> arched_eyebrows  </td></tr></table>   </td>
-<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr23' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> narrow_eyes  </td></tr></table>   </td>
-<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr28' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> balding  </td></tr></table>   </td>
-<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr4' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> bald  </td></tr></table>   </td>
-<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr32' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> straight_hair  </td></tr></table>   </td>
-<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr33' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> wavy_hair  </td></tr></table>   </td>
+<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr22' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> #mustache  </td></tr></table>   </td>
+<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr12' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> #bushy_eyebrows  </td></tr></table>   </td>
+<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr1' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> #arched_eyebrows  </td></tr></table>   </td>
+<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr23' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> #narrow_eyes  </td></tr></table>   </td>
+<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr28' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> #balding  </td></tr></table>   </td>
+<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr4' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> #bald  </td></tr></table>   </td>
+<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr32' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> #straight_hair  </td></tr></table>   </td>
+<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr33' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> #wavy_hair  </td></tr></table>   </td>
 </tr><tr>
 
-<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr5' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> bangs  </td></tr></table>   </td>
-<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr8' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> black_hair  </td></tr></table>   </td>
-<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr9' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> blonde_hair  </td></tr></table>   </td>
-<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr11' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> brown_hair  </td></tr></table>   </td>
-<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr17' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> gray_hair  </td></tr></table>   </td>
-<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr13' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> chubby  </td></tr></table>   </td>
-<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr14' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> double_chin  </td></tr></table>   </td>
-<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr21' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> mouth_open  </td></tr></table>   </td>
+<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr5' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> #bangs  </td></tr></table>   </td>
+<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr8' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> #black_hair  </td></tr></table>   </td>
+<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr9' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> #blonde_hair  </td></tr></table>   </td>
+<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr11' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> #brown_hair  </td></tr></table>   </td>
+<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr17' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> #gray_hair  </td></tr></table>   </td>
+<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr13' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> #chubby  </td></tr></table>   </td>
+<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr14' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> #double_chin  </td></tr></table>   </td>
+<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr21' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> #mouth_open  </td></tr></table>   </td>
 </tr><tr>
 
-<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr20' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> male  </td></tr></table>   </td>
-<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr39' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> young  </td></tr></table>   </td>
-<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr10' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> blurry  </td></tr></table>   </td>
-<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr2' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> attractive  </td></tr></table>   </td>
-<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr3' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> tired  </td></tr></table>   </td>
-<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr6' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> big_lips  </td></tr></table>   </td>
-<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr7' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> big_nose  </td></tr></table>   </td>
-<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr27' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> pointy_nose  </td></tr></table>   </td>
+<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr20' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> #male  </td></tr></table>   </td>
+<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr39' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> #young  </td></tr></table>   </td>
+<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr10' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> #blurry  </td></tr></table>   </td>
+<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr2' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> #attractive  </td></tr></table>   </td>
+<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr3' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> #tired  </td></tr></table>   </td>
+<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr6' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> #big_lips  </td></tr></table>   </td>
+<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr7' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> #big_nose  </td></tr></table>   </td>
+<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr27' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> #pointy_nose  </td></tr></table>   </td>
 </tr><tr>
 
 
-<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr31' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> smiling  </td></tr></table>   </td>
-<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr15' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> eyeglasses  </td></tr></table>   </td>
-<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr18' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> makeup  </td></tr></table>   </td>
-<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr34' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> earrings  </td></tr></table>   </td>
-<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr35' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> hat  </td></tr></table>   </td>
-<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr36' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> lipstick  </td></tr></table>   </td>
-<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr37' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> necklace  </td></tr></table>   </td>
-<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr38' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> necktie  </td></tr></table>   </td>
+<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr31' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> #smiling  </td></tr></table>   </td>
+<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr15' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> #eyeglasses  </td></tr></table>   </td>
+<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr18' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> #makeup  </td></tr></table>   </td>
+<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr34' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> #earrings  </td></tr></table>   </td>
+<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr35' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> #hat  </td></tr></table>   </td>
+<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr36' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> #lipstick  </td></tr></table>   </td>
+<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr37' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> #necklace  </td></tr></table>   </td>
+<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr38' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> #necktie  </td></tr></table>   </td>
 </tr><tr>
 
 <tr><td colspan=8 border=1></td></tr>
@@ -248,9 +247,9 @@ function vis(id) { document.getElementById(id).style.visibility = 'visible' }
 function unvis(id) { document.getElementById(id).style.visibility = 'hidden' }
 </script>
 
-<td colspan=2> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='tag0' style='border: 3px solid gray; background-color: black; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> <input id="tag0in" size="24" maxlength=24 value="" onFocus="vis('taghint')" onFocusout="unvis('taghint')"/>  </td></tr></table>   </td>
+<td colspan=2> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='tag0' style='border: 3px solid gray; background-color: black; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> #<input id="tag0in" size="24" maxlength=24 value="" onFocus="vis('taghint')" onFocusout="unvis('taghint')"/>  </td></tr></table>   </td>
 
-<td colspan=2> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='tag1' style='border: 3px solid gray; background-color: black; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> <input id="tag1in" size="24" maxlength=24 value="" onFocus="vis('taghint')" onFocusout="unvis('taghint')"/>  </td></tr></table>   </td>
+<td colspan=2> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='tag1' style='border: 3px solid gray; background-color: black; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> #<input id="tag1in" size="24" maxlength=24 value="" onFocus="vis('taghint')" onFocusout="unvis('taghint')"/>  </td></tr></table>   </td>
 <td id=taghint colspan=4 style='visibility: hidden'> [enter any two tags matching regex /^[a-z][a-z0-9_]*$/] </td>
 
 </table>
@@ -259,7 +258,7 @@ function unvis(id) { document.getElementById(id).style.visibility = 'hidden' }
 </div>
 
 </td>
-<td valign=top>
+<td valign=top align=right>
 
 <table cellpadding=0 cellspacing=0>
 <tr>
@@ -289,7 +288,7 @@ doubleclick('attrstatic', genrandomattrs, 'attrcon')
 
 
 
-<table cellpadding=0 cellspacing=1 width=1200 style='border-width: 3px; border-color: gray; border-style: solid'>
+<table cellpadding=0 cellspacing=1 width=1500 style='border-width: 3px; border-color: gray; border-style: solid'>
   <tr>
     <td width=64>
       <div id="colorshower" style="border-width: 3px; border-color: gray; border-style: solid; width: 64; height: 64; background-color: black" onClick="changetool('d')"> </div>
@@ -314,8 +313,9 @@ doubleclick('attrstatic', genrandomattrs, 'attrcon')
     <input type=button id=tgtlockbutton onClick="lockalltargets()" value="lock all targets">
     <input type=button id=ctrlockbutton onClick="unlockallcontrols()" value="unlock all controls">
     <input type=button id=ctrlockbutton onClick="unlockalltargets()" value="unlock all targets">
-  <input type="button" for="imageLoader" value="upload target image" onClick="getElementById('imageLoader').click()"/>
+  <input type="button" for="imageLoader" value="upload target" onClick="getElementById('imageLoader').click()"/>
 <input type="file" size="60" id="imageLoader" name="imageLoader" accept="image/png, image/jpeg"/>
+  <input type="button" value="toggle legend" onClick="var z = document.getElementById('hintlayer'); if (z.style.zIndex > 0) { z.style.zIndex = -10; z.style.visibility = 'hidden' } else { z.style.zIndex = 10; z.style.visibility = 'visible' }">
 <div style="display: none"><canvas id="imageCanvas" width=64 height=64></canvas></div>
   </td>
 
@@ -339,11 +339,11 @@ doubleclick('attrstatic', genrandomattrs, 'attrcon')
 
 
 
-<table width=1200 cellpadding=0 cellspacing=4>
+<table width=1500 cellpadding=0 cellspacing=4>
 
   <tr>
-  <th style='font-size: small'>generated from controls</th>
-  <th style='font-size: small'>palette | generated from prev target</th>
+  <th style='font-size: small'>partrait</th>
+  <th style='font-size: small'>palette | pretarget</th>
   <th style='font-size: small'>target</th>
   <th style='font-size: small'>adjustment</th>
   <th style='font-size: small'>controls</th>
@@ -354,7 +354,7 @@ doubleclick('attrstatic', genrandomattrs, 'attrcon')
 
  <td width=320 style="border-width: 3px; border-color: gray; border-style: solid; padding: 0px">
 
-<div id="hintlayer" style="position: absolute; width: 1500; height: 1500; z-index: -1"><canvas id=hintcanvas width=1500 height=1500></canvas></div>
+<div id="hintlayer" style="position: absolute; width: 1500; height: 1500; z-index: 10" onClick="this.style.visibility = 'hidden'; this.style.zIndex = -10">test<canvas id=hintcanvas width=1500 height=1500></canvas></div>
 
 <canvas id="stage1gen" width=320 height=320></canvas></td>
  <td width=320 style="border-width: 3px; border-color: gray; border-style: solid; padding: 0px"><canvas id="palette" onClick="clickpalette(event)" width=320 height=320></canvas></td>
@@ -526,10 +526,9 @@ onClick="toggletgtlock(4)"
 <br/>
 
 
-<table bgcolor=white cellpadding=16><tr><td>
+<table width=1500 bgcolor=white cellpadding=16><tr><td>
 <h1>instructions for makemore peaple v0.1</h1>
-<font size=+2>
-<pre>
+<pre style="font-size: 24px">
 $README
 </pre>
 </font>
@@ -586,7 +585,7 @@ function gennom(gen) {
     p2 = "mc" + p2
   }
   if (Math.random() < 0.03) {
-    p2 = pick(["von_", "van_", "van_der_", "al", "o_"]) + p2
+    p2 = pick(["von_", "van_", "van_der_", "al_", "o_"]) + p2
   }
   var s2 = pick(suf2)
     
@@ -971,7 +970,7 @@ function unlockallcontrols() {
   }
 }
 
-function lockalltargets() {
+function lockalltargets(noupdate) {
   var changed = 0
   for (var stage = 1; stage <= 4; ++stage) {
     if (!(window.tgtlock & (1 << (stage - 1)))) {
@@ -980,7 +979,7 @@ function lockalltargets() {
     }
   }
 
-  if (changed) {
+  if (changed && !noupdate) {
     requpdate()
   }
 }
@@ -1912,8 +1911,6 @@ function clickfren(i) {
 }
 
 function doupdate(newlabdata, newcontextdata, newcontroldata, newadjdata, newgendata, newlocks, newfrens) {
-  window.allready = true
-
   updatectx(newcontextdata)
   updatecon(newcontroldata)
   updategen(newgendata)
@@ -2079,6 +2076,13 @@ function doupdate(newlabdata, newcontextdata, newcontroldata, newadjdata, newgen
 
   var pimg = document.getElementById('profile')
   pimg.src = "image/$NAME?nonce=" + Math.floor(Math.random() * 1000000);
+
+  if (!window.allready) {
+    for (var i = 1; i <= 4; ++i) {
+      tgtlockon(i)
+    }
+  }
+  window.allready = true
 }
 
 
@@ -2119,17 +2123,143 @@ function changetool(newtool) {
   window.tool = newtool
 }
 
-function hinton() {
+function drawarrow(ctx, label, rot, long) {
+  ctx.fillStyle = mkcol([24,24,255])
+  var off = 210
+  if (long) { off = 210 + 324 }
+  ctx.translate(0, -10)
+  ctx.fillRect(0,0,off,20)
+  ctx.translate(0, 10)
+  ctx.translate(off, 0)
+  ctx.beginPath()
+  ctx.moveTo(0, 20)
+  ctx.lineTo(20, 0)
+  ctx.lineTo(0, -20)
+  ctx.fill()
+  ctx.fillStyle = mkcol([255,255,255])
+  ctx.font = '18px fixed'
+  ctx.translate(-136, 5)
+  if (long) {
+    ctx.translate(-170, 0)
+  }
+  if (rot) {
+    ctx.rotate(Math.PI)
+    ctx.translate(-70, 9)
+  }
+  ctx.fillText(label, 0, 0)
+  if (rot) {
+    ctx.translate(70, -9)
+    ctx.rotate(Math.PI)
+  }
+  ctx.translate(136, -5)
+}
+
+
+function makehint() {
   var can = document.getElementById('hintcanvas');
   var ctx = can.getContext('2d');
-  ctx.fillStyle = mkcol([0,0,255]);
-  // ctx.fillRect(0,0,1500,1500)
+
+  var dim = 324;
+  var hdim = dim/2
+
+  ctx.save();
+  ctx.translate(162, 162 + 40)
+  ctx.rotate(Math.PI/2)
+  drawarrow(ctx, 'generate')
+
+  ctx.translate(120, 0)
+  drawarrow(ctx, 'generate')
+
+  ctx.translate(120, 0)
+  drawarrow(ctx, 'generate')
+  ctx.restore()
+
+  ctx.save()
+  ctx.translate(162 + 56, 162 - 20)
+  drawarrow(ctx, '      adjust', false, true)
+  ctx.restore()
+
+  ctx.save()
+  ctx.translate(dim + 166 + 40, dim + 162 + 26)
+  drawarrow(ctx, '      adjust')
+  ctx.restore()
+
+  ctx.save()
+  ctx.translate(dim + 166 + 40, dim + 162 + 26 + dim + 1)
+  drawarrow(ctx, '      adjust')
+  ctx.restore()
+
+  ctx.save()
+  ctx.translate(dim + 166 + 40, dim + 162 + 26 + dim + 1 + dim + 1)
+  drawarrow(ctx, '      adjust')
+  ctx.restore()
+
+  ctx.save()
+  ctx.translate(2 * dim + 166 - 81, 0 + 162 + 67)
+  ctx.rotate(3 * (Math.PI / 4))
+  drawarrow(ctx, 'generate', true)
+  ctx.restore()
+
+  ctx.save()
+  ctx.translate(2 * dim + 166 - 81, 0 + 162 + 67 + dim + 4)
+  ctx.rotate(3 * (Math.PI / 4))
+  drawarrow(ctx, 'generate', true)
+  ctx.restore()
+
+  ctx.save()
+  ctx.translate(2 * dim + 166 - 81, 0 + 162 + 67 + dim + 6 + dim + 6)
+  ctx.rotate(3 * (Math.PI / 4))
+  drawarrow(ctx, 'generate', true)
+  ctx.restore()
+
+  ctx.font = '36px fixed'
+  ctx.fillStyle = mkcol([0,255,0])
+  ctx.fillRect(450, 12, 500, 50)
+  ctx.fillStyle = mkcol([0,0,0])
+  ctx.fillText('click to hide legend and edit', 500, 49)
+
+  ctx.font = '24px fixed'
+  ctx.fillStyle = mkcol([0,255,0])
+  ctx.fillRect(666, 400, 310, 42)
+  ctx.fillStyle = mkcol([0,0,0])
+  ctx.fillText('click to draw in target column', 676, 430)
+
+  ctx.font = '24px fixed'
+  ctx.fillStyle = mkcol([0,255,0])
+  ctx.fillRect(348, 200, 280, 42)
+  ctx.fillStyle = mkcol([0,0,0])
+  ctx.fillText('shift+click to pick color', 376, 229)
+
+  ctx.font = '24px fixed'
+  ctx.fillStyle = mkcol([0,255,0])
+  ctx.fillRect(348, 250, 280, 42)
+  ctx.fillStyle = mkcol([0,0,0])
+  ctx.fillText('click to rotate palette', 389, 279)
+
+  ctx.font = '24px fixed'
+  ctx.fillStyle = mkcol([0,255,0])
+  var off = 1010
+  var yoff = 120;
+  ctx.fillRect(off, yoff, 280, 42)
+  ctx.fillStyle = mkcol([0,0,0])
+  ctx.fillText('click to toggle target lock', off + 18, yoff + 29)
+
+  ctx.save();
+  ctx.translate(1374, 332)
+  ctx.rotate(Math.PI/2)
+  ctx.font = '24px fixed'
+  ctx.fillStyle = mkcol([0,255,0])
+  off = 0
+  ctx.fillRect(off, 0, 280, 42)
+  ctx.fillStyle = mkcol([0,0,0])
+  ctx.fillText('click to toggle control lock', off + 12, 26)
+  ctx.restore()
 }
   
 
 
 window.onload = function() {
-hinton()
+  makehint()
   makepalette(128, 0)
   document.getElementById('frenbuf').value = gennom()
   window.frens = new Array(16);

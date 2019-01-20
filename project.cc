@@ -304,8 +304,9 @@ static void recenter(double *x, unsigned int n) {
   }
 }
 
-void Project::train_recombine(double yo, double wu) {
+void Project::train_recombine(double yo, unsigned int js) {
   assert(mbn % 2 == 0);
+  assert(ctrlay->n % js == 0);
 
   for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
     encude(ctxbuf + mbi * ctxlay->n, ctxlay->n, cuencin + mbi * encinlay->n + 0);
@@ -315,22 +316,41 @@ void Project::train_recombine(double yo, double wu) {
   const double *cuencout = enc->feed(cuencin, NULL);
   decude(cuencout, enc->outn, fakectr);
   for (unsigned int mbi = 0; mbi < mbn; mbi += 2) {
-    for (unsigned int j = mbi * ctrlay->n, jn = j + ctrlay->n; j < jn; ++j) {
-      unsigned int k = j + ctrlay->n;
-      double cj = fakectr[j];
-      double ck = fakectr[k];
- 
-      cj = 0.5 + (cj - 0.5) * (1.0 - wu);
-      ck = 0.5 + (ck - 0.5) * (1.0 - wu);
+    for (unsigned int j = mbi * ctrlay->n, jn = j + ctrlay->n; j < jn; j += js) {
+      double cj = 0;
+      double ck = 0;
 
-      double cjw = 1.0 - 4.0 * (0.5 - cj) * (0.5 - cj);
-      double ckw = 1.0 - 4.0 * (0.5 - ck) * (0.5 - ck);
+      for (unsigned int s = j, sn = j + js, t = s + ctrlay->n; s < sn; ++s, ++t) {
+        double cs = fakectr[s];
+        double ct = fakectr[t];
+        cj += 4.0 * (cs - 0.5) * (cs - 0.5);
+        ck += 4.0 * (ct - 0.5) * (ct - 0.5);
+      }
+
+      cj /= (double)js;
+      ck /= (double)js;
+ 
+      double cjw = 1.0 - cj;
+      double ckw = 1.0 - ck;
       double jprob = 0.5;
       if (cjw + ckw > 0) 
         jprob = cjw / (cjw + ckw);
+      bool swapj = !(randrange(0, 1) < jprob);
+      bool swapk = (randrange(0, 1) < jprob);
 
-      fakectr[j] = (randrange(0, 1) < jprob) ? cj : ck;
-      fakectr[k] = (randrange(0, 1) < jprob) ? cj : ck;
+      if (swapj && swapk) {
+        for (unsigned int s = j, sn = j + js, t = s + ctrlay->n; s < sn; ++s, ++t) {
+          std::swap(fakectr[s], fakectr[t]);
+        }
+      } else if (swapj) {
+        for (unsigned int s = j, sn = j + js, t = s + ctrlay->n; s < sn; ++s, ++t) {
+          fakectr[s] = fakectr[t];
+        }
+      } else if (swapk) {
+        for (unsigned int s = j, sn = j + js, t = s + ctrlay->n; s < sn; ++s, ++t) {
+          fakectr[t] = fakectr[s];
+        }
+      }
     }
   }
 
