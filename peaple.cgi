@@ -93,7 +93,7 @@ body {
 <b>edit parson</b>
 </td>
 
-<td align=right valign=top style='border: 0'><b><a href="https://github.com/jdb19937/makemore">makemore</a> peaple v0.1</b><br/>by Dan Brumleve</td>
+<td align=right valign=top style='border: 0'><b><a href="https://github.com/jdb19937/makemore">makemore</a> peaple v0.1</b><br/></td>
 </tr>
 </table>
 

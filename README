@@ -83,5 +83,5 @@ analagously to a discriminator in the adversarial learning model.
 The encoder is presented with an image generated from recombined controls
 and is trained to output the same controls.  However the generator when
 presented with recombined controls is trained to map them to an image
-that encodes to one of its parents controls, by backpropagation through
+that encodes to one of its parens' controls, by backpropagation through
 the encoder.
