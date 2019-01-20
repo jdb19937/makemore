@@ -93,8 +93,10 @@ void makebread(FILE *learnfp, Pipeline *pipe, Parson *p1, Parson *p2, Parson *pa
   parson->target_lock = 0;
   parson->revised = time(NULL);
 
-  parson->add_fren(p1->nom);
-  parson->add_fren(p2->nom);
+//  parson->add_fren(p1->nom);
+//  parson->add_fren(p2->nom);
+  parson->set_parens(p1->nom, p2->nom);
+
   p1->add_fren(parson->nom);
   p2->add_fren(parson->nom);
 
@@ -298,6 +300,14 @@ void handle(Pipeline *pipe, ParsonDB *parsons, FILE *infp, FILE *outfp) {
       ensure(ret == responsen);
       fprintf(stderr, "wrote n=%d\n", responsen);
 
+      response = (uint8_t *)parson->parens;
+      responsen = sizeof(parson->parens);
+      fprintf(stderr, "writing n=%u\n", responsen);
+      ret = fwrite(response, 1, responsen, outfp);
+      ensure(ret == responsen);
+      fprintf(stderr, "wrote n=%d\n", responsen);
+
+
       break;
     }
 
@@ -477,6 +487,13 @@ void handle(Pipeline *pipe, ParsonDB *parsons, FILE *infp, FILE *outfp) {
 
       response = (uint8_t *)parson->frens;
       responsen = sizeof(parson->frens);
+      fprintf(stderr, "writing n=%u\n", responsen);
+      ret = fwrite(response, 1, responsen, outfp);
+      ensure(ret == responsen);
+      fprintf(stderr, "wrote n=%d\n", responsen);
+
+      response = (uint8_t *)parson->parens;
+      responsen = sizeof(parson->parens);
       fprintf(stderr, "writing n=%u\n", responsen);
       ret = fwrite(response, 1, responsen, outfp);
       ensure(ret == responsen);

@@ -106,7 +106,7 @@ body {
 <td style='background-color: lightgray; border: 0' valign="top">
 
 <table width=970 height=320 style="border:0; overflow: hidden" cellspacing=0>
-<tr><td colspan=8 valign=top height=160px>
+<tr><td colspan=4 valign=top height=160px>
 
 <table cellpadding=5 style='font-size: large'>
 <tr><td align=right><b>nom</b></td><td>$NAME</td></tr>
@@ -116,7 +116,20 @@ body {
 <tr><td align=right><b>revisor</b></td></tr>
 </table>
 
-</td></tr>
+</td>
+<td align=left colspan=4 valign=top>
+
+  <table><tr>
+  <td><span style="font-size: 100px">(</span></td>
+  <td id=paren0 style="border-style: none; border-width: 2px; white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width: 100px; min-width: 100px; font-size: small"> </td>
+  <td id=paren1 style="border-style: none; border-width: 2px; white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width: 100px; min-width: 100px; font-size: small"> </td>
+  <td><span style="font-size: 100px">)</span></td>
+  </tr></table>
+
+</td>
+
+
+</tr>
 <tr><td colspan=8><hr/><font size=+2><b>frens of $NAME</b></font></td><tr>
 <tr valign=top height=110>
 <td id=fren0 style="border-style: none; border-width: 2px; white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width: 100px; min-width: 100px; font-size: small"> </td>
@@ -595,9 +608,13 @@ function gennom(gen) {
 
 function frenbufhilite() {
   var nom = document.getElementById('frenbuf').value
-  for (var i = 0; i < 15; ++i) {
+  for (var i = 0; i < 16; ++i) {
     var frentd = document.getElementById('fren' + i)
     frentd.style.borderColor = (nom == window.frens[i] ? 'blue' : 'gray');
+  }
+  for (var i = 0; i < 2; ++i) {
+    var parentd = document.getElementById('paren' + i)
+    parentd.style.borderColor = (nom == window.parens[i] ? 'blue' : 'gray');
   }
 }
 
@@ -1848,6 +1865,48 @@ function updatelocks(newlocks) {
   }
 }
 
+function updateparens(newparensbuf) {
+  if (!window.parens) {
+    window.parens = new Array(2)
+    window.parens[0] = ''
+    window.parens[1] = ''
+  }
+  var newparens = new Array(2)
+
+  for (var i = 0; i < 64; ++i) {
+    var j = Math.floor(i / 32);
+    var f = window.parens[j];
+    var c = newparensbuf[i]
+    if (i % 32 == 0) {
+      newparens[j] = ''
+    }
+    if (c > 0) {
+      newparens[j] = newparens[j] + String.fromCharCode(c);
+    }
+  }
+
+  for (var i = 0; i < 2; ++i) {
+    if (window.parens[i] != newparens[i]) {
+      var td = document.getElementById("paren" + i)
+      window.parens[i] = newparens[i]
+      var nom = window.parens[i]
+      if (nom == '') {
+        td.innerHTML = ""
+        td.style.borderStyle = 'none'
+        td.style.borderWidth = '2px'
+      } else {
+        var newhtml =  "<img width=100 height=100 id='image_" + nom + "' onMouseOver='mouseoverparen(" + i + ")' " +
+           " onMouseOut='mouseoutparen(" + i + ")' " +
+           " onClick='clickparen(" + i + ")' src='image/" + nom;
+        newhtml += "'><br/>" + nom
+        td.innerHTML = newhtml
+        td.style.borderStyle = 'solid'
+        td.style.borderColor = 'gray'
+      }
+    }
+  }
+}
+
 function updatefrens(newfrensbuf) {
   var newfrens = new Array(16)
 
@@ -1891,6 +1950,10 @@ function updatefrens(newfrensbuf) {
   frenbufhilite()
 }
 
+function mouseoverparen(i) {
+  var parentd = document.getElementById('paren' + i)
+  parentd.style.borderColor =  (document.getElementById('frenbuf').value == window.parens[i] ? 'blue' : 'yellow');
+}
 function mouseoverfren(i) {
   var frentd = document.getElementById('fren' + i)
   frentd.style.borderColor =  (document.getElementById('frenbuf').value == window.frens[i] ? 'blue' : 'yellow');
@@ -1898,6 +1961,10 @@ function mouseoverfren(i) {
 function mouseoutfren(i) {
   var frentd = document.getElementById('fren' + i)
   frentd.style.borderColor = (document.getElementById('frenbuf').value == window.frens[i] ? 'blue' : 'gray');
+}
+function mouseoutparen(i) {
+  var parentd = document.getElementById('paren' + i)
+  parentd.style.borderColor = (document.getElementById('frenbuf').value == window.parens[i] ? 'blue' : 'gray');
 }
 
 function clickfren(i) {
@@ -1909,13 +1976,24 @@ function clickfren(i) {
   frenbuf.value = window.frens[i]
   frenbufhilite()
 }
+function clickparen(i) {
+  var frenbuf = document.getElementById('frenbuf')
+  if (frenbuf.value == window.parens[i]) {
+    gotofile()
+    return
+  }
+  frenbuf.value = window.parens[i]
+  frenbufhilite()
+}
 
-function doupdate(newlabdata, newcontextdata, newcontroldata, newadjdata, newgendata, newlocks, newfrens) {
+
+function doupdate(newlabdata, newcontextdata, newcontroldata, newadjdata, newgendata, newlocks, newfrens, newparens) {
   updatectx(newcontextdata)
   updatecon(newcontroldata)
   updategen(newgendata)
   updatelocks(newlocks)
   updatefrens(newfrens)
+  updateparens(newparens)
 
   var stage4 = document.getElementById('stage4')
   var stage4ctx = stage4.getContext('2d')
@@ -2262,6 +2340,9 @@ window.onload = function() {
   makehint()
   makepalette(128, 0)
   document.getElementById('frenbuf').value = gennom()
+  window.parens = new Array(2);
+  window.parens[0] = ''
+  window.parens[1] = ''
   window.frens = new Array(16);
   window.mynewfren = ''
   for (var i = 0; i < 16; ++i) {
@@ -2286,8 +2367,9 @@ window.onload = function() {
   var part5 = 8*(64*64*3)
   var part6 = 8
   var part7 = 512
+  var part8 = 64
   
-  var packet = part1 + part2 + part3 + part4 + part5 + part6 + part7
+  var packet = part1 + part2 + part3 + part4 + part5 + part6 + part7 + part8
 
   window.socket = new WebSocket('ws://' + location.host + ':9999', ['binary']);
   window.socket.binaryType = 'arraybuffer';
@@ -2312,6 +2394,7 @@ window.onload = function() {
       var newgendata =  new Float64Array(buf.buffer, part1+part2+part3+part4, part5/8)
       var newlocks = new Uint8Array(buf.buffer, part1+part2+part3+part4+part5, part6)
       var newfrens = new Uint8Array(buf.buffer, part1+part2+part3+part4+part5+part6, part7)
+      var newparens = new Uint8Array(buf.buffer, part1+part2+part3+part4+part5+part6+part7, part8)
 
       var ret = readTypedArray(window.socket.inbuffer, packet)
       window.socket.inbuffer = ret[0]
@@ -2321,7 +2404,7 @@ for (var i = 0; i < newctrldata.length; ++i) { newctrldata[i] = 256 * newctrldat
 for (var i = 0; i < newadjdata.length; ++i) { newadjdata[i] = 128 + 128 * newadjdata[i]; }
 for (var i = 0; i < newgendata.length; ++i) { newgendata[i] = 256 * newgendata[i]; }
 
-      doupdate(labdata, newctxdata, newctrldata, newadjdata, newgendata, newlocks, newfrens)
+      doupdate(labdata, newctxdata, newctrldata, newadjdata, newgendata, newlocks, newfrens, newparens)
     }
   }
 

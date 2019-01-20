@@ -619,14 +619,14 @@ void Project::report(const char *prog) {
     stderr,
     "%s Project %s rounds=%u\n"
     "encpass_err2=%g encpass_errm=%g\n"
-    "dis_err2=%g dis_errm=%g\n"
+    "enc_err2=%g enc_errm=%g\n"
     "gen_err2=%g gen_errm=%g\n"
     "genpass_err2=%g genpass_errm=%g\n"
     "genenc_err2=%g genenc_errm=%g\n"
     "\n",
     prog, dir.c_str(), rounds,
     encpass->err2, encpass->errm,
-    dis->err2, dis->errm,
+    enc->err2, enc->errm,
     gen->err2, gen->errm,
     genpass->err2, genpass->errm,
     genenc->err2, genenc->errm

@@ -39,6 +39,7 @@ struct Parson {
   double target[dim * dim * 3];
 
   Nom frens[nfrens];
+  Nom parens[2];
 
   bool exists() {
     return (nom[0] != 0);
@@ -47,6 +48,7 @@ struct Parson {
   void initialize(const char *_nom, double mean, double dev);
 
   void add_fren(const char *fnom);
+  void set_parens(const char *anom, const char *bnom);
 };
 
 struct ParsonDB {

@@ -115,7 +115,21 @@ void Parson::add_fren(const char *fnom) {
   memset(frens[0], 0, sizeof(Nom));
   strcpy(frens[0], fnom);
 }
-  
+
+void Parson::set_parens(const char *anom, const char *bnom) {
+  if (anom)
+    assert(valid_nom(anom));
+  if (bnom)
+    assert(valid_nom(anom));
+  if (!anom)
+    anom = "";
+  if (!bnom)
+    bnom = "";
+
+  memset(parens, 0, sizeof(parens));
+  strcpy(parens[0], anom);
+  strcpy(parens[1], bnom);
+}
 
 void Parson::initialize(const char *_nom, double mean, double dev) {
   assert(!created);
@@ -156,6 +170,7 @@ void Parson::initialize(const char *_nom, double mean, double dev) {
 
   target_lock = 0;
   control_lock = 0xFF;
+  memset(parens, 0, sizeof(parens));
   memset(frens, 0, sizeof(frens));
   memset(target, 0, sizeof(target));
 }
