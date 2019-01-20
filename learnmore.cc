@@ -20,7 +20,7 @@ int main(int argc, char **argv) {
   seedrand();
 
   unsigned int mbn = 8;
-  double nu = 0.001, mu = 0.001, xi = 0, pi = 0, dcut = 0.3, zeta = 0;
+  double nu = 0.001, mu = 0, xi = 0, pi = 0, dcut = 0.3, yo = 0, wu = 0;
 
   ++argv;
   --argc;
@@ -63,12 +63,19 @@ int main(int argc, char **argv) {
         return usage();
       pi = strtod(argv[0], NULL);
 
-    } else if (!strcmp(arg, "--zeta")) {
+    } else if (!strcmp(arg, "--yo")) {
       ++argv;
       --argc;
       if (argc < 1)
         return usage();
-      zeta = strtod(argv[0], NULL);
+      yo = strtod(argv[0], NULL);
+
+    } else if (!strcmp(arg, "--wu")) {
+      ++argv;
+      --argc;
+      if (argc < 1)
+        return usage();
+      wu = strtod(argv[0], NULL);
 
     } else {
       return usage();
@@ -86,7 +93,7 @@ int main(int argc, char **argv) {
   const char *project_dir = argv[0];
   Project *proj = new Project(project_dir, mbn);
 
-  fprintf(stderr, "learnmore project=%s mu=%lf nu=%lf pi=%lf xi=%lf dcut=%lf\n", project_dir, mu, nu, pi, xi, dcut);
+  fprintf(stderr, "learnmore project=%s mu=%lf nu=%lf pi=%lf xi=%lf yo=%lf wu=%lf dcut=%lf\n", project_dir, mu, nu, pi, xi, yo, wu, dcut);
 
   unsigned int i = 0;
   while (1) {
@@ -105,9 +112,9 @@ int main(int argc, char **argv) {
       proj->train_creativity(xi, dcut);
     }
 
-    if (zeta > 0) {
+    if (yo > 0) {
       proj->load_ctxtgt(stdin);
-      proj->train_recombine(zeta);
+      proj->train_recombine(yo, wu);
     }
  
     if (i % 1000 == 0) {

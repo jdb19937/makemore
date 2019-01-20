@@ -106,7 +106,18 @@ body {
 <td style='background-color: lightgray; border: 0' valign="top">
 
 <table width=900 height=320 style="border:0; overflow: hidden" cellspacing=0>
-<tr><td height=160px></td></tr>
+<tr><td colspan=8 valign=top height=160px>
+
+<h1>$NAME</h1>
+
+<table>
+<tr><td>creator</td></tr>
+<tr><td>created</td></tr>
+<tr><td>revised</td></tr>
+<tr><td>revisor</td></tr>
+</table>
+
+</td></tr>
 <tr><td colspan=8><hr/><font size=+2><b>frens of $NAME</b></font></td><tr>
 <tr valign=top height=110>
 <td id=fren0 style="border-style: none; border-width: 2px; white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width: 100px; min-width: 100px; font-size: small"> </td>
@@ -341,7 +352,11 @@ doubleclick('attrstatic', genrandomattrs, 'attrcon')
 
   <tr>
 
- <td width=320 style="border-width: 3px; border-color: gray; border-style: solid; padding: 0px"><canvas id="stage1gen" width=320 height=320></canvas></td>
+ <td width=320 style="border-width: 3px; border-color: gray; border-style: solid; padding: 0px">
+
+<div id="hintlayer" style="position: absolute; width: 1500; height: 1500; z-index: -1"><canvas id=hintcanvas width=1500 height=1500></canvas></div>
+
+<canvas id="stage1gen" width=320 height=320></canvas></td>
  <td width=320 style="border-width: 3px; border-color: gray; border-style: solid; padding: 0px"><canvas id="palette" onClick="clickpalette(event)" width=320 height=320></canvas></td>
  <td width=320 style="border-width: 3px; border-color: gray; border-style: solid; padding: 0px"><canvas id="stage1" width=320 height=320></canvas></td>
 
@@ -2104,8 +2119,17 @@ function changetool(newtool) {
   window.tool = newtool
 }
 
+function hinton() {
+  var can = document.getElementById('hintcanvas');
+  var ctx = can.getContext('2d');
+  ctx.fillStyle = mkcol([0,0,255]);
+  // ctx.fillRect(0,0,1500,1500)
+}
+  
+
 
 window.onload = function() {
+hinton()
   makepalette(128, 0)
   document.getElementById('frenbuf').value = gennom()
   window.frens = new Array(16);

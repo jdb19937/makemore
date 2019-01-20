@@ -304,7 +304,7 @@ static void recenter(double *x, unsigned int n) {
   }
 }
 
-void Project::train_recombine(double zeta) {
+void Project::train_recombine(double yo, double wu) {
   assert(mbn % 2 == 0);
 
   for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
@@ -319,6 +319,9 @@ void Project::train_recombine(double zeta) {
       unsigned int k = j + ctrlay->n;
       double cj = fakectr[j];
       double ck = fakectr[k];
+ 
+      cj = 0.5 + (cj - 0.5) * (1.0 - wu);
+      ck = 0.5 + (ck - 0.5) * (1.0 - wu);
 
       double cjw = 1.0 - 4.0 * (0.5 - cj) * (0.5 - cj);
       double ckw = 1.0 - 4.0 * (0.5 - ck) * (0.5 - ck);
@@ -350,7 +353,7 @@ void Project::train_recombine(double zeta) {
   encude(fakectr, enc->outn, cuenctgt);
   genenc->feed(cugenin, NULL);
   genenc->target(cuenctgt);
-  genenc->train(zeta);
+  genenc->train(yo);
 }
 
 void Project::train_fidelity(double nu, double pi, double dcut) {
