@@ -6,10 +6,10 @@ peaple is a collaborative synthesis application based on makemore.
 You can make up a nom and it will generate a new parson using neural
 networks.  Then you can choose a different parson to bread it with,
 creating a new parson by recombining the parens' attributes.  You can
-modify any parson's target image directly in the super-resolution editor,
-and the controls will automatically adjust to represent it.  If the neural
-network's universe can't represent your target you can burn the target in,
-also affecting how all new parsons are generated.
+modify any parson's target image directly in the super-resolution
+editor, and the controls will automatically adjust to represent it.
+If the neural network's universe can't represent your target you can
+burn the target in, also affecting how all new parsons are generated.
 
 A parson can have up to 16 frens.  This is a simple mechanism for
 navigation, discovery, and workspace organization.  For example,
@@ -18,13 +18,13 @@ frenbuf with their nom, then the bread button will bread your parson with
 that fren.  Or to clone a fren, click them, then the set target button,
 then unlock all controls.
 
-The parson's nom seeds random attributes and controls which are fed into the
-first stage producing an 8x8 image.  That image along with the same
-attributes and new random controls are fed into the second stage yielding
-high-frequency components which are added back to the 8x8 input to produce
-a 16x16 output, etc., up to the fourth stage (64x64).  This final stage
-output is the partrait of the parson represented in the bottom-left cell
-of the edit matrix.
+The parson's nom seeds random attributes and controls which are fed
+into the first stage producing an 8x8 image.  That image along with the
+same attributes and new random controls are fed into the second stage
+yielding high-frequency components which are added back to the 8x8
+input to produce a 16x16 output, etc., up to the fourth stage (64x64).
+This final stage output is the partrait of the parson represented in
+the bottom-left cell of the edit matrix.
 
 A parallel editing pipeline starts with the same 8x8 image and applies
 adjustments at each stage to match the target.  If the stage controls are
@@ -78,7 +78,10 @@ are more likely to be inherited than recessive controls (those near 0
 (black) or near 1 (white)).
 
 The encoder-generator network is also composed in the other direction,
-as a generator-encoder.  In this configuration genenc is also trained
-as an identity function, mapping controls to controls.  genenc is then
-presented with recombined faithful controls from two different randomly
-chosen paren planets.  This is recombinative conditioning.
+as a generator-encoder.  In this configuration the encoder functions
+analagously to a discriminator in the adversarial learning model.
+The encoder is presented with an image generated from recombined controls
+and is trained to output the same controls.  However the generator when
+presented with recombined controls is trained to map them to an image
+that encodes to one of its parents controls, by backpropagation through
+the encoder.
