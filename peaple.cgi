@@ -547,6 +547,11 @@ onClick="toggletgtlock(4)"
 <pre style="font-size: 24px">
 $README
 </pre>
+
+<form action="note.txt" method="get">
+<textarea name="text" cols=80 rows=5/></textarea><br/>
+<input type=submit value="send me a brief note">
+</form>
 </font>
 </td></tR></table>
 

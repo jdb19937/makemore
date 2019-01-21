@@ -61,7 +61,7 @@ is locked, the same operation updates the final-stage target with a
 black square.
 
 By using the stage-level target and control locks, you can swap
-backgrounds and airstyles by setting a target with the 8x8 controls
+backgrounds or hair by setting a target with the 8x8 controls
 unlocked and all others locked.  Or replace fine details by unlocking
 only the higher-stage controls.
 
