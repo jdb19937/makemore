@@ -25,13 +25,16 @@ if (my $path = $ENV{PATH_INFO}) {
   exit 0;
 }
 
+my $addr = unpack('N', pack('C4', split /\./, $ENV{REMOTE_ADDR}));
+
 print "Content-type: text/html; charset=utf-8\r\n";
 print "\r\n";
 
 my %sub = (
   'README'	=> $README,
   'NAME'	=> $NAME,
-  'NONCE'	=> $NONCE
+  'NONCE'	=> $NONCE,
+  'IPADDR'	=> $addr
 );
 
 while (<DATA>) {
@@ -110,10 +113,10 @@ body {
 
 <table cellpadding=5 style='font-size: large'>
 <tr><td align=right><b>nom</b></td><td>$NAME</td></tr>
-<tr><td align=right><b>creator</b></td></tr>
-<tr><td align=right><b>created</b></td></tr>
-<tr><td align=right><b>revised</b></td></tr>
-<tr><td align=right><b>revisor</b></td></tr>
+<tr><td align=right><b>creator</b></td><td id=creator></td></tr>
+<tr><td align=right><b>created</b></td><td id=created></td></tr>
+<tr><td align=right><b>revisor</b></td><td id=revisor></td></tr>
+<tr><td align=right><b>revised</b></td><td id=revised></td></tr>
 </table>
 
 </td>
@@ -1601,7 +1604,7 @@ function reqgen() {
   var tcontrols = window.tcontrols;
   var nbuf = namebuf()
 
-  var reqsize = 8 + nbuf.length
+  var reqsize = 8 + nbuf.length + 4
 
   var reqbuf = new Uint8Array(reqsize)
   var reqoff = 0
@@ -1612,6 +1615,12 @@ function reqgen() {
 
   reqbuf.set(nbuf, reqoff)
   reqoff += nbuf.length
+
+  reqbuf[reqoff+0] = ($IPADDR >> 24) & 0xFF
+  reqbuf[reqoff+1] = ($IPADDR >> 16) & 0xFF
+  reqbuf[reqoff+2] = ($IPADDR >> 8) & 0xFF
+  reqbuf[reqoff+3] = ($IPADDR >> 0) & 0xFF
+  reqoff += 4
 
   if (reqoff != reqsize) {
     alert('huh')
@@ -1638,7 +1647,7 @@ function requpdate(hyper) {
   var nbuf = namebuf()
   var thyper = 8
 
-  var reqsize = 8 + nbuf.length + thyper + tattrs + 8*tcontrols + 8*tadjust + 32
+  var reqsize = 8 + nbuf.length + thyper + tattrs + 8*tcontrols + 8*tadjust + 32 + 4
   var reqoff = 0
 
   var reqbuf = new Uint8Array(reqsize)
@@ -1709,6 +1718,12 @@ function requpdate(hyper) {
       reqfrens[i] = c
     }
   }
+
+  reqbuf[reqoff+0] = ($IPADDR >> 24) & 0xFF
+  reqbuf[reqoff+1] = ($IPADDR >> 16) & 0xFF
+  reqbuf[reqoff+2] = ($IPADDR >> 8) & 0xFF
+  reqbuf[reqoff+3] = ($IPADDR >> 0) & 0xFF
+  reqoff += 4
 
   if (reqoff != reqsize) {
     alert('huh reqoff=' + reqoff + ' reqsize=' + reqsize);
@@ -1986,14 +2001,37 @@ function clickparen(i) {
   frenbufhilite()
 }
 
+function makeip(z) {
+  var a = (z>>24) & 0xFF
+  var b = (z>>16) & 0xFF
+  var c = (z>>8) & 0xFF
+  var d = (z>>0) & 0xFF
+  var ip = a + "." + b + "." + c + "." + d
+  return ip
+}
 
-function doupdate(newlabdata, newcontextdata, newcontroldata, newadjdata, newgendata, newlocks, newfrens, newparens) {
+function updatemeta(newmetabuf) {
+  var newmetabytes = new Uint8Array(newmetabuf)
+  var newmeta = new Uint32Array(newmetabytes.buffer)
+  document.getElementById('creator').innerHTML = newmeta[0] ? makeip(newmeta[0]) : ''
+  document.getElementById('created').innerHTML = newmeta[1] ? newmeta[1] + " (-" + (Math.floor(Date.now()/1000) - newmeta[1]) + ")" : ''
+  document.getElementById('revisor').innerHTML = newmeta[2] ? makeip(newmeta[2]) : ''
+
+  document.getElementById('revised').innerHTML = newmeta[3] ? newmeta[3] + " (-" + (Math.floor(Date.now()/1000) - newmeta[3]) + ")" : ''
+
+
+//  alert(newmeta)
+}
+
+
+function doupdate(newlabdata, newcontextdata, newcontroldata, newadjdata, newgendata, newlocks, newfrens, newparens, newmeta) {
   updatectx(newcontextdata)
   updatecon(newcontroldata)
   updategen(newgendata)
   updatelocks(newlocks)
   updatefrens(newfrens)
   updateparens(newparens)
+  updatemeta(newmeta)
 
   var stage4 = document.getElementById('stage4')
   var stage4ctx = stage4.getContext('2d')
@@ -2337,6 +2375,7 @@ function makehint() {
 
 
 window.onload = function() {
+  //alert(makeip($IPADDR))
   makehint()
   makepalette(128, 0)
   document.getElementById('frenbuf').value = gennom()
@@ -2368,8 +2407,9 @@ window.onload = function() {
   var part6 = 8
   var part7 = 512
   var part8 = 64
+  var part9 = 16
   
-  var packet = part1 + part2 + part3 + part4 + part5 + part6 + part7 + part8
+  var packet = part1 + part2 + part3 + part4 + part5 + part6 + part7 + part8 + part9
 
   window.socket = new WebSocket('ws://' + location.host + ':9999', ['binary']);
   window.socket.binaryType = 'arraybuffer';
@@ -2395,6 +2435,7 @@ window.onload = function() {
       var newlocks = new Uint8Array(buf.buffer, part1+part2+part3+part4+part5, part6)
       var newfrens = new Uint8Array(buf.buffer, part1+part2+part3+part4+part5+part6, part7)
       var newparens = new Uint8Array(buf.buffer, part1+part2+part3+part4+part5+part6+part7, part8)
+      var newmeta = new Uint8Array(buf.buffer, part1+part2+part3+part4+part5+part6+part7+part8, part9)
 
       var ret = readTypedArray(window.socket.inbuffer, packet)
       window.socket.inbuffer = ret[0]
@@ -2404,7 +2445,7 @@ for (var i = 0; i < newctrldata.length; ++i) { newctrldata[i] = 256 * newctrldat
 for (var i = 0; i < newadjdata.length; ++i) { newadjdata[i] = 128 + 128 * newadjdata[i]; }
 for (var i = 0; i < newgendata.length; ++i) { newgendata[i] = 256 * newgendata[i]; }
 
-      doupdate(labdata, newctxdata, newctrldata, newadjdata, newgendata, newlocks, newfrens, newparens)
+      doupdate(labdata, newctxdata, newctrldata, newadjdata, newgendata, newlocks, newfrens, newparens, newmeta)
     }
   }
 

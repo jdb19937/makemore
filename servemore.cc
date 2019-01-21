@@ -49,7 +49,7 @@ void makeparens(FILE *learnfp, Pipeline *pipe, ParsonDB *parsons, Parson *parson
   bool update_p2 = !p2->revised;
 
   makeparson(learnfp, pipe, p1);
-  makeparson(learnfp, pipe, p2);
+  makeparson( learnfp, pipe, p2);
 
   p1->add_fren(p2->nom);
   p1->add_fren(parson->nom);
@@ -142,6 +142,7 @@ void makebread(FILE *learnfp, Pipeline *pipe, Parson *p1, Parson *p2, Parson *pa
   parson->control_lock = -1;
   parson->target_lock = 0;
   parson->revised = time(NULL);
+  parson->revisor = 0;
 
 //  parson->add_fren(p1->nom);
 //  parson->add_fren(p2->nom);
@@ -209,6 +210,7 @@ void makeparson(FILE *learnfp, Pipeline *pipe, Parson *parson) {
   memcpy(parson->attrs, ctxbuf0, sizeof(parson->attrs));
 
   parson->revised = time(NULL);
+  parson->revisor = 0;
 
   pipe->load_ctx_bytes(parson->attrs);
   memcpy(pipe->ctrbuf, parson->controls, sizeof(parson->controls));
@@ -222,11 +224,13 @@ void handle(Pipeline *pipe, ParsonDB *parsons, FILE *infp, FILE *outfp) {
   uint8_t cmd[8];
   char nom[32];
   int ret;
+  uint32_t ip = 0;
   uint8_t lockbuf[8];
   uint8_t new_ctrlock, new_tgtlock;
   uint8_t *new_fren = new uint8_t[32];
   uint8_t *new_ctx = new uint8_t[pipe->ctxlay->n];
   double *new_ctr = new double[pipe->ctrlay->n];
+  uint32_t meta[4];
 
   unsigned int fixiters = 5;
   double fixblend = 0.2;
@@ -270,6 +274,9 @@ void handle(Pipeline *pipe, ParsonDB *parsons, FILE *infp, FILE *outfp) {
 
     switch (cmd[0]) {
     case 0: {
+      ensure( 4 == fread(&ip, 1, 4, infp) );
+      ip = ntohl(ip);
+
       if (parson->created) {
         memcpy(pipe->outbuf, parson->target, pipe->outlay->n * sizeof(double));
       } else {
@@ -361,6 +368,17 @@ void handle(Pipeline *pipe, ParsonDB *parsons, FILE *infp, FILE *outfp) {
       ensure(ret == responsen);
       fprintf(stderr, "wrote n=%d\n", responsen);
 
+      meta[0] = parson->creator;
+      meta[1] = parson->created;
+      meta[2] = parson->revisor;
+      meta[3] = parson->revised;
+
+      response = (uint8_t *)meta;
+      responsen = sizeof(meta);
+      fprintf(stderr, "writing n=%u\n", responsen);
+      ret = fwrite(response, 1, responsen, outfp);
+      ensure(ret == responsen);
+      fprintf(stderr, "wrote n=%d\n", responsen);
 
       break;
     }
@@ -369,12 +387,15 @@ void handle(Pipeline *pipe, ParsonDB *parsons, FILE *infp, FILE *outfp) {
       new_tgtlock = cmd[1];
       new_ctrlock = cmd[2];
 
+      bool newly_created = false;
       if (parson->created) {
         memcpy(pipe->outbuf, parson->target, pipe->outlay->n * sizeof(double));
+        parson->revised = time(NULL);
       } else {
         makeparson(learnfp, pipe, parson);
         makeparens(learnfp, pipe, parsons, parson);
         parson->created = time(NULL);
+        newly_created = true;
 
         pipe->load_ctx_bytes(parson->attrs);
         memcpy(pipe->ctrbuf, parson->controls, sizeof(parson->controls));
@@ -390,6 +411,13 @@ void handle(Pipeline *pipe, ParsonDB *parsons, FILE *infp, FILE *outfp) {
       ensure( pipe->adjlay->n == fread(pipe->adjbuf, sizeof(double), pipe->adjlay->n, infp) );
       ensure( 32 == fread(new_fren, 1, 32, infp) );
       ensure( new_fren[31] == 0 );
+      ensure( 4 == fread(&ip, 1, 4, infp) );
+      ip = ntohl(ip);
+
+      if (newly_created) {
+        parson->creator = ip;
+      }
+      parson->revisor = ip;
 
       bool ctrchange = (hyper[0] == 1 || hyper[0] == 2 || hyper[0] == 3);
       if (ctrchange) {
@@ -532,6 +560,7 @@ void handle(Pipeline *pipe, ParsonDB *parsons, FILE *infp, FILE *outfp) {
           fparson->target_lock = 0;
           fparson->control_lock = 0xFF;
           fparson->revised = time(NULL);
+          fparson->revisor = ip;
         }
 
         if (hyper[0] == 5) {
@@ -555,6 +584,18 @@ void handle(Pipeline *pipe, ParsonDB *parsons, FILE *infp, FILE *outfp) {
 
       response = (uint8_t *)parson->parens;
       responsen = sizeof(parson->parens);
+      fprintf(stderr, "writing n=%u\n", responsen);
+      ret = fwrite(response, 1, responsen, outfp);
+      ensure(ret == responsen);
+      fprintf(stderr, "wrote n=%d\n", responsen);
+
+      meta[0] = parson->creator;
+      meta[1] = parson->created;
+      meta[2] = parson->revisor;
+      meta[3] = parson->revised;
+
+      response = (uint8_t *)meta;
+      responsen = sizeof(meta);
       fprintf(stderr, "writing n=%u\n", responsen);
       ret = fwrite(response, 1, responsen, outfp);
       ensure(ret == responsen);
