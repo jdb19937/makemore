@@ -526,6 +526,9 @@ void handle(Pipeline *pipe, ParsonDB *parsons, FILE *infp, FILE *outfp) {
           memset(fparson->target, 0, sizeof(Parson::target));
           memcpy(fparson->controls, parson->controls, sizeof(Parson::controls));
           memcpy(fparson->attrs, parson->attrs, sizeof(Parson::attrs));
+          memcpy(fparson->parens[0], parson->nom, 32);
+          memcpy(fparson->parens[1], parson->nom, 32);
+          //memset(fparson->parens[1], 0, 32);
           fparson->target_lock = 0;
           fparson->control_lock = 0xFF;
           fparson->revised = time(NULL);

@@ -18,6 +18,11 @@ frenbuf with their nom, then the bread button will bread your parson with
 that fren.  Or to clone a fren, click them, then the set target button,
 then unlock all controls.
 
+Every parson has parens listed at the top right of the file.  If the
+parson was produced by breading, the parens are the same breading pair.
+If the parson was cloned, both parens are the original parson.  Otherwise
+the parens are synthesized by recombination.
+
 The parson's nom seeds random attributes and controls which are fed
 into the first stage producing an 8x8 image.  That image along with the
 same attributes and new random controls are fed into the second stage
@@ -66,16 +71,10 @@ attributes and the controls back to the original image.  The composition
 of both networks (encgen) is trained as an identity function giving
 faithful control vectors.
 
-Recombining two control vectors means creating a new control vector where
-each element is copied from one of the two paren control vectors chosen
-at random.  The odds in this choice are given by a dominance function
-dom(x) = 1-4*(1/2-x)^2 applied to the control vector value (which lies
-between 0 and 1).  For example, if one paren has control value 1/4,
-and the other paren has control value 1/2, the probability of inheriting
-the first paren's value is dom(1/4)/(dom(1/4)+dom(1/2)) = (3/4)/(3/4+1)
-= 3/7.  By this mechanism, dominant controls (those near 1/2 (gray))
-are more likely to be inherited than recessive controls (those near 0
-(black) or near 1 (white)).
+Recombining two paren control vectors means creating a new control vector
+with elements inherited from one or the other paren.  The vectors are
+partitioned into jeans of size 8 and each jean of the new vector
+is copied from one of the two parens with even odds.
 
 The encoder-generator network is also composed in the other direction,
 as a generator-encoder.  In this configuration the encoder functions
