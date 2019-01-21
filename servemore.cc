@@ -37,6 +37,53 @@ ParsonDB *open_parsons() {
   return new ParsonDB("parsons.dat");
 }
 
+void makeparson(FILE *learnfp, Pipeline *pipe, Parson *parson);
+
+void makeparens(FILE *learnfp, Pipeline *pipe, ParsonDB *parsons, Parson *parson) {
+  Parson *p1 = parsons->find(parson->parens[0]);
+  Parson *p2 = parsons->find(parson->parens[1]);
+
+  if (p1->revised && p2->revised)
+    return;
+  bool update_p1 = !p1->revised;
+  bool update_p2 = !p2->revised;
+
+  makeparson(learnfp, pipe, p1);
+  makeparson(learnfp, pipe, p2);
+
+  p1->add_fren(p2->nom);
+  p1->add_fren(parson->nom);
+  p2->add_fren(p1->nom);
+  p2->add_fren(parson->nom);
+
+  p1->target_lock = 0;
+  p1->control_lock = -1;
+  p2->target_lock = 0;
+  p2->control_lock = -1;
+
+  unsigned int js = 8;
+  assert(Parson::ncontrols % js == 0);
+
+  for (unsigned int i = 0; i < Parson::ncontrols; i += js) {
+    double jprob = 0.5;
+    bool fromj = (randrange(0.0, 1.0) < jprob);
+
+    if (fromj) {
+      if (update_p1) {
+        for (unsigned int q = i, qn = i + js; q < qn; ++q) {
+          p1->controls[q] = parson->controls[q];
+        }
+      }
+    } else {
+      if (update_p2) {
+        for (unsigned int q = i, qn = i + js; q < qn; ++q) {
+          p2->controls[q] = parson->controls[q];
+        }
+      }
+    }
+  }
+}
+
 void makebread(FILE *learnfp, Pipeline *pipe, Parson *p1, Parson *p2, Parson *parson, uint8_t gender) {
   uint8_t *ctxbuf = new uint8_t[pipe->ctxlay->n];
 
@@ -60,6 +107,7 @@ void makebread(FILE *learnfp, Pipeline *pipe, Parson *p1, Parson *p2, Parson *pa
   unsigned int js = 8;
   assert(Parson::ncontrols % js == 0);
   for (unsigned int i = 0; i < Parson::ncontrols; i += js) {
+#if 0
     double cj = 0;
     double ck = 0;
     for (unsigned int q = i, qn = i + js; q < qn; ++q) {
@@ -76,7 +124,9 @@ void makebread(FILE *learnfp, Pipeline *pipe, Parson *p1, Parson *p2, Parson *pa
     double jprob = 0.5;
     if (cjw + ckw > 0) 
       jprob = cjw / (cjw + ckw);
-    bool fromj = (randrange(0, 1) < jprob);
+#endif
+    double jprob = 0.5;
+    bool fromj = (randrange(0.0, 1.0) < jprob);
 
     if (fromj) {
       for (unsigned int q = i, qn = i + js; q < qn; ++q) {
@@ -126,6 +176,7 @@ void makeparson(FILE *learnfp, Pipeline *pipe, Parson *parson) {
   pipe->ctrlock = -1;
   memcpy(ctrbuf0, pipe->ctrbuf, pipe->ctrlay->n * sizeof(double));
 
+#if 0
   uint8_t *ctxbuf1 = new uint8_t[pipe->ctxlay->n];
   double *ctrbuf1 = new double[pipe->ctrlay->n];
   do {
@@ -148,6 +199,7 @@ void makeparson(FILE *learnfp, Pipeline *pipe, Parson *parson) {
     ctxbuf0[i] = blend * ctxbuf0[i] + (1.0 - blend) * ctxbuf1[i];
   for (unsigned int i = 0; i < pipe->ctrlay->n; ++i)
     ctrbuf0[i] = blend * ctrbuf0[i] + (1.0 - blend) * ctrbuf1[i];
+#endif
 
   parson->control_lock = -1;
   parson->target_lock = 0;
@@ -164,8 +216,6 @@ void makeparson(FILE *learnfp, Pipeline *pipe, Parson *parson) {
 
   delete[] ctrbuf0;
   delete[] ctxbuf0;
-  delete[] ctrbuf1;
-  delete[] ctxbuf1;
 }
 
 void handle(Pipeline *pipe, ParsonDB *parsons, FILE *infp, FILE *outfp) {
@@ -224,6 +274,10 @@ void handle(Pipeline *pipe, ParsonDB *parsons, FILE *infp, FILE *outfp) {
         memcpy(pipe->outbuf, parson->target, pipe->outlay->n * sizeof(double));
       } else {
         makeparson(learnfp, pipe, parson);
+        makeparens(learnfp, pipe, parsons, parson);
+
+        pipe->load_ctx_bytes(parson->attrs);
+        memcpy(pipe->ctrbuf, parson->controls, sizeof(parson->controls));
       }
 
       pipe->uptarget();
@@ -319,7 +373,11 @@ void handle(Pipeline *pipe, ParsonDB *parsons, FILE *infp, FILE *outfp) {
         memcpy(pipe->outbuf, parson->target, pipe->outlay->n * sizeof(double));
       } else {
         makeparson(learnfp, pipe, parson);
+        makeparens(learnfp, pipe, parsons, parson);
         parson->created = time(NULL);
+
+        pipe->load_ctx_bytes(parson->attrs);
+        memcpy(pipe->ctrbuf, parson->controls, sizeof(parson->controls));
       }
 
       uint8_t hyper[8], zero[8];

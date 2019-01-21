@@ -13,6 +13,7 @@
 
 #include "sha256.c"
 #include "prenoms.c"
+#include "surnoms.c"
 
 #include "parson.hh"
 #include "random.hh"
@@ -49,24 +50,69 @@ bool Parson::valid_nom(const char *nom) {
   return true;
 }
 
+static std::map<std::string, bool> _gender_map;
+
+static void _make_gender_map() {
+  for (unsigned int i = 0; prenoms[i]; ++i) {
+    _gender_map[prenoms[i]] = prenom_gender[i];
+  }
+}
+
 bool Parson::female_nom(const char *nom) {
   if (!valid_nom(nom))
     return false;
+  if (_gender_map.empty())
+    _make_gender_map();
 
   const char *p = nom;
   while (*p == '_')
     ++p;
 
-  p = strchr(nom, '_');
-  if (!p)
-    p = nom + strlen(nom);
-  --p;
-  assert(p >= nom);
-
-  if (*p == 'a' || *p == 'i')
-    return true;
-
+  Nom prenom;
+  strcpy(prenom, p);
+  if (char *q = strchr(prenom, '_'))
+    *q = 0;
+  auto i = _gender_map.find(prenom);
+  if (i != _gender_map.end())
+    return !i->second;
+  
+  if (unsigned int l = strlen(prenom)) {
+    if (prenom[l - 1] == 'a' || prenom[l - 1] == 'i')
+      return true;
+  }
+      
   return (randuint() % 3 == 0);
+}
+
+void Parson::paren_noms(const char *nom, char *mnom, char *fnom) {
+  assert(valid_nom(nom));
+
+  unsigned int mprenomid;
+  do {
+    mprenomid = randuint() % ((sizeof(prenoms) / sizeof(*prenoms)) - 1);
+  } while (prenom_gender[mprenomid] != 1);
+  const char *mprenom = prenoms[mprenomid];
+
+  Nom surnom;
+  if (const char *p = strrchr(nom, '_')) {
+    strcpy(surnom, p + 1);
+  } else {
+    strcpy(surnom, nom);
+  }
+  surnom[16] = '\0';
+  const char *msurnom = surnom;
+
+  unsigned int fprenomid;
+  do {
+    fprenomid = randuint() % ((sizeof(prenoms) / sizeof(*prenoms)) - 1);
+  } while (prenom_gender[fprenomid] != 0);
+  const char *fprenom = prenoms[fprenomid];
+
+  unsigned int fsurnomid = randuint() % ((sizeof(surnoms) / sizeof(*surnoms)) - 1);
+  const char *fsurnom = surnoms[fsurnomid];
+
+  sprintf(mnom, "%s_%s", mprenom, msurnom);
+  sprintf(fnom, "%s_%s", fprenom, fsurnom);
 }
 
 std::string Parson::bread(const char *nom0, const char *nom1, uint8_t *new_gender) {
@@ -161,8 +207,6 @@ void Parson::initialize(const char *_nom, double mean, double dev) {
       attrs[20] = 255;
   }
 
-  seedrand();
-
   created = 0;
   revised = 0;
   creator = 0;
@@ -171,8 +215,11 @@ void Parson::initialize(const char *_nom, double mean, double dev) {
   target_lock = 0;
   control_lock = 0xFF;
   memset(parens, 0, sizeof(parens));
+  paren_noms(nom, parens[0], parens[1]);
   memset(frens, 0, sizeof(frens));
   memset(target, 0, sizeof(target));
+
+  seedrand();
 }
 
 

@@ -12,6 +12,7 @@ struct Parson {
   static uint64_t hash_nom(const char *nom);
   static bool female_nom(const char *);
   static std::string bread(const char *nom0, const char *nom1, uint8_t * = NULL);
+  static void paren_noms(const char *, char *, char *);
 
   const static unsigned int nfrens = 16;
   const static unsigned int ntags = 0;

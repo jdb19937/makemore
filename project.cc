@@ -317,6 +317,7 @@ void Project::train_recombine(double yo, double wu, unsigned int js) {
   decude(cuencout, enc->outn, realctr);
   for (unsigned int mbi = 0; mbi < mbn; mbi += 2) {
     for (unsigned int j = mbi * ctrlay->n, jn = j + ctrlay->n; j < jn; j += js) {
+#if 0
       double cj = 0;
       double ck = 0;
 
@@ -335,6 +336,8 @@ void Project::train_recombine(double yo, double wu, unsigned int js) {
       double jprob = 0.5;
       if (cjw + ckw > 0) 
         jprob = cjw / (cjw + ckw);
+#endif
+      double jprob = 0.5;
 
       if (randrange(0, 1) < jprob) {
         for (unsigned int s = j, sn = j + js, t = s + ctrlay->n; s < sn; ++s, ++t)
