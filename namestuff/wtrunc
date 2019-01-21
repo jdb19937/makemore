@@ -1,0 +1,8 @@
+#!/usr/bin/perl
+
+while (<>) {
+  chomp;
+  $_ = lc($_);
+  /(^[^aeiou]*[aeiou]+[^aeiou]+[aeiou]+)/ or next;
+  print "$1\n";
+}
