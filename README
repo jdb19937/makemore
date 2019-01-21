@@ -8,7 +8,7 @@ networks.  Then you can choose a different parson to bread it with,
 creating a new parson by recombining the parens' attributes.  You can
 modify any parson's target image directly in the super-resolution
 editor, and the controls will automatically adjust to represent it.
-If the neural network's universe can't represent your target you can
+If the neural network's control space can't represent your target you can
 burn the target in, also affecting how all new parsons are generated.
 
 A parson can have up to 16 frens.  This is a simple mechanism for
