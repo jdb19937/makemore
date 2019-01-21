@@ -31,6 +31,14 @@ input to produce a 16x16 output, etc., up to the fourth stage (64x64).
 This final stage output is the partrait of the parson represented in
 the bottom-left cell of the edit matrix.
 
+A parson has labelled attributes that are fed into every stage.
+The neural network learns to encode the controls orthogonally to
+the attributes, so in control-locked mode they can be used to
+guide the generation: add glasses, change hair color, gender, etc.
+When in target-locked mode, choosing correct attributes allows
+for a better control fit.  There are also two free-form tags
+whose hashes are added to the attribute vector.
+
 A parallel editing pipeline starts with the same 8x8 image and applies
 adjustments at each stage to match the target.  If the stage controls are
 unlocked, they will be automatically reset to minimize the adjustment.
