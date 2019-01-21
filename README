@@ -73,7 +73,7 @@ faithful control vectors.
 
 Recombining two paren control vectors means creating a new control vector
 with elements inherited from one or the other paren.  The vectors are
-partitioned into jeans of size 8 and each jean of the new vector
+partitioned into size 8 jeans and each jean of the new vector
 is copied from one of the two parens with even odds.
 
 The encoder-generator network is also composed in the other direction,
