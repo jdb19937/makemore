@@ -49,7 +49,7 @@ void makeparens(FILE *learnfp, Pipeline *pipe, ParsonDB *parsons, Parson *parson
   bool update_p2 = !p2->revised;
 
   makeparson(learnfp, pipe, p1);
-  makeparson( learnfp, pipe, p2);
+  makeparson(learnfp, pipe, p2);
 
   p1->add_fren(p2->nom);
   p1->add_fren(parson->nom);
@@ -64,11 +64,23 @@ void makeparens(FILE *learnfp, Pipeline *pipe, ParsonDB *parsons, Parson *parson
   unsigned int js = 8;
   assert(Parson::ncontrols % js == 0);
 
-  for (unsigned int i = 0; i < Parson::ncontrols; i += js) {
-    double jprob = 0.5;
-    bool fromj = (randrange(0.0, 1.0) < jprob);
+  for (unsigned int i = 0; i < Parson::nattrs; i++) {
+    if (i == 20)
+      continue;
+    if (randrange(0.0, 1.0) < 0.5) {
+      p1->attrs[i] = parson->attrs[i];
+    } else {
+      p2->attrs[i] = parson->attrs[i];
+    }
+  }
+  p1->attrs[39] = 0;
+  p2->attrs[39] = 0;
 
-    if (fromj) {
+  for (unsigned int i = 0; i < Parson::ncontrols; i += js) {
+    // if (randrange(0,1) < 0.25)
+    //   continue;
+
+    if (randrange(0.0, 1.0) < 0.5) {
       if (update_p1) {
         for (unsigned int q = i, qn = i + js; q < qn; ++q) {
           p1->controls[q] = parson->controls[q];
@@ -103,6 +115,7 @@ void makebread(FILE *learnfp, Pipeline *pipe, Parson *p1, Parson *p2, Parson *pa
     parson->attrs[i] = (uint8_t)(blend * p1->attrs[i] + (1.0 - blend) * p2->attrs[i]);
   }
   parson->attrs[20] = gender * 255;
+  parson->attrs[39] = 255;
 
   unsigned int js = 8;
   assert(Parson::ncontrols % js == 0);
@@ -564,8 +577,12 @@ void handle(Pipeline *pipe, ParsonDB *parsons, FILE *infp, FILE *outfp) {
         }
 
         if (hyper[0] == 5) {
-          uint8_t gender;
-          std::string cnomstr = Parson::bread(nom, fren0, &gender);
+          uint8_t gender = parson->attrs[20] ? 1 : 0;
+          if (parson->attrs[20] != fparson->attrs[20]) {
+            gender = (randuint() % 2);
+          }
+
+          std::string cnomstr = Parson::bread(nom, fren0, gender);
           const char *cnom = cnomstr.c_str();
           fprintf(stderr, "breading %s + %s -> %s\n", nom, fren0, cnom);
           Parson *cparson = parsons->find(cnom);

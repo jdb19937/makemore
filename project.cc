@@ -317,26 +317,6 @@ void Project::train_recombine(double yo, double wu, unsigned int js) {
   decude(cuencout, enc->outn, realctr);
   for (unsigned int mbi = 0; mbi < mbn; mbi += 2) {
     for (unsigned int j = mbi * ctrlay->n, jn = j + ctrlay->n; j < jn; j += js) {
-#if 0
-      double cj = 0;
-      double ck = 0;
-
-      for (unsigned int s = j, sn = j + js, t = s + ctrlay->n; s < sn; ++s, ++t) {
-        double cs = realctr[s];
-        double ct = realctr[t];
-        cj += 4.0 * (cs - 0.5) * (cs - 0.5);
-        ck += 4.0 * (ct - 0.5) * (ct - 0.5);
-      }
-
-      cj /= (double)js;
-      ck /= (double)js;
- 
-      double cjw = 1.0 - cj;
-      double ckw = 1.0 - ck;
-      double jprob = 0.5;
-      if (cjw + ckw > 0) 
-        jprob = cjw / (cjw + ckw);
-#endif
       double jprob = 0.5;
 
       if (randrange(0, 1) < jprob) {
@@ -357,21 +337,8 @@ void Project::train_recombine(double yo, double wu, unsigned int js) {
     }
   }
 
-  memcpy(fakectx, ctxbuf, sizeof(double) * mbn * ctxlay->n);
-#if 0
-  for (unsigned int mbi = 0; mbi < mbn; mbi += 2) {
-    for (unsigned int j = mbi * ctxlay->n, jn = j + ctxlay->n; j < jn; ++j) {
-      unsigned int k = j + ctxlay->n;
-      double cj = fakectx[j];
-      double ck = fakectx[k];
-      fakectx[j] = (randuint() % 2) ? cj : ck;
-      fakectx[k] = (randuint() % 2) ? cj : ck;
-    }
-  }
-#endif
-
   for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
-    encude(fakectx + mbi * ctxlay->n, ctxlay->n, cugenin + mbi * geninlay->n + 0);
+    encude( ctxbuf + mbi * ctxlay->n, ctxlay->n, cugenin + mbi * geninlay->n + 0);
     encude(fakectr + mbi * ctrlay->n, ctrlay->n, cugenin + mbi * geninlay->n + ctxlay->n);
   }
 

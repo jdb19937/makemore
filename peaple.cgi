@@ -120,39 +120,47 @@ body {
 </table>
 
 </td>
-<td align=left colspan=4 valign=top>
+<td align=right colspan=5 valign=top>
 
   <table><tr>
   <td><span style="font-size: 100px">(</span></td>
-  <td id=paren0 style="border-style: none; border-width: 2px; white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width: 100px; min-width: 100px; font-size: small"> </td>
-  <td id=paren1 style="border-style: none; border-width: 2px; white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width: 100px; min-width: 100px; font-size: small"> </td>
+  <td id=paren0 style="border-style: none; border-width: 2px; white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width: 100px; min-width: 100px; font-size: x-small"> </td>
+  <td id=paren1 style="border-style: none; border-width: 2px; white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width: 100px; min-width: 100px; font-size: x-small"> </td>
   <td><span style="font-size: 100px">)</span></td>
   </tr></table>
 
 </td>
 
 
+
 </tr>
 <tr><td colspan=8><hr/><font size=+2><b>frens of $NAME</b></font></td><tr>
 <tr valign=top height=110>
-<td id=fren0 style="border-style: none; border-width: 2px; white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width: 100px; min-width: 100px; font-size: small"> </td>
-<td id=fren1 style="border-style: none; border-width: 2px; white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width: 100px; min-width: 100px; font-size: small"> </td>
-<td id=fren2 style="border-style: none; border-width: 2px; white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width: 100px; min-width: 100px; font-size: small"> </td>
-<td id=fren3 style="border-style: none; border-width: 2px; white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width: 100px; min-width: 100px; font-size: small"> </td>
-<td id=fren4 style="border-style: none; border-width: 2px; white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width: 100px; min-width: 100px; font-size: small"> </td>
-<td id=fren5 style="border-style: none; border-width: 2px; white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width: 100px; min-width: 100px; font-size: small"> </td>
-<td id=fren6 style="border-style: none; border-width: 2px; white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width: 100px; min-width: 100px; font-size: small"> </td>
-<td id=fren7 style="border-style: none; border-width: 2px; white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width: 100px; min-width: 100px; font-size: small"> </td>
+<td width=100 id=fren0 style="border-style: none; border-width: 2px; white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width: 100px; min-width: 100px; font-size: x-small"> </td>
+<td width=100 id=fren1 style="border-style: none; border-width: 2px; white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width: 100px; min-width: 100px; font-size: x-small"> </td>
+<td width=100 id=fren2 style="border-style: none; border-width: 2px; white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width: 100px; min-width: 100px; font-size: x-small"> </td>
+<td width=100 id=fren3 style="border-style: none; border-width: 2px; white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width: 100px; min-width: 100px; font-size: x-small"> </td>
+<td width=100 id=fren4 style="border-style: none; border-width: 2px; white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width: 100px; min-width: 100px; font-size: x-small"> </td>
+<td width=100 id=fren5 style="border-style: none; border-width: 2px; white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width: 100px; min-width: 100px; font-size: x-small"> </td>
+<td width=100 id=fren6 style="border-style: none; border-width: 2px; white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width: 100px; min-width: 100px; font-size: x-small"> </td>
+<td width=100 id=fren7 style="border-style: none; border-width: 2px; white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width: 100px; min-width: 100px; font-size: x-small"> </td>
+<td rowspan=2>
+
+
+
+
+
+</td>
 </tr>
 <tr valign=top height=110>
-<td id=fren8 style="border-style: none; border-width: 2px; white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width: 100px; min-width: 100px; font-size: small"> </td>
-<td id=fren9 style="border-style: none; border-width: 2px; white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width: 100px; min-width: 100px; font-size: small"> </td>
-<td id=fren10 style="border-style: none; border-width: 2px; white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width: 100px; min-width: 100px; font-size: small"> </td>
-<td id=fren11 style="border-style: none; border-width: 2px; white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width: 100px; min-width: 100px; font-size: small"> </td>
-<td id=fren12 style="border-style: none; border-width: 2px; white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width: 100px; min-width: 100px; font-size: small"> </td>
-<td id=fren13 style="border-style: none; border-width: 2px; white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width: 100px; min-width: 100px; font-size: small"> </td>
-<td id=fren14 style="border-style: none; border-width: 2px; white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width: 100px; min-width: 100px; font-size: small"> </td>
-<td id=fren15 style="border-style: none; border-width: 2px; white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width: 100px; min-width: 100px; font-size: small"> </td>
+<td width=100 id=fren8 style="border-style: none; border-width: 2px; white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width: 100px; min-width: 100px; font-size: x-small"> </td>
+<td width=100 id=fren9 style="border-style: none; border-width: 2px; white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width: 100px; min-width: 100px; font-size: x-small"> </td>
+<td width=100 id=fren10 style="border-style: none; border-width: 2px; white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width: 100px; min-width: 100px; font-size: x-small"> </td>
+<td width=100 id=fren11 style="border-style: none; border-width: 2px; white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width: 100px; min-width: 100px; font-size: x-small"> </td>
+<td width=100 id=fren12 style="border-style: none; border-width: 2px; white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width: 100px; min-width: 100px; font-size: x-small"> </td>
+<td width=100 id=fren13 style="border-style: none; border-width: 2px; white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width: 100px; min-width: 100px; font-size: x-small"> </td>
+<td width=100 id=fren14 style="border-style: none; border-width: 2px; white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width: 100px; min-width: 100px; font-size: x-small"> </td>
+<td width=100 id=fren15 style="border-style: none; border-width: 2px; white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width: 100px; min-width: 100px; font-size: x-small"> </td>
 </tr>
 
 <tr>
@@ -558,60 +566,9 @@ $README
 
 </body>
 
+<script src="gennom.js"></script>
+
  <script>
-
-function gennom(gen) {  
-  var pre1 = [
-     'jay', 'crys', 'jun', 'holl', 'harv', 'thund', 'bowl', 'haz', 'zinc', 'surf',
-     'dun', 'jol', 'mar', 'fren', 'frod', 'froom',
-     'grun', 'herk', 'jark', 'kev', 'lem', 'mel', 'norm',
-    'ned', 'rugg', 'frap', 'sorr', 'trop', 'vern', 'wum',
-    'bob', 'frood'
-  ];
-  
-  var msuf1 = ['io', 'ius', 'ader', 'on', 'son', 'y', 'athan', 'opher'];
-  var fsuf1 = ['ia', 'ina', 'ona', 'adra', 'iona', 'i'];
-  
-  var pre2 = [
-    'frep', 'mup', 'tran', 'string', 'synth',
-    'dun', 'sami', 'gork', 'free', 'blar', 'gan', 'net',
-    'fron', 'long', 'tarp', 'lor', 'norm', 'neur', 'blur',
-    'nimble', 'luck', 'just', 'fair', 'pool', 'hoop', 'milk'
-  ];
-  
-  var suf2 = [
-    'bean', 'stone', 'barn', 'tree',
-    'rock', 'screen', 'fake', 'null', 'grond', 'bun',
-    'nam', 'plain', 'real', 'sticker', 'picker',
-    'packer', 'macker', 'maker', 'bane', 'son',
-    'wood', 'bull', 'ster',
-    'friend', 'raver', 'rover', 'mark', 'hawk', 'razor', 'weed', 'walker',
-    'burger'
-  ]
-    
-  var pick = function(x) { return x[Math.floor(Math.random() * x.length)] }
-
-  var p1 = pick(pre1)
-  var s1
-  if (gen == 'm') {
-    s1 = pick(msuf1)
-  } else if (gen == 'f') {
-    s1 = pick(fsuf1)
-  } else {
-    s1 = pick(pick([msuf1, fsuf1]))
-  }
-
-  var p2 = pick(pre2)
-  if (Math.random() < 0.05) {
-    p2 = "mc" + p2
-  }
-  if (Math.random() < 0.03) {
-    p2 = pick(["von_", "van_", "van_der_", "al_", "o_"]) + p2
-  }
-  var s2 = pick(suf2)
-    
-  return p1 + s1 + "_" + p2 + s2
-}
 
 
 function frenbufhilite() {

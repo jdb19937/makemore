@@ -76,12 +76,23 @@ bool Parson::female_nom(const char *nom) {
   if (i != _gender_map.end())
     return !i->second;
   
-  if (unsigned int l = strlen(prenom)) {
+  unsigned int l = strlen(prenom);
+  if (l >= 1) {
     if (prenom[l - 1] == 'a' || prenom[l - 1] == 'i')
       return true;
   }
+
+  if (l >= 1) {
+    if (prenom[l - 1] == 'o')
+      return false;
+  }
+  if (l >= 2) {
+    if (prenom[l - 1] == 's' && prenom[l - 2] == 'u')
+      return false;
+  }
       
-  return (randuint() % 3 == 0);
+      
+  return (randuint() % 2 == 0);
 }
 
 void Parson::paren_noms(const char *nom, char *mnom, char *fnom) {
@@ -115,35 +126,24 @@ void Parson::paren_noms(const char *nom, char *mnom, char *fnom) {
   sprintf(fnom, "%s_%s", fprenom, fsurnom);
 }
 
-std::string Parson::bread(const char *nom0, const char *nom1, uint8_t *new_gender) {
+std::string Parson::bread(const char *nom0, const char *nom1, uint8_t gender) {
   std::string newnom;
 
-  unsigned int prenomid = randuint() % ((sizeof(prenoms) / sizeof(*prenoms)) - 1);
+  unsigned int prenomid;
+  do {
+    prenomid = randuint() % ((sizeof(prenoms) / sizeof(*prenoms)) - 1);
+  } while (prenom_gender[prenomid] != gender);
+
   const char *prenom = prenoms[prenomid];
-  if (new_gender)
-    *new_gender = prenom_gender[prenomid];
 
   newnom = prenom;
 
   const char *suf;
-  if (const char *p = strrchr(nom1, '_')) {
+  if (const char *p = strrchr(nom0, '_')) {
     newnom += p;
-    suf = p + 1;
   } else {
     newnom += "_";
-    newnom += nom1;
-    suf = nom1;
-  }
-
-  if (const char *p = strrchr(nom0, '_')) {
-    if (strcmp(p + 1, suf)) {
-      newnom += p;
-    }
-  } else {
-    if (strcmp(nom0, suf)) {
-      newnom += "_";
-      newnom += nom0;
-    }
+    newnom += nom0;
   }
 
   if (newnom.length() > 31)
@@ -295,6 +295,8 @@ Parson *ParsonDB::find(const char *nom) {
     if (strcmp(nom, dan_nom)) {
       p->add_fren(dan_nom);
       Parson *dan = find(dan_nom);
+      strcpy(dan->parens[0], dan_nom);
+      strcpy(dan->parens[1], dan_nom);
       dan->add_fren(nom);
     }
   }
