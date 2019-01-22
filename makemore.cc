@@ -39,24 +39,18 @@ int main(int argc, char **argv) {
 pipe->tgtlock = -1;
 
     for (unsigned int j = 0, jn = pipe->ctrlay->n; j < jn; ++j)
-      pipe->ctrbuf[j] = sigmoid(randgauss() * 0.1);
+      pipe->ctrbuf[j] = 0.5;
     pipe->generate();
-pipe->reencode();
-pipe->generate();
     ppm.pastelab(pipe->outbuf, dim, dim, dim * 0, 0);
 
     for (unsigned int j = 0, jn = pipe->ctrlay->n; j < jn; ++j)
         pipe->ctrbuf[j] = sigmoid(randgauss() * 0.2);
     pipe->generate();
-pipe->reencode();
-pipe->generate();
     ppm.pastelab(pipe->outbuf, dim, dim, dim * 1, 0);
 
     for (unsigned int j = 0, jn = pipe->ctrlay->n; j < jn; ++j)
         pipe->ctrbuf[j] = sigmoid(randgauss());
     pipe->generate();
-pipe->reencode();
-pipe->generate();
     ppm.pastelab(pipe->outbuf, dim, dim, dim * 2, 0);
 
 #if 0

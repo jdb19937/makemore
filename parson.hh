@@ -18,7 +18,7 @@ struct Parson {
   const static unsigned int ntags = 0;
   const static unsigned int dim = 64;
   const static unsigned int ncontrols = 1920;
-  const static unsigned int nattrs = 40;
+  const static unsigned int nattrs = 72;
   typedef char Nom[32];
 
   uint64_t hash;

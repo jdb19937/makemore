@@ -320,22 +320,57 @@ void Project::train_recombine(double yo, double wu, unsigned int js) {
       double jprob = 0.5;
 
       if (randrange(0, 1) < jprob) {
-        for (unsigned int s = j, sn = j + js, t = s + ctrlay->n; s < sn; ++s, ++t)
+        for (unsigned int s = j, sn = j + js, t = s + ctrlay->n; s < sn; ++s, ++t) {
           fakectr[s] = realctr[s];
-      } else {
-        for (unsigned int s = j, sn = j + js, t = s + ctrlay->n; s < sn; ++s, ++t)
-          fakectr[s] = realctr[t];
-      }
-
-      if (randrange(0, 1) < jprob) {
-        for (unsigned int s = j, sn = j + js, t = s + ctrlay->n; s < sn; ++s, ++t)
-          fakectr[t] = realctr[s];
-      } else {
-        for (unsigned int s = j, sn = j + js, t = s + ctrlay->n; s < sn; ++s, ++t)
           fakectr[t] = realctr[t];
+        }
+      } else {
+        for (unsigned int s = j, sn = j + js, t = s + ctrlay->n; s < sn; ++s, ++t) {
+          fakectr[s] = realctr[t];
+          fakectr[t] = realctr[s];
+        }
       }
     }
   }
+
+  for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
+    encude( ctxbuf + mbi * ctxlay->n, ctxlay->n, cugenin + mbi * geninlay->n + 0);
+    encude(fakectr + mbi * ctrlay->n, ctrlay->n, cugenin + mbi * geninlay->n + ctxlay->n);
+  }
+
+  encude(realctr, enc->outn, cuenctgt);
+  genenc->feed(cugenin, NULL);
+  genenc->target(cuenctgt);
+  enc->train(0);
+  genpass->update_stats();
+  genpass->train(wu);
+
+
+  encude(fakectr, enc->outn, cuenctgt);
+  enc->feed(genpass->output(), NULL);
+  enc->target(cuenctgt);
+  enc->train(yo);
+}
+
+void Project::train_scramble(double yo, double wu) {
+  for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
+    encude(ctxbuf + mbi * ctxlay->n, ctxlay->n, cuencin + mbi * encinlay->n + 0);
+    encude(tgtbuf + mbi * tgtlay->n, tgtlay->n, cuencin + mbi * encinlay->n + ctxlay->n);
+  }
+
+  const double *cuencout = enc->feed(cuencin, NULL);
+  decude(cuencout, enc->outn, realctr);
+
+#if 0
+fprintf(stderr, "realctr: ");
+for (unsigned int j = 0; j < 10; ++j)
+fprintf(stderr, "%lf, ", realctr[j]);
+fprintf(stderr, "\n");
+#endif
+
+  for (unsigned int mbi = 0; mbi < mbn; ++mbi)
+    for (unsigned int j = mbi * ctrlay->n, jn = j + ctrlay->n; j < jn; ++j)
+      fakectr[j] = sigmoid(randgauss());
 
   for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
     encude( ctxbuf + mbi * ctxlay->n, ctxlay->n, cugenin + mbi * geninlay->n + 0);

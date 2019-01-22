@@ -63,7 +63,7 @@ libmakemore.a: $(LIBOBJ)
 $(DATASETS): celeba-dataset/unzipped
 
 face-attrs.dat:
-	./mkattrsdat.pl > $@
+	./mkfacedat.pl -attrs > $@
 face-attrs.lay:
 	./mkattrslay.pl > $@
 

@@ -74,6 +74,13 @@ body {
   font-family: courier;
 }
 
+.colattrclass {
+  padding-top: 1px;
+  padding-left: 3px;
+  font-family: courier;
+  font-size: small
+}
+
 .attrclass {
   padding-top: 1px;
   padding-left: 3px;
@@ -220,6 +227,8 @@ body {
 <td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr0' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> #stubble  </td></tr></table>   </td>
 <td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr30' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> #sideburns  </td></tr></table>   </td>
 <td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr16' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> #goatee  </td></tr></table>   </td>
+
+<td onMouseOver="document.getElementById('colattrhint').style.visibility = 'visible'" onMouseOut="document.getElementById('colattrhint').style.visibility = 'hidden'"> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='colattr0' style='border: 3px solid gray; background-color: black; width: 16; height: 16'></div> </td><td valign=center class='colattrclass'> #edge_mean  </td></tr></table>   </td>
 </tr><tr>
 
 
@@ -231,6 +240,8 @@ body {
 <td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr4' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> #bald  </td></tr></table>   </td>
 <td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr32' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> #straight_hair  </td></tr></table>   </td>
 <td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr33' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> #wavy_hair  </td></tr></table>   </td>
+
+<td onMouseOver="document.getElementById('colattrhint').style.visibility = 'visible'" onMouseOut="document.getElementById('colattrhint').style.visibility = 'hidden'"> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='colattr1' style='border: 3px solid gray; background-color: black; width: 16; height: 16'></div> </td><td valign=center class='colattrclass'> #edge_stddev  </td></tr></table>   </td>
 </tr><tr>
 
 <td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr5' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> #bangs  </td></tr></table>   </td>
@@ -241,6 +252,8 @@ body {
 <td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr13' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> #chubby  </td></tr></table>   </td>
 <td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr14' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> #double_chin  </td></tr></table>   </td>
 <td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr21' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> #mouth_open  </td></tr></table>   </td>
+
+<td onMouseOver="document.getElementById('colattrhint').style.visibility = 'visible'" onMouseOut="document.getElementById('colattrhint').style.visibility = 'hidden'"> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='colattr2' style='border: 3px solid gray; background-color: black; width: 16; height: 16'></div> </td><td valign=center class='colattrclass'> #center_mean  </td></tr></table>   </td>
 </tr><tr>
 
 <td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr20' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> #male  </td></tr></table>   </td>
@@ -251,6 +264,9 @@ body {
 <td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr6' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> #big_lips  </td></tr></table>   </td>
 <td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr7' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> #big_nose  </td></tr></table>   </td>
 <td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr27' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> #pointy_nose  </td></tr></table>   </td>
+
+<td onMouseOver="document.getElementById('colattrhint').style.visibility = 'visible'" onMouseOut="document.getElementById('colattrhint').style.visibility = 'hidden'"> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='colattr3' style='border: 3px solid gray; background-color: black; width: 16; height: 16'></div> </td><td valign=center class='colattrclass'> #center_stddev  </td></tr></table>   </td>
+
 </tr><tr>
 
 
@@ -262,6 +278,9 @@ body {
 <td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr36' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> #lipstick  </td></tr></table>   </td>
 <td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr37' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> #necklace  </td></tr></table>   </td>
 <td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr38' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> #necktie  </td></tr></table>   </td>
+
+<td> <font size="-1" color=#333333><div id="colattrhint" style="visibility: hidden">[above attributes are colored]</font> </td>
+
 </tr><tr>
 
 <tr><td colspan=8 border=1></td></tr>
@@ -271,10 +290,10 @@ function vis(id) { document.getElementById(id).style.visibility = 'visible' }
 function unvis(id) { document.getElementById(id).style.visibility = 'hidden' }
 </script>
 
-<td colspan=2> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='tag0' style='border: 3px solid gray; background-color: black; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> #<input id="tag0in" size="24" maxlength=24 value="" onFocus="vis('taghint')" onFocusout="unvis('taghint')"/>  </td></tr></table>   </td>
+<td colspan=2> <table cellpadding=0 cellspacing=1 onMouseOver="vis('taghint')" onMouseOut="unvis('taghint')" ><tr><td> <div id='tag0' style='border: 3px solid gray; background-color: black; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> #<input id="tag0in" size="24" maxlength=24 value="" />  </td></tr></table>   </td>
 
-<td colspan=2> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='tag1' style='border: 3px solid gray; background-color: black; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> #<input id="tag1in" size="24" maxlength=24 value="" onFocus="vis('taghint')" onFocusout="unvis('taghint')"/>  </td></tr></table>   </td>
-<td id=taghint colspan=4 style='visibility: hidden'> [enter any two tags matching regex /^[a-z][a-z0-9_]*$/] </td>
+<td colspan=2> <table cellpadding=0 cellspacing=1 onMouseOver="vis('taghint')" onMouseOut="unvis('taghint')"><tr><td> <div id='tag1' style='border: 3px solid gray; background-color: black; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> #<input id="tag1in" size="24" maxlength=24 value="" />  </td></tr></table>   </td>
+<td id=taghint colspan=4 style='visibility: hidden'> <font color="#444444" size="-1">[enter any two tags] </font></td>
 
 </table>
 
