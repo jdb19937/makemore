@@ -213,12 +213,19 @@ body {
 
 <td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='persattr0' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> #introvert_extrovert  </td></tr></table>   </td>
 <td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='persattr1' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> #sensitive_intuitive  </td></tr></table>   </td>
+<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='persattr6' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> #polite_profane  </td></tr></table>   </td>
 </tr><tr>
 <td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='persattr2' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> #feeling_thinking  </td></tr></table>   </td>
 <td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='persattr3' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> #perceptive_judgemental  </td></tr></table>   </td>
+<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='persattr5' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> #modest_amorous  </td></tr></table>   </td>
 </tr>
 
-</tr></table></td>
+<tr>
+</tr>
+
+
+
+</table></td>
 
 </tr>
 
