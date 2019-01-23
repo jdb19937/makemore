@@ -243,6 +243,10 @@ void ParsonDB::fill_fam(const char *nom, Parson::Nom *fam) {
   Parson *p = find(nom);
   assert(p);
 
+  seen.insert(nom);
+  seen.insert(p->parens[0]);
+  seen.insert(p->parens[1]);
+
   memset(fam, 0, sizeof(Parson::Nom) * nfam);
   unsigned int fami = 0;
 
@@ -252,10 +256,13 @@ void ParsonDB::fill_fam(const char *nom, Parson::Nom *fam) {
     pp1 = NULL;
 
   for (unsigned int i = 0; i < Parson::nfrens && fami < nfam; ++i) {
+    const char *pfnom = p->frens[i];
+    if (seen.count(pfnom))
+      continue;
     Parson *pf = find(p->frens[i]);
     if (!pf)
       continue;
-    if (p->fraternal(pf) && !seen.count(pf->nom)) {
+    if (p->fraternal(pf) || !strcmp(pf->parens[0], nom) || !strcmp(pf->parens[1], nom)) {
       strcpy(fam[fami++], pf->nom);
       seen.insert(pf->nom);
     }
@@ -263,10 +270,13 @@ void ParsonDB::fill_fam(const char *nom, Parson::Nom *fam) {
 
   if (pp0) {
     for (unsigned int i = 0; i < Parson::nfrens && fami < nfam; ++i) {
-      Parson *pf = find(pp0->frens[i]);
+      const char *pfnom = pp0->frens[i];
+      if (seen.count(pfnom))
+        continue;
+      Parson *pf = find(pfnom);
       if (!pf)
         continue;
-      if (p->fraternal(pf) && !seen.count(pf->nom)) {
+      if (p->fraternal(pf)) {
         strcpy(fam[fami++], pf->nom);
         seen.insert(pf->nom);
       }
@@ -275,11 +285,14 @@ void ParsonDB::fill_fam(const char *nom, Parson::Nom *fam) {
 
   if (pp1) {
     for (unsigned int i = 0; i < Parson::nfrens && fami < nfam; ++i) {
-      Parson *pf = find(pp0->frens[i]);
+      const char *pfnom = pp1->frens[i];
+      if (seen.count(pfnom))
+        continue;
+      Parson *pf = find(pfnom);
       if (!pf)
         continue;
-      if (p->fraternal(pf) && !seen.count(pf->nom)) {
-        strcpy(fam[fami++], pf->nom);
+      if (p->fraternal(pf)) {
+        strcpy(fam[fami++], pf->nom); 
         seen.insert(pf->nom);
       }
     }
