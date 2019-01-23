@@ -43,7 +43,7 @@ while (<DATA>) {
 }
 
 __DATA__
-<html> <head> <title>makemore peaple v0.1</title>
+<html> <head> <title>makemore peaple v0.2</title>
 <base href="..">
 
 <style>
@@ -103,7 +103,7 @@ body {
 <b>edit parson</b>
 </td>
 
-<td align=right valign=top style='border: 0'><b><a href="https://github.com/jdb19937/makemore">makemore</a> peaple v0.1</b><br/></td>
+<td align=right valign=top style='border: 0'><b><a href="https://github.com/jdb19937/makemore">makemore</a> peaple v0.2</b><br/></td>
 </tr>
 </table>
 
@@ -119,17 +119,21 @@ body {
 <tr><td colspan=4 valign=top height=160px>
 
 <table cellpadding=5 style='font-size: large'>
-<tr><td align=right><b>nom</b></td><td>$NAME</td></tr>
-<tr><td align=right><b>creator</b></td><td id=creator></td></tr>
-<tr><td align=right><b>created</b></td><td id=created></td></tr>
-<tr><td align=right><b>revisor</b></td><td id=revisor></td></tr>
-<tr><td align=right><b>revised</b></td><td id=revised></td></tr>
+<tr><td width=100px align=right><b>nom</b></td><td>$NAME</td></tr>
+<tr><td width=100px align=right><b>creator</b></td><td id=creator></td></tr>
+<tr><td width=100px align=right><b>created</b></td><td id=created></td></tr>
+<tr><td width=100px align=right><b>revisor</b></td><td id=revisor></td></tr>
+<tr><td width=100px align=right><b>revised</b></td><td id=revised></td></tr>
 </table>
 
+
+
 </td>
-<td align=right colspan=5 valign=top>
+<td align=right colspan=4 valign=top>
 
   <table><tr>
+  <td colspan=4 align=right><b style='font-size: x-large'>fam</b></td>
+  </tr><tr>
   <td><span style="font-size: 100px">(</span></td>
   <td id=paren0 style="border-style: none; border-width: 2px; white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width: 100px; min-width: 100px; font-size: x-small"> </td>
   <td id=paren1 style="border-style: none; border-width: 2px; white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width: 100px; min-width: 100px; font-size: x-small"> </td>
@@ -137,10 +141,55 @@ body {
   </tr></table>
 
 </td>
-
-
-
 </tr>
+
+<tr>
+<td colspan=4>
+<hr/>
+</td>
+</tr>
+
+
+
+<tr>
+<td colspan=4>
+
+<table cellpadding=5 style='font-size: large'>
+  <tr><td width=100px align=right valign=top><b>interview</b></td><td>
+  <input id=ivbuf type=text maxlength=48 size=48 value="hello"><input type=button value="submit" onClick="document.getElementById('ivbuf').value=''">
+  <br/>
+  </td></tr><tr><td colspan=2>
+  
+  <table style='border: 1px solid black' bgcolor="white" width=600 height=200>
+  <tr><td id="ivresponse" style='font-size: large; font-family: monospace' valign=top>[response should be synthesized by makemore using attrs, controls, partrait, frens and fam, partraits and attrs of frens and fam]</td></tr>
+  </table>
+  </td></tr>
+
+  <tr><td><input type=button value="toggle animation"></td></tr>
+  </td>
+<!--
+  <td colspan=4 style='padding-left: 10px; border-left: 1px solid gray' valign=top>
+  <b style='font-size: x-large'>fam</b>
+  </td>
+-->
+</tr>
+</table>
+
+
+
+
+</td>
+</tr></table>
+
+
+
+</td></tr></table>
+
+
+<table><tr><td>
+<table>
+
+
 <tr><td colspan=8><hr/><font size=+2><b>frens of $NAME</b></font></td><tr>
 <tr valign=top height=110>
 <td width=100 id=fren0 style="border-style: none; border-width: 2px; white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width: 100px; min-width: 100px; font-size: x-small"> </td>
@@ -284,7 +333,7 @@ body {
 <td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr37' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> #necklace  </td></tr></table>   </td>
 <td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr38' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> #necktie  </td></tr></table>   </td>
 
-<td> <font size="-1" color=#333333><div id="colattrhint" style="visibility: hidden">[above attributes are colored]</font> </td>
+<td> <font size="-1" color=#333333><div id="colattrhint" style="visibility: hidden">[pick color for above attributes]</font> </td>
 
 </tr><tr>
 
@@ -363,7 +412,7 @@ doubleclick('attrstatic', genrandomattrs, 'attrcon')
     <input type=button id=ctrlockbutton onClick="unlockalltargets()" value="unlock all targets">
   <input type="button" for="imageLoader" value="upload target" onClick="getElementById('imageLoader').click()"/>
 <input type="file" size="60" id="imageLoader" name="imageLoader" accept="image/png, image/jpeg"/>
-  <input type="button" value="toggle legend" onClick="var z = document.getElementById('hintlayer'); if (z.style.zIndex > 0) { z.style.zIndex = -10; z.style.visibility = 'hidden' } else { z.style.zIndex = 10; z.style.visibility = 'visible' }">
+  <input type="button" value="toggle legend" onClick="document.cookie = 'seenlegend=1'; var z = document.getElementById('hintlayer'); if (z.style.zIndex > 0) { z.style.zIndex = -10; z.style.visibility = 'hidden' } else { z.style.zIndex = 10; z.style.visibility = 'visible' }">
 <div style="display: none"><canvas id="imageCanvas" width=64 height=64></canvas></div>
   </td>
 
@@ -402,7 +451,7 @@ doubleclick('attrstatic', genrandomattrs, 'attrcon')
 
  <td width=320 style="border-width: 3px; border-color: gray; border-style: solid; padding: 0px">
 
-<div id="hintlayer" style="position: absolute; width: 1500; height: 1500; z-index: 10" onClick="this.style.visibility = 'hidden'; this.style.zIndex = -10">test<canvas id=hintcanvas width=1500 height=1500></canvas></div>
+<div id="hintlayer" style="position: absolute; width: 1500; height: 1500; z-index: 10" onClick="document.cookie='seenlegend=1'; this.style.visibility = 'hidden'; this.style.zIndex = -10"> <canvas id=hintcanvas width=1500 height=1500></canvas></div>
 
 <canvas id="stage1gen" width=320 height=320></canvas></td>
  <td width=320 style="border-width: 3px; border-color: gray; border-style: solid; padding: 0px"><canvas id="palette" onClick="clickpalette(event)" width=320 height=320></canvas></td>
@@ -575,7 +624,7 @@ onClick="toggletgtlock(4)"
 
 
 <table width=1500 bgcolor=white cellpadding=16><tr><td>
-<h1>instructions for makemore peaple v0.1</h1>
+<h1>instructions for makemore peaple v0.2</h1>
 <pre style="font-size: 24px">
 $README
 </pre>
@@ -2395,6 +2444,15 @@ function makehint() {
   ctx.fillStyle = mkcol([0,0,0])
   ctx.fillText('click to toggle control lock', off + 12, 26)
   ctx.restore()
+
+  var hl = document.getElementById('hintlayer');
+  if (document.cookie) {
+    hl.style.visibility = 'hidden';
+    hl.style.zIndex = -10;
+  } else {
+    hl.style.visibility = 'visible';
+    hl.style.zIndex = 10;
+  }
 }
   
 
