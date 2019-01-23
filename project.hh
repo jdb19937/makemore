@@ -43,6 +43,7 @@ struct Project {
 
   void load_ctxtgt(FILE *infp);
   void train_recombine(double yo, double wu, unsigned int js);
+  void train_scramble(double yo, double wu);
   void train_fidelity(double nu, double pi, double dcut);
   void train_judgement(double mu, double dcut);
   void train_creativity(double xi, double dcut);

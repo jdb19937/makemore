@@ -30,6 +30,19 @@ uint64_t Parson::hash_nom(const char *nom) {
   return h;
 }
 
+uint64_t Parson::hash_tag(const char *tag) {
+  uint8_t hash[32];
+  SHA256_CTX sha;
+  sha256_init(&sha);
+  sha256_update(&sha, (const uint8_t *)"#", 1);
+  sha256_update(&sha, (const uint8_t *)tag, strlen(tag));
+  sha256_final(&sha, hash);
+
+  uint64_t h;
+  memcpy(&h, hash, 8);
+  return h;
+}
+
 
 bool Parson::valid_nom(const char *nom) {
   if (strlen(nom) > 31)
@@ -194,12 +207,10 @@ void Parson::initialize(const char *_nom, double mean, double dev) {
   for (unsigned int i = 0; i < ncontrols; ++i)
     controls[i] = sigmoid(mean + randgauss() * dev);
 
-  for (unsigned int i = 0; i < ntags; ++i)
-    tags[i] = 0;
+  memset(tags, 0, sizeof(tags));
 
   for (unsigned int i = 0; i < nattrs; ++i)
     attrs[i] = (randuint() % 2) ? 255 : 0;
-
   if (nattrs >= 21) {
     if (female_nom(nom))
       attrs[20] = 0;

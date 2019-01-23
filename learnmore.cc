@@ -114,7 +114,8 @@ int main(int argc, char **argv) {
 
     if (yo > 0) {
       proj->load_ctxtgt(stdin);
-      proj->train_recombine(yo, wu, 8);
+      proj->train_scramble(yo, wu);
+      // proj->train_recombine(yo, wu, 1);
     }
  
     if (i % 1000 == 0) {
