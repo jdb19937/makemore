@@ -12,6 +12,7 @@
 #include "cudamem.hh"
 #include "pipeline.hh"
 #include "parson.hh"
+#include "ppm.hh"
 
 #include "sha256.c"
 
@@ -48,6 +49,11 @@ void makeparens(FILE *learnfp, Pipeline *pipe, ParsonDB *parsons, Parson *parson
   bool update_p1 = !p1->revised;
   bool update_p2 = !p2->revised;
 
+  if (update_p1)
+    p1->attrs[39] = 0;
+  if (update_p2)
+    p2->attrs[39] = 0;
+
   makeparson(learnfp, pipe, p1);
   makeparson(learnfp, pipe, p2);
 
@@ -80,21 +86,18 @@ void makeparens(FILE *learnfp, Pipeline *pipe, ParsonDB *parsons, Parson *parson
   if (update_p2)
     p2->attrs[39] = 0;
 
-  double z = randrange(0.0, 1.0);
   for (unsigned int i = 40; i < 52; i += 3) {
-//    if (randrange(0.0, 1.0) < 0.5) {
-    if (z < 0.5) {
-      if (update_p1) {
-        p1->attrs[i+0] = parson->attrs[i+0];
-        p1->attrs[i+1] = parson->attrs[i+1];
-        p1->attrs[i+2] = parson->attrs[i+2];
-      }
-    } else {
-      if (update_p2) {
-        p2->attrs[i+0] = parson->attrs[i+0];
-        p2->attrs[i+1] = parson->attrs[i+1];
-        p2->attrs[i+2] = parson->attrs[i+2];
-      }
+    // double blend = (randuint() % 2 : 1.0 : 0.0; //randrange(0.0, 1.0);
+    double blend = sigmoid(randgauss() * 5);
+    if (update_p1) {
+      p1->attrs[i+0] = blend * parson->attrs[i+0] + (1-blend) * p1->attrs[i+0];
+      p1->attrs[i+1] = blend * parson->attrs[i+1] + (1-blend) * p1->attrs[i+1];
+      p1->attrs[i+2] = blend * parson->attrs[i+2] + (1-blend) * p1->attrs[i+2];
+    }
+    if (update_p2) {
+      p2->attrs[i+0] = (1-blend) * parson->attrs[i+0] + blend * p2->attrs[i+0];
+      p2->attrs[i+1] = (1-blend) * parson->attrs[i+1] + blend * p2->attrs[i+1];
+      p2->attrs[i+2] = (1-blend) * parson->attrs[i+2] + blend * p2->attrs[i+2];
     }
   }
 
@@ -150,7 +153,7 @@ void makebread(FILE *learnfp, Pipeline *pipe, Parson *p1, Parson *p2, Parson *pa
     fseek(learnfp, ((parson->hash + j++) % nlearn) * 12360, SEEK_SET);
     pipe->load_ctx_bytes(learnfp);
     pipe->save_ctx_bytes(ctxbuf);
-  } while (ctxbuf[20] != gender * 255);
+  } while (ctxbuf[20] != gender * 255 || ctxbuf[39] != 255);
   pipe->load_out_bytes(learnfp);
   pipe->ctrlock = 0;
   pipe->tgtlock = -1;
@@ -164,7 +167,8 @@ void makebread(FILE *learnfp, Pipeline *pipe, Parson *p1, Parson *p2, Parson *pa
   parson->attrs[39] = 255;
 
   for (unsigned int i = 40; i < 52; i += 3) {
-    double blend = randrange(0.0, 1.0);
+    //double blend = randuint() % 2 : 1.0 : 0.0; //randrange(0.0, 1.0);
+    double blend = sigmoid(randgauss() * 5);
     parson->attrs[i+0] = blend * p1->attrs[i+0] + (1 - blend) * p2->attrs[i+0];
     parson->attrs[i+1] = blend * p1->attrs[i+1] + (1 - blend) * p2->attrs[i+1];
     parson->attrs[i+2] = blend * p1->attrs[i+2] + (1 - blend) * p2->attrs[i+2];
@@ -232,6 +236,7 @@ void makebread(FILE *learnfp, Pipeline *pipe, Parson *p1, Parson *p2, Parson *pa
 }
 
 void makeparson(FILE *learnfp, Pipeline *pipe, Parson *parson) {
+  uint8_t young = parson->attrs[39];
   uint8_t gender = parson->attrs[20];
   if (parson->revised)
     return;
@@ -247,7 +252,7 @@ void makeparson(FILE *learnfp, Pipeline *pipe, Parson *parson) {
     fseek(learnfp, ((parson->hash + j++) % nlearn) * 12360, SEEK_SET);
     pipe->load_ctx_bytes(learnfp);
     pipe->save_ctx_bytes(ctxbuf0);
-  } while (ctxbuf0[20] != gender);
+  } while (ctxbuf0[20] != gender || ctxbuf0[39] != young);
 
   pipe->load_out_bytes(learnfp);
   pipe->ctrlock = 0;
@@ -290,8 +295,47 @@ void makeparson(FILE *learnfp, Pipeline *pipe, Parson *parson) {
   assert(sizeof(parson->attrs) == pipe->ctxlay->n);
   memcpy(parson->attrs, ctxbuf0, sizeof(parson->attrs));
 
-fprintf(stderr, "edgemean = %u, %u, %u\n", parson->attrs[40], parson->attrs[41], parson->attrs[42]);
-fprintf(stderr, "edgestddev = %u, %u, %u\n", parson->attrs[43], parson->attrs[44], parson->attrs[45]);
+//fprintf(stderr, "edgemean = %u, %u, %u\n", parson->attrs[40], parson->attrs[41], parson->attrs[42]);
+//fprintf(stderr, "edgestddev = %u, %u, %u\n", parson->attrs[43], parson->attrs[44], parson->attrs[45]);
+
+  if (strstr(parson->nom, "norm")) {
+    for (unsigned int i = 0; i < parson->ncontrols; ++i) {
+      parson->controls[i] = 0.5 + (parson->controls[i] - 0.5) * 0.2;
+    }
+  }
+
+  if (strstr(parson->nom, "blue")) {
+    double dl, da, db;
+    rgbtolab(0, 0, 255, &dl, &da, &db);
+    parson->attrs[46] = (uint8_t)(dl * 255);
+    parson->attrs[47] = (uint8_t)(da * 255);
+    parson->attrs[48] = (uint8_t)(db * 255);
+  }
+
+  if (strstr(parson->nom, "green")) {
+    double dl, da, db;
+    rgbtolab(0, 255, 0, &dl, &da, &db);
+    parson->attrs[46] = (uint8_t)(dl * 255);
+    parson->attrs[47] = (uint8_t)(da * 255);
+    parson->attrs[48] = (uint8_t)(db * 255);
+  }
+
+  if (strstr(parson->nom, "_hat")) {
+    parson->attrs[35] = 255;
+  }
+  if (strstr(parson->nom, "glass")) {
+    parson->attrs[15] = 255;
+  }
+  if (strstr(parson->nom, "smil")) {
+    parson->attrs[31] = 255;
+  }
+  if (strstr(parson->nom, "young")) {
+    parson->attrs[39] = 255;
+  }
+  if (strstr(parson->nom, "bald")) {
+    parson->attrs[4] = 255;
+    parson->attrs[28] = 255;
+  }
 
   parson->revised = time(NULL);
   parson->revisor = 0;
@@ -653,9 +697,13 @@ void handle(Pipeline *pipe, ParsonDB *parsons, FILE *infp, FILE *outfp) {
             gender = (randuint() % 2);
           }
 
+          if (!fparson->created)
+            makeparson(learnfp, pipe, fparson);
+
           std::string cnomstr = Parson::bread(nom, fren0, gender);
           const char *cnom = cnomstr.c_str();
           fprintf(stderr, "breading %s + %s -> %s\n", nom, fren0, cnom);
+
           Parson *cparson = parsons->find(cnom);
 
           makebread(learnfp, pipe, parson, fparson, cparson, gender);
@@ -816,7 +864,7 @@ int main(int argc, char **argv) {
 
 
 #if 1
-  int max_children = 2;
+  int max_children = 8;
 
   for (unsigned int i = 0; i < max_children; ++i) {
     fprintf(stderr, "forking\n");
