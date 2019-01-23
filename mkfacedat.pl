@@ -70,10 +70,24 @@ for my $id ('000001' .. '202599') {
     unpack('d*', $labdata)
   );
 
+  my $labbytes8 ;
+  if ($dim == 8) {
+    $labbytes8 = $labbytes;
+  } else {
+    my $cmd = "djpeg -ppm < $jpgfn |pnmcut -top 20 -bottom 197 |pnmscale -width 128 |./ppmtolab |./labshrink 128 128 4";
+    my $labdata8 = `$cmd`;
+    $labbytes8 = pack('C*', 
+      map { $_ > 255 ? 255 : $_ < 0 ? 0 : $_ }
+      map { int($_ * 256) }
+      unpack('d*', $labdata8)
+    );
+  }
+
   length($attrbytes) == 40 or die "huh";
   length($labbytes) == 3 * $dim * $dim or die "huh2";
+  length($labbytes8) == 3 * 8 * 8 or die "huh3";
 
-  my $colorstats = stats($labbytes);
+  my $colorstats = stats($labbytes8);
   my $tags = pack('C16', (128) x 16);
   my $extra = pack('C4', 255, 0, 0, 0);
 
@@ -122,10 +136,8 @@ sub stats {
 
   my @centersum;
   my $centercount = 0;
-  for my $y (0 .. 7) {
-    next unless $y > 0 && $y < 7;
-    for my $x (0 .. 7) {
-      next unless $x > 1 && $x < 6;
+  for my $y (2 .. 5) {
+    for my $x (3 .. 4) {
       for my $c (0 .. 2) {
         $centersum[$c] += $lab[$y * 8 * 3 + $x * 3 + $c];
       }
@@ -136,10 +148,8 @@ sub stats {
   my @centermean = map {$_/$centercount} @centersum;
   my @centervar;
 
-  for my $y (0 .. 7) {
-    next unless $y > 0 && $y < 7;
-    for my $x (0 .. 7) {
-      next unless $x > 1 && $x < 6;
+  for my $y (2 .. 5) {
+    for my $x (3 .. 4) {
       for my $c (0 .. 2) {
         my $q = $lab[$y * 24 + $x * 3 + $c] - $centermean[$c];
         $centervar[$c] += $q * $q;

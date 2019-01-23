@@ -171,9 +171,14 @@ body {
 </tr>
 
 <tr>
-
   <td colspan=8>
     <hr/>
+  </td>
+</tr>
+<tr>
+
+  <td align=right><b>frenbuf</b></td>
+  <td colspan=8>
     <input type=text id=frenbuf name=frenbuf onClick="this.select();" onChange="frenbufhilite()" onKeyDown="frenbufhilite()" oninput="frenbufhilite()" onpaste="frenbufhilite()" value="" size=32 maxlength=32/>
     <input type=button onClick="document.getElementById('frenbuf').value = gennom(); frenbufhilite()" value="gen nom"/>
     <input type=button onClick="addfren()" value="add fren"/>
@@ -1021,7 +1026,7 @@ function genrandomattrs() {
   document.getElementById('tag0in').value = '';
   document.getElementById('tag1in').value = '';
 
-  for (var i = 0; i < 40; ++i) {
+  for (var i = 0; i < 72; ++i) {
     var cb = document.getElementById("attr" + i)
     var r = Math.floor(Math.random() * 256)
     cb.curval = r;
@@ -1035,13 +1040,13 @@ function mkcol(data) {
   return col
 }
 
-function makepalette(l, perm) {
+function makepalette(inl, perm) {
   var pal = document.getElementById('palette');
   var palctx = pal.getContext('2d')
   var md2 = (pal.width/2)*(pal.width/2) + (pal.height/2)*(pal.height/2)
   var md = Math.sqrt(md2)
 
-  pal.l = l
+  pal.l = inl
   pal.perm = perm
 
   for (var y = 0; y < pal.height; ++y) {
@@ -1051,8 +1056,17 @@ function makepalette(l, perm) {
       var d2 = dx*dx+dy*dy
       var d = Math.sqrt(d2)
 
+      var l = inl;
       var a = 255 * (x / pal.width);
       var b = 255 * (y / pal.height);
+
+      if (l == -1) {
+        l = 255 * (x / pal.width);
+      } else if (l == -2) {
+        l = 255 * Math.abs(0.5 - (x / pal.width));
+      } else if (l == -3) {
+        l = 255 * (1 - Math.abs(0.5 - (x / pal.width)));
+      }
 
 //      if (perm == 1) {
 //        [l,a,b] = [g,b,r];
@@ -1081,10 +1095,14 @@ function clickpalette(event) {
     pick_color(rgbdata[0], rgbdata[1], rgbdata[2])
   } else {
     var l = pal.l
-    var perm = pal.perm
-    if (l == 192) { l = 32 }
+    var perm = pal.perm ? 1 : 0
+    if (l == -3) { l = 32; }
     else if (l == 32) { l = 128; }
-    else { l = 192 }
+    else if (l == 128) { l = 192; }
+    else if (l == 192 ) { l = -1; }
+    else if (l == -1) { l = -2; }
+    else if (l == -2) { l = -3; }
+    else { l = 32; }
     makepalette(l, perm)
 //  } else {
 //    var l = pal.l
@@ -1555,7 +1573,7 @@ function requpdatecon(stage, hcmd) {
 }
 
 function updatecon(newcon) {
-  var tattrs = 40
+  var tattrs = 72
   var reqoff = 0 + tattrs;
 
   for (var stage = 1; stage <= 4; ++stage) {
@@ -1581,7 +1599,7 @@ function updatecon(newcon) {
 }
 
 function reqgen() {
-  var tattrs = 40
+  var tattrs = 72
   var tcontrols = window.tcontrols;
   var nbuf = namebuf()
 
@@ -1617,7 +1635,7 @@ function requpdate(hyper) {
   if (!window.allready)
     return;
 
-  var tattrs = 40
+  var tattrs = 72
   var tadjust = 0
   var tcontrols = 0
   for (var i = 0; i < 4; i++) {
@@ -1656,10 +1674,23 @@ function requpdate(hyper) {
 
   var reqattrs = new Uint8Array(reqbuf.buffer, reqoff, tattrs)
   reqoff += tattrs
-  for (var i = 0; i < tattrs; ++i) {
+  for (var i = 0; i < 40; ++i) {
     var at = document.getElementById('attr' + i)
     reqattrs[i] = at.curval
   }
+  for (var i = 0; i < 4; ++i) {
+    var at = document.getElementById('colattr' + i)
+    reqattrs[40 + i * 3 + 0] = at.curval[0]
+    reqattrs[40 + i * 3 + 1] = at.curval[1]
+    reqattrs[40 + i * 3 + 2] = at.curval[2]
+  }
+  for (var i = 52; i < 68; ++i) {
+    reqattrs[i] = 128;
+  }
+  reqattrs[68] = 255;
+  reqattrs[69] = 0;
+  reqattrs[70] = 0;
+  reqattrs[71] = 0;
 
   var reqcons = new Float64Array(reqbuf.buffer, reqoff, tcontrols)
   reqoff += tcontrols * 8
@@ -1736,6 +1767,19 @@ function updatectx(newattrs) {
           at1.style.backgroundColor = mkcol([nval, nval, nval])
           at1.curval = nval
 
+  }
+  for (var i = 0; i < 4; ++i) {
+          var at1 = document.getElementById('colattr' + i)
+          at1.style.backgroundColor = mkcol(labtorgb([
+            newattrs[40 + i * 3 + 0],
+            newattrs[40 + i * 3 + 1],
+            newattrs[40 + i * 3 + 2]
+          ]))
+          at1.curval = [
+            newattrs[40 + i * 3 + 0],
+            newattrs[40 + i * 3 + 1],
+            newattrs[40 + i * 3 + 2]
+          ];
   }
 }
 
@@ -2381,7 +2425,7 @@ window.onload = function() {
   }
 
   var part1 = 8*(64*64*3)
-  var part2 = 40
+  var part2 = 72
   var part3 = window.tcontrols * 8
   var part4 = window.tadjust * 8
   var part5 = 8*(64*64*3)
@@ -2489,6 +2533,37 @@ for (var i = 0; i < newgendata.length; ++i) { newgendata[i] = 256 * newgendata[i
   for (var i = 0; i < 2; i = i + 1) {
     g(i)
   }
+
+  var h = function(i) { 
+    var at0 = document.getElementById('colattr' + i)
+    at0.curval = [0,0,0]
+    at0.addEventListener('click',
+      function(event) {
+          var at1 = document.getElementById('colattr' + i)
+          var curval = at1.curval;
+
+          if (event.shiftKey) {
+var rgbcol = labtorgb(curval)
+ pick_color(rgbcol[0], rgbcol[1], rgbcol[2])
+}
+
+          var nval = rgbtolab(window.curcol);
+
+          at1.style.backgroundColor = mkcol(window.curcol)
+          at1.style.borderColor = orangestr[1]
+          at1.curval = nval
+          setTimeout(function() { at1.style.borderColor = 'gray' }, 400)
+
+          requpdate()
+      }
+    )
+  };
+  for (var i = 0; i < 4; i = i + 1) {
+    h(i)
+  }
+
+
+
   //genrandomattrs()
 
   changetool('d')

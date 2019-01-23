@@ -10,6 +10,7 @@
 struct Parson {
   static bool valid_nom(const char *);
   static uint64_t hash_nom(const char *nom);
+  static uint64_t hash_tag(const char *tag);
   static bool female_nom(const char *);
   static std::string bread(const char *nom0, const char *nom1, uint8_t);
   static void paren_noms(const char *, char *, char *);
@@ -20,6 +21,7 @@ struct Parson {
   const static unsigned int ncontrols = 1920;
   const static unsigned int nattrs = 72;
   typedef char Nom[32];
+  typedef char Tag[32];
 
   uint64_t hash;
   Nom nom;
@@ -33,7 +35,7 @@ struct Parson {
   uint8_t control_lock;
   uint8_t _pad[6];
 
-  uint16_t tags[ntags];
+  Tag tags[ntags];
   uint8_t attrs[nattrs];
 
   double controls[ncontrols];

@@ -65,7 +65,9 @@ static void _run_feeder(int infd, int outfd, unsigned int k, unsigned int batch)
   assert(ret == 0);
 
   size_t size = stbuf.st_size;
-  assert(size % k == 0);
+  if (size % k) {
+    fprintf(stderr, "sampler: warning: %lu %% %u != 0\n", size, k);
+  }
   uint64_t n = size / k;
 
   uint8_t *buf = new uint8_t[k];
