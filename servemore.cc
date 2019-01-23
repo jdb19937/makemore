@@ -305,6 +305,7 @@ fprintf(stderr, "edgestddev = %u, %u, %u\n", parson->attrs[43], parson->attrs[44
 }
 
 void handle(Pipeline *pipe, ParsonDB *parsons, FILE *infp, FILE *outfp) {
+  Parson::Nom fam[ParsonDB::nfam];
   uint8_t cmd[8];
   char nom[32];
   int ret;
@@ -447,6 +448,14 @@ void handle(Pipeline *pipe, ParsonDB *parsons, FILE *infp, FILE *outfp) {
 
       response = (uint8_t *)parson->parens;
       responsen = sizeof(parson->parens);
+      fprintf(stderr, "writing n=%u\n", responsen);
+      ret = fwrite(response, 1, responsen, outfp);
+      ensure(ret == responsen);
+      fprintf(stderr, "wrote n=%d\n", responsen);
+
+      parsons->fill_fam(parson->nom, fam);
+      response = (uint8_t *)fam;
+      responsen = sizeof(fam);
       fprintf(stderr, "writing n=%u\n", responsen);
       ret = fwrite(response, 1, responsen, outfp);
       ensure(ret == responsen);
@@ -672,6 +681,14 @@ void handle(Pipeline *pipe, ParsonDB *parsons, FILE *infp, FILE *outfp) {
 
       response = (uint8_t *)parson->parens;
       responsen = sizeof(parson->parens);
+      fprintf(stderr, "writing n=%u\n", responsen);
+      ret = fwrite(response, 1, responsen, outfp);
+      ensure(ret == responsen);
+      fprintf(stderr, "wrote n=%d\n", responsen);
+
+      parsons->fill_fam(parson->nom, fam);
+      response = (uint8_t *)fam;
+      responsen = sizeof(fam);
       fprintf(stderr, "writing n=%u\n", responsen);
       ret = fwrite(response, 1, responsen, outfp);
       ensure(ret == responsen);

@@ -52,9 +52,23 @@ struct Parson {
 
   void add_fren(const char *fnom);
   void set_parens(const char *anom, const char *bnom);
+
+  bool fraternal(const Parson *p) {
+    if (*parens[0] && *p->parens[0] && !strcmp(parens[0], p->parens[0]))
+      return true;
+    if (*parens[1] && *p->parens[0] && !strcmp(parens[1], p->parens[0]))
+      return true;
+    if (*parens[0] && *p->parens[1] && !strcmp(parens[0], p->parens[1]))
+      return true;
+    if (*parens[1] && *p->parens[1] && !strcmp(parens[1], p->parens[1]))
+      return true;
+    return false;
+  }
 };
 
 struct ParsonDB {
+  const static unsigned int nfam = 9;
+
   std::string fn;
   int fd;
 
@@ -62,6 +76,7 @@ struct ParsonDB {
   unsigned int n;
 
   static void create(const char *_fn, unsigned int _n);
+  void fill_fam(const char *nom, Parson::Nom *);
 
   ParsonDB(const char *_fn);
   ~ParsonDB();

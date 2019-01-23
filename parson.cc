@@ -11,6 +11,10 @@
 #include <sys/types.h>
 #include <fcntl.h>
 
+#include <map>
+#include <set>
+#include <string>
+
 #include "sha256.c"
 #include "prenoms.c"
 #include "surnoms.c"
@@ -233,6 +237,54 @@ void Parson::initialize(const char *_nom, double mean, double dev) {
   seedrand();
 }
 
+void ParsonDB::fill_fam(const char *nom, Parson::Nom *fam) {
+  std::set<std::string> seen;
+
+  Parson *p = find(nom);
+  assert(p);
+
+  memset(fam, 0, sizeof(Parson::Nom) * nfam);
+  unsigned int fami = 0;
+
+  Parson *pp0 = find(p->parens[0]);
+  Parson *pp1 = find(p->parens[1]);
+  if (pp0 == pp1)
+    pp1 = NULL;
+
+  for (unsigned int i = 0; i < Parson::nfrens && fami < nfam; ++i) {
+    Parson *pf = find(p->frens[i]);
+    if (!pf)
+      continue;
+    if (p->fraternal(pf) && !seen.count(pf->nom)) {
+      strcpy(fam[fami++], pf->nom);
+      seen.insert(pf->nom);
+    }
+  }
+
+  if (pp0) {
+    for (unsigned int i = 0; i < Parson::nfrens && fami < nfam; ++i) {
+      Parson *pf = find(pp0->frens[i]);
+      if (!pf)
+        continue;
+      if (p->fraternal(pf) && !seen.count(pf->nom)) {
+        strcpy(fam[fami++], pf->nom);
+        seen.insert(pf->nom);
+      }
+    }
+  }
+
+  if (pp1) {
+    for (unsigned int i = 0; i < Parson::nfrens && fami < nfam; ++i) {
+      Parson *pf = find(pp0->frens[i]);
+      if (!pf)
+        continue;
+      if (p->fraternal(pf) && !seen.count(pf->nom)) {
+        strcpy(fam[fami++], pf->nom);
+        seen.insert(pf->nom);
+      }
+    }
+  }
+}
 
 void ParsonDB::create(const char *_fn, unsigned int n) {
   assert(strlen(_fn) < 4000);

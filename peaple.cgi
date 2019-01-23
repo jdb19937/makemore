@@ -2432,9 +2432,10 @@ window.onload = function() {
   var part6 = 8
   var part7 = 512
   var part8 = 64
-  var part9 = 16
+  var part9 = 32 * 9
+  var part10 = 16
   
-  var packet = part1 + part2 + part3 + part4 + part5 + part6 + part7 + part8 + part9
+  var packet = part1 + part2 + part3 + part4 + part5 + part6 + part7 + part8 + part9 + part10
 
   window.socket = new WebSocket('ws://' + location.host + ':9999', ['binary']);
   window.socket.binaryType = 'arraybuffer';
@@ -2460,7 +2461,8 @@ window.onload = function() {
       var newlocks = new Uint8Array(buf.buffer, part1+part2+part3+part4+part5, part6)
       var newfrens = new Uint8Array(buf.buffer, part1+part2+part3+part4+part5+part6, part7)
       var newparens = new Uint8Array(buf.buffer, part1+part2+part3+part4+part5+part6+part7, part8)
-      var newmeta = new Uint8Array(buf.buffer, part1+part2+part3+part4+part5+part6+part7+part8, part9)
+      var newfam = new Uint8Array(buf.buffer, part1+part2+part3+part4+part5+part6+part7+part8, part9)
+      var newmeta = new Uint8Array(buf.buffer, part1+part2+part3+part4+part5+part6+part7+part8+part9, part10)
 
       var ret = readTypedArray(window.socket.inbuffer, packet)
       window.socket.inbuffer = ret[0]
