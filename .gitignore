@@ -4,7 +4,6 @@ celeba-dataset
 *.dat
 *.swp
 *.lay
-*.proj
 
 labhifreq
 grayhifreq
