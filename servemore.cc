@@ -6,6 +6,7 @@
 #include <sys/wait.h>
 #include <sys/types.h>
 #include <netinet/in.h>
+#include <string.h>
 
 #include <string>
 
@@ -305,19 +306,30 @@ void makeparson(FILE *learnfp, Pipeline *pipe, Parson *parson) {
   }
 
   if (strstr(parson->nom, "blue")) {
-    double dl, da, db;
-    rgbtolab(0, 0, 255, &dl, &da, &db);
-    parson->attrs[46] = (uint8_t)(dl * 255);
-    parson->attrs[47] = (uint8_t)(da * 255);
-    parson->attrs[48] = (uint8_t)(db * 255);
+    double dl = 0, da, db;
+    rgbtolab(0, 96, 150, &dl, &da, &db);
+{
+uint8_t r, g,b;
+labtorgb(dl,da,db,&r,&g,&b);
+fprintf(stderr, "blue=%u,%u,%u\n", r, g, b);
+}
+    if (dl > 0.99) { dl = 0.99; } if (dl < 0.0) { dl = 0.0; }
+    if (da > 0.99) { da = 0.99; } if (da < 0.0) { da = 0.0; }
+    if (db > 0.99) { db = 0.99; } if (db < 0.0) { db = 0.0; }
+    parson->attrs[46] = (uint8_t)(dl * 255.0);
+    parson->attrs[47] = (uint8_t)(da * 255.0);
+    parson->attrs[48] = (uint8_t)(db * 255.0);
   }
 
   if (strstr(parson->nom, "green")) {
     double dl, da, db;
-    rgbtolab(0, 255, 0, &dl, &da, &db);
-    parson->attrs[46] = (uint8_t)(dl * 255);
-    parson->attrs[47] = (uint8_t)(da * 255);
-    parson->attrs[48] = (uint8_t)(db * 255);
+    rgbtolab(32, 133, 24, &dl, &da, &db);
+    if (dl > 0.99) { dl = 0.99; } if (dl < 0.0) { dl = 0.0; }
+    if (da > 0.99) { da = 0.99; } if (da < 0.0) { da = 0.0; }
+    if (db > 0.99) { db = 0.99; } if (db < 0.0) { db = 0.0; }
+    parson->attrs[46] = (uint8_t)(dl * 255.0);
+    parson->attrs[47] = (uint8_t)(da * 255.0);
+    parson->attrs[48] = (uint8_t)(db * 255.0);
   }
 
   if (strstr(parson->nom, "_hat")) {

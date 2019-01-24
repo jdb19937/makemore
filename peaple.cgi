@@ -98,132 +98,177 @@ body {
 <body bgcolor="darkgray" class="noselect">
 
 <table width=1500 cellpadding=4 cellspacing=0 border=3 bordercolor=gray>
-<tr>
-<td align=left valign=center style='border: 0; font-size: xx-large'>
-<b>edit parson</b>
-</td>
+  <tr>
+    <td align=left valign=center style='border: 0; font-size: xx-large'>
+    <b>edit parson</b>
+    </td>
 
-<td align=right valign=top style='border: 0'><b><a href="https://github.com/jdb19937/makemore">makemore</a> peaple v0.2</b><br/></td>
-</tr>
+    <td align=right valign=top style='border: 0'><b><a href="https://github.com/jdb19937/makemore">makemore</a> peaple v0.2</b><br/></td>
+  </tr>
 </table>
+
 
 <table width=1500 cellpadding=4 cellspacing=0 border=0>
+  <tr>
+  <td width=512>
+    <img width=512 height=512 id="profile" src="image/$NAME.jpg?nonce=$NONCE" style="image-rendering: pixelated">
+  </td>
+
+  <td style='background-color: lightgray; border: 0' valign="top">
+
+    <table width=970 height=320 style="border:0; overflow: hidden" cellspacing=0>
+      <tr>
+      <td colspan=4 valign=top height=160px>
+
+        <table cellpadding=5 style='font-size: large'>
+        <tr><td width=100px align=right><b>nom</b></td><td>$NAME</td></tr>
+        <tr><td width=100px align=right><b>creator</b></td><td id=creator></td></tr>
+        <tr><td width=100px align=right><b>created</b></td><td id=created></td></tr>
+        <tr><td width=100px align=right><b>revisor</b></td><td id=revisor></td></tr>
+        <tr><td width=100px align=right><b>revised</b></td><td id=revised></td></tr>
+        </table>
+      </td>
+      <td align=right colspan=4 valign=top>
+
+        <table>
+        <tr>
+          <td colspan=4 align=right><b style='font-size: x-large'>fam</b></td>
+        </tr><tr>
+
+          <td><span style="font-size: 100px">(</span></td>
+          <td id=paren0 style="border-style: none; border-width: 2px; white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width: 100px; min-width: 100px; font-size: x-small"> </td>
+          <td id=paren1 style="border-style: none; border-width: 2px; white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width: 100px; min-width: 100px; font-size: x-small"> </td>
+          <td><span style="font-size: 100px">)</span></td>
+        </tr>
+        </table>
+
+      </td>
+      </tr>
+
+      <tr>
+      <td colspan=4>
+      </td>
+      <td colspan=4 rowspan=2 style='padding: 15px' valign=top>
+
+        <table>
+          <tr>
+            <td id=fam0 style="border-style: none; border-width: 2px; white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width: 100px; min-width: 100px; font-size: x-small"> </td>
+            <td id=fam1 style="border-style: none; border-width: 2px; white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width: 100px; min-width: 100px; font-size: x-small"> </td>
+            <td id=fam2 style="border-style: none; border-width: 2px; white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width: 100px; min-width: 100px; font-size: x-small"> </td>
+          </tr>
+          <tr>
+            <td id=fam3 style="border-style: none; border-width: 2px; white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width: 100px; min-width: 100px; font-size: x-small"> </td>
+            <td id=fam4 style="border-style: none; border-width: 2px; white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width: 100px; min-width: 100px; font-size: x-small"> </td>
+            <td id=fam5 style="border-style: none; border-width: 2px; white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width: 100px; min-width: 100px; font-size: x-small"> </td>
+          </tr>
+          <tr>
+            <td id=fam6 style="border-style: none; border-width: 2px; white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width: 100px; min-width: 100px; font-size: x-small"> </td>
+            <td id=fam7 style="border-style: none; border-width: 2px; white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width: 100px; min-width: 100px; font-size: x-small"> </td>
+            <td id=fam8 style="border-style: none; border-width: 2px; white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width: 100px; min-width: 100px; font-size: x-small"> </td>
+          </tr>
+        </table>
+      </td>
+      </tr>
+
+
+
+      <tr>
+      <td colspan=4>
+
+        <hr/>
+        <table cellpadding=5 style='font-size: large'>
+          <tr>
+            <td width=100px align=left colspan=2>
+              <b style='font-size: x-large'>interview</b><br/><br/>
+          <input id=ivbuf type=text maxlength=64 size=64 value="hello"> <input type=button value="submit" onClick="document.getElementById('ivbuf').value=''">
+          <br/>
+          </td></tr>
+
+          <tr>
+          <td colspan=2>
+            <table>
+<!-- style='border: 1px solid black' bgcolor="white" width=600 height=200 -->
+            <tr><td>
+              <textarea rows=4 cols=80 id="ivresponse">[response/animation should be synthesized by makemore using attrs, controls, tude, partrait, frens and fam, partraits and attrs of frens and fam, current camera image]</textarea>
+            </td></tr>
+            </table>
+          </td>
+          </tr>
+
+
+          <tr>
+            <td colspan=2>
+              <input type=button value="enable animation" onClick="alert('unimplemented')">
+              <input type=button value="enable camera" onClick="alert('unimplemented')">
+              <input type=button value="burn new response" onClick="alert('unimplemented'")>
+            </td>
+          </tr>
+
 <tr>
-<td width=512>
-<img width=512 height=512 id="profile" src="image/$NAME.jpg?nonce=$NONCE" style="image-rendering: pixelated">
-</td>
-
-<td style='background-color: lightgray; border: 0' valign="top">
-
-<table width=970 height=320 style="border:0; overflow: hidden" cellspacing=0>
-<tr><td colspan=4 valign=top height=160px>
-
-<table cellpadding=5 style='font-size: large'>
-<tr><td width=100px align=right><b>nom</b></td><td>$NAME</td></tr>
-<tr><td width=100px align=right><b>creator</b></td><td id=creator></td></tr>
-<tr><td width=100px align=right><b>created</b></td><td id=created></td></tr>
-<tr><td width=100px align=right><b>revisor</b></td><td id=revisor></td></tr>
-<tr><td width=100px align=right><b>revised</b></td><td id=revised></td></tr>
-</table>
-
-
-
-</td>
-<td align=right colspan=4 valign=top>
-
-  <table><tr>
-  <td colspan=4 align=right><b style='font-size: x-large'>fam</b></td>
-  </tr><tr>
-  <td><span style="font-size: 100px">(</span></td>
-  <td id=paren0 style="border-style: none; border-width: 2px; white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width: 100px; min-width: 100px; font-size: x-small"> </td>
-  <td id=paren1 style="border-style: none; border-width: 2px; white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width: 100px; min-width: 100px; font-size: x-small"> </td>
-  <td><span style="font-size: 100px">)</span></td>
-  </tr></table>
-
-</td>
-</tr>
-
-<tr>
-<td colspan=4>
+<td colspan=2><table><tr>
 <hr/>
-</td>
+<b style='font-size: x-large'>tude</b>
+<br/>
+
+
+<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='persattr0' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> #introvert_extrovert  </td></tr></table>   </td>
+<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='persattr1' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> #sensitive_intuitive  </td></tr></table>   </td>
+<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='persattr6' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> #polite_profane  </td></tr></table>   </td>
+</tr><tr>
+<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='persattr2' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> #feeling_thinking  </td></tr></table>   </td>
+<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='persattr3' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> #perceptive_judgemental  </td></tr></table>   </td>
+<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='persattr5' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> #modest_amorous  </td></tr></table>   </td>
 </tr>
-
-
 
 <tr>
-<td colspan=4>
-
-<table cellpadding=5 style='font-size: large'>
-  <tr><td width=100px align=right valign=top><b>interview</b></td><td>
-  <input id=ivbuf type=text maxlength=48 size=48 value="hello"><input type=button value="submit" onClick="document.getElementById('ivbuf').value=''">
-  <br/>
-  </td></tr><tr><td colspan=2>
-  
-  <table style='border: 1px solid black' bgcolor="white" width=600 height=200>
-  <tr><td id="ivresponse" style='font-size: large; font-family: monospace' valign=top>[response should be synthesized by makemore using attrs, controls, partrait, frens and fam, partraits and attrs of frens and fam]</td></tr>
-  </table>
-  </td></tr>
-
-  <tr><td><input type=button value="toggle animation"></td></tr>
-  </td>
-<!--
-  <td colspan=4 style='padding-left: 10px; border-left: 1px solid gray' valign=top>
-  <b style='font-size: x-large'>fam</b>
-  </td>
--->
 </tr>
+
+
+
+</table></td>
+
+</tr>
+
+        </table>
+      </td>
+      </tr>
+    </table>
+
+  </td>
+  </tr>
 </table>
+<br/>
 
 
 
+    <table>
+      <tr><td colspan=8><hr/><font size=+2><b>frens of $NAME</b></font></td></tr>
 
-</td>
-</tr></table>
+      <tr valign=top height=110>
+      <td width=100 id=fren0 style="border-style: none; border-width: 2px; white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width: 100px; min-width: 100px; font-size: x-small"> </td>
+      <td width=100 id=fren1 style="border-style: none; border-width: 2px; white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width: 100px; min-width: 100px; font-size: x-small"> </td>
+      <td width=100 id=fren2 style="border-style: none; border-width: 2px; white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width: 100px; min-width: 100px; font-size: x-small"> </td>
+      <td width=100 id=fren3 style="border-style: none; border-width: 2px; white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width: 100px; min-width: 100px; font-size: x-small"> </td>
+      <td width=100 id=fren4 style="border-style: none; border-width: 2px; white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width: 100px; min-width: 100px; font-size: x-small"> </td>
+      <td width=100 id=fren5 style="border-style: none; border-width: 2px; white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width: 100px; min-width: 100px; font-size: x-small"> </td>
+      <td width=100 id=fren6 style="border-style: none; border-width: 2px; white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width: 100px; min-width: 100px; font-size: x-small"> </td>
+      <td width=100 id=fren7 style="border-style: none; border-width: 2px; white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width: 100px; min-width: 100px; font-size: x-small"> </td>
+      </tr>
 
+      <tr valign=top height=110>
+      <td width=100 id=fren8 style="border-style: none; border-width: 2px; white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width: 100px; min-width: 100px; font-size: x-small"> </td>
+      <td width=100 id=fren9 style="border-style: none; border-width: 2px; white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width: 100px; min-width: 100px; font-size: x-small"> </td>
+      <td width=100 id=fren10 style="border-style: none; border-width: 2px; white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width: 100px; min-width: 100px; font-size: x-small"> </td>
+      <td width=100 id=fren11 style="border-style: none; border-width: 2px; white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width: 100px; min-width: 100px; font-size: x-small"> </td>
+      <td width=100 id=fren12 style="border-style: none; border-width: 2px; white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width: 100px; min-width: 100px; font-size: x-small"> </td>
+      <td width=100 id=fren13 style="border-style: none; border-width: 2px; white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width: 100px; min-width: 100px; font-size: x-small"> </td>
+      <td width=100 id=fren14 style="border-style: none; border-width: 2px; white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width: 100px; min-width: 100px; font-size: x-small"> </td>
+      <td width=100 id=fren15 style="border-style: none; border-width: 2px; white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width: 100px; min-width: 100px; font-size: x-small"> </td>
+      </tr>
+    </table>
 
+<br/>
 
-</td></tr></table>
-
-
-<table><tr><td>
-<table>
-
-
-<tr><td colspan=8><hr/><font size=+2><b>frens of $NAME</b></font></td><tr>
-<tr valign=top height=110>
-<td width=100 id=fren0 style="border-style: none; border-width: 2px; white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width: 100px; min-width: 100px; font-size: x-small"> </td>
-<td width=100 id=fren1 style="border-style: none; border-width: 2px; white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width: 100px; min-width: 100px; font-size: x-small"> </td>
-<td width=100 id=fren2 style="border-style: none; border-width: 2px; white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width: 100px; min-width: 100px; font-size: x-small"> </td>
-<td width=100 id=fren3 style="border-style: none; border-width: 2px; white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width: 100px; min-width: 100px; font-size: x-small"> </td>
-<td width=100 id=fren4 style="border-style: none; border-width: 2px; white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width: 100px; min-width: 100px; font-size: x-small"> </td>
-<td width=100 id=fren5 style="border-style: none; border-width: 2px; white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width: 100px; min-width: 100px; font-size: x-small"> </td>
-<td width=100 id=fren6 style="border-style: none; border-width: 2px; white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width: 100px; min-width: 100px; font-size: x-small"> </td>
-<td width=100 id=fren7 style="border-style: none; border-width: 2px; white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width: 100px; min-width: 100px; font-size: x-small"> </td>
-<td rowspan=2>
-
-
-
-
-
-</td>
-</tr>
-<tr valign=top height=110>
-<td width=100 id=fren8 style="border-style: none; border-width: 2px; white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width: 100px; min-width: 100px; font-size: x-small"> </td>
-<td width=100 id=fren9 style="border-style: none; border-width: 2px; white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width: 100px; min-width: 100px; font-size: x-small"> </td>
-<td width=100 id=fren10 style="border-style: none; border-width: 2px; white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width: 100px; min-width: 100px; font-size: x-small"> </td>
-<td width=100 id=fren11 style="border-style: none; border-width: 2px; white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width: 100px; min-width: 100px; font-size: x-small"> </td>
-<td width=100 id=fren12 style="border-style: none; border-width: 2px; white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width: 100px; min-width: 100px; font-size: x-small"> </td>
-<td width=100 id=fren13 style="border-style: none; border-width: 2px; white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width: 100px; min-width: 100px; font-size: x-small"> </td>
-<td width=100 id=fren14 style="border-style: none; border-width: 2px; white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width: 100px; min-width: 100px; font-size: x-small"> </td>
-<td width=100 id=fren15 style="border-style: none; border-width: 2px; white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width: 100px; min-width: 100px; font-size: x-small"> </td>
-</tr>
-
-<tr>
-  <td colspan=8>
-    <hr/>
-  </td>
-</tr>
 <tr>
 
   <td align=right><b>frenbuf</b></td>
@@ -244,6 +289,7 @@ body {
 
 </td>
 </tr></table>
+
 
 
 <br/><br/>
@@ -410,8 +456,17 @@ doubleclick('attrstatic', genrandomattrs, 'attrcon')
     <input type=button id=tgtlockbutton onClick="lockalltargets()" value="lock all targets">
     <input type=button id=ctrlockbutton onClick="unlockallcontrols()" value="unlock all controls">
     <input type=button id=ctrlockbutton onClick="unlockalltargets()" value="unlock all targets">
-  <input type="button" for="imageLoader" value="upload target" onClick="getElementById('imageLoader').click()"/>
+  <input type="button" for="imageLoader" value="file target" onClick="getElementById('imageLoader').click()"/>
 <input type="file" size="60" id="imageLoader" name="imageLoader" accept="image/png, image/jpeg"/>
+
+
+    <input type="button" for="imageLoaderCamera" value="camera target" onClick="alert('unimplemented')"/>
+  <!--
+    <input type="button" for="imageLoaderCamera" value="camera target" onClick="getElementById('imageLoaderCamera').click()"/>
+    <input type="file" size="60" id="imageLoaderCamera" capture="user" name="imageLoaderCamera" accept="image/png, image/jpeg"/>
+  <input type="button" for="imageLoaderCamera" value="camera target" onClick="loadcameraimage()"/>
+  -->
+
   <input type="button" value="toggle legend" onClick="document.cookie = 'seenlegend=1'; var z = document.getElementById('hintlayer'); if (z.style.zIndex > 0) { z.style.zIndex = -10; z.style.visibility = 'hidden' } else { z.style.zIndex = 10; z.style.visibility = 'visible' }">
 <div style="display: none"><canvas id="imageCanvas" width=64 height=64></canvas></div>
   </td>
@@ -653,6 +708,10 @@ function frenbufhilite() {
   for (var i = 0; i < 2; ++i) {
     var parentd = document.getElementById('paren' + i)
     parentd.style.borderColor = (nom == window.parens[i] ? 'blue' : 'gray');
+  }
+  for (var i = 0; i < 9; ++i) {
+    var famtd = document.getElementById('fam' + i)
+    famtd.style.borderColor = (nom == window.fam[i] ? 'blue' : 'gray');
   }
 }
 
@@ -1954,6 +2013,48 @@ function updatelocks(newlocks) {
   }
 }
 
+function updatefam(newfambuf) {
+  if (!window.fam) {
+    window.fam = new Array(9)
+    for (var i = 0; i < 9; ++i)
+      window.fam[i] = ''
+  }
+  var newfam = new Array(9)
+
+  for (var i = 0; i < 32*9; ++i) {
+    var j = Math.floor(i / 32);
+    var f = window.fam[j];
+    var c = newfambuf[i]
+    if (i % 32 == 0) {
+      newfam[j] = ''
+    }
+    if (c > 0) {
+      newfam[j] = newfam[j] + String.fromCharCode(c);
+    }
+  }
+
+  for (var i = 0; i < 9; ++i) {
+    if (window.fam[i] != newfam[i]) {
+      var td = document.getElementById("fam" + i)
+      window.fam[i] = newfam[i]
+      var nom = window.fam[i]
+      if (nom == '') {
+        td.innerHTML = ""
+        td.style.borderStyle = 'none'
+        td.style.borderWidth = '2px'
+      } else {
+        var newhtml =  "<img width=100 height=100 id='image_" + nom + "' onMouseOver='mouseoverfam(" + i + ")' " +
+           " onMouseOut='mouseoutfam(" + i + ")' " +
+           " onClick='clickfam(" + i + ")' src='image/" + nom;
+        newhtml += "'><br/>" + nom
+        td.innerHTML = newhtml
+        td.style.borderStyle = 'solid'
+        td.style.borderColor = 'gray'
+      }
+    }
+  }
+}
+
 function updateparens(newparensbuf) {
   if (!window.parens) {
     window.parens = new Array(2)
@@ -2014,6 +2115,7 @@ function updatefrens(newfrensbuf) {
   for (var i = 0; i < 16; ++i) {
     if (window.frens[i] != newfrens[i] || (window.dirtyfren && newfrens[i] == window.dirtyfren)) {
       var td = document.getElementById("fren" + i)
+
       window.frens[i] = newfrens[i]
       var nom = window.frens[i]
       if (nom == '') {
@@ -2039,6 +2141,10 @@ function updatefrens(newfrensbuf) {
   frenbufhilite()
 }
 
+function mouseoverfam(i) {
+  var famtd = document.getElementById('fam' + i)
+  famtd.style.borderColor =  (document.getElementById('frenbuf').value == window.fams[i] ? 'blue' : 'yellow');
+}
 function mouseoverparen(i) {
   var parentd = document.getElementById('paren' + i)
   parentd.style.borderColor =  (document.getElementById('frenbuf').value == window.parens[i] ? 'blue' : 'yellow');
@@ -2054,6 +2160,10 @@ function mouseoutfren(i) {
 function mouseoutparen(i) {
   var parentd = document.getElementById('paren' + i)
   parentd.style.borderColor = (document.getElementById('frenbuf').value == window.parens[i] ? 'blue' : 'gray');
+}
+function mouseoutfam(i) {
+  var famtd = document.getElementById('fam' + i)
+  famtd.style.borderColor = (document.getElementById('frenbuf').value == window.fams[i] ? 'blue' : 'gray');
 }
 
 function clickfren(i) {
@@ -2072,6 +2182,15 @@ function clickparen(i) {
     return
   }
   frenbuf.value = window.parens[i]
+  frenbufhilite()
+}
+function clickfam(i) {
+  var frenbuf = document.getElementById('frenbuf')
+  if (frenbuf.value == window.fam[i]) {
+    gotofile()
+    return
+  }
+  frenbuf.value = window.fam[i]
   frenbufhilite()
 }
 
@@ -2098,13 +2217,14 @@ function updatemeta(newmetabuf) {
 }
 
 
-function doupdate(newlabdata, newcontextdata, newcontroldata, newadjdata, newgendata, newlocks, newfrens, newparens, newmeta) {
+function doupdate(newlabdata, newcontextdata, newcontroldata, newadjdata, newgendata, newlocks, newfrens, newparens, newfam, newmeta) {
   updatectx(newcontextdata)
   updatecon(newcontroldata)
   updategen(newgendata)
   updatelocks(newlocks)
   updatefrens(newfrens)
   updateparens(newparens)
+  updatefam(newfam)
   updatemeta(newmeta)
 
   var stage4 = document.getElementById('stage4')
@@ -2455,13 +2575,38 @@ function makehint() {
   }
 }
   
+function gotMedia(mediaStream) {
+  const mediaStreamTrack = mediaStream.getVideoTracks()[0];
+  const imageCapture = new ImageCapture(mediaStreamTrack);
+  console.log(imageCapture);
+}
 
+function loadcameraimage() {
+  imageCapture.takePhoto()
+  .then(blob => {
+    img.src = URL.createObjectURL(blob);
+    img.onload = () => { URL.revokeObjectURL(this.src); 
+      var canvas = document.getElementById('imageCanvas');
+      var ctx = canvas.getContext('2d');
+      ctx.drawImage(img,0,0,64,64);
+      var rgbdata = ctx.getImageData(0, 0, 64, 64).data;
+      applyloaded(rgbdata)
+    }
+  })
+  .catch(error => console.error('takePhoto() error:', error));
+}
 
 window.onload = function() {
+//  navigator.mediaDevices.getUserMedia({video: true})
+//  .then(gotMedia)
+//  .catch(error => console.error('getUserMedia() error:', error));
+
   //alert(makeip($IPADDR))
   makehint()
   makepalette(128, 0)
   document.getElementById('frenbuf').value = gennom()
+  window.fam = new Array(9);
+  for (var i = 0; i < 9; i++) window.fam[i] = ''
   window.parens = new Array(2);
   window.parens[0] = ''
   window.parens[1] = ''
@@ -2530,7 +2675,7 @@ for (var i = 0; i < newctrldata.length; ++i) { newctrldata[i] = 256 * newctrldat
 for (var i = 0; i < newadjdata.length; ++i) { newadjdata[i] = 128 + 128 * newadjdata[i]; }
 for (var i = 0; i < newgendata.length; ++i) { newgendata[i] = 256 * newgendata[i]; }
 
-      doupdate(labdata, newctxdata, newctrldata, newadjdata, newgendata, newlocks, newfrens, newparens, newmeta)
+      doupdate(labdata, newctxdata, newctrldata, newadjdata, newgendata, newlocks, newfrens, newparens, newfam, newmeta)
     }
   }
 
@@ -2620,6 +2765,34 @@ var rgbcol = labtorgb(curval)
   };
   for (var i = 0; i < 4; i = i + 1) {
     h(i)
+  }
+
+  var hh = function(i) { 
+    var at0 = document.getElementById('persattr' + i)
+    at0.curval = 127;
+    at0.addEventListener('click',
+      function(event) {
+          var at1 = document.getElementById('persattr' + i)
+          var curval = at1.curval;
+
+          if (event.shiftKey) { pick_color(curval, curval, curval); return }
+
+          var nval;
+          if (curval >= 0 && curval < 127) { nval = 127; }
+          else if (curval >= 127 && curval < 255) { nval = 255; }
+          else if (curval == 255) { nval = 0; }
+
+          at1.style.backgroundColor = mkcol([nval, nval, nval])
+          at1.style.borderColor = orangestr[1]
+          at1.curval = nval
+          setTimeout(function() { at1.style.borderColor = 'gray' }, 400)
+
+          // requpdate()
+      }
+    )
+  };
+  for (var i = 0; i < 4; i = i + 1) {
+    hh(i)
   }
 
 
