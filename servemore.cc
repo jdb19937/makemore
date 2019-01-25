@@ -2,6 +2,7 @@
 #include <assert.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <time.h>
 #include <sys/socket.h>
 #include <sys/wait.h>
 #include <sys/types.h>
@@ -25,6 +26,11 @@
 } while (0)
 
 using namespace std;
+
+static inline double realtime() {
+  clock_t c = clock();
+  return ((double)c / (double)CLOCKS_PER_SEC);
+}
 
 Pipeline *open_pipeline() {
   Pipeline *pipe = new Pipeline(1);
@@ -68,7 +74,7 @@ void makeparens(FILE *learnfp, Pipeline *pipe, ParsonDB *parsons, Parson *parson
   p2->target_lock = 0;
   p2->control_lock = -1;
 
-  unsigned int js = 1;
+  unsigned int js = 4;
   assert(Parson::ncontrols % js == 0);
 
   for (unsigned int i = 0; i < 39; i++) {
@@ -186,7 +192,7 @@ void makebread(FILE *learnfp, Pipeline *pipe, Parson *p1, Parson *p2, Parson *pa
   }
 
 
-  unsigned int js = 1;
+  unsigned int js = 4;
   assert(Parson::ncontrols % js == 0);
   for (unsigned int i = 0; i < Parson::ncontrols; i += js) {
 #if 0
@@ -415,6 +421,7 @@ void handle(Pipeline *pipe, ParsonDB *parsons, FILE *infp, FILE *outfp) {
 
     switch (cmd[0]) {
     case 0: {
+double t0 = realtime();
       ensure( 4 == fread(&ip, 1, 4, infp) );
       ip = ntohl(ip);
 
@@ -528,11 +535,14 @@ void handle(Pipeline *pipe, ParsonDB *parsons, FILE *infp, FILE *outfp) {
       ret = fwrite(response, 1, responsen, outfp);
       ensure(ret == responsen);
       fprintf(stderr, "wrote n=%d\n", responsen);
+double t1 = realtime();
+fprintf(stderr, "elapsed %gs\n", t1 - t0);
 
       break;
     }
 
     case 1: {
+double t0 = realtime();
       new_tgtlock = cmd[1];
       new_ctrlock = cmd[2];
 
@@ -765,6 +775,8 @@ void handle(Pipeline *pipe, ParsonDB *parsons, FILE *infp, FILE *outfp) {
       ret = fwrite(response, 1, responsen, outfp);
       ensure(ret == responsen);
       fprintf(stderr, "wrote n=%d\n", responsen);
+double t1 = realtime();
+fprintf(stderr, "elapsed %gs\n", t1 - t0);
 
       break;
     }
@@ -801,6 +813,51 @@ void handle(Pipeline *pipe, ParsonDB *parsons, FILE *infp, FILE *outfp) {
 
       break;
     }
+
+    case 4: {
+      const uint8_t *response;
+      unsigned int responsen;
+
+      if (parson->created) {
+        memcpy(pipe->outbuf, parson->target, pipe->outlay->n * sizeof(double));
+      } else {
+        makeparson(learnfp, pipe, parson);
+      }
+
+      pipe->uptarget();
+      memcpy(parson->target, pipe->outbuf, pipe->outlay->n * sizeof(double));
+
+      pipe->reencode();
+
+seedrand();
+{
+pipe->ctxbuf[6] = randuint() % 2 ? 1.0 : 0;
+pipe->ctxbuf[7] = randuint() % 2 ? 1.0 : 0;
+pipe->ctxbuf[12] = randuint() % 2 ? 1.0 : 0;
+pipe->ctxbuf[27] = randuint() % 2 ? 1.0 : 0;
+pipe->ctxbuf[31] = randuint() % 2 ? 1.0 : 0;
+pipe->ctxbuf[21] = randuint() % 2 ? 1.0 : 0;
+pipe->ctxbuf[23] = randuint() % 2 ? 1.0 : 0;
+pipe->ctxbuf[28] = randuint() % 2 ? 1.0 : 0;
+pipe->ctxbuf[25] = randuint() % 2 ? 1.0 : 0;
+pipe->ctxbuf[29] = randuint() % 2 ? 1.0 : 0;
+}
+
+      fprintf(stderr, "generating\n");
+      pipe->generate();
+      fprintf(stderr, "generated\n");
+
+      assert(pipe->outlay->n * sizeof(double) == sizeof(Parson::target));
+      response = (uint8_t *)pipe->outbuf;
+      responsen = sizeof(double) * pipe->outlay->n;
+      fprintf(stderr, "writing n=%u\n", responsen);
+      ret = fwrite(response, 1, responsen, outfp);
+      ensure(ret == responsen);
+      fprintf(stderr, "wrote n=%d\n", responsen);
+
+      break;
+    }
+
 
     case 55: {
       const uint8_t *response;

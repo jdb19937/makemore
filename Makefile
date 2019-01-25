@@ -5,8 +5,8 @@ CXXFLAGS = -O3
 LDFLAGS = -lm
 CULDFLAGS = -lcuda -lcudart
 
-LIBHDR = cudamem.hh random.hh tron.hh ppm.hh layout.hh megatron.hh wiring.hh persist.hh dataset.hh topology.hh multitron.hh project.hh twiddle.hh sampler.hh closest.hh pipeline.hh parson.hh
-LIBOBJ = cudamem.o random.o tron.o ppm.o layout.o megatron.o wiring.o persist.o dataset.o topology.o multitron.o project.o twiddle.o sampler.o closest.o pipeline.o parson.o
+LIBHDR = cudamem.hh random.hh tron.hh ppm.hh layout.hh megatron.hh wiring.hh persist.hh dataset.hh topology.hh multitron.hh project.hh twiddle.hh sampler.hh closest.hh pipeline.hh parson.hh ipdb.hh
+LIBOBJ = cudamem.o random.o tron.o ppm.o layout.o megatron.o wiring.o persist.o dataset.o topology.o multitron.o project.o twiddle.o sampler.o closest.o pipeline.o parson.o ipdb.o
 LIB = libmakemore.a
 
 DATASETS = face-attrs.dat face8.dat face16.dat face32.dat face64.dat face128.dat
@@ -28,7 +28,7 @@ LABTOOLS = \
   labshrink labhifreq labtogray grayhifreq \
   reconlab recongray 
 
-MORETOOLS = makemore makelay catlay wireup maketop makemap learnmore genicon servemore makeparsonsdat sampler
+MORETOOLS = makemore makelay catlay wireup maketop makemap learnmore genicon servemore makeparsonsdat sampler makeipdat
 
 .PHONY: all
 all: $(LIB) $(MORETOOLS)
@@ -67,6 +67,8 @@ face-attrs.dat:
 face-attrs.lay:
 	./mkattrslay.pl > $@
 
+newface8.dat:
+	./mkfacedat.pl -dim=8  > $@
 face8.dat:
 	./mkfacedat.pl -dim=8  > $@
 face-8x8-lab-full.lay:
@@ -77,6 +79,8 @@ face-8x8-gray-full.lay:
 	./mkfacelay.pl 8 1 > $@
 
 
+newface16.dat:
+	./mkfacedat.pl -dim=16  > $@
 face16.dat:
 	./mkfacedat.pl -dim=16  > $@
 face-16x16-lab-full.lay:
@@ -88,6 +92,8 @@ face-16x16-lab-hifreq.lay:
 face-16x16-gray-hifreq.lay:
 	./mkfacelay.pl 8 3 > $@
 
+newface32.dat:
+	./mkfacedat.pl -dim=32  > $@
 face32.dat:
 	./mkfacedat.pl -dim=32  > $@
 face-32x32-lab-full.lay:
@@ -99,6 +105,8 @@ face-32x32-lab-hifreq.lay:
 face-32x32-gray-hifreq.lay:
 	./mkfacelay.pl 16 3 > $@
 
+newface64.dat:
+	./mkfacedat.pl -dim=64 > $@
 face64.dat:
 	./mkfacedat.pl -dim=64 > $@
 face-64x64-lab-full.lay:
@@ -221,6 +229,9 @@ servemore: servemore.o $(LIB)
 	$(CXX) -o $@ $(CXXFLAGS) $^ $(LDFLAGS) $(CULDFLAGS)
 learnmore.o: $(LIBHDR)
 learnmore: learnmore.o $(LIB)
+	$(CXX) -o $@ $(CXXFLAGS) $^ $(LDFLAGS) $(CULDFLAGS)
+makeipdat.o: $(LIBHDR)
+makeipdat: makeipdat.o $(LIB)
 	$(CXX) -o $@ $(CXXFLAGS) $^ $(LDFLAGS) $(CULDFLAGS)
 makeparsonsdat.o: $(LIBHDR)
 makeparsonsdat: makeparsonsdat.o $(LIB)

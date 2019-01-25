@@ -21,7 +21,7 @@ if (my $path = $ENV{PATH_INFO}) {
   length($name) < 32 or die;
 } else {
   $NAME = genname();
-  print "Location: http://$ENV{SERVER_NAME}/edit/$NAME\r\n\r\n";
+  print "Location: https://$ENV{SERVER_NAME}/edit/$NAME\r\n\r\n";
   exit 0;
 }
 
@@ -34,7 +34,8 @@ my %sub = (
   'README'	=> $README,
   'NAME'	=> $NAME,
   'NONCE'	=> $NONCE,
-  'IPADDR'	=> $addr
+  'IPADDR'	=> $addr,
+  'DOTIPADDR'	=> $ENV{REMOTE_ADDR},
 );
 
 while (<DATA>) {
@@ -43,7 +44,7 @@ while (<DATA>) {
 }
 
 __DATA__
-<html> <head> <title>makemore peaple v0.2</title>
+<html> <head> <title>makemore peaple v0.3</title>
 <base href="..">
 
 <style>
@@ -97,64 +98,140 @@ body {
 
 <body bgcolor="darkgray" class="noselect">
 
-<table width=1500 cellpadding=4 cellspacing=0 border=3 bordercolor=gray>
+<table style='background-color: lightgray; border-width: 2px; border-color: gray; border-style: solid' width=1562 cellpadding=4 cellspacing=0>
   <tr>
     <td align=left valign=center style='border: 0; font-size: xx-large'>
-    <b>edit parson</b>
+    <b>$NAME</b>
     </td>
 
-    <td align=right valign=top style='border: 0'><b><a href="https://github.com/jdb19937/makemore">makemore</a> peaple v0.2</b><br/></td>
+    <td align=right valign=top style='border: 0'><b><a href="https://github.com/jdb19937/makemore">makemore</a> peaple v0.3</b><br/></td>
   </tr>
-</table>
 
 
-<table width=1500 cellpadding=4 cellspacing=0 border=0>
   <tr>
-  <td width=512>
-    <img width=512 height=512 id="profile" src="image/$NAME.jpg?nonce=$NONCE" style="image-rendering: pixelated">
+  <td width=560 valign=top>
+    <img width=560 height=560 onLoad="onprofileload()" onerror="onprofileload()" id="profile" src="image/$NAME.jpg?nonce=$NONCE" style="image-rendering: pixelated">
   </td>
 
   <td style='background-color: lightgray; border: 0' valign="top">
 
-    <table width=970 height=320 style="border:0; overflow: hidden" cellspacing=0>
+    <table width=970 height=512 style="border:0; overflow: hidden" cellspacing=0 cellpadding=0>
       <tr>
       <td colspan=4 valign=top height=160px>
+<b style='font-size: xx-large; padding-left: 8px'>parson</b><br/>
 
-        <table cellpadding=5 style='font-size: large'>
-        <tr><td width=100px align=right><b>nom</b></td><td>$NAME</td></tr>
-        <tr><td width=100px align=right><b>creator</b></td><td id=creator></td></tr>
-        <tr><td width=100px align=right><b>created</b></td><td id=created></td></tr>
-        <tr><td width=100px align=right><b>revisor</b></td><td id=revisor></td></tr>
-        <tr><td width=100px align=right><b>revised</b></td><td id=revised></td></tr>
+        <table cellpadding=3 style='font-size: large'>
+        <tr><td width=85px align=right><b>nom</b></td><td id=nom>$NAME</td></tr>
+        <tr><td width=85px align=right><b>creator</b></td><td id=creator></td></tr>
+        <tr><td width=85px align=right><b>created</b></td><td id=created></td></tr>
+        <tr><td width=85px align=right><b>revisor</b></td><td id=revisor></td></tr>
+        <tr><td width=85px align=right><b>revised</b></td><td id=revised></td></tr>
+        <tr><td width=85px align=right><b>visited</b></td><td id=visited></td></tr>
         </table>
+
+<hr/>
+<b style='font-size: xx-large; padding-left: 8px'>connection</b><br/>
+        <table cellpadding=3 style='font-size: large'>
+        <tr><td width=85px align=right><b>client</b></td><td id=client>$DOTIPADDR</td></tr>
+        <tr><td width=85px align=right><b>server</b></td><td id=server>wss://peaple.io:9999/</td></tr>
+        <tr><td width=85px align=right><b>status</b></td><td>
+
+<table><tr>
+<td style='width: 132px' id=serverstatus>not connected </td>
+
+<td>
+<input type=button value="reconnect" onClick="reconnect(); reqgen()"/>
+<input type=button onclick="reqgen()" value="refresh"/>
+</td>
+</tr></table>
+
+</td>
+
+
+</tr>
+
+<!--
+        <tr><td width=85px align=right></td><td> <input type=button value="reconnect" onClick="reconnect(); reqgen()"/></td></tr>
+        <tr><td width=85px align="right"></td><td> <input type=button onclick="reqgen()" value="reload"/> </td></tr>
+-->
+        <tr><td width=85px align=right><b>burns</b></td><td id=burns>0</td></tr>
+        <tr><td width=85px align=right><b>partrait</b></td>
+<td> 
+  <table><tr><td style='width: 132px'>
+  <span id="partraitstatus">froze</span>
+  <td>
+
+  <input type=button value="wake" onClick="if (window.islive) { this.value = 'wake'; window.islive = false; document.getElementById('partraitstatus').innerHTML = 'froze';  } else { this.value = 'freeze'; window.islive = true; document.getElementById('partraitstatus').innerHTML = 'woke'; } reloadprofile()" >
+  </td>
+  </td></tr></table>
+</td>
+</tr>
+<tr>
+<td></td>
+<td>
+<!--
+  <input type=button value="wake" onClick="if (window.islive) { this.value = 'wake'; window.islive = false; document.getElementById('partraitstatus').innerHTML = 'froze';  } else { this.value = 'freeze'; window.islive = true; document.getElementById('partraitstatus').innerHTML = 'woke'; } reloadprofile()" >
+-->
+</td></tr>
+</table>
+
       </td>
       <td align=right colspan=4 valign=top>
 
         <table>
         <tr>
-          <td colspan=4 align=right><b style='font-size: x-large'>fam</b></td>
-        </tr><tr>
 
-          <td><span style="font-size: 100px">(</span></td>
-          <td id=paren0 style="border-style: none; border-width: 2px; white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width: 100px; min-width: 100px; font-size: x-small"> </td>
-          <td id=paren1 style="border-style: none; border-width: 2px; white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width: 100px; min-width: 100px; font-size: x-small"> </td>
-          <td><span style="font-size: 100px">)</span></td>
+          <td><span style="font-size: 150px">(</span></td>
+          <td id=paren0 style="border-style: none; border-width: 2px; white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width: 150px; min-width: 150px; font-size: x-small"> </td>
+          <td id=paren1 style="border-style: none; border-width: 2px; white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width: 150px; min-width: 150px; font-size: x-small"> </td>
+          <td><span style="font-size: 150px">)</span></td>
         </tr>
-        </table>
 
+
+      <tr>
+          <td colspan=4 align=left><b style='font-size: x-large'>fam</b></td>
+        </tr>
+<tr><td colspan=4><table>
+          <tr>
+            <td id=fam0 style="border-style: none; border-width: 2px; white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width: 150px; min-width: 150px; min-height: 150px; max-height: 150px; font-size: x-small"> </td>
+            <td id=fam1 style="border-style: none; border-width: 2px; white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width: 150px; min-width: 150px; font-size: x-small"> </td>
+            <td id=fam2 style="border-style: none; border-width: 2px; white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width: 150px; min-width: 150px; font-size: x-small"> </td>
+          </tr>
+          <tr>
+            <td id=fam3 style="border-style: none; border-width: 2px; white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width: 150px; min-width: 150px; font-size: x-small"> </td>
+            <td id=fam4 style="border-style: none; border-width: 2px; white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width: 150px; min-width: 150px; font-size: x-small"> </td>
+            <td id=fam5 style="border-style: none; border-width: 2px; white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width: 150px; min-width: 150px; font-size: x-small"> </td>
+          </tr>
+<!--
+          <tr>
+            <td id=fam6 style="border-style: none; border-width: 2px; white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width: 150px; min-width: 150px; font-size: x-small"> </td>
+            <td id=fam7 style="border-style: none; border-width: 2px; white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width: 150px; min-width: 150px; font-size: x-small"> </td>
+            <td id=fam8 style="border-style: none; border-width: 2px; white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width: 150px; min-width: 150px; font-size: x-small"> </td>
+          </tr>
+-->
+</table>
+</td></tr></table>
+        </table>
       </td>
       </tr>
+
+
 
       <tr>
       <td colspan=4>
       </td>
-      <td colspan=4 rowspan=2 style='padding: 15px' valign=top>
+      <td colspan=4 rowspan=2 style='padding: 5px' valign=top>
 
-        <table>
+      <table>
+
+<!--
+      <tr>
+          <td colspan=3 align=left><b style='font-size: x-large'>fam</b></td>
+        </tr>
           <tr>
-            <td id=fam0 style="border-style: none; border-width: 2px; white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width: 100px; min-width: 100px; font-size: x-small"> </td>
-            <td id=fam1 style="border-style: none; border-width: 2px; white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width: 100px; min-width: 100px; font-size: x-small"> </td>
-            <td id=fam2 style="border-style: none; border-width: 2px; white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width: 100px; min-width: 100px; font-size: x-small"> </td>
+            <td id=fam0 style="border-style: none; border-width: 2px; white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width: 150px; min-width: 150px; font-size: x-small"> </td>
+            <td id=fam1 style="border-style: none; border-width: 2px; white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width: 150px; min-width: 150px; font-size: x-small"> </td>
+            <td id=fam2 style="border-style: none; border-width: 2px; white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width: 150px; min-width: 100px; font-size: x-small"> </td>
           </tr>
           <tr>
             <td id=fam3 style="border-style: none; border-width: 2px; white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width: 100px; min-width: 100px; font-size: x-small"> </td>
@@ -169,65 +246,19 @@ body {
         </table>
       </td>
       </tr>
+-->
 
 
 
+<!--
       <tr>
       <td colspan=4>
 
-        <hr/>
         <table cellpadding=5 style='font-size: large'>
-          <tr>
-            <td width=100px align=left colspan=2>
-              <b style='font-size: x-large'>interview</b><br/><br/>
-          <input id=ivbuf type=text maxlength=64 size=64 value="hello"> <input type=button value="submit" onClick="document.getElementById('ivbuf').value=''">
-          <br/>
-          </td></tr>
-
-          <tr>
-          <td colspan=2>
-            <table>
-<!-- style='border: 1px solid black' bgcolor="white" width=600 height=200 -->
-            <tr><td>
-              <textarea rows=4 cols=80 id="ivresponse">[response/animation should be synthesized by makemore using attrs, controls, tude, partrait, frens and fam, partraits and attrs of frens and fam, current camera image]</textarea>
-            </td></tr>
-            </table>
-          </td>
-          </tr>
-
-
-          <tr>
-            <td colspan=2>
-              <input type=button value="enable animation" onClick="alert('unimplemented')">
-              <input type=button value="enable camera" onClick="alert('unimplemented')">
-              <input type=button value="burn new response" onClick="alert('unimplemented'")>
-            </td>
-          </tr>
-
-<tr>
-<td colspan=2><table><tr>
-<hr/>
-<b style='font-size: x-large'>tude</b>
-<br/>
-
-
-<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='persattr0' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> #introvert_extrovert  </td></tr></table>   </td>
-<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='persattr1' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> #sensitive_intuitive  </td></tr></table>   </td>
-<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='persattr6' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> #polite_profane  </td></tr></table>   </td>
-</tr><tr>
-<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='persattr2' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> #feeling_thinking  </td></tr></table>   </td>
-<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='persattr3' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> #perceptive_judgemental  </td></tr></table>   </td>
-<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='persattr5' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> #modest_amorous  </td></tr></table>   </td>
-</tr>
-
-<tr>
-</tr>
-
-
-
 </table></td>
 
 </tr>
+-->
 
         </table>
       </td>
@@ -239,63 +270,78 @@ body {
 </table>
 <br/>
 
+<table style='background-color: lightgray; border-width: 2px; border-color: gray; border-style: solid' width=1562 cellpadding=4 cellspacing=0>
+      <tr>
+  <td colspan=1><b style='font-size: xx-large'>frens</b></td>
 
+  <td colspan=9>
 
-    <table>
-      <tr><td colspan=8><hr/><font size=+2><b>frens of $NAME</b></font></td></tr>
+<table align=right><tr><td>
+<div style='border-style: solid; border-width: 1px; border-color: #111111'>
+<table><tr>
+<td width=2></td>  <td>
 
-      <tr valign=top height=110>
-      <td width=100 id=fren0 style="border-style: none; border-width: 2px; white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width: 100px; min-width: 100px; font-size: x-small"> </td>
-      <td width=100 id=fren1 style="border-style: none; border-width: 2px; white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width: 100px; min-width: 100px; font-size: x-small"> </td>
-      <td width=100 id=fren2 style="border-style: none; border-width: 2px; white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width: 100px; min-width: 100px; font-size: x-small"> </td>
-      <td width=100 id=fren3 style="border-style: none; border-width: 2px; white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width: 100px; min-width: 100px; font-size: x-small"> </td>
-      <td width=100 id=fren4 style="border-style: none; border-width: 2px; white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width: 100px; min-width: 100px; font-size: x-small"> </td>
-      <td width=100 id=fren5 style="border-style: none; border-width: 2px; white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width: 100px; min-width: 100px; font-size: x-small"> </td>
-      <td width=100 id=fren6 style="border-style: none; border-width: 2px; white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width: 100px; min-width: 100px; font-size: x-small"> </td>
-      <td width=100 id=fren7 style="border-style: none; border-width: 2px; white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width: 100px; min-width: 100px; font-size: x-small"> </td>
-      </tr>
+<td style='padding-right: 10px' valign=bottom >
+<b>frenbuf</b>
+</td>
 
-      <tr valign=top height=110>
-      <td width=100 id=fren8 style="border-style: none; border-width: 2px; white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width: 100px; min-width: 100px; font-size: x-small"> </td>
-      <td width=100 id=fren9 style="border-style: none; border-width: 2px; white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width: 100px; min-width: 100px; font-size: x-small"> </td>
-      <td width=100 id=fren10 style="border-style: none; border-width: 2px; white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width: 100px; min-width: 100px; font-size: x-small"> </td>
-      <td width=100 id=fren11 style="border-style: none; border-width: 2px; white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width: 100px; min-width: 100px; font-size: x-small"> </td>
-      <td width=100 id=fren12 style="border-style: none; border-width: 2px; white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width: 100px; min-width: 100px; font-size: x-small"> </td>
-      <td width=100 id=fren13 style="border-style: none; border-width: 2px; white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width: 100px; min-width: 100px; font-size: x-small"> </td>
-      <td width=100 id=fren14 style="border-style: none; border-width: 2px; white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width: 100px; min-width: 100px; font-size: x-small"> </td>
-      <td width=100 id=fren15 style="border-style: none; border-width: 2px; white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width: 100px; min-width: 100px; font-size: x-small"> </td>
-      </tr>
-    </table>
-
-<br/>
-
-<tr>
-
-  <td align=right><b>frenbuf</b></td>
-  <td colspan=8>
-    <input type=text id=frenbuf name=frenbuf onClick="this.select();" onChange="frenbufhilite()" onKeyDown="frenbufhilite()" oninput="frenbufhilite()" onpaste="frenbufhilite()" value="" size=32 maxlength=32/>
-    <input type=button onClick="document.getElementById('frenbuf').value = gennom(); frenbufhilite()" value="gen nom"/>
+<td>
+    <input type=text id=frenbuf name=frenbuf onClick="this.select();" onChange="frenbufhilite()" onKeyDown="frenbufhilite(); if (event.key == 'Enter') { addfren(); }" oninput="frenbufhilite()" onpaste="frenbufhilite()" value="" size=32 maxlength=32/>
     <input type=button onClick="addfren()" value="add fren"/>
-    <input type=button onClick="setparsontarget()" value="set target"/>
-    <input type=button onClick="gotofile()" value="goto file"/>
-    <input type=button onClick="makebread()" value="bread"/>
+    <input type=button onClick="makebread()" value="bread with"/>
     <input type=button onClick="cloneto()" value="clone to"/>
+    <input type=button onClick="gotofile()" value="goto file"/>
+    <input type=button onClick="document.getElementById('frenbuf').value = gennom(); frenbufhilite()" value="gen nom"/>
     <input type=button onClick="document.getElementById('frenbuf').select(); document.execCommand('copy')" value="copy nom"/>
+
+</td>
+</tr></table></div>
+</td></tr></table>
+
 
   </td>
 </tr>
+
+      <tr valign=top height=160>
+      <td width=150 id=fren0 style="border-style: none; border-width: 2px; white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width: 150px; min-width: 150px; font-size: x-small"> </td>
+      <td width=150 id=fren1 style="border-style: none; border-width: 2px; white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width: 150px; min-width: 150px; font-size: x-small"> </td>
+      <td width=150 id=fren2 style="border-style: none; border-width: 2px; white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width: 150px; min-width: 150px; font-size: x-small"> </td>
+      <td width=150 id=fren3 style="border-style: none; border-width: 2px; white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width: 150px; min-width: 150px; font-size: x-small"> </td>
+      <td width=150 id=fren4 style="border-style: none; border-width: 2px; white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width: 150px; min-width: 150px; font-size: x-small"> </td>
+      <td width=150 id=fren5 style="border-style: none; border-width: 2px; white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width: 150px; min-width: 150px; font-size: x-small"> </td>
+      <td width=150 id=fren6 style="border-style: none; border-width: 2px; white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width: 150px; min-width: 150px; font-size: x-small"> </td>
+      <td width=150 id=fren7 style="border-style: none; border-width: 2px; white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width: 150px; min-width: 150px; font-size: x-small"> </td>
+      <td width=150 id=fren8 style="border-style: none; border-width: 2px; white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width: 150px; min-width: 150px; font-size: x-small"> </td>
+ <td></td>
+
+      </tr>
+
+<!--
+      <tr valign=top>
+      <td width=150 id=fren8 style="border-style: none; border-width: 2px; white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width: 150px; min-width: 150px; font-size: x-small"> </td>
+      <td width=150 id=fren9 style="border-style: none; border-width: 2px; white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width: 150px; min-width: 150px; font-size: x-small"> </td>
+      <td width=150 id=fren10 style="border-style: none; border-width: 2px; white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width: 150px; min-width: 150px; font-size: x-small"> </td>
+      <td width=150 id=fren11 style="border-style: none; border-width: 2px; white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width: 150px; min-width: 150px; font-size: x-small"> </td>
+      <td width=150 id=fren12 style="border-style: none; border-width: 2px; white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width: 150px; min-width: 150px; font-size: x-small"> </td>
+      <td width=150 id=fren13 style="border-style: none; border-width: 2px; white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width: 150px; min-width: 150px; font-size: x-small"> </td>
+      <td width=150 id=fren14 style="border-style: none; border-width: 2px; white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width: 150px; min-width: 150px; font-size: x-small"> </td>
+      <td width=150 id=fren15 style="border-style: none; border-width: 2px; white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width: 150px; min-width: 150px; font-size: x-small"> </td>
+ <td></td>
+      </tr>
+-->
+
 </table>
 
 
 </td>
 </tr></table>
 
+<br/>
 
 
-<br/><br/>
 
 
-<table height="5" width=1"><tr><td></td></tr></table>
+
 
 
 <!--
@@ -309,26 +355,38 @@ body {
 
 
 
-<table style='border-width: 3px; border-color: gray; border-style: solid' width=1500 cellpadding=0 cellspacing=0><tr><td>
+<table style='background-color: lightgray; border-width: 2px; border-color: gray; border-style: solid' width=1562 cellpadding=4 cellspacing=0><tr><td>
+
+<table width=1542>
+<tr><td><b style='font-size: xx-large'>props</b></td>
+<td align=right>
+  <input type="button" style="width: 120px" value="scramble" onClick="alert('unimplemented')">
+  <input type="button" style="width: 120px" value="reanalyze" onClick="alert('unimplemented')">
+  <!-- <input type="button" style="width: 120px" value="sync colors" onClick="colattrsync()"> -->
+</td>
+
+</tr></table>
+<table><tr><td>
+
 
 <div id="attrcon">
 
-<table cellpadding=0 cellspacing=1><tr>
+<table cellpadding=0 cellspacing=2><tr>
 
 <tr>
 
 
 
-<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr19' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> #high_cheekbones  </td></tr></table>   </td>
-<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr29' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> #rosy_cheeks  </td></tr></table>   </td>
-<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr25' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> #oval_face  </td></tr></table>   </td>
-<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr26' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> #pale_skin  </td></tr></table>   </td>
-<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr24' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> #shaven  </td></tr></table>   </td>
-<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr0' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> #stubble  </td></tr></table>   </td>
-<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr30' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> #sideburns  </td></tr></table>   </td>
-<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr16' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> #goatee  </td></tr></table>   </td>
+<td width=180> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr19' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> #high_cheekbones  </td></tr></table>   </td>
+<td width=180> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr29' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> #rosy_cheeks  </td></tr></table>   </td>
+<td width=180> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr25' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> #oval_face  </td></tr></table>   </td>
+<td width=180> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr26' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> #pale_skin  </td></tr></table>   </td>
+<td width=180> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr24' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> #shaven  </td></tr></table>   </td>
+<td width=180> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr0' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> #stubble  </td></tr></table>   </td>
+<td width=180> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr30' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> #sideburns  </td></tr></table>   </td>
+<td width=180> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr16' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> #goatee  </td></tr></table>   </td>
 
-<td onMouseOver="document.getElementById('colattrhint').style.visibility = 'visible'" onMouseOut="document.getElementById('colattrhint').style.visibility = 'hidden'"> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='colattr0' style='border: 3px solid gray; background-color: black; width: 16; height: 16'></div> </td><td valign=center class='colattrclass'> #edge_mean  </td></tr></table>   </td>
+
 </tr><tr>
 
 
@@ -341,10 +399,9 @@ body {
 <td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr32' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> #straight_hair  </td></tr></table>   </td>
 <td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr33' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> #wavy_hair  </td></tr></table>   </td>
 
-<td onMouseOver="document.getElementById('colattrhint').style.visibility = 'visible'" onMouseOut="document.getElementById('colattrhint').style.visibility = 'hidden'"> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='colattr1' style='border: 3px solid gray; background-color: black; width: 16; height: 16'></div> </td><td valign=center class='colattrclass'> #edge_stddev  </td></tr></table>   </td>
 </tr><tr>
 
-<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr5' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> #bangs  </td></tr></table>   </td>
+<td width=180> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr5' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> #bangs  </td></tr></table>   </td>
 <td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr8' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> #black_hair  </td></tr></table>   </td>
 <td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr9' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> #blonde_hair  </td></tr></table>   </td>
 <td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr11' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> #brown_hair  </td></tr></table>   </td>
@@ -353,7 +410,6 @@ body {
 <td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr14' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> #double_chin  </td></tr></table>   </td>
 <td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr21' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> #mouth_open  </td></tr></table>   </td>
 
-<td onMouseOver="document.getElementById('colattrhint').style.visibility = 'visible'" onMouseOut="document.getElementById('colattrhint').style.visibility = 'hidden'"> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='colattr2' style='border: 3px solid gray; background-color: black; width: 16; height: 16'></div> </td><td valign=center class='colattrclass'> #center_mean  </td></tr></table>   </td>
 </tr><tr>
 
 <td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr20' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> #male  </td></tr></table>   </td>
@@ -365,7 +421,6 @@ body {
 <td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr7' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> #big_nose  </td></tr></table>   </td>
 <td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr27' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> #pointy_nose  </td></tr></table>   </td>
 
-<td onMouseOver="document.getElementById('colattrhint').style.visibility = 'visible'" onMouseOut="document.getElementById('colattrhint').style.visibility = 'hidden'"> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='colattr3' style='border: 3px solid gray; background-color: black; width: 16; height: 16'></div> </td><td valign=center class='colattrclass'> #center_stddev  </td></tr></table>   </td>
 
 </tr><tr>
 
@@ -379,7 +434,13 @@ body {
 <td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr37' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> #necklace  </td></tr></table>   </td>
 <td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr38' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> #necktie  </td></tr></table>   </td>
 
-<td> <font size="-1" color=#333333><div id="colattrhint" style="visibility: hidden">[pick color for above attributes]</font> </td>
+<td> <font size="-1" color=#333333>
+<div id="colattrhint" style="visibility: hidden">
+<!--
+[pick color for above attributes]
+-->
+</div>
+</td>
 
 </tr><tr>
 
@@ -390,21 +451,48 @@ function vis(id) { document.getElementById(id).style.visibility = 'visible' }
 function unvis(id) { document.getElementById(id).style.visibility = 'hidden' }
 </script>
 
-<td colspan=2> <table cellpadding=0 cellspacing=1 onMouseOver="vis('taghint')" onMouseOut="unvis('taghint')" ><tr><td> <div id='tag0' style='border: 3px solid gray; background-color: black; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> #<input id="tag0in" size="24" maxlength=24 value="" />  </td></tr></table>   </td>
+<td colspan=2> <table cellpadding=0 cellspacing=1 onMouseOver="vis('taghint')" onMouseOut="unvis('taghint')" ><tr><td> <div id='tag0' style='border: 3px solid gray; background-color: black; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> #<input id="tag0in" size="32" maxlength=32 value="" />  </td></tr></table>   </td>
 
-<td colspan=2> <table cellpadding=0 cellspacing=1 onMouseOver="vis('taghint')" onMouseOut="unvis('taghint')"><tr><td> <div id='tag1' style='border: 3px solid gray; background-color: black; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> #<input id="tag1in" size="24" maxlength=24 value="" />  </td></tr></table>   </td>
+<td colspan=2> <table cellpadding=0 cellspacing=1 onMouseOver="vis('taghint')" onMouseOut="unvis('taghint')"><tr><td> <div id='tag1' style='border: 3px solid gray; background-color: black; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> #<input id="tag1in" size="32" maxlength=32 value="" />  </td></tr></table>   </td>
 <td id=taghint colspan=4 style='visibility: hidden'> <font color="#444444" size="-1">[enter any two tags] </font></td>
 
 </table>
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
 </div>
+
+</td>
+
+<!--
+<td valign=top>
+  <input type="button" style="width: 120px" value="scramble" onClick="alert('unimplemented')"><br/>
+  <input type="button" style="width: 120px" value="reanalyze" onClick="alert('unimplemented')"></br>
+  <input type="button" style="width: 120px" value="sync colors" onClick="colattrsync()">
+</td>
+-->
+
+</tr></table>
+
 
 </td>
 <td valign=top align=right>
 
 <table cellpadding=0 cellspacing=0>
 <tr>
+<!--
   <td width=64 valign=top>
     <div id="attrstatic" style="border-width: 3px; border-color: #606010; border-style: solid; width: 64; height: 64">
       <img src="static.png" onMouseDown="
@@ -413,7 +501,6 @@ doubleclick('attrstatic', genrandomattrs, 'attrcon')
     </div>
   </td>
 </tr><tr>
-<!--
   <td width=64>
     <div id="attrperson" style="border-width: 3px; border-color: #606010; border-style: solid; width: 64; height: 64">
       <img src="person.png"  onMouseDown="doubleclick('attrperson', genpersonattrs, 'attrcon')  "/>
@@ -426,81 +513,87 @@ doubleclick('attrstatic', genrandomattrs, 'attrcon')
 </td></tr>
 
 </table>
-<table height="5" width=1"><tr><td></td></tr></table>
+
+
+
+<br/>
 
 
 
 
-<table cellpadding=0 cellspacing=1 width=1500 style='border-width: 3px; border-color: gray; border-style: solid'>
-  <tr>
-    <td width=64>
-      <div id="colorshower" style="border-width: 3px; border-color: gray; border-style: solid; width: 64; height: 64; background-color: black" onClick="changetool('d')"> </div>
-    </td>
-    <td width=64>
-      <div id="colorpicker" style="border-width: 3px; border-color: gray; border-style: solid; width: 64; height: 64;"> <img src="spectrum.png" onClick="changetool('p')"> </div>
-    </td>
-    <td width=64>
-      <div id="blurtool" style="border-width: 3px; border-color: gray; border-style: solid; width: 64; height: 64;"> <img src="blur.png" onClick="changetool('b')"> </div>
-    </td>
-    <td width=64>
-      <div id="sharptool" style="border-width: 3px; border-color: gray; border-style: solid; width: 64; height: 64;"> <img src="sharp.png" onClick="changetool('s')">
-    </td>
-    <td>
-      <div id="fuzztool" style="border-width: 3px; border-color: gray; border-style: solid; width: 64; height: 64;"> <img src="fuzz.png" onClick="changetool('f')"> </div>
-    </td>
 
-  <td align=left>
-    <input type=button onclick="requpdate()" value="request update"/>
 
-    <input type=button id=ctrlockbutton onClick="lockallcontrols()" value="lock all controls">
-    <input type=button id=tgtlockbutton onClick="lockalltargets()" value="lock all targets">
-    <input type=button id=ctrlockbutton onClick="unlockallcontrols()" value="unlock all controls">
-    <input type=button id=ctrlockbutton onClick="unlockalltargets()" value="unlock all targets">
-  <input type="button" for="imageLoader" value="file target" onClick="getElementById('imageLoader').click()"/>
+
+
+
+
+
+<table style='background-color: lightgray; border-width: 2px; border-color: gray; border-style: solid' width=1562 cellpadding=4 cellspacing=0><tr><td>
+
+
+<table width=1550><tr><td>
+<b style='font-size: xx-large'>produce</b>
+</td>
+
+  <td align=right>
+
+    <input type=button id=ctrlockbutton onClick="lockallcontrols()" value="lock all stage controls">
+    <input type=button id=tgtlockbutton onClick="lockalltargets()" value="lock all stage targets">
+    <input type=button id=ctrlockbutton onClick="unlockallcontrols()" value="unlock all stage controls">
+    <input type=button id=ctrlockbutton onClick="unlockalltargets()" value="unlock all stage targets">
+  <input type="button" for="imageLoader" value="file to target" onClick="getElementById('imageLoader').click()"/>
 <input type="file" size="60" id="imageLoader" name="imageLoader" accept="image/png, image/jpeg"/>
 
+  <input type="button" for="imageLoaderCamera" value="camera to target" onClick="loadcameraimage()"/>
 
-    <input type="button" for="imageLoaderCamera" value="camera target" onClick="alert('unimplemented')"/>
-  <!--
-    <input type="button" for="imageLoaderCamera" value="camera target" onClick="getElementById('imageLoaderCamera').click()"/>
-    <input type="file" size="60" id="imageLoaderCamera" capture="user" name="imageLoaderCamera" accept="image/png, image/jpeg"/>
-  <input type="button" for="imageLoaderCamera" value="camera target" onClick="loadcameraimage()"/>
-  -->
+    <input type=button onClick="setparsontarget()" value="frenbuf to target"/>
 
-  <input type="button" value="toggle legend" onClick="document.cookie = 'seenlegend=1'; var z = document.getElementById('hintlayer'); if (z.style.zIndex > 0) { z.style.zIndex = -10; z.style.visibility = 'hidden' } else { z.style.zIndex = 10; z.style.visibility = 'visible' }">
+    <input type=button onClick="burnin()" value="burn in target"/>
+
+ <!-- <input type="button" value="toggle legend" onClick="togglelegend()"> -->
 <div style="display: none"><canvas id="imageCanvas" width=64 height=64></canvas></div>
   </td>
+</tr><tr>
+<td></td>
+<td align=right>
 
 
-  <td></td>
+<table><tr><td>
+<div style='border-style: solid; border-width: 1px; border-color: #111111'>
+<table><tr>
+<td width=2></td>  <td>
+<td valign=middle style='padding-right: 20px' >
+<b>color guide</b>
+</td>
+<td width=100 onMouseOver="document.getElementById('colattrhint').style.visibility = 'visible'" onMouseOut="document.getElementById('colattrhint').style.visibility = 'hidden'"> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='colattr2' style='border: 3px solid gray; background-color: black; width: 16; height: 16'></div> </td><td valign=center class='colattrclass'> #center  </td></tr></table>   </td>
+<td width=100 onMouseOver="document.getElementById('colattrhint').style.visibility = 'visible'" onMouseOut="document.getElementById('colattrhint').style.visibility = 'hidden'"> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='colattr0' style='border: 3px solid gray; background-color: black; width: 16; height: 16'></div> </td><td valign=center class='colattrclass'> #edge  </td></tr></table>   </td>
+<td width=100 onMouseOver="document.getElementById('colattrhint').style.visibility = 'visible'" onMouseOut="document.getElementById('colattrhint').style.visibility = 'hidden'"> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='colattr3' style='border: 3px solid gray; background-color: black; width: 16; height: 16'></div> </td><td valign=center class='colattrclass'> #mouth  </td></tr></table>   </td>
+<td width=100 onMouseOver="document.getElementById('colattrhint').style.visibility = 'visible'" onMouseOut="document.getElementById('colattrhint').style.visibility = 'hidden'"> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='colattr1' style='border: 3px solid gray; background-color: black; width: 16; height: 16'></div> </td><td valign=center class='colattrclass'> #hair  </td></tr></table>   </td>
 
-  <td width=64>
-    <div id="burnin" style="border-width: 3px; border-color: #606010; border-style: solid; width: 64; height: 64">
-      <img src="burn.png" onMouseDown="doubleclick2('burnin', doburnin) "/>
-    </div>
-  </td>
-
-
-  </tr>
-
-</table>
-<table height="5" width=1"><tr><td></td></tr></table>
+   <td><input type="button" style="width: 120px" value="set from target" onClick="colattrsync()"></td>
+</tr></table>
+</div>
+</td></tr></table>
 
 
 
+</td>
+</tr></table>
+<br/>
 
 
 
-<table width=1500 cellpadding=0 cellspacing=4>
+<table width=1550 cellpadding=0 cellspacing=4>
 
   <tr>
-  <th style='font-size: small'>partrait</th>
-  <th style='font-size: small'>palette | pretarget</th>
-  <th style='font-size: small'>target</th>
-  <th style='font-size: small'>adjustment</th>
-  <th style='font-size: small'>controls</th>
-  <th style='font-size: small'>functions</th>
+  <th>partrait</th>
+  <th>paint tools | pretarget</th>
+  <th>target</th>
+  <th>adjustment</th>
+  <th>control</th>
+  <th>functions</th>
   <th></th>
+
 
   <tr>
 
@@ -508,9 +601,45 @@ doubleclick('attrstatic', genrandomattrs, 'attrcon')
 
 <div id="hintlayer" style="position: absolute; width: 1500; height: 1500; z-index: 10" onClick="document.cookie='seenlegend=1'; this.style.visibility = 'hidden'; this.style.zIndex = -10"> <canvas id=hintcanvas width=1500 height=1500></canvas></div>
 
-<canvas id="stage1gen" width=320 height=320></canvas></td>
- <td width=320 style="border-width: 3px; border-color: gray; border-style: solid; padding: 0px"><canvas id="palette" onClick="clickpalette(event)" width=320 height=320></canvas></td>
- <td width=320 style="border-width: 3px; border-color: gray; border-style: solid; padding: 0px"><canvas id="stage1" width=320 height=320></canvas></td>
+<canvas id="stage1gen" width=320 height=320
+onMouseOver="sethelp()" onMouseOut="resetcursor()" onClick="togglelegend()"
+></canvas></td>
+
+ <td width=320 style="border-width: 3px; border-color: gray; border-style: solid; padding: 0px">
+
+
+
+
+
+<table cellpadding=0 cellspacing=1 width=256 style='position: absolute; border-width: 0px; border-color: gray; border-style: solid'>
+  <tr>
+    <td width=58>
+      <div id="colorshower" style="width: 58; height: 58; border-width: 3px; border-color: gray; border-style: solid; background-color: black" onClick="changetool('d')"> </div>
+    </td>
+    <td width=58>
+      <div id="colorpicker" style="border-width: 3px; border-color: gray; border-style: solid"> <img src="spectrum.png" onClick="changetool('p')"> </div>
+    </td>
+    <td width=58>
+      <div id="blurtool" style="border-width: 3px; border-color: gray; border-style: solid"> <img src="blur.png" onClick="changetool('b')"> </div>
+    </td>
+    <td width=58>
+      <div id="sharptool" style="border-width: 3px; border-color: gray; border-style: solid"> <img src="sharp.png" onClick="changetool('s')">
+    </td>
+    <td></td>
+  </td>
+
+
+  </tr>
+
+</table>
+
+
+<canvas id="palette" onClick="clickpalette(event)" width=320 height=320
+onMouseOver="setcrosshair(event)" onMouseOut="resetcursor()"
+></canvas></td>
+ <td width=320 style="border-width: 3px; border-color: gray; border-style: solid; padding: 0px"><canvas id="stage1" width=320 height=320 
+onMouseOver="setcrosshair(event)" onMouseOut="resetcursor()"
+></canvas></td>
 
  <td width=320 id="stage1adjborder" style="border-width: 3px; border-color: gray; border-style: solid; padding: 0px">
     <canvas id="stage1adj" width=320 height=320
@@ -531,18 +660,17 @@ onClick="toggletgtlock(1)"
 
 
   </td>
-  <td valign=top>
+  <td valign=top align=center>
     <table cellspacing=4 cellpadding=0>
     <tr><td><input style="width: 100px" type="button" value="scramble" onClick="requpdatecon(1, 1)"/></td></tr>
     <tr><td><input style="width: 100px" type="button" value="tone up" onClick="requpdatecon(1, 2)"/></td></tr>
     <tr><td><input style="width: 100px" type="button" value="tone down" onClick="requpdatecon(1, 3)"/></td></tr>
-    <tr><td><input style="width: 100px" type="button" value="lock controls" onClick=""/></td></tr>
-    <tr><td><input style="width: 100px" type="button" value="unlock controls" onClick=""/></td></tr>
-    <tr><td><input style="width: 100px" type="button" value="lock target" onClick=""/></td></tr>
-    <tr><td><input style="width: 100px" type="button" value="unlock target" onClick=""/></td></tr>
-    <tr><td><input style="width: 100px" type="button" value="recombine" onClick=""/></td></tr>
-    <tr><td><input style="width: 100px" type="button" value="blend" onClick=""/></td></tr>
-    <tr><td><input style="width: 100px" type="button" value="burn in" onClick=""/></td></tr>
+    <tr><td><input style="width: 100px" type="button" value="lock control" onClick="alert('unimplemented')"/></td></tr>
+    <tr><td><input style="width: 100px" type="button" value="unlock control" onClick="alert('unimplemented')"/></td></tr>
+    <tr><td><input style="width: 100px" type="button" value="lock target" onClick="alert('unimplemented')"/></td></tr>
+    <tr><td><input style="width: 100px" type="button" value="unlock target" onClick="alert('unimplemented')"/></td></tr>
+    <tr><td><input style="width: 100px" type="button" value="recombine" onClick="alert('unimplemented')"/></td></tr>
+    <tr><td><input style="width: 100px" type="button" value="blend" onClick="alert('unimplemented')"/></td></tr>
     </table>
   </td>
 </tr><tr>
@@ -551,9 +679,16 @@ onClick="toggletgtlock(1)"
 
 
 
-  <td style="border-width: 3px; border-color: gray; border-style: solid; padding: 0px" width=320><canvas id="stage2gen" width=320 height=320></canvas></td>
-  <td style="border-width: 3px; border-color: gray; border-style: solid; padding: 0px" width=320><canvas id="stage2orig" width=320 height=320></canvas></td>
-  <td style="border-width: 3px; border-color: gray; border-style: solid; padding: 0px" width=320><canvas id="stage2" width=320 height=320></canvas></td>
+  <td style="border-width: 3px; border-color: gray; border-style: solid; padding: 0px" width=320>
+<canvas id="stage2gen" width=320 height=320
+onMouseOver="sethelp()" onMouseOut="resetcursor()" onClick="togglelegend()"
+></canvas></td>
+  <td style="border-width: 3px; border-color: gray; border-style: solid; padding: 0px" width=320><canvas id="stage2orig" width=320 height=320
+onMouseOver="sethelp()" onMouseOut="resetcursor()" onClick="togglelegend()"
+></canvas></td>
+  <td style="border-width: 3px; border-color: gray; border-style: solid; padding: 0px" width=320><canvas id="stage2" width=320 height=320
+onMouseOver="setcrosshair(event)" onMouseOut="resetcursor()" 
+></canvas></td>
  <td width=320 id="stage2adjborder" style="border-width: 3px; border-color: gray; border-style: solid; padding: 0px">
     <canvas id="stage2adj" width=320 height=320
 onClick="toggletgtlock(2)"
@@ -569,18 +704,17 @@ onClick="toggletgtlock(2)"
   </td></tr></table>
   </td>
 
-  <td valign=top>
+  <td valign=top align=center>
     <table cellspacing=4 cellpadding=0>
     <tr><td><input style="width: 100px" type="button" value="scramble" onClick="requpdatecon(2, 1)"/></td></tr>
     <tr><td><input style="width: 100px" type="button" value="tone up" onClick="requpdatecon(2, 2)"/></td></tr>
     <tr><td><input style="width: 100px" type="button" value="tone down" onClick="requpdatecon(2, 3)"/></td></tr>
-    <tr><td><input style="width: 100px" type="button" value="lock controls" onClick=""/></td></tr>
-    <tr><td><input style="width: 100px" type="button" value="unlock controls" onClick=""/></td></tr>
-    <tr><td><input style="width: 100px" type="button" value="lock target" onClick=""/></td></tr>
-    <tr><td><input style="width: 100px" type="button" value="unlock target" onClick=""/></td></tr>
-    <tr><td><input style="width: 100px" type="button" value="recombine" onClick=""/></td></tr>
-    <tr><td><input style="width: 100px" type="button" value="blend" onClick=""/></td></tr>
-    <tr><td><input style="width: 100px" type="button" value="burn in" onClick=""/></td></tr>
+    <tr><td><input style="width: 100px" type="button" value="lock control" onClick="alert('unimplemented')"/></td></tr>
+    <tr><td><input style="width: 100px" type="button" value="unlock control" onClick="alert('unimplemented')"/></td></tr>
+    <tr><td><input style="width: 100px" type="button" value="lock target" onClick="alert('unimplemented')"/></td></tr>
+    <tr><td><input style="width: 100px" type="button" value="unlock target" onClick="alert('unimplemented')"/></td></tr>
+    <tr><td><input style="width: 100px" type="button" value="recombine" onClick="alert('unimplemented')"/></td></tr>
+    <tr><td><input style="width: 100px" type="button" value="blend" onClick="alert('unimplemented')"/></td></tr>
     </table>
   </td>
 </tr>
@@ -592,9 +726,15 @@ onClick="toggletgtlock(2)"
 -->
 
 <tr>
- <td style="border-width: 3px; border-color: gray; border-style: solid; padding: 0px" width=320><canvas id="stage3gen" width=320 height=320></canvas></td>
-  <td style="border-width: 3px; border-color: gray; border-style: solid; padding: 0px" width=320><canvas id="stage3orig" width=320 height=320></canvas></td>
-  <td style="border-width: 3px; border-color: gray; border-style: solid; padding: 0px" width=320><canvas id="stage3" width=320 height=320></canvas></td>
+ <td style="border-width: 3px; border-color: gray; border-style: solid; padding: 0px" width=320><canvas id="stage3gen" width=320 height=320
+onMouseOver="sethelp()" onMouseOut="resetcursor()" onClick="togglelegend()"
+></canvas></td>
+  <td style="border-width: 3px; border-color: gray; border-style: solid; padding: 0px" width=320><canvas id="stage3orig" width=320 height=320
+onMouseOver="sethelp()" onMouseOut="resetcursor()" onClick="togglelegend()"
+></canvas></td>
+  <td style="border-width: 3px; border-color: gray; border-style: solid; padding: 0px" width=320><canvas id="stage3" width=320 height=320
+onMouseOver="setcrosshair(event)" onMouseOut="resetcursor()" 
+></canvas></td>
  <td width=320 id="stage3adjborder" style="border-width: 3px; border-color: gray; border-style: solid; padding: 0px">
     <canvas id="stage3adj" width=320 height=320
 onClick="toggletgtlock(3)"
@@ -609,18 +749,17 @@ onClick="toggletgtlock(3)"
   </td></tr></table>
 </td>
 
-  <td valign=top>
+  <td valign=top align=center>
     <table cellspacing=4 cellpadding=0>
     <tr><td><input style="width: 100px" type="button" value="scramble" onClick="requpdatecon(3, 1)"/></td></tr>
     <tr><td><input style="width: 100px" type="button" value="tone up" onClick="requpdatecon(3, 2)"/></td></tr>
     <tr><td><input style="width: 100px" type="button" value="tone down" onClick="requpdatecon(3, 3)"/></td></tr>
-    <tr><td><input style="width: 100px" type="button" value="lock controls" onClick=""/></td></tr>
-    <tr><td><input style="width: 100px" type="button" value="unlock controls" onClick=""/></td></tr>
-    <tr><td><input style="width: 100px" type="button" value="lock target" onClick=""/></td></tr>
-    <tr><td><input style="width: 100px" type="button" value="unlock target" onClick=""/></td></tr>
-    <tr><td><input style="width: 100px" type="button" value="recombine" onClick=""/></td></tr>
-    <tr><td><input style="width: 100px" type="button" value="blend" onClick=""/></td></tr>
-    <tr><td><input style="width: 100px" type="button" value="burn in" onClick=""/></td></tr>
+    <tr><td><input style="width: 100px" type="button" value="lock control" onClick="alert('unimplemented')"/></td></tr>
+    <tr><td><input style="width: 100px" type="button" value="unlock control" onClick="alert('unimplemented')"/></td></tr>
+    <tr><td><input style="width: 100px" type="button" value="lock target" onClick="alert('unimplemented')"/></td></tr>
+    <tr><td><input style="width: 100px" type="button" value="unlock target" onClick="alert('unimplemented')"/></td></tr>
+    <tr><td><input style="width: 100px" type="button" value="recombine" onClick="alert('unimplemented')"/></td></tr>
+    <tr><td><input style="width: 100px" type="button" value="blend" onClick="alert('unimplemented')"/></td></tr>
     </table>
   </td>
 
@@ -638,9 +777,15 @@ onClick="toggletgtlock(3)"
 
 <tr>
 
- <td style="border-width: 3px; border-color: gray; border-style: solid; padding: 0px" width=320><canvas id="stage4gen" width=320 height=320></canvas></td>
-  <td style="border-width: 3px; border-color: gray; border-style: solid; padding: 0px" width=320><canvas id="stage4orig" width=320 height=320></canvas></td>
-  <td style="border-width: 3px; border-color: gray; border-style: solid; padding: 0px" width=320><canvas id="stage4" width=320 height=320></canvas></td>
+ <td style="border-width: 3px; border-color: gray; border-style: solid; padding: 0px" width=320><canvas id="stage4gen" width=320 height=320
+onMouseOver="sethelp()" onMouseOut="resetcursor()" onClick="togglelegend()"
+></canvas></td>
+  <td style="border-width: 3px; border-color: gray; border-style: solid; padding: 0px" width=320><canvas id="stage4orig" width=320 height=320
+onMouseOver="sethelp()" onMouseOut="resetcursor()" onClick="togglelegend()"
+></canvas></td>
+  <td style="border-width: 3px; border-color: gray; border-style: solid; padding: 0px" width=320><canvas id="stage4" width=320 height=320
+onMouseOver="setcrosshair(event)" onMouseOut="resetcursor()" 
+></canvas></td>
  <td width=320 id="stage4adjborder" style="border-width: 3px; border-color: gray; border-style: solid; padding: 0px">
     <canvas id="stage4adj" width=320 height=320
 onClick="toggletgtlock(4)"
@@ -653,24 +798,128 @@ onClick="toggletgtlock(4)"
 </canvas>
   </td></tr></table>
 </td>
-  <td valign=top>
+  <td valign=top align=center>
     <table cellspacing=4 cellpadding=0>
     <tr><td><input style="width: 100px" type="button" value="scramble" onClick="requpdatecon(4, 1)"/></td></tr>
     <tr><td><input style="width: 100px" type="button" value="tone up" onClick="requpdatecon(4, 2)"/></td></tr>
     <tr><td><input style="width: 100px" type="button" value="tone down" onClick="requpdatecon(4, 3)"/></td></tr>
-    <tr><td><input style="width: 100px" type="button" value="lock controls" onClick=""/></td></tr>
-    <tr><td><input style="width: 100px" type="button" value="unlock controls" onClick=""/></td></tr>
-    <tr><td><input style="width: 100px" type="button" value="lock target" onClick=""/></td></tr>
-    <tr><td><input style="width: 100px" type="button" value="unlock target" onClick=""/></td></tr>
-    <tr><td><input style="width: 100px" type="button" value="recombine" onClick=""/></td></tr>
-    <tr><td><input style="width: 100px" type="button" value="blend" onClick=""/></td></tr>
-    <tr><td><input style="width: 100px" type="button" value="burn in" onClick=""/></td></tr>
+    <tr><td><input style="width: 100px" type="button" value="lock control" onClick="alert('unimplemented')"/></td></tr>
+    <tr><td><input style="width: 100px" type="button" value="unlock control" onClick="alert('unimplemented')"/></td></tr>
+    <tr><td><input style="width: 100px" type="button" value="lock target" onClick="alert('unimplemented')"/></td></tr>
+    <tr><td><input style="width: 100px" type="button" value="unlock target" onClick="alert('unimplemented')"/></td></tr>
+    <tr><td><input style="width: 100px" type="button" value="recombine" onClick="alert('unimplemented')"/></td></tr>
+    <tr><td><input style="width: 100px" type="button" value="blend" onClick="alert('unimplemented')"/></td></tr>
     </table>
   </td>
 </tr>
 
 </table>
 
+</td></tr></table>
+
+
+<br/>
+
+
+
+
+
+<table cellpadding=0 cellspacing=0><tr><td>
+
+<table style='background-color: lightgray; border-width: 2px; border-color: gray; border-style: solid' height=180 width=930 cellpadding=4 cellspacing=0>
+          <tr>
+            <td align=left colspan=2>
+              <b style='font-size: xx-large'>interview</b><br/>
+             </td>
+           </tr>
+
+           <tr>
+            <td align=right style="width: 80px">
+               <b>request</b>
+            </td><td>
+          <input id=ivbuf type=text maxlength=80 size=80 value="hello">
+          <input type=button value="submit" onClick="alert('unimplemented')">
+          <input type=button value="camera on" onClick="if (this.value == 'camera on') { this.value = 'camera off'; } else { this.value = 'camera on'; }"/>
+          </td></tr>
+
+           <tr>
+            <td align=right style="width: 80px">
+               <b>response</b>
+            </td><td>
+          <input id=ivresponse readonly type=text maxlength=80 size=80 value="">
+          </td></tr>
+
+           <tr>
+            <td align=right style="width: 80px">
+               <b>target</b>
+            </td><td>
+          <input id=ivtarget type=text maxlength=80 size=80 value="">
+          <input type=button value="burn in target" onClick="alert('unimplemented')">
+          </td></tr>
+
+          <tr>
+            <td colspan=2>
+            </td>
+          </tr>
+<tr><td></td></tr>
+</table>
+
+</td><td valign=top style="padding-left: 16px">
+
+<table style='background-color: lightgray; border-width: 2px; border-color: gray; border-style: solid' width=616 height=180 cellpadding=4 cellspacing=0>
+
+<tr>
+<td colspan=1>
+<b style='font-size: xx-large'>tude</b> 
+</td>
+<td align=right> 
+<input type="button" value="scramble" onClick="alert('unimplemented')"/>
+</td>
+<td width=15></td>
+</tr>
+
+
+<tr>
+<td colspan=2>
+
+<table>
+
+<tr>
+
+
+<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='persattr0' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> #introvert_extrovert  </td></tr></table>   </td>
+<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='persattr1' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> #sensitive_intuitive  </td></tr></table>   </td>
+<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='persattr4' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> #polite_profane  </td></tr></table>   </td>
+</tr>
+<tr>
+<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='persattr2' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> #feeling_thinking  </td></tr></table>   </td>
+<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='persattr3' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> #perceptive_judgemental  </td></tr></table>   </td>
+<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='persattr5' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> #modest_amorous  </td></tr></table>   </td>
+</tr>
+
+
+<tr>
+<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='persattr6' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> #passive_active  </td></tr></table>   </td>
+<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='persattr7' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> #sad_happy  </td></tr></table>   </td>
+<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='persattr8' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> #serious_silly  </td></tr></table>   </td>
+</tr>
+
+
+        </table>
+
+      </td>
+      </tr>
+<tr><td> </td></tr>
+
+
+</table>
+
+</td></tr></table>
+
+
+
+
+
 <br/>
 
 
@@ -678,17 +927,47 @@ onClick="toggletgtlock(4)"
 <br/>
 
 
-<table width=1500 bgcolor=white cellpadding=16><tr><td>
-<h1>instructions for makemore peaple v0.2</h1>
+<table width=1562 bgcolor=white cellpadding=16 style='font-size: 24px'><tr><td>
+<h1>makemore peaple v0.3 release notes</h1>
+
+<p>
+Today I'm soft-launching makemore peaple v0.3, a combined social,
+ancestry, and dating site for synthetic "peaple" or "parsons".  It is
+a new type of software that I'm calling a collaborative synthesis
+application, like a game because it is just for fun, but there is no
+objective or scoring.  You can make new peaple, explore their "fam"
+graph, add new "frens", "bread" them together, and make detailed edits
+to their "partraits".  You can "wake" a parson and see it make
+animated expressions.  You can upload a picture of yourself to
+make a parson that looks like you.  You'll be able to "burn" edits
+back into the generator and modify how all peaple are made.  You'll
+be able to have a text chat with a parson during which it
+reacts to your facial expressions and be able to modify that behavior.
+</p>
+
+<p>
+This release is for FRIENDS ONLY so please do not share this link in any
+public forum.  It's running on my office computer on my home network
+and for any scale I'll need to migrate it to the cloud and rewrite
+most of the application server, all of that is weeks away.
+</p>
+
+<p>
+The first thing you should try is click the "add fren" button a
+few times.  Then try double-clicking on some peaple.  Then try
+changing some props or drawing on the target.  Experiment!
+</p>
+
+<p>
+Please share your feedback in the Facebook thread or
+<a href="mailto:jdb1729@gmail.com">email me</a>.
+</p>
+
+<h1>instructions for makemore peaple v0.3</h1>
 <pre style="font-size: 24px">
 $README
 </pre>
 
-<form action="note.txt" method="get">
-<textarea name="text" cols=80 rows=5/></textarea><br/>
-<input type=submit value="send me a brief note">
-</form>
-</font>
 </td></tR></table>
 
 
@@ -698,10 +977,14 @@ $README
 
  <script>
 
+function togglelegend() {
+  document.cookie = 'seenlegend=1'; var z = document.getElementById('hintlayer'); if (z.style.zIndex > 0) { z.style.zIndex = -10; z.style.visibility = 'hidden' } else { z.style.zIndex = 10; z.style.visibility = 'visible' }
+}
+
 
 function frenbufhilite() {
   var nom = document.getElementById('frenbuf').value
-  for (var i = 0; i < 16; ++i) {
+  for (var i = 0; i < 9; ++i) {
     var frentd = document.getElementById('fren' + i)
     frentd.style.borderColor = (nom == window.frens[i] ? 'blue' : 'gray');
   }
@@ -709,7 +992,7 @@ function frenbufhilite() {
     var parentd = document.getElementById('paren' + i)
     parentd.style.borderColor = (nom == window.parens[i] ? 'blue' : 'gray');
   }
-  for (var i = 0; i < 9; ++i) {
+  for (var i = 0; i < 6; ++i) {
     var famtd = document.getElementById('fam' + i)
     famtd.style.borderColor = (nom == window.fam[i] ? 'blue' : 'gray');
   }
@@ -1244,9 +1527,6 @@ function start_drawing(canvas) {
   if (window.tool == 'd') {
     var cs = document.getElementById("colorshower")
     cs.style.borderColor = orangestr[window.strength]
-  } else if (window.tool == 'f') {
-    var ft = document.getElementById("fuzztool")
-    ft.style.borderColor = orangestr[window.strength]
   } else if (window.tool == 's') {
     var st = document.getElementById("sharptool")
     st.style.borderColor = orangestr[window.strength]
@@ -1265,9 +1545,6 @@ function stop_drawing() {
   if (window.tool == 'd') {
     var cs = document.getElementById("colorshower")
     cs.style.borderColor = c
-  } else if (window.tool == 'f') {
-    var ft = document.getElementById("fuzztool")
-    ft.style.borderColor = c
   } else if (window.tool == 's') {
     var st = document.getElementById("sharptool")
     st.style.borderColor = c
@@ -1553,6 +1830,10 @@ function doubleclick(id, cb, targetdivid) {
           }
 }
 
+function burnin() {
+  alert('unimplemented')
+}
+
 function doburnin(nclicks) {
   var hyper = new Uint8Array(8);
   hyper.fill(0);
@@ -1688,8 +1969,6 @@ function updatecon(newcon) {
     var border = document.getElementById("stage" + stage + "conborder");
     border.style.borderColor = 'gray'
   }
-  var border = document.getElementById("burnin")
-  border.style.borderColor = 'gray'
 
   var j = 0
   for (var i = 0; i < 4; i++) {
@@ -1706,7 +1985,51 @@ function updatecon(newcon) {
   }
 }
 
+function sethelp() {
+  window.mycursor = 'help'
+  if (waiting) {
+    document.body.style.cursor = 'wait'
+  } else {
+    document.body.style.cursor = window.mycursor
+  }
+}
+function setcrosshair(event) {
+  window.mycursor = 'crosshair'
+  if (waiting) {
+    document.body.style.cursor = 'wait'
+  } else {
+    if (window.tool == "p") {
+      document.body.style.cursor = "hand"
+    } else {
+      document.body.style.cursor = window.mycursor
+    }
+  }
+}
+
+function setwaiting() {
+  window.waiting = true;
+  document.body.style.cursor = 'wait'
+  document.getElementById('serverstatus').innerHTML = 'waiting...'
+}
+
+function unsetwaiting() {
+  window.waiting = false;
+  document.body.style.cursor = window.mycursor
+  document.getElementById('serverstatus').innerHTML = 'connected'
+}
+
+function resetcursor() {
+  window.mycursor = 'default'
+  if (waiting) {
+    document.body.style.cursor = 'wait'
+  } else {
+    document.body.style.cursor = window.mycursor
+  }
+}
+
 function reqgen() {
+  setwaiting();
+
   var tattrs = 72
   var tcontrols = window.tcontrols;
   var nbuf = namebuf()
@@ -1742,6 +2065,7 @@ function reqgen() {
 function requpdate(hyper) {
   if (!window.allready)
     return;
+  setwaiting();
 
   var tattrs = 72
   var tadjust = 0
@@ -2033,7 +2357,7 @@ function updatefam(newfambuf) {
     }
   }
 
-  for (var i = 0; i < 9; ++i) {
+  for (var i = 0; i < 6; ++i) {
     if (window.fam[i] != newfam[i]) {
       var td = document.getElementById("fam" + i)
       window.fam[i] = newfam[i]
@@ -2043,7 +2367,7 @@ function updatefam(newfambuf) {
         td.style.borderStyle = 'none'
         td.style.borderWidth = '2px'
       } else {
-        var newhtml =  "<img width=100 height=100 id='image_" + nom + "' onMouseOver='mouseoverfam(" + i + ")' " +
+        var newhtml =  "<img width=150 height=150 id='image_" + nom + "' onMouseOver='mouseoverfam(" + i + ")' " +
            " onMouseOut='mouseoutfam(" + i + ")' " +
            " onClick='clickfam(" + i + ")' src='image/" + nom;
         newhtml += "'><br/>" + nom
@@ -2085,7 +2409,7 @@ function updateparens(newparensbuf) {
         td.style.borderStyle = 'none'
         td.style.borderWidth = '2px'
       } else {
-        var newhtml =  "<img width=100 height=100 id='image_" + nom + "' onMouseOver='mouseoverparen(" + i + ")' " +
+        var newhtml =  "<img width=150 height=150 id='image_" + nom + "' onMouseOver='mouseoverparen(" + i + ")' " +
            " onMouseOut='mouseoutparen(" + i + ")' " +
            " onClick='clickparen(" + i + ")' src='image/" + nom;
         newhtml += "'><br/>" + nom
@@ -2112,7 +2436,7 @@ function updatefrens(newfrensbuf) {
     }
   }
 
-  for (var i = 0; i < 16; ++i) {
+  for (var i = 0; i < 9; ++i) {
     if (window.frens[i] != newfrens[i] || (window.dirtyfren && newfrens[i] == window.dirtyfren)) {
       var td = document.getElementById("fren" + i)
 
@@ -2123,7 +2447,7 @@ function updatefrens(newfrensbuf) {
         td.style.borderStyle = 'none'
         td.style.borderWidth = '2px'
       } else {
-        var newhtml =  "<img width=100 height=100 id='image_" + nom + "' onMouseOver='mouseoverfren(" + i + ")' " +
+        var newhtml =  "<img width=150 height=150 id='image_" + nom + "' onMouseOver='mouseoverfren(" + i + ")' " +
            " onMouseOut='mouseoutfren(" + i + ")' " +
            " onClick='clickfren(" + i + ")' src='image/" + nom;
         if (newfrens[i] == window.dirtyfren) {
@@ -2211,6 +2535,8 @@ function updatemeta(newmetabuf) {
   document.getElementById('revisor').innerHTML = newmeta[2] ? makeip(newmeta[2]) : ''
 
   document.getElementById('revised').innerHTML = newmeta[3] ? newmeta[3] + " (-" + (Math.floor(Date.now()/1000) - newmeta[3]) + ")" : ''
+
+  document.getElementById('visited').innerHTML = "" + Math.floor(Date.now()/1000) + " (-0)"
 
 
 //  alert(newmeta)
@@ -2384,8 +2710,7 @@ function doupdate(newlabdata, newcontextdata, newcontroldata, newadjdata, newgen
     stage1adjctx.fillRect(px * scale, py * scale, scale, scale);
   }
 
-  var pimg = document.getElementById('profile')
-  pimg.src = "image/$NAME?nonce=" + Math.floor(Math.random() * 1000000);
+  reloadprofile()
 
   if (!window.allready) {
     for (var i = 1; i <= 4; ++i) {
@@ -2393,6 +2718,115 @@ function doupdate(newlabdata, newcontextdata, newcontroldata, newadjdata, newgen
     }
   }
   window.allready = true
+
+  if (window.camera_enabled) {
+//    window.setTimeout(function() { loadcameraimage() }, 100);
+  }
+//    window.setInterval(function() {reloadprofile()}, 2000)
+
+  unsetwaiting()
+}
+
+function reloadprofile() {
+  var pimg = document.getElementById('profile')
+  if (window.islive) {
+    pimg.src = "live.cgi/$NAME?nonce=" + Math.floor(Math.random() * 1000000);
+  } else {
+    pimg.src = "image/$NAME?nonce=" + Math.floor(Math.random() * 1000000);
+  }
+}
+
+function colattrsync() {
+  var stage1 = document.getElementById('stage1')
+  var lab = new Uint8Array(8*8*3)
+  for (var i = 0; i < 192; ++i) {
+    lab[i] = (stage1.adjlab[i]-128)*2.0 + stage1.origlab[i]
+  }
+
+  var edgesum = new Array(3)
+  edgesum.fill(0);
+  var edgecount = 0;
+  for (var y = 0; y < 8; ++y) {
+    for (var x = 0; x < 8; ++x) {
+      if (!(x == 0 || y == 0 || x == 7))
+        continue;
+      for (var c = 0; c < 3; ++c) {
+        edgesum[c] += lab[y * 24 + x * 3 + c];
+      }
+      ++edgecount;
+    }
+  }
+  var edgemean = new Array(3)
+  for (var c = 0; c < 3; ++c) {
+    edgemean[c] = edgesum[c] / edgecount;
+  }
+
+  var centersum = new Array(3)
+  centersum.fill(0);
+  var centercount = 0;
+  for (var y = 2; y <= 5; ++y) {
+    for (var x = 3; x <= 4; ++x) {
+      for (var c = 0; c < 3; ++c) {
+        centersum[c] += lab[y * 24 + x * 3 + c];
+      }
+      ++centercount;
+    }
+  }
+  var centermean = new Array(3)
+  for (var c = 0; c < 3; ++c) {
+    centermean[c] = centersum[c] / centercount;
+  }
+
+  var hairsum = new Array(3)
+  hairsum.fill(0);
+  var haircount = 0;
+  for (var y = 1; y <= 1; ++y) {
+    for (var x = 2; x <= 5; ++x) {
+      for (var c = 0; c < 3; ++c) {
+        hairsum[c] += lab[y * 24 + x * 3 + c];
+      }
+      ++haircount;
+    }
+  }
+  var hairmean = new Array(3)
+  for (var c = 0; c < 3; ++c) {
+    hairmean[c] = hairsum[c] / haircount;
+  }
+
+
+  var mouthsum = new Array(3)
+  mouthsum.fill(0);
+  var mouthcount = 0;
+  for (var y = 5; y <= 6; ++y) {
+    for (var x = 3; x <= 4; ++x) {
+      for (var c = 0; c < 3; ++c) {
+        mouthsum[c] += lab[y * 24 + x * 3 + c];
+      }
+      ++mouthcount;
+    }
+  }
+  var mouthmean = new Array(3)
+  for (var c = 0; c < 3; ++c) {
+    mouthmean[c] = mouthsum[c] / mouthcount;
+  }
+
+  var td = document.getElementById('colattr0')
+  td.style.backgroundColor = mkcol(labtorgb(edgemean))
+  td.curval = edgemean
+
+  td = document.getElementById('colattr1')
+  td.style.backgroundColor = mkcol(labtorgb(hairmean))
+  td.curval = hairmean
+
+  td = document.getElementById('colattr2')
+  td.style.backgroundColor = mkcol(labtorgb(centermean))
+  td.curval = centermean
+
+  td = document.getElementById('colattr3')
+  td.style.backgroundColor = mkcol(labtorgb(mouthmean))
+  td.curval = mouthmean
+
+  requpdate()
 }
 
 
@@ -2410,9 +2844,6 @@ function changetool(newtool) {
   var cp = document.getElementById("colorpicker")
   cp.style.borderColor = 'gray'
 
-  var ft = document.getElementById("fuzztool")
-  ft.style.borderColor = 'gray'
-
   var bt = document.getElementById("blurtool")
   bt.style.borderColor = 'gray'
 
@@ -2420,8 +2851,9 @@ function changetool(newtool) {
   st.style.borderColor = 'gray'
 
   if (window.tool == newtool && window.tool != 'p') {
-    ++window.strength;
-    window.strength = window.strength % 3;
+    // ++window.strength;
+    // window.strength = window.strength % 3;
+    window.strength = 2
   }
   var c = bluestr[window.strength];
   if (newtool == "s") { st.style.borderColor = c; }
@@ -2429,6 +2861,14 @@ function changetool(newtool) {
   else if (newtool == "f") { ft.style.borderColor = c }
   else if (newtool == "b") { bt.style.borderColor = c }
   else if (newtool == "p") { cp.style.borderColor = c }
+
+  if (window.mycursor == 'crosshair') {
+    if (newtool == "p") {
+      document.body.style.cursor = 'hand'
+    } else {
+      document.body.style.cursor = 'crosshair'
+    }
+  }
 
   window.tool = newtool
 }
@@ -2468,6 +2908,8 @@ function drawarrow(ctx, label, rot, long) {
 function makehint() {
   var can = document.getElementById('hintcanvas');
   var ctx = can.getContext('2d');
+
+ctx.save(); ctx.translate(0, 17);
 
   var dim = 324;
   var hdim = dim/2
@@ -2565,6 +3007,8 @@ function makehint() {
   ctx.fillText('click to toggle control lock', off + 12, 26)
   ctx.restore()
 
+ctx.restore();
+
   var hl = document.getElementById('hintlayer');
   if (document.cookie) {
     hl.style.visibility = 'hidden';
@@ -2573,22 +3017,50 @@ function makehint() {
     hl.style.visibility = 'visible';
     hl.style.zIndex = 10;
   }
+
+
+
 }
   
+function gotMedia0(mediaStream) {
+  window.mediaStream = mediaStream
+  window.mediaStreamTrack = mediaStream.getVideoTracks()[0];
+  window.imageCapture = new ImageCapture(window.mediaStreamTrack);
+  // console.log(window.imageCapture);
+  window.camera_enabled = 1
+}
+
 function gotMedia(mediaStream) {
-  const mediaStreamTrack = mediaStream.getVideoTracks()[0];
-  const imageCapture = new ImageCapture(mediaStreamTrack);
-  console.log(imageCapture);
+  gotMedia0(mediaStream)
+  loadcameraimage()
 }
 
 function loadcameraimage() {
-  imageCapture.takePhoto()
+  if (!window.camera_enabled) {
+    ask_camera()
+    return;
+  }
+  window.imageCapture.takePhoto()
   .then(blob => {
+    var img = new Image()
     img.src = URL.createObjectURL(blob);
     img.onload = () => { URL.revokeObjectURL(this.src); 
+var sx; var sy; var sw; var sh;
+if (img.width > img.height) {
+sx = (img.width / 2) - (img.height/2);
+sy = 0
+sw = img.height
+sh = img.height
+} else {
+sx = 0
+sy = (img.height / 2) - (img.width/2);
+sw = img.width
+sh = img.width
+}
+
       var canvas = document.getElementById('imageCanvas');
       var ctx = canvas.getContext('2d');
-      ctx.drawImage(img,0,0,64,64);
+      ctx.drawImage(img,sx,sy,sw,sh,0,0,64,64);
       var rgbdata = ctx.getImageData(0, 0, 64, 64).data;
       applyloaded(rgbdata)
     }
@@ -2596,37 +3068,34 @@ function loadcameraimage() {
   .catch(error => console.error('takePhoto() error:', error));
 }
 
-window.onload = function() {
-//  navigator.mediaDevices.getUserMedia({video: true})
-//  .then(gotMedia)
-//  .catch(error => console.error('getUserMedia() error:', error));
-
-  //alert(makeip($IPADDR))
-  makehint()
-  makepalette(128, 0)
-  document.getElementById('frenbuf').value = gennom()
-  window.fam = new Array(9);
-  for (var i = 0; i < 9; i++) window.fam[i] = ''
-  window.parens = new Array(2);
-  window.parens[0] = ''
-  window.parens[1] = ''
-  window.frens = new Array(16);
-  window.mynewfren = ''
-  for (var i = 0; i < 16; ++i) {
-    window.frens[i] = '';
+function ask_camera() {
+  if (window.camera_enabled) { 
+    return
   }
+  navigator.mediaDevices.getUserMedia({video: true})
+  .then(gotMedia)
+  .catch(error => console.error('getUserMedia() error:', error));
+}
 
-
-
-  window.n_controls = [128, 256, 512, 1024];
-  window.n_adjust = [8*8*3, 16*16*3, 32*32*3, 64*64*3]
-  window.tadjust = 0;
-  window.tcontrols = 0
-  for (var i = 0; i < 4; ++i) {
-    window.tadjust += window.n_adjust[i]
-    window.tcontrols += window.n_controls[i]
+function unauth_camera() {
+  if (!window.camera_enabled) { 
+    return
   }
+  window.imageCapture.src = ''
+  window.camera_enabled = 0
+  window.mediaStreamTrack.stop();
+}
 
+function auth_camera() {
+  if (window.camera_enabled) { 
+    return
+  }
+  navigator.mediaDevices.getUserMedia({video: true})
+  .then(gotMedia0)
+  .catch(error => console.error('getUserMedia() error:', error));
+}
+
+function reconnect() {
   var part1 = 8*(64*64*3)
   var part2 = 72
   var part3 = window.tcontrols * 8
@@ -2640,10 +3109,15 @@ window.onload = function() {
   
   var packet = part1 + part2 + part3 + part4 + part5 + part6 + part7 + part8 + part9 + part10
 
-  window.socket = new WebSocket('ws://' + location.host + ':9999', ['binary']);
+  window.socket = new WebSocket('wss://' + location.host + ':9999/', ['binary']);
+  var ss = document.getElementById('serverstatus')
+  ss.innerHTML = 'connecting...';
   window.socket.binaryType = 'arraybuffer';
   window.socket.inbuffer = new Uint8Array(0)
+
   window.socket.onmessage = function(m) {
+    ss.innerHTML = 'connected';
+
     var md = m.data;
     var ar = new Uint8Array(md)
     window.socket.inbuffer = concatTypedArrays(window.socket.inbuffer, ar)
@@ -2678,6 +3152,49 @@ for (var i = 0; i < newgendata.length; ++i) { newgendata[i] = 256 * newgendata[i
       doupdate(labdata, newctxdata, newctrldata, newadjdata, newgendata, newlocks, newfrens, newparens, newfam, newmeta)
     }
   }
+}
+
+function onprofileload() {
+    if (!window.islive) { return; }
+    if (window.loadingprofile) { return; }
+    window.loadingprofile = true;
+    window.setTimeout(function() { window.loadingprofile = false; reloadprofile() }, 3000 )
+}
+
+window.onload = function() {
+  window.islive = false
+  window.waiting = true
+  window.mycursor = 'default'
+  document.body.style.cursor = 'wait'
+
+  window.camera_enabled = 0
+  //alert(makeip($IPADDR))
+  makehint()
+  makepalette(128, 0)
+  document.getElementById('frenbuf').value = gennom()
+  window.fam = new Array(9);
+  for (var i = 0; i < 9; i++) window.fam[i] = ''
+  window.parens = new Array(2);
+  window.parens[0] = ''
+  window.parens[1] = ''
+  window.frens = new Array(16);
+  window.mynewfren = ''
+  for (var i = 0; i < 16; ++i) {
+    window.frens[i] = '';
+  }
+
+
+
+  window.n_controls = [128, 256, 512, 1024];
+  window.n_adjust = [8*8*3, 16*16*3, 32*32*3, 64*64*3]
+  window.tadjust = 0;
+  window.tcontrols = 0
+  for (var i = 0; i < 4; ++i) {
+    window.tadjust += window.n_adjust[i]
+    window.tcontrols += window.n_controls[i]
+  }
+
+  reconnect()
 
   window.strength = 2
 
@@ -2753,7 +3270,6 @@ var rgbcol = labtorgb(curval)
 }
 
           var nval = rgbtolab(window.curcol);
-
           at1.style.backgroundColor = mkcol(window.curcol)
           at1.style.borderColor = orangestr[1]
           at1.curval = nval
@@ -2791,7 +3307,7 @@ var rgbcol = labtorgb(curval)
       }
     )
   };
-  for (var i = 0; i < 4; i = i + 1) {
+  for (var i = 0; i < 6; i = i + 1) {
     hh(i)
   }
 

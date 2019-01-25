@@ -115,23 +115,7 @@ sub stats {
       ++$edgecount;
     }
   }
-
   my @edgemean = map {$_/$edgecount} @edgesum;
-  my @edgevar;
-
-  for my $y (0 .. 7) {
-    for my $x (0 .. 7) {
-      next unless $x == 0 || $y == 0 || $x == 7;
-      for my $c (0 .. 2) {
-        my $q = $lab[$y * 24 + $x * 3 + $c] - $edgemean[$c];
-        $edgevar[$c] += $q * $q;
-      }
-    }
-  }
-
-  $_ /= $edgecount for @edgevar;
-  $_ = sqrt($_) for @edgevar;
-  $_ *= 2 for @edgevar;
 
 
   my @centersum;
@@ -144,24 +128,35 @@ sub stats {
       ++$centercount;
     }
   }
-
   my @centermean = map {$_/$centercount} @centersum;
-  my @centervar;
 
-  for my $y (2 .. 5) {
-    for my $x (3 .. 4) {
+  my @mouthsum;
+  my $mouthcount = 0;
+  for my $y (5,6) {
+    for my $x (3,4) {
       for my $c (0 .. 2) {
-        my $q = $lab[$y * 24 + $x * 3 + $c] - $centermean[$c];
-        $centervar[$c] += $q * $q;
+        $mouthsum[$c] += $lab[$y * 8 * 3 + $x * 3 + $c];
       }
+      ++$mouthcount;
     }
   }
+  my @mouthmean = map {$_/$mouthcount} @mouthsum;
 
-  $_ /= $centercount for @centervar;
-  $_ = sqrt($_) for @centervar;
-  $_ *= 2 for @centervar;
+  my @hairsum;
+  my $haircount = 0;
+  for my $y (1) {
+    for my $x (2,3,4,5) {
+      for my $c (0 .. 2) {
+        $hairsum[$c] += $lab[$y * 8 * 3 + $x * 3 + $c];
+      }
+      ++$haircount;
+    }
+  }
+  my @hairmean = map {$_/$haircount} @hairsum;
 
-  my @stats = (@edgemean, @edgevar, @centermean, @centervar);
+
+
+  my @stats = (@edgemean, @hairmean, @centermean, @mouthmean);
   $_ = int($_) for @stats;
   for (@stats) { if ($_ > 255) { $_ = 255; } if ($_ < 0) { $_ = 0; } }
   pack 'C12', @stats
