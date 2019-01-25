@@ -179,7 +179,15 @@ int main(int argc, char **argv) {
         double b = 0.5;
         double rx = (double)x / (double)w;
 
-double l = 1; // oops
+        double ry = (double)y / (double)h;
+        double d2 = (rx - 0.5) * (rx - 0.5) + (ry - 0.5) * (ry - 0.5);
+        double d = sqrt(d2);
+ 
+        d += 0.1;
+        d *= 2;
+        if (d < 0) { d = 0; }
+        if (d > 1) { d = 1; }
+        double l = (1-d) * randrange(0, 1) + 0.5 * d;
   
         labtorgb(l, a, b,
           ppm.data + y*w*3 + x*3 + 0,
