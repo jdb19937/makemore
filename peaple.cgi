@@ -928,19 +928,24 @@ onClick="toggletgtlock(4)"
 
 
 <table width=1562 bgcolor=white cellpadding=16 style='font-size: 24px'><tr><td>
-<h1>makemore peaple v0.3 release notes</h1>
+<h1>makemore peaple v0.3 release notes 2019-01-25</h1>
 
 <p>
-Today I'm soft-launching makemore peaple v0.3, a combined social,
-ancestry, and dating site for synthetic "peaple" or "parsons".  It is
+Today I'm soft-launching makemore peaple v0.3 (to FRIENDS ONLY, see below),
+a combined social,
+ancestry, and dating site for synthetic "peaple" or "parsons".  It's
 a new type of software that I'm calling a collaborative synthesis
-application, like a game because it is just for fun, but there is no
+application, like a game because it's just for fun, but there is no
 objective or scoring.  You can make new peaple, explore their "fam"
 graph, add new "frens", "bread" them together, and make detailed edits
 to their "partraits".  You can "wake" a parson and see it make
 animated expressions.  You can upload a picture of yourself to
-make a parson that looks like you.  You'll be able to "burn" edits
-back into the generator and modify how all peaple are made.  You'll
+make a parson that looks like you.
+</p>
+
+<p>
+In upcoming releases, you'll be able to "burn" edits back into the
+generator and modify how all peaple are made.  You'll
 be able to have a text chat with a parson during which it
 reacts to your facial expressions and be able to modify that behavior.
 </p>
@@ -949,13 +954,14 @@ reacts to your facial expressions and be able to modify that behavior.
 This release is for FRIENDS ONLY so please do not share this link in any
 public forum.  It's running on my office computer on my home network
 and for any scale I'll need to migrate it to the cloud and rewrite
-most of the application server, all of that is weeks away.
+most of the application server, all of that is weeks away.  I've
+only tested the app on Chrome+Linux and Chrome+Android.
 </p>
 
 <p>
 The first thing you should try is click the "add fren" button a
 few times.  Then try double-clicking on some peaple.  Then try
-changing some props or drawing on the target.  Experiment!
+changing some "props" or drawing on the target.
 </p>
 
 <p>
@@ -3162,6 +3168,11 @@ function onprofileload() {
 }
 
 window.onload = function() {
+  var is_chrome = navigator.userAgent.toLowerCase().indexOf('chrome') > -1;
+  if (!is_chrome) {
+    alert('makemore peaple v0.3 has only been tested in Chrome')
+  }
+
   window.islive = false
   window.waiting = true
   window.mycursor = 'default'

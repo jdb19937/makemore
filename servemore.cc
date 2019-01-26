@@ -325,6 +325,9 @@ fprintf(stderr, "blue=%u,%u,%u\n", r, g, b);
     parson->attrs[46] = (uint8_t)(dl * 255.0);
     parson->attrs[47] = (uint8_t)(da * 255.0);
     parson->attrs[48] = (uint8_t)(db * 255.0);
+    parson->attrs[49] = (uint8_t)(dl * 255.0);
+    parson->attrs[50] = (uint8_t)(da * 255.0);
+    parson->attrs[51] = (uint8_t)(db * 255.0);
   }
 
   if (strstr(parson->nom, "green")) {
@@ -336,6 +339,9 @@ fprintf(stderr, "blue=%u,%u,%u\n", r, g, b);
     parson->attrs[46] = (uint8_t)(dl * 255.0);
     parson->attrs[47] = (uint8_t)(da * 255.0);
     parson->attrs[48] = (uint8_t)(db * 255.0);
+    parson->attrs[49] = (uint8_t)(dl * 255.0);
+    parson->attrs[50] = (uint8_t)(da * 255.0);
+    parson->attrs[51] = (uint8_t)(db * 255.0);
   }
 
   if (strstr(parson->nom, "_hat")) {
@@ -950,7 +956,7 @@ int main(int argc, char **argv) {
 
 
 #if 1
-  int max_children = 8;
+  int max_children = 16;
 
   for (unsigned int i = 0; i < max_children; ++i) {
     fprintf(stderr, "forking\n");
