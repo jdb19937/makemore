@@ -47,6 +47,12 @@ __DATA__
 <html> <head> <title>makemore peaple v0.3</title>
 <base href="..">
 
+<meta property="og:title" content="$NAME">
+<meta property="og:description" content="makemore peaple v0.3 - edit parson $NAME">
+<meta property="og:image" content="https://peaple.io/image/$NAME?scale=4">
+<meta property="og:url" content="https://peaple.io/edit/$NAME">
+<meta property="og:type" content="article">
+
 <style>
 input[type="file"] {
     display: none;
@@ -126,7 +132,7 @@ body {
         <tr><td width=85px align=right><b>created</b></td><td id=created></td></tr>
         <tr><td width=85px align=right><b>revisor</b></td><td id=revisor></td></tr>
         <tr><td width=85px align=right><b>revised</b></td><td id=revised></td></tr>
-        <tr><td width=85px align=right><b>visited</b></td><td id=visited></td></tr>
+        <tr><td width=85px align=right><b>visits</b></td><td id=visits></td></tr>
         </table>
 
 <hr/>
@@ -150,15 +156,31 @@ body {
 
 </tr>
 
+
+
+        <tr><td width=85px align=right><b>clones</b></td><td id=clones>9999</td></tr>
+        <tr><td width=85px align=right><b>breads</b></td><td id=breads>9999</td></tr>
+        <tr><td width=85px align=right><b>edits</b></td><td id=edits>9999</td></tr>
+        <tr><td width=85px align=right><b>burns</b></td><td id=burns>0</td></tr>
+        <tr><td width=85px align=right><b>jeansize</b></td><td id=jeansize style="width: 132px">
+
+<table><tr><td style='width: 128px'>4</td>
+<td>
+  <table><tr><td>
+  <input type=button value="rotate" onClick="alert('unimplemented')">
+</td></tr>
+</table>
+</td></tr></table>
+
 <!--
         <tr><td width=85px align=right></td><td> <input type=button value="reconnect" onClick="reconnect(); reqgen()"/></td></tr>
         <tr><td width=85px align="right"></td><td> <input type=button onclick="reqgen()" value="reload"/> </td></tr>
 -->
-        <tr><td width=85px align=right><b>burns</b></td><td id=burns>0</td></tr>
         <tr><td width=85px align=right><b>partrait</b></td>
 <td> 
   <table><tr><td style='width: 132px'>
   <span id="partraitstatus">froze</span>
+  </td>
   <td>
 
   <input type=button value="wake" onClick="if (window.islive) { this.value = 'wake'; window.islive = false; document.getElementById('partraitstatus').innerHTML = 'froze';  } else { this.value = 'freeze'; window.islive = true; document.getElementById('partraitstatus').innerHTML = 'woke'; } reloadprofile()" >
@@ -166,6 +188,9 @@ body {
   </td></tr></table>
 </td>
 </tr>
+
+
+
 <tr>
 <td></td>
 <td>
@@ -548,7 +573,7 @@ doubleclick('attrstatic', genrandomattrs, 'attrcon')
 
     <input type=button onClick="setparsontarget()" value="frenbuf to target"/>
 
-    <input type=button onClick="burnin()" value="burn in target"/>
+    <input type=button onClick="burnin()" value="burn target"/>
 
  <!-- <input type="button" value="toggle legend" onClick="togglelegend()"> -->
 <div style="display: none"><canvas id="imageCanvas" width=64 height=64></canvas></div>
@@ -854,7 +879,7 @@ onClick="toggletgtlock(4)"
                <b>target</b>
             </td><td>
           <input id=ivtarget type=text maxlength=80 size=80 value="">
-          <input type=button value="burn in target" onClick="alert('unimplemented')">
+          <input type=button value="burn target" onClick="alert('unimplemented')">
           </td></tr>
 
           <tr>
@@ -928,6 +953,47 @@ onClick="toggletgtlock(4)"
 
 
 <table width=1562 bgcolor=white cellpadding=16 style='font-size: 24px'><tr><td>
+<h1>what is collaborative synthesis?</h1>
+
+<p>
+Collaborative synthesis means people creating something together, guided
+by a synthesis algorithm that is simultaneously learning from what those
+people are creating.
+</p>
+
+<p>
+Most abstractly, it fits almost any situation.  It's like painting
+with a friend on the same canvas, while the algorithm is like another who
+observes and mixes the paints for you, or makes suggestions to help you
+both cooperate and create a coherent whole.  Or the algorithm is like
+the paint itself, pre-mixed and
+also "synthetic" in the ordinary physical sense &mdash; there's a
+feedback loop
+in this situation too, as the manufacturer produces more of the kinds
+of paints that painters like to use.  The synthesis also operates as
+a constraint or filter &mdash; you can only use the paints that are
+available to you in this analogy, not any kind you can imagine.
+</p>
+
+<p>
+Applied to software and more narrowly construed, collaborative synthesis
+means using machine-learned algorithms to perform the synthesis
+while training those same algorithms directly from user actions,
+creating an always-evolving synergy.  Those algorithms can be
+anchored to external data sources by persistent training, or they
+can be left to drift, influenced only by the feedback loop.
+Training can be configured by the user, but also by
+automated analytics.
+</p>
+
+<p>
+makemore peaple is a general-purpose collaborative image synthesizer
+based on neural networks designed to communicate and explore the
+concept in a fun, engaging way and cultivate a unique creative
+community.
+</p>
+
+
 <h1>makemore peaple v0.3 release notes 2019-01-25</h1>
 
 <p>
@@ -1837,7 +1903,7 @@ function doubleclick(id, cb, targetdivid) {
 }
 
 function burnin() {
-  alert('unimplemented')
+  alert('$DOTIPADDR has no burns left.')
 }
 
 function doburnin(nclicks) {
@@ -2542,7 +2608,7 @@ function updatemeta(newmetabuf) {
 
   document.getElementById('revised').innerHTML = newmeta[3] ? newmeta[3] + " (-" + (Math.floor(Date.now()/1000) - newmeta[3]) + ")" : ''
 
-  document.getElementById('visited').innerHTML = "" + Math.floor(Date.now()/1000) + " (-0)"
+  //document.getElementById('visited').innerHTML = "" + Math.floor(Date.now()/1000) + " (-0)"
 
 
 //  alert(newmeta)
@@ -3016,7 +3082,7 @@ ctx.save(); ctx.translate(0, 17);
 ctx.restore();
 
   var hl = document.getElementById('hintlayer');
-  if (document.cookie) {
+  if (document.cookie && document.cookie.indexOf('seenlegend=1') != -1) {
     hl.style.visibility = 'hidden';
     hl.style.zIndex = -10;
   } else {
@@ -3169,8 +3235,9 @@ function onprofileload() {
 
 window.onload = function() {
   var is_chrome = navigator.userAgent.toLowerCase().indexOf('chrome') > -1;
-  if (!is_chrome) {
+  if (!is_chrome && (!document.cookie || document.cookie.indexOf('seenbrowseralert=1') == -1)) {
     alert('makemore peaple v0.3 has only been tested in Chrome')
+    document.cookie = 'seenbrowseralert=1'
   }
 
   window.islive = false
