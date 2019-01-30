@@ -32,6 +32,11 @@ struct Parson {
   uint32_t creator;
   uint32_t revisor;
 
+  uint32_t visited;
+  uint32_t visits;
+  uint32_t neglects;
+  uint32_t loot;
+
   uint8_t target_lock;
   uint8_t control_lock;
   uint8_t _pad[6];

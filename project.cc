@@ -605,7 +605,7 @@ fprintf(stderr, "err0=%lf err1=%lf\n", err0, err1);
   encode_ctr();
 }
 
-void Project::burnmask(double nu) {
+void Project::burn(double nu) {
   for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
     encude(ctxbuf + mbi * ctxlay->n, ctxlay->n, cugenin + mbi * geninlay->n + 0);
     encude(ctrbuf + mbi * ctrlay->n, ctrlay->n, cugenin + mbi * geninlay->n + ctxlay->n);

@@ -54,7 +54,7 @@ struct Project {
   void passgenerate();
 
 
-  void burnmask(double nu);
+  void burn(double nu);
   void reencode(bool force);
   void separate();
   void reconstruct();

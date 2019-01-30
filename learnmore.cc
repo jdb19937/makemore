@@ -97,6 +97,8 @@ int main(int argc, char **argv) {
 
   unsigned int i = 0;
   while (1) {
+    proj->load();
+
     if (nu > 0 || pi > 0) {
       proj->load_ctxtgt(stdin);
       proj->train_fidelity(nu, pi, dcut);

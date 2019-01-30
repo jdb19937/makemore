@@ -227,6 +227,11 @@ void Parson::initialize(const char *_nom, double mean, double dev) {
   creator = 0;
   revisor = 0;
 
+  loot = 0;
+  visits = 0;
+  neglects = 0;
+  visited = 0;
+
   target_lock = 0;
   control_lock = 0xFF;
   memset(parens, 0, sizeof(parens));

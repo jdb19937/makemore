@@ -21,7 +21,7 @@
 #define ensure(x) do { \
   if (!(x)) { \
     fprintf(stderr, "closing (%s)\n", #x); \
-    return; \
+    goto done; \
   } \
 } while (0)
 
@@ -655,6 +655,17 @@ double t0 = realtime();
 
       pipe->reencode();
 
+
+      if (uint8_t burn = (hyper[2] & parson->target_lock)) {
+        fprintf(stderr, "burning\n");
+//for (int i = 0; i < 20; ++i) {
+        pipe->burn(burn, 0.01);
+//}
+        pipe->save();
+        pipe->reencode();
+      }
+
+
       assert(Parson::ncontrols == pipe->ctrlay->n);
       memcpy(parson->controls, pipe->ctrbuf, sizeof(double) * Parson::ncontrols);
 
@@ -912,11 +923,19 @@ pipe->ctxbuf[29] = randuint() % 2 ? 1.0 : 0;
 
     default:
       fprintf(stderr, "bad command cmd=%u\n", cmd[0]);
-      return;
+      ensure(0);
     }
 
     fflush(outfp);
   }
+
+done:
+  delete[] new_fren;
+  delete[] new_ctx;
+  delete[] new_ctr;
+
+  fclose(learnfp);
+
 }
 
 int usage() {
@@ -956,7 +975,7 @@ int main(int argc, char **argv) {
 
 
 #if 1
-  int max_children = 16;
+  int max_children = 12;
 
   for (unsigned int i = 0; i < max_children; ++i) {
     fprintf(stderr, "forking\n");

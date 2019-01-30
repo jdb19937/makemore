@@ -29,7 +29,7 @@ struct Pipeline {
 
   void fix(unsigned int iters, double blend);
   void reencode();
-  void burnmask(uint32_t which, double nu);
+  void burn(uint32_t which, double nu);
   void generate();
   void uptarget();
   void retarget();

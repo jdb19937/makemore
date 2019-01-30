@@ -497,7 +497,7 @@ void Pipeline::reencode() {
   }
 }
 
-void Pipeline::burnmask(uint32_t which, double nu) {
+void Pipeline::burn(uint32_t which, double nu) {
   assert(stages.size());
   Project *proj = final();
   memcpy(proj->adjbuf, outbuf, mbn * sizeof(double) * outlay->n);
@@ -527,22 +527,17 @@ void Pipeline::burnmask(uint32_t which, double nu) {
   }
 
   proj = initial();
+  assert(proj->ctxlay->n == ctxlay->n);
   assert(proj->tgtlay->n == proj->outlay->n);
   memcpy(proj->tgtbuf, proj->adjbuf, sizeof(double) * mbn * proj->outlay->n);
 
   for (unsigned int i = 0; i < stages.size(); ++i) {
     Project *proj = stages[i];
-
-    for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
-      memcpy(
-        proj->ctxbuf + mbi * proj->ctxlay->n + 0,
-        ctxbuf + mbi * ctxlay->n,
-        sizeof(double) * ctxlay->n
-      );
+    if (which & (1 << i)) {
+      fprintf(stderr, "burning stage %u nu=%lf\n", i, nu);
+      proj->burn(nu);
+proj->report("servemore");
     }
-
-    if (which & (1 << i))
-      proj->burnmask(nu);
   }
 }
 
