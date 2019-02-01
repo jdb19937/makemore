@@ -22,11 +22,18 @@
 #include "parson.hh"
 #include "random.hh"
 
-uint64_t Parson::hash_nom(const char *nom) {
+uint64_t Parson::hash_nom(const char *nom, unsigned int variant) {
   uint8_t hash[32];
   SHA256_CTX sha;
   sha256_init(&sha);
   sha256_update(&sha, (const uint8_t *)nom, strlen(nom));
+
+  if (variant) {
+    char buf[32];
+    sprintf(buf, "/%u", variant);
+    sha256_update(&sha, (const uint8_t *)buf, strlen(buf));
+  }
+
   sha256_final(&sha, hash);
 
   uint64_t h;
@@ -195,8 +202,6 @@ void Parson::set_parens(const char *anom, const char *bnom) {
 }
 
 void Parson::initialize(const char *_nom, double mean, double dev) {
-  assert(!created);
-
   assert(valid_nom(_nom));
   if (!strcmp(nom, _nom)) {
     return;
@@ -227,10 +232,9 @@ void Parson::initialize(const char *_nom, double mean, double dev) {
   creator = 0;
   revisor = 0;
 
-  loot = 0;
   visits = 0;
-  neglects = 0;
   visited = 0;
+  _activity = 0;
 
   target_lock = 0;
   control_lock = 0xFF;
@@ -352,33 +356,93 @@ ParsonDB::~ParsonDB() {
   ::close(fd);
 }
 
+Parson *ParsonDB::pick() {
+  unsigned int tries = 0;
+
+  while (1) {
+    Parson *cand = db + randuint() % n;
+    if (!cand->created)
+      continue;
+    return cand;
+  }
+}
+
+
+Parson *ParsonDB::pick(bool male) {
+  unsigned int tries = 0;
+
+  while (1) {
+    Parson *cand = db + randuint() % n;
+    if (!cand->created)
+      continue;
+
+    if (cand->attrs[20] == 255 * male) {
+      return cand;
+    }
+
+    ++tries;
+    assert(tries < 65536);
+  }
+}
+
+Parson *ParsonDB::pick(bool male, bool old) {
+  unsigned int tries = 0;
+
+  while (1) {
+    Parson *cand = db + randuint() % n;
+    if (!cand->created)
+      continue;
+
+    if (cand->attrs[20] == 255 * male && cand->attrs[39] == 255 * !old) {
+      return cand;
+    }
+
+    ++tries;
+    assert(tries < 65536);
+  }
+}
+
 Parson *ParsonDB::find(const char *nom) {
   if (!Parson::valid_nom(nom))
     return NULL;
 
-  uint64_t h = Parson::hash_nom(nom);
+  Parson *p = NULL;
+  std::multimap<double, Parson*> act_cand;
 
-  unsigned int i0 = h % n;
-  unsigned int i = i0;
+  for (unsigned int j = 0; j < nvariants; ++j) {
+    Parson *cand = db + Parson::hash_nom(nom, j) % n;
 
-  while (db[i].created && strcmp(db[i].nom, nom)) {
-    ++i;
-    i %= n;
-    assert(i != i0);
+    if (!strcmp(cand->nom, nom)) {
+      p = cand;
+      break;
+    }
+
+    double act = cand->activity();
+    act_cand.insert(std::make_pair(act, cand));
   }
 
-  Parson *p = db + i;
+  if (!p) {
+    auto i = act_cand.begin(); 
+    p = i->second;
 
-  if (!p->created) {
+    while (i != act_cand.end()) {
+      if (!i->second->created) {
+        p = i->second;
+        break;
+      }
+      ++i;
+    }
+
     p->initialize(nom, 0, 1);
 
     const char *dan_nom = "synthetic_dan_brumleve";
     if (strcmp(nom, dan_nom)) {
       p->add_fren(dan_nom);
       Parson *dan = find(dan_nom);
-      strcpy(dan->parens[0], dan_nom);
-      strcpy(dan->parens[1], dan_nom);
       dan->add_fren(nom);
+
+      memcpy(dan->parens[0], dan->nom, 32);
+      memcpy(dan->parens[1], dan->nom, 32);
     }
   }
 

@@ -391,6 +391,20 @@ fprintf(stderr, "\n");
   enc->train(yo);
 }
 
+double Project::encgenerr() {
+  assert(mbn == 1);
+
+  encude(ctxbuf, ctxlay->n, cuencin + 0);
+  encude(tgtbuf, tgtlay->n, cuencin + ctxlay->n);
+  encude(tgtbuf, gen->outn, cugentgt);
+
+  encgen->feed(cuencin, NULL);
+
+  gen->reset_stats();
+  gen->target(cugentgt);
+  return gen->err2;
+}
+
 void Project::train_fidelity(double nu, double pi, double dcut) {
   for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
     encude(ctxbuf + mbi * ctxlay->n, ctxlay->n, cuencin + mbi * encinlay->n + 0);
@@ -605,36 +619,52 @@ fprintf(stderr, "err0=%lf err1=%lf\n", err0, err1);
   encode_ctr();
 }
 
-void Project::burn(double nu) {
-  for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
-    encude(ctxbuf + mbi * ctxlay->n, ctxlay->n, cugenin + mbi * geninlay->n + 0);
-    encude(ctrbuf + mbi * ctrlay->n, ctrlay->n, cugenin + mbi * geninlay->n + ctxlay->n);
-  }
-  assert(gen->outn == mbn * tgtlay->n);
-  encude(tgtbuf, gen->outn, cugentgt);
+void Project::burn(double nu, double pi) {
+  if (pi > 0) {
+    for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
+      encude(ctxbuf + mbi * ctxlay->n, ctxlay->n, cugenin + mbi * geninlay->n + 0);
+      encude(ctrbuf + mbi * ctrlay->n, ctrlay->n, cugenin + mbi * geninlay->n + ctxlay->n);
+    }
+    assert(gen->outn == mbn * tgtlay->n);
+    encude(tgtbuf, gen->outn, cugentgt);
 
-  gen->feed(cugenin, NULL);
-  gen->target(cugentgt);
-  gen->train(nu);
+    gen->feed(cugenin, NULL);
+    gen->target(cugentgt);
+    gen->train(pi);
+  }
+
+
+  if (nu > 0) {
+    for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
+      encude(ctxbuf + mbi * ctxlay->n, ctxlay->n, cuencin + mbi * encinlay->n + 0);
+      encude(tgtbuf + mbi * tgtlay->n, ctrlay->n, cuencin + mbi * encinlay->n + ctxlay->n);
+    }
+    assert(enc->outn == mbn * ctrlay->n);
+    encude(ctrbuf, enc->outn, cuenctgt);
+
+    enc->feed(cuencin, NULL);
+    enc->target(cuenctgt);
+    enc->train(nu);
+  }
 }
 
 
 void Project::report(const char *prog) {
   fprintf(
     stderr,
-    "%s Project %s rounds=%u\n"
-    "encpass_err2=%g encpass_errm=%g\n"
-    "enc_err2=%g enc_errm=%g\n"
-    "gen_err2=%g gen_errm=%g\n"
-    "genpass_err2=%g genpass_errm=%g\n"
-    "genenc_err2=%g genenc_errm=%g\n"
+    "%s %s rounds=%u\n"
+    "%s %s encpass_err2=%g encpass_errm=%g\n"
+    "%s %s enc_err2=%g enc_errm=%g\n"
+    "%s %s gen_err2=%g gen_errm=%g\n"
+    "%s %s genpass_err2=%g genpass_errm=%g\n"
+    "%s %s genenc_err2=%g genenc_errm=%g\n"
     "\n",
     prog, dir.c_str(), rounds,
-    encpass->err2, encpass->errm,
-    enc->err2, enc->errm,
-    gen->err2, gen->errm,
-    genpass->err2, genpass->errm,
-    genenc->err2, genenc->errm
+    prog, dir.c_str(), encpass->err2, encpass->errm,
+    prog, dir.c_str(), enc->err2, enc->errm,
+    prog, dir.c_str(), gen->err2, gen->errm,
+    prog, dir.c_str(), genpass->err2, genpass->errm,
+    prog, dir.c_str(), genenc->err2, genenc->errm
   );
 }
 

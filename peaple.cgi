@@ -50,11 +50,11 @@ while (<DATA>) {
 }
 
 __DATA__
-<html> <head> <title>makemore peaple v0.4</title>
+<html> <head> <title>makemore peaple v0.5</title>
 <base href="..">
 
 <meta property="og:title" content="$NAME">
-<meta property="og:description" content="makemore peaple v0.4 - edit parson $NAME">
+<meta property="og:description" content="makemore peaple v0.5 - edit parson $NAME">
 <meta property="og:image" content="https://peaple.io/image/$NAME?scale=4">
 <meta property="og:url" content="https://peaple.io/edit/$NAME">
 <meta property="og:type" content="article">
@@ -116,7 +116,7 @@ body {
     <b>$NAME</b>
     </td>
 
-    <td align=right valign=top style='border: 0'><b><a href="https://github.com/jdb19937/makemore">makemore</a> peaple v0.4</b><br/></td>
+    <td align=right valign=top style='border: 0'><b><a href="https://github.com/jdb19937/makemore">makemore</a> peaple v0.5</b><br/></td>
   </tr>
 
 
@@ -134,27 +134,29 @@ body {
 
         <table cellpadding=3 style='font-size: large'>
         <tr><td width=85px align=right><b>nom</b></td><td id=nom>$NAME</td></tr>
+<!--
         <tr><td width=85px align=right><b>urb</b></td><td id=urb>topia</td></tr>
+-->
         <tr><td width=85px align=right><b>creator</b></td><td id=creator></td></tr>
         <tr><td width=85px align=right><b>created</b></td><td id=created></td></tr>
         <tr><td width=85px align=right><b>revisor</b></td><td id=revisor></td></tr>
         <tr><td width=85px align=right><b>revised</b></td><td id=revised></td></tr>
-        <tr><td width=85px align=right><b>activity</b></td><td id=activity>0 &mu;Hz</td></tr>
+        <tr><td width=85px align=right><b>activity</b></td><td id=activity></td></tr>
         </table>
 
 <hr/>
 <b style='font-size: xx-large; padding-left: 8px'>connection</b><br/>
         <table cellpadding=3 style='font-size: large'>
-        <tr><td width=85px align=right><b>client</b></td><td id=client>$DOTIPADDR</td></tr>
-        <tr><td width=85px align=right><b>server</b></td><td id=server>wss://peaple.io:$PORT/</td></tr>
-        <tr><td width=85px align=right><b>status</b></td><td>
+        <tr><td width=85px align=right valign=top><b>client</b></td><td valign=top id=client>$DOTIPADDR</td></tr>
+        <tr><td width=85px align=right valign=top><b>server</b></td><td valign=top id=server>wss://peaple.io:$PORT/</td></tr>
+        <tr><td width=85px align=right valign=top><b>status</b></td><td valign=top>
 
-<table><tr>
-<td style='width: 132px' id=serverstatus>not connected </td>
+<table cellpadding=0 cellspacing=0><tr>
+<td style='width: 139px' id=serverstatus>not connected </td>
 
 <td>
-<input type=button value="reconnect" onClick="reconnect(); reqgen()"/>
-<input type=button onclick="reqgen()" value="refresh"/>
+<input style='width: 80px' type=button value="reconnect" onClick="reconnect(); reqgen()"/>
+<input style='width: 80px' type=button onclick="reqgen()" value="refresh"/>
 </td>
 </tr></table>
 
@@ -165,6 +167,7 @@ body {
 
 
 
+<!--
         <tr><td width=85px align=right><b>clones</b></td><td id=clones>9999</td></tr>
         <tr><td width=85px align=right><b>breads</b></td><td id=breads>9999</td></tr>
         <tr><td width=85px align=right><b>edits</b></td><td id=edits>9999</td></tr>
@@ -178,6 +181,9 @@ body {
 </td></tr>
 </table>
 </td></tr></table>
+</td>
+
+-->
 
 <!--
         <tr><td width=85px align=right></td><td> <input type=button value="reconnect" onClick="reconnect(); reqgen()"/></td></tr>
@@ -190,12 +196,20 @@ body {
   </td>
   <td>
 
-  <input type=button value="wake" style='width: 60px' onClick="if (window.islive) { this.value = 'wake'; window.islive = false; document.getElementById('partraitstatus').innerHTML = 'froze';  } else { this.value = 'freeze'; window.islive = true; document.getElementById('partraitstatus').innerHTML = 'woke'; } reloadprofile()" >
+  <input type=button value="wake" id="wakebutton" style='width: 80px' onClick="if (window.islive) { this.value = 'wake'; window.islive = false; document.getElementById('partraitstatus').innerHTML = 'froze';  } else { this.value = 'freeze'; window.islive = true; window.livesince = Math.floor(Date.now()/1000); document.getElementById('partraitstatus').innerHTML = 'woke'; } reloadprofile()" >
+
+<!--
   <input type=button style='width: 60px' value="ware" onClick="alert('unimplemented')"/>
+-->
   </td>
   </td></tr></table>
 </td>
 </tr>
+
+        <tr><td width=85px align=right valign=top><b>connact</b></td><td id=connact valign=top> </td></tr>
+        <tr><td width=85px align=right valign=top><b>servact</b></td><td id=servact valign=top> </td></tr>
+        <tr><td width=85px align=right valign=top><b>editors</b></td><td id=editors valign=top> </td></tr>
+        <tr><td width=85px align=right valign=top><b>motd</b></td><td id=motd valign=top> </td></tr>
 
 
 
@@ -853,6 +867,7 @@ onClick="toggletgtlock(4)"
 
 <br/>
 
+<div style="display: none">
 
 
 
@@ -951,9 +966,8 @@ onClick="toggletgtlock(4)"
 
 
 
+</div>
 
-
-<br/>
 
 
 
@@ -961,6 +975,10 @@ onClick="toggletgtlock(4)"
 
 
 <table width=1562 bgcolor=white cellpadding=16 style='font-size: 24px'><tr><td>
+
+<h1>makemore peaple v0.5 release notes 2019-02-01</h1>
+
+Back-end is essentially complete, all training is online and against the site data itself.
 
 <h1>what is synthetic information?</h1>
 
@@ -1579,11 +1597,9 @@ function makepalette(inl, perm) {
         l = 255 * (1 - Math.abs(0.5 - (x / pal.width)));
       }
 
-//      if (perm == 1) {
-//        [l,a,b] = [g,b,r];
-//      } else if (perm == 2) {
-//        [l,a,b] = [b,r,g];
-//      }
+      if (perm) {
+        [l,a,b] = [l, a, 255 - b]
+      }
 
       var rgbcol = labtorgb([l,a,b]);
 //      var r = l * (x / pal.width)
@@ -1607,13 +1623,13 @@ function clickpalette(event) {
   } else {
     var l = pal.l
     var perm = pal.perm ? 1 : 0
-    if (l == -3) { l = 32; }
+    if (l == -3) { l = 32; perm = !perm }
     else if (l == 32) { l = 128; }
     else if (l == 128) { l = 192; }
     else if (l == 192 ) { l = -1; }
     else if (l == -1) { l = -2; }
     else if (l == -2) { l = -3; }
-    else { l = 32; }
+    else { l = 32; perm = 0; }
     makepalette(l, perm)
 //  } else {
 //    var l = pal.l
@@ -1953,7 +1969,7 @@ function doubleclick(id, cb, targetdivid) {
 function burnin() {
   //alert('$DOTIPADDR has no burns left.')
    doburnin();
-   alert('feel the burn\nnu=0.01');
+   alert('feel the burn\nnu=0.02 pi=0.02');
 }
 
 function doburnin() {
@@ -2655,14 +2671,36 @@ function updatemeta(newmetabuf) {
   document.getElementById('revised').innerHTML = !newmeta[3] ? '' :
     newmeta[3] + " (-" + (Math.floor(Date.now()/1000) - newmeta[3]) + " s)";
 
-  //document.getElementById('visited').innerHTML = "" + Math.floor(Date.now()/1000) + " (-0)"
-
+  document.getElementById('activity').innerHTML = "" + Math.floor(newmeta[4]/256.0) + " &mu;Hz"
 
 //  alert(newmeta)
 }
 
+function updatemotd(motdbuf) {
+  var motd = String.fromCharCode.apply(null, motdbuf);
+  document.getElementById('motd').innerHTML = motd
+}
 
-function doupdate(newlabdata, newcontextdata, newcontroldata, newadjdata, newgendata, newlocks, newfrens, newparens, newfam, newmeta) {
+function updatestats(statsbuf) {
+  var nstatsbuf = new Uint8Array(statsbuf);
+
+  var sd = new Float64Array(nstatsbuf.buffer);
+  var connact = sd[0]
+  var servact = sd[1];
+  var si = new Uint8Array(nstatsbuf.buffer);
+  var editors = 0;
+  for (var i = 16; i < 20; ++i) {
+    editors *= 256;
+    editors += si[i];
+  }
+
+  document.getElementById('connact').innerHTML = Math.floor(connact) + " mHz";
+  document.getElementById('servact').innerHTML = Math.floor(servact) + " mHz";
+  document.getElementById('editors').innerHTML = '' + editors
+}
+
+
+function doupdate(newlabdata, newcontextdata, newcontroldata, newadjdata, newgendata, newlocks, newfrens, newparens, newfam, newmeta, newmotd, newstats) {
   updatectx(newcontextdata)
   updatecon(newcontroldata)
   updategen(newgendata)
@@ -2671,6 +2709,8 @@ function doupdate(newlabdata, newcontextdata, newcontroldata, newadjdata, newgen
   updateparens(newparens)
   updatefam(newfam)
   updatemeta(newmeta)
+  updatemotd(newmotd)
+  updatestats(newstats)
 
   var stage4 = document.getElementById('stage4')
   var stage4ctx = stage4.getContext('2d')
@@ -3224,15 +3264,23 @@ function reconnect() {
   var part7 = 512
   var part8 = 64
   var part9 = 32 * 9
-  var part10 = 16
+  var part10 = 20
+  var part11 = 64
+  var part12 = 24
   
-  var packet = part1 + part2 + part3 + part4 + part5 + part6 + part7 + part8 + part9 + part10
+  var packet = part1 + part2 + part3 + part4 + part5 + part6 + part7 + part8 + part9 + part10 + part11 + part12
+
+  if (window.socket) {
+    window.socket.close()
+  }
 
   window.socket = new WebSocket('wss://' + location.host + ':$PORT/', ['binary']);
   var ss = document.getElementById('serverstatus')
   ss.innerHTML = 'connecting...';
   window.socket.binaryType = 'arraybuffer';
   window.socket.inbuffer = new Uint8Array(0)
+
+  document.getElementById('motd').innerHTML = ''
 
   window.socket.onmessage = function(m) {
     ss.innerHTML = 'connected';
@@ -3259,6 +3307,8 @@ function reconnect() {
       var newparens = new Uint8Array(buf.buffer, part1+part2+part3+part4+part5+part6+part7, part8)
       var newfam = new Uint8Array(buf.buffer, part1+part2+part3+part4+part5+part6+part7+part8, part9)
       var newmeta = new Uint8Array(buf.buffer, part1+part2+part3+part4+part5+part6+part7+part8+part9, part10)
+      var newmotd = new Uint8Array(buf.buffer, part1+part2+part3+part4+part5+part6+part7+part8+part9+part10, part11)
+      var newstats = new Uint8Array(buf.buffer, part1+part2+part3+part4+part5+part6+part7+part8+part9+part10+part11, part12)
 
       var ret = readTypedArray(window.socket.inbuffer, packet)
       window.socket.inbuffer = ret[0]
@@ -3268,13 +3318,20 @@ for (var i = 0; i < newctrldata.length; ++i) { newctrldata[i] = 256 * newctrldat
 for (var i = 0; i < newadjdata.length; ++i) { newadjdata[i] = 128 + 128 * newadjdata[i]; }
 for (var i = 0; i < newgendata.length; ++i) { newgendata[i] = 256 * newgendata[i]; }
 
-      doupdate(labdata, newctxdata, newctrldata, newadjdata, newgendata, newlocks, newfrens, newparens, newfam, newmeta)
+      doupdate(labdata, newctxdata, newctrldata, newadjdata, newgendata, newlocks, newfrens, newparens, newfam, newmeta, newmotd, newstats)
     }
   }
 }
 
 function onprofileload() {
     if (!window.islive) { return; }
+    if (window.livesince < Math.floor(Date.now()/1000) - 120) {
+      window.islive = false;
+      document.getElementById('partraitstatus').innerHTML = 'froze'
+      document.getElementById('wakebutton').value = 'wake'
+      reloadprofile()
+      return;
+    }
     if (window.loadingprofile) { return; }
     window.loadingprofile = true;
     window.setTimeout(function() { window.loadingprofile = false; reloadprofile() }, 3000 )

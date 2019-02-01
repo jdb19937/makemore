@@ -28,7 +28,7 @@ LABTOOLS = \
   labshrink labhifreq labtogray grayhifreq \
   reconlab recongray 
 
-MORETOOLS = makemore makelay catlay wireup maketop makemap learnmore genicon servemore makeparsonsdat sampler makeipdat
+MORETOOLS = makemore makelay catlay wireup maketop makemap learnmore genicon servemore makeparsonsdat sampler makeipdat errstats fillparsonsdat
 
 .PHONY: all
 all: $(LIB) $(MORETOOLS)
@@ -227,6 +227,9 @@ makemore: makemore.o $(LIB)
 servemore.o: $(LIBHDR)
 servemore: servemore.o $(LIB)
 	$(CXX) -o $@ $(CXXFLAGS) $^ $(LDFLAGS) $(CULDFLAGS)
+errstats.o: $(LIBHDR)
+errstats: errstats.o $(LIB)
+	$(CXX) -o $@ $(CXXFLAGS) $^ $(LDFLAGS) $(CULDFLAGS)
 learnmore.o: $(LIBHDR)
 learnmore: learnmore.o $(LIB)
 	$(CXX) -o $@ $(CXXFLAGS) $^ $(LDFLAGS) $(CULDFLAGS)
@@ -235,6 +238,9 @@ makeipdat: makeipdat.o $(LIB)
 	$(CXX) -o $@ $(CXXFLAGS) $^ $(LDFLAGS) $(CULDFLAGS)
 makeparsonsdat.o: $(LIBHDR)
 makeparsonsdat: makeparsonsdat.o $(LIB)
+	$(CXX) -o $@ $(CXXFLAGS) $^ $(LDFLAGS) $(CULDFLAGS)
+fillparsonsdat.o: $(LIBHDR)
+fillparsonsdat: fillparsonsdat.o $(LIB)
 	$(CXX) -o $@ $(CXXFLAGS) $^ $(LDFLAGS) $(CULDFLAGS)
 sampler-main.o: sampler.cc
 	$(CXX) -c -o $@ -DSAMPLER_MAIN $(CXXFLAGS) $^

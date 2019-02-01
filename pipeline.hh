@@ -29,7 +29,7 @@ struct Pipeline {
 
   void fix(unsigned int iters, double blend);
   void reencode();
-  void burn(uint32_t which, double nu);
+  void burn(uint32_t which, double nu, double pi);
   void generate();
   void uptarget();
   void retarget();
@@ -45,6 +45,9 @@ struct Pipeline {
   bool load_ctx_bytes(FILE *infp);
   void load_out_bytes(const uint8_t *bbuf);
   bool load_out_bytes(FILE *infp);
+  void load_out(const double *buf);
+
+  void report(const char *prog);
 };
 
 #endif

@@ -6,6 +6,7 @@
 #include <sys/socket.h>
 #include <sys/wait.h>
 #include <sys/types.h>
+#include <sys/mman.h>
 #include <netinet/in.h>
 #include <string.h>
 
@@ -17,6 +18,8 @@
 #include "ppm.hh"
 
 #include "sha256.c"
+
+static void *shared;
 
 #define ensure(x) do { \
   if (!(x)) { \
@@ -45,9 +48,9 @@ ParsonDB *open_parsons() {
   return new ParsonDB("parsons.dat");
 }
 
-void makeparson(FILE *learnfp, Pipeline *pipe, Parson *parson);
+void makeparson(ParsonDB *db, Pipeline *pipe, Parson *parson);
 
-void makeparens(FILE *learnfp, Pipeline *pipe, ParsonDB *parsons, Parson *parson) {
+void makeparens(Pipeline *pipe, ParsonDB *parsons, Parson *parson) {
   Parson *p1 = parsons->find(parson->parens[0]);
   Parson *p2 = parsons->find(parson->parens[1]);
 
@@ -61,8 +64,8 @@ void makeparens(FILE *learnfp, Pipeline *pipe, ParsonDB *parsons, Parson *parson
   if (update_p2)
     p2->attrs[39] = 0;
 
-  makeparson(learnfp, pipe, p1);
-  makeparson(learnfp, pipe, p2);
+  makeparson(parsons, pipe, p1);
+  makeparson(parsons, pipe, p2);
 
   p1->add_fren(p2->nom);
   p1->add_fren(parson->nom);
@@ -80,7 +83,7 @@ void makeparens(FILE *learnfp, Pipeline *pipe, ParsonDB *parsons, Parson *parson
   for (unsigned int i = 0; i < 39; i++) {
     if (i == 20)
       continue;
-    if (randrange(0.0, 1.0) < 0.5) {
+    if (randuint() % 2) {
       if (update_p1)
         p1->attrs[i] = parson->attrs[i];
     } else {
@@ -129,10 +132,7 @@ void makeparens(FILE *learnfp, Pipeline *pipe, ParsonDB *parsons, Parson *parson
   }
 
   for (unsigned int i = 0; i < Parson::ncontrols; i += js) {
-    // if (randrange(0,1) < 0.25)
-    //   continue;
-
-    if (randrange(0.0, 1.0) < 0.5) {
+    if (randuint() % 2) {
       if (update_p1) {
         for (unsigned int q = i, qn = i + js; q < qn; ++q) {
           p1->controls[q] = parson->controls[q];
@@ -146,26 +146,29 @@ void makeparens(FILE *learnfp, Pipeline *pipe, ParsonDB *parsons, Parson *parson
       }
     }
   }
+
+  if (update_p1) {
+    pipe->load_ctx_bytes(p1->attrs);
+    memcpy(pipe->ctrbuf, p1->controls, sizeof(p1->controls));
+    pipe->generate();
+
+    memcpy(p1->target, pipe->outbuf, pipe->outlay->n * sizeof(double));
+    p1->target_lock = -1;
+    p1->control_lock = 0;
+  }
+
+  if (update_p2) {
+    pipe->load_ctx_bytes(p2->attrs);
+    memcpy(pipe->ctrbuf, p2->controls, sizeof(p2->controls));
+    pipe->generate();
+
+    memcpy(p2->target, pipe->outbuf, pipe->outlay->n * sizeof(double));
+    p2->target_lock = -1;
+    p2->control_lock = 0;
+  }
 }
 
-void makebread(FILE *learnfp, Pipeline *pipe, Parson *p1, Parson *p2, Parson *parson, uint8_t gender) {
-  uint8_t *ctxbuf = new uint8_t[pipe->ctxlay->n];
-
-  assert(0 == fseek(learnfp, 0, SEEK_END));
-  off_t nlearn = ftell(learnfp);
-  nlearn /= 12360;
-
-  unsigned int j = 0;
-  do {
-    fseek(learnfp, ((parson->hash + j++) % nlearn) * 12360, SEEK_SET);
-    pipe->load_ctx_bytes(learnfp);
-    pipe->save_ctx_bytes(ctxbuf);
-  } while (ctxbuf[20] != gender * 255 || ctxbuf[39] != 255);
-  pipe->load_out_bytes(learnfp);
-  pipe->ctrlock = 0;
-  pipe->tgtlock = -1;
-  pipe->reencode();
-
+void makebread(Pipeline *pipe, Parson *p1, Parson *p2, Parson *parson, uint8_t gender) {
   for (unsigned int i = 0; i < Parson::nattrs; ++i) {
     double blend = randuint() % 2 ? 1.0 : 0.0;
     parson->attrs[i] = (uint8_t)(blend * p1->attrs[i] + (1.0 - blend) * p2->attrs[i]);
@@ -239,86 +242,47 @@ void makebread(FILE *learnfp, Pipeline *pipe, Parson *p1, Parson *p2, Parson *pa
   p1->add_fren(parson->nom);
   p2->add_fren(parson->nom);
 
-  delete[] ctxbuf;
+
+
+  pipe->load_ctx_bytes(parson->attrs);
+  memcpy(pipe->ctrbuf, parson->controls, sizeof(parson->controls));
+  pipe->generate();
+
+  memcpy(parson->target, pipe->outbuf, pipe->outlay->n * sizeof(double));
+  parson->target_lock = -1;
+  parson->control_lock = 0;
 }
 
-void makeparson(FILE *learnfp, Pipeline *pipe, Parson *parson) {
-  uint8_t young = parson->attrs[39];
-  uint8_t gender = parson->attrs[20];
+void makeparson(ParsonDB *db, Pipeline *pipe, Parson *parson) {
   if (parson->revised)
     return;
 
-  assert(0 == fseek(learnfp, 0, SEEK_END));
-  off_t nlearn = ftell(learnfp);
-  nlearn /= 12360;
+  Parson *from = db->pick(parson->attrs[20] ? 1 : 0, parson->attrs[39] ? 0 : 1);
 
-  uint8_t *ctxbuf0 = new uint8_t[pipe->ctxlay->n];
-  double *ctrbuf0 = new double[pipe->ctrlay->n];
-  unsigned int j = 0;
-  do {
-    fseek(learnfp, ((parson->hash + j++) % nlearn) * 12360, SEEK_SET);
-    pipe->load_ctx_bytes(learnfp);
-    pipe->save_ctx_bytes(ctxbuf0);
-  } while (ctxbuf0[20] != gender || ctxbuf0[39] != young);
+  pipe->load_ctx_bytes(from->attrs);
+  memcpy(pipe->outbuf, from->target, pipe->outlay->n * sizeof(double));
 
-  pipe->load_out_bytes(learnfp);
   pipe->ctrlock = 0;
   pipe->tgtlock = -1;
   pipe->reencode();
   pipe->generate();
-  pipe->tgtlock = 0;
-  pipe->ctrlock = -1;
-  memcpy(ctrbuf0, pipe->ctrbuf, pipe->ctrlay->n * sizeof(double));
 
-#if 0
-  uint8_t *ctxbuf1 = new uint8_t[pipe->ctxlay->n];
-  double *ctrbuf1 = new double[pipe->ctrlay->n];
-  do {
-    fseek(learnfp, ((parson->hash * 31 + j++) % nlearn) * 12360, SEEK_SET);
-    pipe->load_ctx_bytes(learnfp);
-    pipe->save_ctx_bytes(ctxbuf1);
-  } while (ctxbuf1[20] != ctxbuf0[20]);
-
-  pipe->load_out_bytes(learnfp);
-  pipe->ctrlock = 0;
-  pipe->tgtlock = -1;
-  pipe->reencode();
-  pipe->generate();
-  pipe->tgtlock = 0;
-  pipe->ctrlock = -1;
-  memcpy(ctrbuf1, pipe->ctrbuf, pipe->ctrlay->n * sizeof(double));
-
-  double blend = 0.0;
-  for (unsigned int i = 0; i < pipe->ctxlay->n; ++i)
-    ctxbuf0[i] = blend * ctxbuf0[i] + (1.0 - blend) * ctxbuf1[i];
-  for (unsigned int i = 0; i < pipe->ctrlay->n; ++i)
-    ctrbuf0[i] = blend * ctrbuf0[i] + (1.0 - blend) * ctrbuf1[i];
-#endif
+  memcpy(parson->controls, pipe->ctrbuf, pipe->ctrlay->n * sizeof(double));
+  memcpy(parson->attrs, from->attrs, sizeof(parson->attrs));
 
   parson->control_lock = -1;
   parson->target_lock = 0;
-  assert(sizeof(parson->controls) == pipe->ctrlay->n * sizeof(double));
-  memcpy(parson->controls, ctrbuf0, sizeof(parson->controls));
-  assert(sizeof(parson->attrs) == pipe->ctxlay->n);
-  memcpy(parson->attrs, ctxbuf0, sizeof(parson->attrs));
 
-//fprintf(stderr, "edgemean = %u, %u, %u\n", parson->attrs[40], parson->attrs[41], parson->attrs[42]);
-//fprintf(stderr, "edgestddev = %u, %u, %u\n", parson->attrs[43], parson->attrs[44], parson->attrs[45]);
-
-  if (strstr(parson->nom, "norm")) {
-    for (unsigned int i = 0; i < parson->ncontrols; ++i) {
-      parson->controls[i] = 0.5 + (parson->controls[i] - 0.5) * 0.2;
-    }
-  }
+  // if (strstr(parson->nom, "norm")) {
+  //   for (unsigned int i = 0; i < parson->ncontrols; ++i) {
+  //     parson->controls[i] = 0.5 + (parson->controls[i] - 0.5) * 0.2;
+  //   }
+  // }
 
   if (strstr(parson->nom, "blue")) {
     double dl = 0, da, db;
     rgbtolab(0, 96, 150, &dl, &da, &db);
-{
-uint8_t r, g,b;
-labtorgb(dl,da,db,&r,&g,&b);
-fprintf(stderr, "blue=%u,%u,%u\n", r, g, b);
-}
+
     if (dl > 0.99) { dl = 0.99; } if (dl < 0.0) { dl = 0.0; }
     if (da > 0.99) { da = 0.99; } if (da < 0.0) { da = 0.0; }
     if (db > 0.99) { db = 0.99; } if (db < 0.0) { db = 0.0; }
@@ -368,11 +332,13 @@ fprintf(stderr, "blue=%u,%u,%u\n", r, g, b);
   memcpy(pipe->ctrbuf, parson->controls, sizeof(parson->controls));
   pipe->generate();
 
-  delete[] ctrbuf0;
-  delete[] ctxbuf0;
+  memcpy(parson->target, pipe->outbuf, pipe->outlay->n * sizeof(double));
+  parson->target_lock = -1;
+  parson->control_lock = 0;
 }
 
 void handle(Pipeline *pipe, ParsonDB *parsons, FILE *infp, FILE *outfp) {
+  char motd[64];
   Parson::Nom fam[ParsonDB::nfam];
   uint8_t cmd[8];
   char nom[32];
@@ -383,15 +349,37 @@ void handle(Pipeline *pipe, ParsonDB *parsons, FILE *infp, FILE *outfp) {
   uint8_t *new_fren = new uint8_t[32];
   uint8_t *new_ctx = new uint8_t[pipe->ctxlay->n];
   double *new_ctr = new double[pipe->ctrlay->n];
-  uint32_t meta[4];
+  uint32_t meta[5];
+
+  double connact = 0;
+  uint32_t connup = time(NULL);
+  double &servact(((double *)shared)[0]);
+  uint32_t &servup(((uint32_t *)shared)[2]);
+  uint32_t &editors(((uint32_t *)shared)[3]);
+  ++editors;
+
+  struct statbuf {
+    double connact;
+    double servact;
+    uint32_t editors;
+    uint32_t pad;
+  } stats;
 
   unsigned int fixiters = 5;
   double fixblend = 0.2;
 
-  FILE *learnfp = fopen((pipe->final()->dir + "/learn.dat").c_str(), "r");
-  assert(learnfp);
+  memset(motd, 0, sizeof(motd));
+  strcpy(motd, "welcome to makemore peaple<br/>nu=0.0003 pi=0.0003");
+
+  seedrand();
 
   while (1) {
+    time_t now = time(NULL);
+    connact = exp(-(double)(now - connup) / 1024.0) * connact + 1.0;
+    servact = exp(-(double)(now - servup) / 1024.0) * servact + 1.0;
+    connup = now;
+    servup = now;
+
     fprintf(stderr, "syncing pipeline (load)\n");
     pipe->load();
     fprintf(stderr, "synced pipeline (load)\n");
@@ -434,12 +422,15 @@ double t0 = realtime();
       if (parson->created) {
         memcpy(pipe->outbuf, parson->target, pipe->outlay->n * sizeof(double));
       } else {
-        makeparson(learnfp, pipe, parson);
-        makeparens(learnfp, pipe, parsons, parson);
+        makeparson(parsons, pipe, parson);
+        makeparens(pipe, parsons, parson);
 
         pipe->load_ctx_bytes(parson->attrs);
         memcpy(pipe->ctrbuf, parson->controls, sizeof(parson->controls));
+        memcpy(pipe->outbuf, parson->target, pipe->outlay->n * sizeof(double));
       }
+
+      parson->visit();
 
       pipe->uptarget();
       memcpy(parson->target, pipe->outbuf, pipe->outlay->n * sizeof(double));
@@ -463,6 +454,8 @@ double t0 = realtime();
       fprintf(stderr, "wrote n=%d\n", responsen);
 
       pipe->reencode();
+
+      memcpy(parson->controls, pipe->ctrbuf, sizeof(parson->controls));
 
       response = (uint8_t *)pipe->ctrbuf;
       responsen = Parson::ncontrols * sizeof(double);
@@ -534,6 +527,7 @@ double t0 = realtime();
       meta[1] = parson->created;
       meta[2] = parson->revisor;
       meta[3] = parson->revised;
+      meta[4] = (uint32_t)(parson->activity() * 256.0);
 
       response = (uint8_t *)meta;
       responsen = sizeof(meta);
@@ -541,6 +535,25 @@ double t0 = realtime();
       ret = fwrite(response, 1, responsen, outfp);
       ensure(ret == responsen);
       fprintf(stderr, "wrote n=%d\n", responsen);
+
+      response = (uint8_t *)motd;
+      responsen = sizeof(motd);
+      fprintf(stderr, "writing n=%u\n", responsen);
+      ret = fwrite(response, 1, responsen, outfp);
+      ensure(ret == responsen);
+      fprintf(stderr, "wrote n=%d\n", responsen);
+
+      stats.connact = connact;
+      stats.servact = servact;
+      stats.editors = htonl(editors);
+      stats.pad = 0;
+      response = (uint8_t *)&stats;
+      responsen = sizeof(stats);
+      fprintf(stderr, "writing n=%u\n", responsen);
+      ret = fwrite(response, 1, responsen, outfp);
+      ensure(ret == responsen);
+      fprintf(stderr, "wrote n=%d\n", responsen);
+
 double t1 = realtime();
 fprintf(stderr, "elapsed %gs\n", t1 - t0);
 
@@ -557,14 +570,18 @@ double t0 = realtime();
         memcpy(pipe->outbuf, parson->target, pipe->outlay->n * sizeof(double));
         parson->revised = time(NULL);
       } else {
-        makeparson(learnfp, pipe, parson);
-        makeparens(learnfp, pipe, parsons, parson);
+        makeparson(parsons, pipe, parson);
+        makeparens(pipe, parsons, parson);
         parson->created = time(NULL);
         newly_created = true;
 
         pipe->load_ctx_bytes(parson->attrs);
         memcpy(pipe->ctrbuf, parson->controls, sizeof(parson->controls));
+
+        memcpy(pipe->outbuf, parson->target, pipe->outlay->n * sizeof(double));
       }
+
+      parson->visit();
 
       uint8_t hyper[8], zero[8];
       memset(zero, 0, 8);
@@ -659,7 +676,7 @@ double t0 = realtime();
       if (uint8_t burn = (hyper[2] & parson->target_lock)) {
         fprintf(stderr, "burning\n");
 //for (int i = 0; i < 20; ++i) {
-        pipe->burn(burn, 0.01);
+        pipe->burn(burn, 0.02, 0.02);
 //}
         pipe->save();
         pipe->reencode();
@@ -746,7 +763,7 @@ double t0 = realtime();
           }
 
           if (!fparson->created)
-            makeparson(learnfp, pipe, fparson);
+            makeparson(parsons, pipe, fparson);
 
           std::string cnomstr = Parson::bread(nom, fren0, gender);
           const char *cnom = cnomstr.c_str();
@@ -754,7 +771,7 @@ double t0 = realtime();
 
           Parson *cparson = parsons->find(cnom);
 
-          makebread(learnfp, pipe, parson, fparson, cparson, gender);
+          makebread(pipe, parson, fparson, cparson, gender);
         }
       }
 
@@ -785,6 +802,7 @@ double t0 = realtime();
       meta[1] = parson->created;
       meta[2] = parson->revisor;
       meta[3] = parson->revised;
+      meta[4] = (uint32_t)(parson->activity() * 256.0);
 
       response = (uint8_t *)meta;
       responsen = sizeof(meta);
@@ -792,6 +810,25 @@ double t0 = realtime();
       ret = fwrite(response, 1, responsen, outfp);
       ensure(ret == responsen);
       fprintf(stderr, "wrote n=%d\n", responsen);
+
+      response = (uint8_t *)motd;
+      responsen = sizeof(motd);
+      fprintf(stderr, "writing n=%u\n", responsen);
+      ret = fwrite(response, 1, responsen, outfp);
+      ensure(ret == responsen);
+      fprintf(stderr, "wrote n=%d\n", responsen);
+
+      stats.connact = connact;
+      stats.servact = servact;
+      stats.editors = htonl(editors);
+      stats.pad = 0;
+      response = (uint8_t *)&stats;
+      responsen = sizeof(stats);
+      fprintf(stderr, "writing n=%u\n", responsen);
+      ret = fwrite(response, 1, responsen, outfp);
+      ensure(ret == responsen);
+      fprintf(stderr, "wrote n=%d\n", responsen);
+
 double t1 = realtime();
 fprintf(stderr, "elapsed %gs\n", t1 - t0);
 
@@ -808,8 +845,11 @@ fprintf(stderr, "elapsed %gs\n", t1 - t0);
       if (parson->created) {
         memcpy(pipe->outbuf, parson->target, pipe->outlay->n * sizeof(double));
       } else {
-        makeparson(learnfp, pipe, parson);
+        makeparson(parsons, pipe, parson);
+        memcpy(pipe->outbuf, parson->target, pipe->outlay->n * sizeof(double));
       }
+
+      parson->visit();
 
       pipe->uptarget();
       memcpy(parson->target, pipe->outbuf, pipe->outlay->n * sizeof(double));
@@ -838,7 +878,8 @@ fprintf(stderr, "elapsed %gs\n", t1 - t0);
       if (parson->created) {
         memcpy(pipe->outbuf, parson->target, pipe->outlay->n * sizeof(double));
       } else {
-        makeparson(learnfp, pipe, parson);
+        makeparson(parsons, pipe, parson);
+        memcpy(pipe->outbuf, parson->target, pipe->outlay->n * sizeof(double));
       }
 
       pipe->uptarget();
@@ -846,7 +887,6 @@ fprintf(stderr, "elapsed %gs\n", t1 - t0);
 
       pipe->reencode();
 
-seedrand();
 {
 pipe->ctxbuf[6] = randuint() % 2 ? 1.0 : 0;
 pipe->ctxbuf[7] = randuint() % 2 ? 1.0 : 0;
@@ -899,7 +939,7 @@ pipe->ctxbuf[29] = randuint() % 2 ? 1.0 : 0;
       ensure(Parson::valid_nom(fnom));
       parson->add_fren(fnom);
       if (!parson->created) {
-        makeparson(learnfp, pipe, parson);
+        makeparson(parsons, pipe, parson);
         parson->created = time(NULL);
       }
 
@@ -930,12 +970,15 @@ pipe->ctxbuf[29] = randuint() % 2 ? 1.0 : 0;
   }
 
 done:
+  {
+    unsigned int tmp = editors;
+    if (tmp > 0)
+      editors = tmp - 1;
+  }
+
   delete[] new_fren;
   delete[] new_ctx;
   delete[] new_ctr;
-
-  fclose(learnfp);
-
 }
 
 int usage() {
@@ -944,6 +987,10 @@ int usage() {
 }
 
 int main(int argc, char **argv) {
+  shared = mmap(NULL, 4096, PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0);
+  assert(shared != MAP_FAILED);
+  assert(shared);
+
   if (argc < 2)
     return usage();
   uint16_t port = atoi(argv[1]);

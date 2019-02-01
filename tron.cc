@@ -18,6 +18,12 @@ void Tron::target(const double *tgt, bool do_update_stats, int errsignif) {
     update_stats(errsignif);
 }
 
+void Tron::reset_stats() {
+  rounds = 0;
+  err2 = 0;
+  errm = 0;
+}
+
 void Tron::update_stats(int errsignif) {
   const double *out = output();
   double *fout = foutput();

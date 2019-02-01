@@ -214,10 +214,8 @@ void Pipeline::retarget() {
 
     proj->generate();
     for (unsigned int j = 0, jn = mbn * proj->outlay->n; j < jn; ++j) {
-if (isnan(proj->outbuf[j])) { fprintf(stderr, "out[%u] is nan\n", j); }
-if (isnan(proj->adjbuf[j])) { fprintf(stderr, "adj[%u] is nan\n", j); }
       proj->outbuf[j] += proj->adjbuf[j];
-}
+    }
   }
 
   proj = stages[stages.size() - 1];
@@ -497,7 +495,7 @@ void Pipeline::reencode() {
   }
 }
 
-void Pipeline::burn(uint32_t which, double nu) {
+void Pipeline::burn(uint32_t which, double nu, double pi) {
   assert(stages.size());
   Project *proj = final();
   memcpy(proj->adjbuf, outbuf, mbn * sizeof(double) * outlay->n);
@@ -534,9 +532,8 @@ void Pipeline::burn(uint32_t which, double nu) {
   for (unsigned int i = 0; i < stages.size(); ++i) {
     Project *proj = stages[i];
     if (which & (1 << i)) {
-      fprintf(stderr, "burning stage %u nu=%lf\n", i, nu);
-      proj->burn(nu);
-proj->report("servemore");
+      // fprintf(stderr, "burning stage %u nu=%lf\n", i, nu);
+      proj->burn(nu, pi);
     }
   }
 }
@@ -662,4 +659,9 @@ bool Pipeline::load_out_bytes(FILE *infp) {
   delete[] boutbuf;
 
   return true;
+}
+
+void Pipeline::report(const char *prog) {
+  for (auto i = stages.begin(); i != stages.end(); ++i) 
+    (*i)->report(prog);
 }

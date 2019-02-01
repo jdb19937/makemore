@@ -3,6 +3,9 @@
 #include "random.hh"
 #include "cudamem.hh"
 #include "project.hh"
+#include "pipeline.hh"
+
+#include "parson.hh"
 
 #include <math.h>
 
@@ -14,6 +17,15 @@ int usage() {
     "  dir.proj\n"
   );
   return 1;
+}
+
+Pipeline *open_pipeline(unsigned int mbn) {
+  Pipeline *pipe = new Pipeline(mbn);
+  pipe->add_stage(new Project("test8.proj", mbn));
+  pipe->add_stage(new Project("test16.proj", mbn));
+  pipe->add_stage(new Project("test32.proj", mbn));
+  pipe->add_stage(new Project("test64.proj", mbn));
+  return pipe;
 }
 
 int main(int argc, char **argv) {
@@ -90,39 +102,35 @@ int main(int argc, char **argv) {
   if (argc < 1)
     return usage();
 
-  const char *project_dir = argv[0];
-  Project *proj = new Project(project_dir, mbn);
+  ParsonDB *parsons = new ParsonDB(argv[0]);
+  Pipeline *pipe = open_pipeline(mbn);
 
-  fprintf(stderr, "learnmore project=%s mu=%lf nu=%lf pi=%lf xi=%lf yo=%lf wu=%lf dcut=%lf\n", project_dir, mu, nu, pi, xi, yo, wu, dcut);
+  fprintf(stderr, "learnmore mu=%lf nu=%lf pi=%lf xi=%lf yo=%lf wu=%lf\n", mu, nu, pi, xi, yo, wu);
 
   unsigned int i = 0;
   while (1) {
-    proj->load();
+    pipe->load();
 
-    if (nu > 0 || pi > 0) {
-      proj->load_ctxtgt(stdin);
-      proj->train_fidelity(nu, pi, dcut);
+
+    double *ctx = pipe->ctxbuf, *out = pipe->outbuf;
+    for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
+      Parson *p = parsons->pick();
+
+      for (unsigned int j = 0; j < Parson::nattrs; ++j)
+        *ctx++ = (double)(p->attrs[j] + 0.5) / 256.0;
+      for (unsigned int j = 0; j < Parson::dim * Parson::dim * 3; ++j)
+        *out++ = p->target[j];
     }
 
-    if (mu > 0) {
-      proj->load_ctxtgt(stdin);
-      proj->train_judgement(mu, dcut);
-    }
+    pipe->ctrlock = 0;
+    pipe->tgtlock = -1;
 
-    if (xi > 0) {
-      proj->load_ctxtgt(stdin);
-      proj->train_creativity(xi, dcut);
-    }
+    pipe->reencode();
+    pipe->burn(-1, nu, pi);
 
-    if (yo > 0) {
-      proj->load_ctxtgt(stdin);
-      // proj->train_scramble(yo, wu);
-      proj->train_recombine(yo, wu, 4);
-    }
- 
-    if (i % 1000 == 0) {
-      proj->report("learnmore");
-      proj->save();
+    if (i % 100 == 0) {
+      pipe->report("learnmore");
+      pipe->save();
     }
     ++i;
   }

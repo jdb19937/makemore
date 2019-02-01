@@ -48,13 +48,15 @@ struct Project {
   void train_judgement(double mu, double dcut);
   void train_creativity(double xi, double dcut);
 
+  double encgenerr();
+
   void load_ctx(FILE *infp);
   void generate(unsigned int reps = 1);
   void regenerate();
   void passgenerate();
 
 
-  void burn(double nu);
+  void burn(double nu, double pi);
   void reencode(bool force);
   void separate();
   void reconstruct();

@@ -4,13 +4,17 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
+#include <time.h>
+#include <sys/time.h>
+
+#include <math.h>
 
 #include <string>
 #include <map>
 
 struct Parson {
   static bool valid_nom(const char *);
-  static uint64_t hash_nom(const char *nom);
+  static uint64_t hash_nom(const char *nom, unsigned int variant = 0);
   static uint64_t hash_tag(const char *tag);
   static bool female_nom(const char *);
   static std::string bread(const char *nom0, const char *nom1, uint8_t);
@@ -34,8 +38,26 @@ struct Parson {
 
   uint32_t visited;
   uint32_t visits;
-  uint32_t neglects;
-  uint32_t loot;
+  double _activity;
+
+  double activity() const {
+    time_t now = time(NULL);
+    double dt = (double)(now - visited) / (double)(1 << 20);
+    if (dt < 0)
+      dt = 0;
+    return (_activity * exp(-dt));
+  }
+
+  void visit(unsigned int count = 1) {
+    time_t now = time(NULL);
+    double dt = (double)(now - visited) / (double)(1 << 20);
+
+    _activity *= exp(-dt);
+    visited = now;
+
+    _activity += (double)count;
+    visits += count;
+  }
 
   uint8_t target_lock;
   uint8_t control_lock;
@@ -74,6 +96,7 @@ struct Parson {
 
 struct ParsonDB {
   const static unsigned int nfam = 9;
+  const static unsigned int nvariants = 16;
 
   std::string fn;
   int fd;
@@ -88,6 +111,9 @@ struct ParsonDB {
   ~ParsonDB();
 
   Parson *find(const char *pname);
+  Parson *pick();
+  Parson *pick(bool male);
+  Parson *pick(bool male, bool old);
 
   bool exists(const char *qname) {
     Parson *p = find(qname);
