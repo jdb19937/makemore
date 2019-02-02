@@ -50,7 +50,7 @@ while (<DATA>) {
 }
 
 __DATA__
-<html> <head> <title>makemore peaple v0.5</title>
+<html> <head> <title>$NAME</title>
 <base href="..">
 
 <meta property="og:title" content="$NAME">
@@ -139,7 +139,20 @@ body {
 -->
         <tr><td width=85px align=right><b>creator</b></td><td id=creator></td></tr>
         <tr><td width=85px align=right><b>created</b></td><td id=created></td></tr>
-        <tr><td width=85px align=right><b>revisor</b></td><td id=revisor></td></tr>
+        <tr><td width=85px align=right><b>revisor</b></td>
+
+<td>
+<table cellpadding=0 cellspacing=0><tr>
+<td style='width: 180px; font-size: large' id=revisor></td>
+
+<td id='reporttd' style='display: none'>
+<input style='width: 80px' id='reportbutton' type=button value="report" onClick="var i = new XMLHttpRequest; i.open('GET', '/report/' + document.getElementById('revisor').innerHTML); i.onreadystatechange = function(e){}; i.send(); alert('uhh thanks i guess')"/>
+</td>
+</tr>
+</table>
+
+</td></tr>
+
         <tr><td width=85px align=right><b>revised</b></td><td id=revised></td></tr>
         <tr><td width=85px align=right><b>activity</b></td><td id=activity></td></tr>
         </table>
@@ -152,7 +165,7 @@ body {
         <tr><td width=85px align=right valign=top><b>status</b></td><td valign=top>
 
 <table cellpadding=0 cellspacing=0><tr>
-<td style='width: 139px' id=serverstatus>not connected </td>
+<td style='width: 180px' id=serverstatus>not connected </td>
 
 <td>
 <input style='width: 80px' type=button value="reconnect" onClick="reconnect(); reqgen()"/>
@@ -191,7 +204,7 @@ body {
 -->
         <tr><td width=85px align=right><b>partrait</b></td>
 <td> 
-  <table><tr><td style='width: 132px'>
+  <table><tr><td style='width: 173px'>
   <span id="partraitstatus">froze</span>
   </td>
   <td>
@@ -712,10 +725,10 @@ onClick="toggletgtlock(1)"
     <tr><td><input style="width: 100px" type="button" value="scramble" onClick="requpdatecon(1, 1)"/></td></tr>
     <tr><td><input style="width: 100px" type="button" value="tone up" onClick="requpdatecon(1, 2)"/></td></tr>
     <tr><td><input style="width: 100px" type="button" value="tone down" onClick="requpdatecon(1, 3)"/></td></tr>
-    <tr><td><input style="width: 100px" type="button" value="lock control" onClick="alert('unimplemented')"/></td></tr>
-    <tr><td><input style="width: 100px" type="button" value="unlock control" onClick="alert('unimplemented')"/></td></tr>
-    <tr><td><input style="width: 100px" type="button" value="lock target" onClick="alert('unimplemented')"/></td></tr>
-    <tr><td><input style="width: 100px" type="button" value="unlock target" onClick="alert('unimplemented')"/></td></tr>
+    <tr><td><input style="width: 100px" type="button" value="lock control" onClick="ctrlockon(1)"/></td></tr>
+    <tr><td><input style="width: 100px" type="button" value="unlock control" onClick="ctrlockoff(1)"/></td></tr>
+    <tr><td><input style="width: 100px" type="button" value="lock target" onClick="tgtlockon(1)"/></td></tr>
+    <tr><td><input style="width: 100px" type="button" value="unlock target" onClick="tgtlockoff(1)"/></td></tr>
     <tr><td><input style="width: 100px" type="button" value="recombine" onClick="alert('unimplemented')"/></td></tr>
     <tr><td><input style="width: 100px" type="button" value="blend" onClick="alert('unimplemented')"/></td></tr>
     </table>
@@ -756,10 +769,10 @@ onClick="toggletgtlock(2)"
     <tr><td><input style="width: 100px" type="button" value="scramble" onClick="requpdatecon(2, 1)"/></td></tr>
     <tr><td><input style="width: 100px" type="button" value="tone up" onClick="requpdatecon(2, 2)"/></td></tr>
     <tr><td><input style="width: 100px" type="button" value="tone down" onClick="requpdatecon(2, 3)"/></td></tr>
-    <tr><td><input style="width: 100px" type="button" value="lock control" onClick="alert('unimplemented')"/></td></tr>
-    <tr><td><input style="width: 100px" type="button" value="unlock control" onClick="alert('unimplemented')"/></td></tr>
-    <tr><td><input style="width: 100px" type="button" value="lock target" onClick="alert('unimplemented')"/></td></tr>
-    <tr><td><input style="width: 100px" type="button" value="unlock target" onClick="alert('unimplemented')"/></td></tr>
+    <tr><td><input style="width: 100px" type="button" value="lock control" onClick="ctrlockon(2)"/></td></tr>
+    <tr><td><input style="width: 100px" type="button" value="unlock control" onClick="ctrlockoff(2)"/></td></tr>
+    <tr><td><input style="width: 100px" type="button" value="lock target" onClick="tgtlockon(2)"/></td></tr>
+    <tr><td><input style="width: 100px" type="button" value="unlock target" onClick="tgtlockoff(2)"/></td></tr>
     <tr><td><input style="width: 100px" type="button" value="recombine" onClick="alert('unimplemented')"/></td></tr>
     <tr><td><input style="width: 100px" type="button" value="blend" onClick="alert('unimplemented')"/></td></tr>
     </table>
@@ -801,10 +814,10 @@ onClick="toggletgtlock(3)"
     <tr><td><input style="width: 100px" type="button" value="scramble" onClick="requpdatecon(3, 1)"/></td></tr>
     <tr><td><input style="width: 100px" type="button" value="tone up" onClick="requpdatecon(3, 2)"/></td></tr>
     <tr><td><input style="width: 100px" type="button" value="tone down" onClick="requpdatecon(3, 3)"/></td></tr>
-    <tr><td><input style="width: 100px" type="button" value="lock control" onClick="alert('unimplemented')"/></td></tr>
-    <tr><td><input style="width: 100px" type="button" value="unlock control" onClick="alert('unimplemented')"/></td></tr>
-    <tr><td><input style="width: 100px" type="button" value="lock target" onClick="alert('unimplemented')"/></td></tr>
-    <tr><td><input style="width: 100px" type="button" value="unlock target" onClick="alert('unimplemented')"/></td></tr>
+    <tr><td><input style="width: 100px" type="button" value="lock control" onClick="ctrlockon(3)"/></td></tr>
+    <tr><td><input style="width: 100px" type="button" value="unlock control" onClick="ctrlockoff(3)"/></td></tr>
+    <tr><td><input style="width: 100px" type="button" value="lock target" onClick="tgtlockon(3)"/></td></tr>
+    <tr><td><input style="width: 100px" type="button" value="unlock target" onClick="tgtlockoff(3)"/></td></tr>
     <tr><td><input style="width: 100px" type="button" value="recombine" onClick="alert('unimplemented')"/></td></tr>
     <tr><td><input style="width: 100px" type="button" value="blend" onClick="alert('unimplemented')"/></td></tr>
     </table>
@@ -850,10 +863,10 @@ onClick="toggletgtlock(4)"
     <tr><td><input style="width: 100px" type="button" value="scramble" onClick="requpdatecon(4, 1)"/></td></tr>
     <tr><td><input style="width: 100px" type="button" value="tone up" onClick="requpdatecon(4, 2)"/></td></tr>
     <tr><td><input style="width: 100px" type="button" value="tone down" onClick="requpdatecon(4, 3)"/></td></tr>
-    <tr><td><input style="width: 100px" type="button" value="lock control" onClick="alert('unimplemented')"/></td></tr>
-    <tr><td><input style="width: 100px" type="button" value="unlock control" onClick="alert('unimplemented')"/></td></tr>
-    <tr><td><input style="width: 100px" type="button" value="lock target" onClick="alert('unimplemented')"/></td></tr>
-    <tr><td><input style="width: 100px" type="button" value="unlock target" onClick="alert('unimplemented')"/></td></tr>
+    <tr><td><input style="width: 100px" type="button" value="lock control" onClick="ctrlockon(4)"/></td></tr>
+    <tr><td><input style="width: 100px" type="button" value="unlock control" onClick="ctrlockoff(4)"/></td></tr>
+    <tr><td><input style="width: 100px" type="button" value="lock target" onClick="tgtlockon(4)"/></td></tr>
+    <tr><td><input style="width: 100px" type="button" value="unlock target" onClick="tgtlockoff(4)"/></td></tr>
     <tr><td><input style="width: 100px" type="button" value="recombine" onClick="alert('unimplemented')"/></td></tr>
     <tr><td><input style="width: 100px" type="button" value="blend" onClick="alert('unimplemented')"/></td></tr>
     </table>
@@ -976,9 +989,44 @@ onClick="toggletgtlock(4)"
 
 <table width=1562 bgcolor=white cellpadding=16 style='font-size: 24px'><tr><td>
 
+
+<h1>peaple become whatever you make them</h1>
+
+<p>
+Peaple are stored in a hash table with 65536 slots.  When you make a
+new parson by nom, a number of candidate slots are considered and
+the current resident with the lowest activity is evicted.  To create
+your new parson's initial partrait, a random existing parson is cloned
+or multiple existing parsons are recombined.
+</p>
+
+<p>
+The encoder-generator neural network is always learning to create
+parsons more like their targets.  Every parson you create or modify
+becomes a new training sample, so all new peaple will look more
+like your peaple.  The "burn" functionality accelerates this
+process by strongly training the network with an individual target.
+This is only a temporary change, but while in effect, new peaple
+you create will have the burned features and will become training 
+samples themselves.
+</p>
+
+<p>
+
+I'm starting to give peaple different eye colors because it's a
+cool look for a lot of them, mostly I'm using saturated green or
+blue. I'll pick the color and draw on their eyes in stage 2 or 3,
+burn once or thrice, add some frens, and repeat on a good-looking
+fren. By using "burn", I'm creating more samples with less work,
+since the frens I don't edit also have locked targets with (at
+least strong hints of) the new eye color.
+</p>
+
 <h1>makemore peaple v0.5 release notes 2019-02-01</h1>
 
+<p>
 Back-end is essentially complete, all training is online and against the site data itself.
+</p>
 
 <h1>what is synthetic information?</h1>
 
@@ -1429,11 +1477,28 @@ function gencontrols(stage, nc, dev) {
   requpdate()
 }
 
-function tgtlockon(stage) {
+function tgtlockon(stage, noupdate) {
   var adjcanvas = document.getElementById("stage" + stage + "adjborder")
 
   adjcanvas.style.borderColor = 'blue'
   window.tgtlock |= (1 << (stage - 1));
+
+  if (!noupdate) {
+    requpdate()
+  }
+}
+
+function tgtlockoff(stage) {
+  var adjcanvas = document.getElementById("stage" + stage + "adjborder")
+
+  adjcanvas.style.borderColor = 'gray'
+  window.tgtlock &= ~(1 << (stage - 1));
+
+  if (!(window.ctrlock & (1 << (stage - 1)))) {
+    window.ctrlock |= (1 << (stage - 1));
+  }
+
+  requpdate();
 }
 
 
@@ -1453,6 +1518,28 @@ function toggletgtlock(stage) {
   }
 
   requpdate();
+}
+
+function ctrlockon(stage) {
+  var concanvas = document.getElementById("stage" + stage + "conborder")
+
+  concanvas.style.borderColor = 'blue'
+  window.ctrlock |= (1 << (stage - 1));
+
+  requpdate()
+}
+
+function ctrlockoff(stage) {
+  var concanvas = document.getElementById("stage" + stage + "conborder")
+
+  concanvas.style.borderColor = 'gray'
+  window.ctrlock &= ~(1 << (stage - 1));
+
+  if (!(window.tgtlock & (1 << (stage -  1)))) {
+    window.tgtlock |= (1 << (stage - 1));
+  }
+
+  requpdate()
 }
 
 function togglectrlock(stage) {
@@ -1670,7 +1757,7 @@ function start_drawing(canvas) {
     var bt = document.getElementById("blurtool")
     bt.style.borderColor = orangestr[window.strength]
   }
-  tgtlockon(canvas.stage);
+  tgtlockon(canvas.stage, true);
   window.drawing = canvas;
 }
 
@@ -2667,6 +2754,11 @@ function updatemeta(newmetabuf) {
     newmeta[1] + " (-" + (Math.floor(Date.now()/1000) - newmeta[1]) + " s)";
 
   document.getElementById('revisor').innerHTML = newmeta[2] ? makeip(newmeta[2]) : ''
+  if (newmeta[2]) {
+    document.getElementById('reporttd').style.display = 'inline';
+  } else {
+    document.getElementById('reporttd').style.display = 'none';
+  }
 
   document.getElementById('revised').innerHTML = !newmeta[3] ? '' :
     newmeta[3] + " (-" + (Math.floor(Date.now()/1000) - newmeta[3]) + " s)";
@@ -2873,7 +2965,7 @@ function doupdate(newlabdata, newcontextdata, newcontroldata, newadjdata, newgen
 
   if (!window.allready) {
     for (var i = 1; i <= 4; ++i) {
-      tgtlockon(i)
+      tgtlockon(i, true)
     }
   }
   window.allready = true
