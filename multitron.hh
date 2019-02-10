@@ -5,6 +5,7 @@
 #include "layout.hh"
 #include "wiring.hh"
 #include "megatron.hh"
+#include "topology.hh"
 
 #include <vector>
 
