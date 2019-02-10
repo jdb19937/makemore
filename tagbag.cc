@@ -5,7 +5,7 @@
 
 namespace makemore {
 
-Tagbag::Tagbag(const char *tag) {
+Tagbag::Tagbag(const char *tag, double w) {
   uint8_t hash[32];
   SHA256_CTX sha;
   sha256_init(&sha);
@@ -18,7 +18,7 @@ Tagbag::Tagbag(const char *tag) {
   for (unsigned int i = 0; i < 256; ++i) {
     unsigned int j = (i >> 3);
     unsigned int k = (i & 7);
-    vec[i] = ((hash[j] >> k) & 1) ? 1.0 : -1.0;
+    vec[i] = ((hash[j] >> k) & 1) ? w : -w;
   }
 }
 

@@ -20,12 +20,23 @@ struct Tagbag {
     memcpy(vec, t.vec, sizeof(vec));
   }
 
-  Tagbag(const char *tag);
+  Tagbag(const Tagbag &t, double w) {
+    memcpy(vec, t.vec, sizeof(vec));
+    mul(w);
+  }
+
+  Tagbag(const char *tag, double w = 1);
+
+  void mul(double w) {
+    if (w == 1.0)
+      return;
+    for (unsigned int i = 0; i < n; ++i)
+      vec[i] *= w;
+  }
+  
 
   Tagbag &operator *= (double w) {
-    for (unsigned int i = 0; i < n; ++i) {
-       vec[i] *= w;
-    }
+    mul(w);
     return *this;
   }
 
@@ -34,16 +45,20 @@ struct Tagbag {
     return (tb *= w);
   }
 
-  void add(const char *tag, double w) {
+  void add(const Tagbag &tb) {
+    for (unsigned int i = 0; i < n; ++i) {
+       vec[i] += tb.vec[i];
+    }
+  }
+
+  void add(const char *tag, double w = 1) {
     Tagbag tb(tag);
-    tb *= w;
+    tb.mul(w);
     *this += tb;
   }
 
-  Tagbag &operator += (const Tagbag &t) {
-    for (unsigned int i = 0; i < n; ++i) {
-       vec[i] += t.vec[i];
-    }
+  Tagbag &operator += (const Tagbag &tb) {
+    add(tb);
     return *this;
   }
 
