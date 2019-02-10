@@ -105,6 +105,8 @@ struct Tagbag {
     copy(tb);
     return *this;
   }
+
+  void encode(const char *str, unsigned int seed = 0);
 };
 
 }

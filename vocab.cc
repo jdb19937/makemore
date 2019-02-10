@@ -59,33 +59,4 @@ void Vocab::decode(const Tagbag &_tb, string *strp) {
     *strp += " ...";
 }
 
-static void split(const char *str, vector<string> *words) {
-  words->clear();
-
-  const char *p = str;
-
-  while (const char *q = strchr(p, ' ')) {
-    words->push_back(string(p, q - p));
-
-    p = q + 1;
-    while (*p == ' ')
-      p++;
-  }
-
-  if (*p)
-    words->push_back(string(p));
-}
-
-void Vocab::encode(const char *str, Tagbag *tbp) {
-  vector<string> strv;
-  split(str, &strv);
-
-  unsigned int nw = strv.size(), iw;
-  for (iw = 0; iw < nw; ++iw) {
-    Tagbag tw(strv[iw].c_str());
-    tw.mul(1.0 / (1.0 + (double)iw));
-    tbp->add(tw);
-  }
-}
-  
 }

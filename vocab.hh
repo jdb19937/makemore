@@ -20,7 +20,6 @@ struct Vocab {
 
   void add(const char *tag);
 
-  void encode(const char *str, Tagbag *tb);
   void decode(const Tagbag &tb, std::string *str);
 };
 
