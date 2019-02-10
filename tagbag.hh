@@ -12,16 +12,24 @@ struct Tagbag {
   const static unsigned int n = 256;
   double vec[n];
 
-  Tagbag() {
+  void clear() {
     memset(vec, 0, sizeof(vec));
   }
 
-  Tagbag(const Tagbag &t) {
+  Tagbag() {
+    clear();
+  }
+
+  void copy(const Tagbag &t) {
     memcpy(vec, t.vec, sizeof(vec));
   }
 
+  Tagbag(const Tagbag &t) {
+    copy(t);
+  }
+
   Tagbag(const Tagbag &t, double w) {
-    memcpy(vec, t.vec, sizeof(vec));
+    copy(t);
     mul(w);
   }
 
@@ -51,10 +59,10 @@ struct Tagbag {
     }
   }
 
-  void add(const char *tag, double w = 1) {
-    Tagbag tb(tag);
-    tb.mul(w);
-    *this += tb;
+  void sub(const Tagbag &tb) {
+    for (unsigned int i = 0; i < n; ++i) {
+       vec[i] -= tb.vec[i];
+    }
   }
 
   Tagbag &operator += (const Tagbag &tb) {
@@ -62,10 +70,23 @@ struct Tagbag {
     return *this;
   }
 
+  Tagbag &operator -= (const Tagbag &tb) {
+    sub(tb);
+    return *this;
+  }
+
   Tagbag operator + (const Tagbag &tb1) {
     Tagbag tb0 = *this;
-    return (tb0 += tb1);
+    tb0.add(tb1);
+    return tb0;
   }
+
+  Tagbag operator - (const Tagbag &tb1) {
+    Tagbag tb0 = *this;
+    tb0.sub(tb1);
+    return tb0;
+  }
+
 
   void clamp() {
     for (unsigned int i = 0; i < n; ++i) {
@@ -78,6 +99,11 @@ struct Tagbag {
       assert(vec[i] > 0 && vec[i] < 1);
       vec[i] = unsigmoid(vec[i]);
     }
+  }
+
+  Tagbag &operator =(const Tagbag &tb) {
+    copy(tb);
+    return *this;
   }
 };
 

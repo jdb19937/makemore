@@ -12,16 +12,16 @@
 namespace makemore {
 
 struct Vocab {
-  Vocab() {
-    n = 0;
-  }
+  Vocab();
 
   unsigned int n;
   std::vector<std::string> tags;
   std::vector<Tagbag> bags;
 
   void add(const char *tag);
-  const char *decode(const Tagbag &tb);
+
+  void encode(const char *str, Tagbag *tb);
+  void decode(const Tagbag &tb, std::string *str);
 };
 
 }
