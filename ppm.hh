@@ -7,6 +7,8 @@
 
 #include <vector>
 
+namespace makemore {
+
 struct PPM {
   uint32_t w, h;
   uint8_t *data;
@@ -21,7 +23,7 @@ struct PPM {
       delete[] data;
   }
 
-  PPM(unsigned int _w, unsigned int _h, uint8_t v) {
+  PPM(unsigned int _w, unsigned int _h, uint8_t v = 0) {
     w = h = 0;
     data = NULL;
     make(_w, _h, v);
@@ -48,7 +50,10 @@ struct PPM {
   void rawzoom();
   void pad();
 
+  void border(unsigned int x0, unsigned int y0, unsigned int x1, unsigned int y1, uint8_t cr = 0, uint8_t cg = 0, uint8_t cb = 255);
+
   void pastelab(const double *vec, unsigned int vw, unsigned int vh, unsigned int x0, unsigned int y0);
+  void cutlab(double *vec, unsigned int vw, unsigned int vh, unsigned int x0, unsigned int y0);
   void make(unsigned int _w, unsigned int _h, uint8_t v);
 };
 
@@ -67,6 +72,8 @@ inline void labtorgb(double l, double a, double b, uint8_t *rp, uint8_t *gp, uin
   double x, y, z;
   labtoxyz(l, a, b, &x, &y, &z);
   xyztorgb(x, y, z, rp, gp, bp);
+}
+
 }
 
 #endif

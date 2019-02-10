@@ -3,6 +3,8 @@
 
 #include "twiddle.hh"
 
+namespace makemore {
+
 void untwiddle1(const double *lo, const double *hi, unsigned int w, unsigned int h, double *z) {
   assert(w % 2 == 0 && h % 2 == 0);
   unsigned int nw = w / 2;
@@ -124,4 +126,6 @@ void twiddle3(const double *z, unsigned int w, unsigned int h, double *lo, doubl
   }
 
   }
+}
+
 }

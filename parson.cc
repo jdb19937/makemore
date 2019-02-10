@@ -22,6 +22,8 @@
 #include "parson.hh"
 #include "random.hh"
 
+namespace makemore {
+
 uint64_t Parson::hash_nom(const char *nom, unsigned int variant) {
   uint8_t hash[32];
   SHA256_CTX sha;
@@ -447,6 +449,8 @@ Parson *ParsonDB::find(const char *nom) {
   }
 
   return p;
+}
+
 }
 
 //int main(){

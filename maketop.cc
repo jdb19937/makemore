@@ -1,5 +1,7 @@
 #include "topology.hh"
 
+using namespace makemore;
+
 int main(int argc, char **argv) {
   Topology top;
 

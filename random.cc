@@ -10,6 +10,8 @@
 
 #include "sha256.c"
 
+namespace makemore {
+
 uint64_t hash64(const uint8_t *data, unsigned int len) {
   uint8_t hash[32];
   SHA256_CTX sha;
@@ -46,11 +48,13 @@ double randgauss() {
 
 
 double randrange(double a, double b) {
-  static std::uniform_real_distribution<double> uniform(a, b);
+  std::uniform_real_distribution<double> uniform(a, b);
   return uniform(generator);
 }
 
 unsigned int randuint() {
   static std::uniform_int_distribution<unsigned int> uniform(0, 1UL<<31);
   return uniform(generator);
+}
+
 }

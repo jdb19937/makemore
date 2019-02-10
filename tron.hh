@@ -8,6 +8,8 @@
 #include <string.h>
 #include <unistd.h>
 
+namespace makemore {
+
 struct Tron {
   double errdecay;
 
@@ -199,6 +201,32 @@ struct Identron : Tron {
 
 inline Identron *identron(unsigned int n) {
   return new Identron(n);
+}
+
+
+struct Focatron : Tron {
+  const class Layout *lay;
+  unsigned int mbn;
+  const double *in;
+  double *fin;
+
+  Focatron(const Layout *_lay, unsigned int _mbn);
+
+  virtual const double *feed(const double *_in, double *_fin) {
+    in = _in;
+    fin = _fin;
+    return in;
+  }
+
+  virtual void train(double r) { }
+
+  virtual const double *input() { return in; }
+  virtual const double *output() { return in; }
+  virtual double *foutput() { return fin; }
+
+  virtual void focus();
+};
+
 }
 
 #endif

@@ -28,6 +28,7 @@ static void *shared;
   } \
 } while (0)
 
+using namespace makemore;
 using namespace std;
 
 static inline double realtime() {
@@ -77,10 +78,10 @@ void makeparens(Pipeline *pipe, ParsonDB *parsons, Parson *parson) {
   p2->target_lock = 0;
   p2->control_lock = -1;
 
-  unsigned int js = 4;
+  unsigned int js = 8;
   assert(Parson::ncontrols % js == 0);
 
-  for (unsigned int i = 0; i < 39; i++) {
+  for (unsigned int i = 0; i < 52; i++) {
     if (i == 20)
       continue;
     if (randuint() % 2) {
@@ -95,21 +96,6 @@ void makeparens(Pipeline *pipe, ParsonDB *parsons, Parson *parson) {
     p1->attrs[39] = 0;
   if (update_p2)
     p2->attrs[39] = 0;
-
-  for (unsigned int i = 40; i < 52; i += 3) {
-    // double blend = (randuint() % 2 : 1.0 : 0.0; //randrange(0.0, 1.0);
-    double blend = sigmoid(randgauss() * 5);
-    if (update_p1) {
-      p1->attrs[i+0] = blend * parson->attrs[i+0] + (1-blend) * p1->attrs[i+0];
-      p1->attrs[i+1] = blend * parson->attrs[i+1] + (1-blend) * p1->attrs[i+1];
-      p1->attrs[i+2] = blend * parson->attrs[i+2] + (1-blend) * p1->attrs[i+2];
-    }
-    if (update_p2) {
-      p2->attrs[i+0] = (1-blend) * parson->attrs[i+0] + blend * p2->attrs[i+0];
-      p2->attrs[i+1] = (1-blend) * parson->attrs[i+1] + blend * p2->attrs[i+1];
-      p2->attrs[i+2] = (1-blend) * parson->attrs[i+2] + blend * p2->attrs[i+2];
-    }
-  }
 
   // tags
   assert(Parson::nattrs == 72);
@@ -176,14 +162,6 @@ void makebread(Pipeline *pipe, Parson *p1, Parson *p2, Parson *parson, uint8_t g
   parson->attrs[20] = gender * 255;
   parson->attrs[39] = 255;
 
-  for (unsigned int i = 40; i < 52; i += 3) {
-    //double blend = randuint() % 2 : 1.0 : 0.0; //randrange(0.0, 1.0);
-    double blend = sigmoid(randgauss() * 5);
-    parson->attrs[i+0] = blend * p1->attrs[i+0] + (1 - blend) * p2->attrs[i+0];
-    parson->attrs[i+1] = blend * p1->attrs[i+1] + (1 - blend) * p2->attrs[i+1];
-    parson->attrs[i+2] = blend * p1->attrs[i+2] + (1 - blend) * p2->attrs[i+2];
-  }
-
   // tags
   assert(Parson::nattrs == 72);
   for (unsigned int i = 52; i < 68; ++i) {
@@ -195,7 +173,7 @@ void makebread(Pipeline *pipe, Parson *p1, Parson *p2, Parson *parson, uint8_t g
   }
 
 
-  unsigned int js = 4;
+  unsigned int js = 8;
   assert(Parson::ncontrols % js == 0);
   for (unsigned int i = 0; i < Parson::ncontrols; i += js) {
 #if 0
@@ -273,12 +251,13 @@ void makeparson(ParsonDB *db, Pipeline *pipe, Parson *parson) {
   parson->control_lock = -1;
   parson->target_lock = 0;
 
-  // if (strstr(parson->nom, "norm")) {
-  //   for (unsigned int i = 0; i < parson->ncontrols; ++i) {
-  //     parson->controls[i] = 0.5 + (parson->controls[i] - 0.5) * 0.2;
-  //   }
-  // }
+  if (strstr(parson->nom, "norm")) {
+    for (unsigned int i = 0; i < parson->ncontrols; ++i) {
+      parson->controls[i] = 0.5 + (parson->controls[i] - 0.5) * 0.2;
+    }
+  }
 
+#if 0
   if (strstr(parson->nom, "blue")) {
     double dl = 0, da, db;
     rgbtolab(0, 96, 150, &dl, &da, &db);
@@ -307,6 +286,7 @@ void makeparson(ParsonDB *db, Pipeline *pipe, Parson *parson) {
     parson->attrs[50] = (uint8_t)(da * 255.0);
     parson->attrs[51] = (uint8_t)(db * 255.0);
   }
+#endif
 
   if (strstr(parson->nom, "_hat")) {
     parson->attrs[35] = 255;
@@ -336,6 +316,63 @@ void makeparson(ParsonDB *db, Pipeline *pipe, Parson *parson) {
   parson->target_lock = -1;
   parson->control_lock = 0;
 }
+
+static void _padzcut(double *src, int dx, int dy, double z, int w, int h, double *dst) {
+  for (int y = 0; y < h; ++y) {
+    for (int x = 0; x < w; ++x) {
+
+      double rx = (((double)w/2.0) + (x - dx - ((double)w/2.0)) / z);
+      double ry = (((double)h/2.0) + (y - dy - ((double)h/2.0)) / z);
+
+      int rx0 = floorl(rx), rx1 = rx0 + 1;
+      int ry0 = floorl(ry), ry1 = ry0 + 1;
+      double bx = rx - rx0;
+      double by = ry - ry0;
+      if (rx0 < 0) { rx0 = 0; } if (rx0 >= w) { rx0 = w - 1; }
+      if (rx1 < 1) { rx1 = 1; } if (rx1 >= w) { rx1 = w - 1; }
+      if (ry0 < 0) { ry0 = 0; } if (ry0 >= h) { ry0 = h - 1; }
+      if (ry1 < 0) { ry1 = 0; } if (ry1 >= h) { ry1 = h - 1; }
+
+      for (int c = 0; c < 3; ++c) {
+        *dst++ = 
+          (1.0-bx) * (1.0-by) * src[ry0 * w * 3 + rx0 * 3 + c] +
+          (bx) * (1.0-by) * src[ry0 * w * 3 + rx1 * 3 + c] +
+          (1.0-bx) * (by) * src[ry1 * w * 3 + rx0 * 3 + c] +
+          (bx) * (by) * src[ry1 * w * 3 + rx1 * 3 + c];
+      }
+    }
+  }
+}
+
+#if 0
+static void _bipadzcut(double *src, int dx, int dy, double z, int w, int h, double *dst) {
+  if (z > 1) {
+    _padzcut(src, dx, dy, z, w, h, dst);
+
+    double *tmp = new double[w * h * 3];
+    _padzcut(dst, -dx, -dy, 1.0 / z, w, h, tmp);
+
+    for (unsigned int j = 0, jn = w * h * 3; j < jn; ++j)
+      dst[j] = floor(dst[j] * 256.0) / 256.0 + (1.0 + tmp[j] - src[j]) / 512.0;
+    delete[] tmp;
+  } else if (z == 1) {
+    _padzcut(src, dx, dy, z, w, h, dst);
+  } else if (z < 1) {
+    double *tmp = new double[w * h * 3];
+
+    for (unsigned int j = 0, jn = w * h * 3; j < jn; ++j) {
+      tmp[j] = 512 * (src[j] - floor(src[j] * 256.0) / 256.0) - 1.0;
+    }
+
+    _padzcut(src, dx, dy, z, w, h, dst);
+    for (unsigned int j = 0, jn = w * h * 3; j < jn; ++j)
+      dst[j] += tmp[j];
+    delete[] tmp;
+  } else {
+    assert(0);
+  }
+}
+#endif
 
 void handle(Pipeline *pipe, ParsonDB *parsons, FILE *infp, FILE *outfp) {
   char motd[64];
@@ -403,6 +440,12 @@ void handle(Pipeline *pipe, ParsonDB *parsons, FILE *infp, FILE *outfp) {
 
     assert(sizeof(parson->attrs) == pipe->ctxlay->n);
     pipe->load_ctx_bytes(parson->attrs);
+
+fprintf(stderr, "%s: ", nom);
+for (int i = 40; i < 52; ++i) {
+fprintf(stderr, "attrs[%d]=%u, ", i, parson->attrs[i]);
+}
+fprintf(stderr, "\n");
 
     assert(sizeof(parson->controls) == pipe->ctrlay->n * sizeof(double));
     memcpy(pipe->ctrbuf, parson->controls, sizeof(parson->controls));
@@ -643,7 +686,6 @@ double t0 = realtime();
         pipe->load_ctx_bytes(parson->attrs);
       }
 
- 
       if (!ctxchange && !ctrchange) {
         pipe->retarget();
         assert(sizeof(Parson::target) == sizeof(double) * pipe->outlay->n);
@@ -653,6 +695,24 @@ double t0 = realtime();
       pipe->uptarget();
       memcpy(parson->target, pipe->outbuf, pipe->outlay->n * sizeof(double));
 
+      if (hyper[3]) {
+        int q = *(int8_t *)&hyper[3] * 4;
+        if (q > 0) {
+          pipe->autolign(q, 0);
+        } else {
+          pipe->autolign(-q, 1);
+        }
+        memcpy(parson->target, pipe->outbuf, pipe->outlay->n * sizeof(double));
+      }
+
+      if (hyper[4] || hyper[5] || hyper[6]) {
+        assert(64 * 64 * 3 == pipe->outlay->n);
+        int dx = *(int8_t *)&hyper[4];
+        int dy = *(int8_t *)&hyper[5];
+        double zoom = exp((double)*(int8_t *)&hyper[6] / 64.0);
+        _padzcut(parson->target, dx, dy, zoom, 64, 64, pipe->outbuf);
+        memcpy(parson->target, pipe->outbuf, pipe->outlay->n * sizeof(double));
+      }
 
       response = (uint8_t *)parson->target;
       responsen = sizeof(parson->target);
@@ -674,10 +734,13 @@ double t0 = realtime();
 
 
       if (uint8_t burn = (hyper[2] & parson->target_lock)) {
-        fprintf(stderr, "burning\n");
-//for (int i = 0; i < 20; ++i) {
-        pipe->burn(burn, 0.02, 0.02);
-//}
+double nu = 0.005;
+double pi = 0.005;
+int iters = 8;
+        fprintf(stderr, "burning which=%u nu=%lf pi=%lf iters=%d\n", burn, nu, pi, iters);
+for (int i = 0; i < iters; ++i) {
+        pipe->burn(burn, nu, pi);
+}
         pipe->save();
         pipe->reencode();
       }

@@ -8,6 +8,8 @@
 #include <string>
 #include <map>
 
+namespace makemore {
+
 struct Scrambler {
   std::string dir;
   std::map<std::string, std::string> config;
@@ -56,5 +58,7 @@ struct Scrambler {
   void load();
   void save();
 };
+
+}
 
 #endif

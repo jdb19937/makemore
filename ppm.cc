@@ -9,6 +9,8 @@
 
 #include "ppm.hh"
 
+namespace makemore {
+
 bool PPM::read(FILE *fp) {
   int ret = getc(fp);
   if (ret == EOF)
@@ -104,6 +106,39 @@ void PPM::unvectorizegray(const double *vec, unsigned int _w, unsigned int _h) {
   }
 }
 
+void PPM::border(unsigned int x0, unsigned int y0, unsigned int x1, unsigned int y1, uint8_t cr, uint8_t cg, uint8_t cb) {
+  if (x1 >= w)
+    x1 = w - 1;
+  if (x0 >= x1)
+    x0 = x1;
+  if (y1 >= h)
+    y1 = h - 1;
+  if (y0 >= y1)
+    y0 = y1;
+
+  for (unsigned int x = x0; x <= x1; ++x) {
+    data[y0 * w * 3 + x * 3 + 0] = cr;
+    data[y0 * w * 3 + x * 3 + 0] = cg;
+    data[y0 * w * 3 + x * 3 + 0] = cb;
+  }
+
+  for (unsigned int y = y0 + 1; y <= y1 - 1; ++y) {
+    data[y * w * 3 + x0 * 3 + 0] = cr;
+    data[y * w * 3 + x0 * 3 + 0] = cg;
+    data[y * w * 3 + x0 * 3 + 0] = cb;
+
+    data[y * w * 3 + x1 * 3 + 0] = cr;
+    data[y * w * 3 + x1 * 3 + 0] = cg;
+    data[y * w * 3 + x1 * 3 + 0] = cb;
+  }
+
+  for (unsigned int x = x0; x <= x1; ++x) {
+    data[y1 * w * 3 + x * 3 + 0] = cr;
+    data[y1 * w * 3 + x * 3 + 0] = cg;
+    data[y1 * w * 3 + x * 3 + 0] = cb;
+  }
+}
+
 void PPM::make(unsigned int _w, unsigned int _h, uint8_t v) {
   unsigned int n = _w * _h * 3;
   w = _w;
@@ -133,6 +168,29 @@ void PPM::pastelab(const double *vec, unsigned int vw, unsigned int vh, unsigned
       labtorgb(
         vec[i+0], vec[i+1], vec[i+2], 
         data+yw3+x3+0, data+yw3+x3+1, data+yw3+x3+2
+      );
+
+      i += 3;
+    }
+  }
+}
+
+void PPM::cutlab(double *vec, unsigned int vw, unsigned int vh, unsigned int x0, unsigned int y0) {
+  assert(y0 + vh <= h);
+  assert(x0 + vw <= w);
+
+  unsigned int i = 0;
+  for (unsigned int vy = 0; vy < vh; ++vy) {
+    unsigned int y = y0 + vy;
+    unsigned int yw3 = y * w * 3;
+
+    for (unsigned int vx = 0; vx < vw; ++vx) {
+      unsigned int x = x0 + vx;
+      unsigned int x3 = x * 3;
+
+      rgbtolab(
+        data[yw3+x3+0], data[yw3+x3+1], data[yw3+x3+2],
+        vec+i+0, vec+i+1, vec+i+2
       );
 
       i += 3;
@@ -520,6 +578,11 @@ void labtoxyz(double l, double a, double b, double *xp, double *yp, double *zp) 
   *zp = ((z3 > 0.008856) ? z3 : ((pz - 16.0 / 116.0) / 7.787)) * 108.883;
 }
 
+} //namespace
+
+
+
+
 
 #if PPMTEST_MAIN
 int main() {
@@ -842,6 +905,8 @@ void untwiddle(const Vec &lo, const Vec &hi, unsigned int w, unsigned int h, Vec
     }
   }
 }
+
+
 int main(int argc, char **argv) {
   assert(argc == 3);
   unsigned int w = atoi(argv[1]);
@@ -868,3 +933,4 @@ int main(int argc, char **argv) {
   return 0;
 }
 #endif
+

@@ -13,6 +13,8 @@
 #include "multitron.hh"
 #include <vector>
 
+namespace makemore {
+
 Multitron::Multitron(const Topology &top, unsigned int _mbn, const char *mapfn) : Tron(0, 0) {
   unsigned int twn = top.nweights;
   map_size = ((twn * sizeof(double)) + 4095) & ~4095;
@@ -114,4 +116,6 @@ void Multitron::sync(double t) {
   for (int i = 0; i < megatrons.size(); ++i) {
     megatrons[i]->sync(t);
   }
+}
+
 }

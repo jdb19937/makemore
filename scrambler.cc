@@ -9,6 +9,8 @@
 #include "twiddle.hh"
 #include "closest.hh"
 
+namespace makemore {
+
 using namespace std;
 
 static string read_word(FILE *fp, char sep) {
@@ -466,4 +468,6 @@ void Scrambler::save() {
 void Scrambler::load() {
   enc->sync(0);
   gen->sync(0);
+}
+
 }

@@ -4,6 +4,8 @@
 #include "tron.hh"
 #include "wiring.hh"
 
+namespace makemore {
+
 struct Megatron : Tron {
   const double *in;
   double *fin, *out, *fout;
@@ -44,5 +46,7 @@ struct Megatron : Tron {
   void _makemaps();
   void randomize(double disp);
 };
+
+}
 
 #endif

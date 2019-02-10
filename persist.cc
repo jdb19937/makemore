@@ -14,6 +14,7 @@
   fprintf(stderr, "%s::%s: %s: %s\n", \
     typeid(*this).name(), method, fn, strerror(errno));
 
+namespace makemore {
 
 void Persist::load_file(const char *fn) {
   FILE *fp = fopen(fn, "r");
@@ -41,5 +42,7 @@ void Persist::save_file(const char *fn) const {
     PERROR("save", fn);
     assert(ret == 0);
   }
+}
+
 }
 

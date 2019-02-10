@@ -4,6 +4,8 @@
 #include <stdio.h>
 #include <sys/types.h>
 
+namespace makemore {
+
 struct Dataset {
   unsigned int k, n;
 
@@ -29,6 +31,8 @@ struct Dataset {
   void pick_minibatch(unsigned int mbn, unsigned int *mb, bool seq = false);
   void copy_minibatch(const unsigned int *mb, unsigned int mbn, double *data, unsigned int off = 0, unsigned int len = 0) const;
   void encude_minibatch(const unsigned int *mb, unsigned int mbn, double *data, unsigned int off = 0, unsigned int len = 0) const;
+};
+
 };
 
 #endif

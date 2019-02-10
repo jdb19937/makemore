@@ -9,6 +9,8 @@
 
 #include "ppm.hh"
 
+using namespace makemore;
+
 int main(int argc, char **argv) {
   PPM p;
   p.read(stdin);

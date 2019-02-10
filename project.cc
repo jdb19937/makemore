@@ -10,6 +10,8 @@
 #include "twiddle.hh"
 #include "closest.hh"
 
+namespace makemore {
+
 using namespace std;
 
 static string read_word(FILE *fp, char sep) {
@@ -166,6 +168,12 @@ Project::Project(const char *_dir, unsigned int _mbn) {
   assert(dis->inn == enc->inn);
   assert(mbn == dis->outn);
 
+  cumake(&cutgtlayx, tgtlay->n);
+  encude(tgtlay->x, tgtlay->n, cutgtlayx);
+
+  cumake(&cutgtlayy, tgtlay->n);
+  encude(tgtlay->y, tgtlay->n, cutgtlayy);
+
   rounds = 0;
 }
 
@@ -189,6 +197,9 @@ Project::~Project() {
   cufree(cugentgt);
   cufree(cuenctgt);
   cufree(cudistgt);
+
+  cufree(cutgtlayx);
+  cufree(cutgtlayy);
 
   delete[] distgt;
   delete[] realctr;
@@ -620,6 +631,7 @@ fprintf(stderr, "err0=%lf err1=%lf\n", err0, err1);
 }
 
 void Project::burn(double nu, double pi) {
+#if 0
   if (pi > 0) {
     for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
       encude(ctxbuf + mbi * ctxlay->n, ctxlay->n, cugenin + mbi * geninlay->n + 0);
@@ -635,9 +647,11 @@ void Project::burn(double nu, double pi) {
 
 
   if (nu > 0) {
+    assert(encinlay->n == ctxlay->n + tgtlay->n);
+
     for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
       encude(ctxbuf + mbi * ctxlay->n, ctxlay->n, cuencin + mbi * encinlay->n + 0);
-      encude(tgtbuf + mbi * tgtlay->n, ctrlay->n, cuencin + mbi * encinlay->n + ctxlay->n);
+      encude(tgtbuf + mbi * tgtlay->n, tgtlay->n, cuencin + mbi * encinlay->n + ctxlay->n);
     }
     assert(enc->outn == mbn * ctrlay->n);
     encude(ctrbuf, enc->outn, cuenctgt);
@@ -646,6 +660,58 @@ void Project::burn(double nu, double pi) {
     enc->target(cuenctgt);
     enc->train(nu);
   }
+#endif
+
+
+
+#if 1
+  if (nu > 0 || pi > 0) {
+    assert(encinlay->n == ctxlay->n + tgtlay->n);
+    for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
+      encude(ctxbuf + mbi * ctxlay->n, ctxlay->n, cuencin + mbi * encinlay->n + 0);
+      encude(tgtbuf + mbi * tgtlay->n, tgtlay->n, cuencin + mbi * encinlay->n + ctxlay->n);
+    }
+    assert(gen->outn == mbn * tgtlay->n);
+    encude(tgtbuf, gen->outn, cugentgt);
+
+    encgen->feed(cuencin, NULL);
+    gen->target(cugentgt);
+
+#if 1
+    double *cugenfout = gen->foutput();
+    for (unsigned int mbi = 0; mbi < mbn; ++mbi)
+      cufocus(cugenfout + mbi * tgtlay->n, cutgtlayx, cutgtlayy, tgtlay->n);
+#endif
+
+    gen->train(pi);
+
+    encpass->update_stats();
+    encpass->train(nu);
+  }
+#endif
+}
+
+void Project::condition(double yo, double wu) {
+  assert(ctxlay->n >= 72);
+  memcpy(fakectx, ctxbuf, mbn * ctxlay->n * sizeof(double));
+  for (unsigned int mbi = 0; mbi < mbn; ++mbi)
+    for (unsigned int j = mbi * ctxlay->n + 69, jn = j + 3; j < jn; ++j)
+      fakectx[j] = 1.0;
+
+  for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
+    encude(fakectx + mbi * ctxlay->n, ctxlay->n, cuencin + mbi * encinlay->n + 0);
+    encude( tgtbuf + mbi * tgtlay->n, tgtlay->n, cuencin + mbi * encinlay->n + ctxlay->n);
+  }
+
+  assert(gen->outn == mbn * tgtlay->n);
+  encude(tgtbuf, gen->outn, cugentgt);
+
+  encgen->feed(cuencin, NULL);
+  encgen->target(cugentgt);
+  gen->train(wu);
+
+  encpass->update_stats();
+  encpass->train(yo);
 }
 
 
@@ -653,6 +719,7 @@ void Project::report(const char *prog) {
   fprintf(
     stderr,
     "%s %s rounds=%u\n"
+    "%s %s encgen_err2=%g encgen_errm=%g\n"
     "%s %s encpass_err2=%g encpass_errm=%g\n"
     "%s %s enc_err2=%g enc_errm=%g\n"
     "%s %s gen_err2=%g gen_errm=%g\n"
@@ -660,6 +727,7 @@ void Project::report(const char *prog) {
     "%s %s genenc_err2=%g genenc_errm=%g\n"
     "\n",
     prog, dir.c_str(), rounds,
+    prog, dir.c_str(), encgen->err2, encgen->errm,
     prog, dir.c_str(), encpass->err2, encpass->errm,
     prog, dir.c_str(), enc->err2, enc->errm,
     prog, dir.c_str(), gen->err2, gen->errm,
@@ -723,4 +791,6 @@ void Project::encode_ctr() {
     int v = (int)(ctrbuf[j] * 256.0);
     bctrbuf[j] = v < 0 ? 0 : v > 255 ? 255 : v;
   }
+}
+
 }

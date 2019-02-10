@@ -5,6 +5,8 @@
 #include <stdio.h>
 #include <stdint.h>
 
+namespace makemore {
+
 void encudev(const void *a, unsigned int n, void *da) {
   cudaMemcpy(da, a, n, cudaMemcpyHostToDevice);
 }
@@ -90,6 +92,118 @@ void cuexpand(double *a, unsigned int n, double m) {
   int gs = ((n + bs - 1) / bs);
   gpu_cuexpand<<<gs, bs>>>(a, n, m);
 }
+
+__global__ void gpu_cufocus(double *a, const double *xp, const double *yp, unsigned int n) {
+  unsigned int i = blockIdx.x * blockDim.x + threadIdx.x;
+
+  if (i >= n)
+    return;
+
+  double x = xp[i];
+  double y = yp[i];
+
+  double d2 = (x - 0.5) * (x - 0.5) + (y - 0.5) * (y - 0.5);
+  double f = 1.0 - 2.0 * d2;
+  if (f < 0.0)
+    f = 0.0;
+  if (f > 1.0)
+    f = 1.0;
+
+
+// In[2]:= f[x_,y_] := 1 - 2 * ((x-1/2)^2 + (y-1/2)^2) 
+// In[6]:= Integrate[f[x,y], {x,0,1},{y,0,1}]
+//
+//         2
+// Out[6]= -
+//         3
+//  a[i] *= f * 1.5;
+
+
+// In[26]:= Integrate[f[x,y]^2, {x,0,1},{y,0,1}]
+// 
+//          22
+// Out[26]= --
+//          45
+
+  a[i] *= f * f * (45.0 / 22.0);
+
+
+}
+
+void cufocus(double *a, const double *x, const double *y, unsigned int n) {
+  int bs = 128;
+  int gs = ((n + bs - 1) / bs);
+  gpu_cufocus<<<gs, bs>>>(a, x, y, n);
+}
+
+
+__global__ void gpu_cutwiddle3(const double *z, unsigned int w, unsigned int h, double *lo, double *hi) {
+  unsigned int i = blockIdx.x * blockDim.x + threadIdx.x;
+
+  // assert(w % 2 == 0);
+  // assert(h % 2 == 0);
+
+  unsigned int nw = w / 2;
+  // unsigned int nh = h / 2;
+
+  unsigned int x = i % nw;
+  unsigned int y = i / nw;
+  y *= 2;
+  x *= 2;
+
+  unsigned int ilo = i * 3, ihi = i * 9;
+  unsigned int w3 = w * 3;
+
+  if (hi) {
+
+//  for (unsigned int y = 0; y < h; y += 2) {
+//    for (unsigned int x = 0; x < w; x += 2) {
+      for (unsigned int c = 0; c < 3; ++c) {
+        unsigned int p = y * w3 + x * 3 + c;
+
+        double m = (z[p] + z[p + 3] + z[p + w3] + z[p + w3 + 3]) / 4.0;
+        double l = (z[p] + z[p + w3]) / 2.0 - m;
+        double t = (z[p] + z[p + 3]) / 2.0 - m;
+        double s = (z[p] + z[p + w3 + 3]) / 2.0 - m;
+
+        lo[ilo++] = m;
+        hi[ihi++] = 0.5 + l / 2.0;
+        hi[ihi++] = 0.5 + t / 2.0;
+        hi[ihi++] = 0.5 + s / 2.0;
+      }
+//    }
+//  }
+
+  } else {
+
+//  for (unsigned int y = 0; y < h; y += 2) {
+//    for (unsigned int x = 0; x < w; x += 2) {
+      for (unsigned int c = 0; c < 3; ++c) {
+        unsigned int p = y * w3 + x * 3 + c;
+
+        double m = (z[p] + z[p + 3] + z[p + w3] + z[p + w3 + 3]) / 4.0;
+
+        lo[ilo++] = m;
+      }
+//    }
+//  }
+
+  }
+}
+
+void cutwiddle3(const double *z, unsigned int w, unsigned int h, double *lo, double *hi) {
+  assert(w % 2 == 0);
+  assert(h % 2 == 0);
+
+  unsigned int n = (w * h / 4);
+
+  int bs = 128;
+  int gs = ((n + bs - 1) / bs);
+
+  gpu_cutwiddle3<<<gs, bs>>>(z, w, h, lo, hi);
+}
+
+
 
 
 
@@ -321,4 +435,4 @@ void cunormalize(
   gpu_normalize<<<gs, bs>>>(a, rows, cols, m, d, b);
 }
 
-
+};

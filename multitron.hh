@@ -8,6 +8,8 @@
 
 #include <vector>
 
+namespace makemore {
+
 struct Multitron : Tron {
   unsigned int mbn;
   unsigned int inrn, outrn;
@@ -39,5 +41,7 @@ struct Multitron : Tron {
   void _makemaps();
   void randomize(double dispa, double dispb);
 };
+
+}
 
 #endif

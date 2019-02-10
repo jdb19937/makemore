@@ -17,6 +17,8 @@
 #include "random.hh"
 #include "cudamem.hh"
 
+namespace makemore {
+
 Dataset::Dataset(const char *fn, unsigned int _k) {
   k = _k;
 
@@ -92,7 +94,7 @@ void Dataset::encude(unsigned int i, double *d) const {
   assert(ret == 0);
   ret = fread(buf, sizeof(double), k, fp);
   assert(ret == k);
-  ::encude(buf, k, d);
+  makemore::encude(buf, k, d);
 }
 
 void Dataset::copy_minibatch(const unsigned int *mb, unsigned int mbn, double *d, unsigned int off, unsigned int len) const {
@@ -127,8 +129,10 @@ void Dataset::encude_minibatch(const unsigned int *mb, unsigned int mbn, double 
     ret = fread(buf, sizeof(double), k, fp);
     assert(ret == k);
 
-    ::encude(buf, k, d + mbi * len + off);
+    makemore::encude(buf, k, d + mbi * len + off);
   }
+}
+
 }
 
 #if DATASET_TEST_MAIN

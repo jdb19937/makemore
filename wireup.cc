@@ -5,6 +5,8 @@
 #include "layout.hh"
 #include "random.hh"
 
+using namespace makemore;
+
 int main(int argc, char **argv) {
   assert(argc >= 3);
   const char *ifn = argv[1];

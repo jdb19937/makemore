@@ -6,6 +6,8 @@
 
 #include <math.h>
 
+using namespace makemore;
+
 typedef std::vector<double> Vec;
 
 void untwiddle3(const double *lo, const double *hi, unsigned int w, unsigned int h, double *z) {

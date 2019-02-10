@@ -3,6 +3,8 @@
 #include "multitron.hh"
 #include "random.hh"
 
+using namespace makemore;
+
 int main(int argc, char **argv) {
   if (argc < 3) {
     fprintf(stderr, "Usage: makemap file.top file.map [dispa [dispb]]\n");

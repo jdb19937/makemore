@@ -5,6 +5,8 @@
 #include "layout.hh"
 #include "random.hh"
 
+using namespace makemore;
+
 void usage() {
   fprintf(stderr, "Usage: makelay [\n");
   fprintf(stderr, "   -grid dim [coverage [chans]] |\n");

@@ -7,6 +7,8 @@
 
 #include <string>
 
+namespace makemore {
+
 struct Sampler {
   pid_t feeder_pid;
   pid_t buffer_pid;
@@ -29,5 +31,7 @@ struct Sampler {
 
   FILE *file() const { return fp; }
 };
+
+}
 
 #endif

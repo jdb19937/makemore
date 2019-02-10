@@ -8,6 +8,9 @@
 #include "random.hh"
 #include "cudamem.hh"
 #include "twiddle.hh"
+#include "layout.hh"
+
+namespace makemore {
 
 void Tron::target(const double *tgt, bool do_update_stats, int errsignif) {
   const double *out = output();
@@ -173,7 +176,22 @@ void Passthrutron::train(double nu) {
   t->train(nu);
 }
 
+Focatron::Focatron(const Layout *_lay, unsigned int _mbn) : Tron(_lay->n * _mbn, _lay->n * _mbn) {
+  mbn = _mbn;
+  lay = _lay;
+  in = NULL;
+  fin = NULL;
+}
+
+void Focatron::focus() {
+}
+
+}
+
+
 #if TRONTEST_MAIN
+using namespace makemore;
+
 int main() {
   Tron *i = new Identron(2);
   Tron *j = new Encudatron(2);

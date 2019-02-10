@@ -5,8 +5,8 @@ CXXFLAGS = -O3
 LDFLAGS = -lm
 CULDFLAGS = -lcuda -lcudart
 
-LIBHDR = cudamem.hh random.hh tron.hh ppm.hh layout.hh megatron.hh wiring.hh persist.hh dataset.hh topology.hh multitron.hh project.hh twiddle.hh sampler.hh closest.hh pipeline.hh parson.hh ipdb.hh
-LIBOBJ = cudamem.o random.o tron.o ppm.o layout.o megatron.o wiring.o persist.o dataset.o topology.o multitron.o project.o twiddle.o sampler.o closest.o pipeline.o parson.o ipdb.o
+LIBHDR = cudamem.hh random.hh tron.hh ppm.hh layout.hh megatron.hh wiring.hh persist.hh dataset.hh topology.hh multitron.hh project.hh twiddle.hh sampler.hh closest.hh pipeline.hh parson.hh ipdb.hh warp.hh tagbag.hh
+LIBOBJ = cudamem.o random.o tron.o ppm.o layout.o megatron.o wiring.o persist.o dataset.o topology.o multitron.o project.o twiddle.o sampler.o closest.o pipeline.o parson.o ipdb.o warp.o tagbag.o
 LIB = libmakemore.a
 
 DATASETS = face-attrs.dat face8.dat face16.dat face32.dat face64.dat face128.dat
@@ -28,7 +28,7 @@ LABTOOLS = \
   labshrink labhifreq labtogray grayhifreq \
   reconlab recongray 
 
-MORETOOLS = makemore makelay catlay wireup maketop makemap learnmore genicon servemore makeparsonsdat sampler makeipdat errstats fillparsonsdat
+MORETOOLS = makemore makelay catlay wireup maketop makemap learnmore genicon servemore makeparsonsdat sampler makeipdat errstats fillparsonsdat autolign
 
 .PHONY: all
 all: $(LIB) $(MORETOOLS)
@@ -221,11 +221,17 @@ makemap.o: $(LIBHDR)
 makemap: makemap.o $(LIB)
 	$(CXX) -o $@ $(CXXFLAGS) $^ $(LDFLAGS) $(CULDFLAGS)
 
+parpulate.o: $(LIBHDR)
+parpulate: parpulate.o $(LIB)
+	$(CXX) -o $@ $(CXXFLAGS) $^ $(LDFLAGS) $(CULDFLAGS)
 makemore.o: $(LIBHDR)
 makemore: makemore.o $(LIB)
 	$(CXX) -o $@ $(CXXFLAGS) $^ $(LDFLAGS) $(CULDFLAGS)
 servemore.o: $(LIBHDR)
 servemore: servemore.o $(LIB)
+	$(CXX) -o $@ $(CXXFLAGS) $^ $(LDFLAGS) $(CULDFLAGS)
+autolign.o: $(LIBHDR)
+autolign: autolign.o $(LIB)
 	$(CXX) -o $@ $(CXXFLAGS) $^ $(LDFLAGS) $(CULDFLAGS)
 errstats.o: $(LIBHDR)
 errstats: errstats.o $(LIB)

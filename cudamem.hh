@@ -1,6 +1,8 @@
 #ifndef __MAKEMORE_CUDAMEM_HH__
 #define __MAKEMORE_CUDAMEM_HH__ 1
 
+namespace makemore {
+
 extern void decudev(const void *da, unsigned int n, void *a);
 template <class T> inline void decude(const T *da, unsigned int n, T *a)
   { decudev(da, n * sizeof(T), a); }
@@ -52,5 +54,10 @@ extern double cumaxabs(
 );
 
 extern void cuexpand(double *a, unsigned int n, double m);
+extern void cufocus(double *a, const double *x, const double *y, unsigned int n);
+
+extern void cutwiddle3(const double *z, unsigned int w, unsigned int h, double *lo, double *hi);
+
+};
 
 #endif

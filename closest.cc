@@ -3,6 +3,9 @@
 
 #include <assert.h>
 
+#include "closest.hh"
+
+namespace makemore {
 
 unsigned int closest(const double *x, const double *m, unsigned int k, unsigned int n) {
   assert(n > 0);
@@ -21,4 +24,6 @@ unsigned int closest(const double *x, const double *m, unsigned int k, unsigned 
 
   std::sort(distind.begin(), distind.end());
   return distind.begin()->second;
+}
+
 }

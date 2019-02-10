@@ -8,6 +8,7 @@
 #include "project.hh"
 #include "layout.hh"
 
+namespace makemore {
 
 Pipeline::Pipeline(unsigned int _mbn) {
   mbn = _mbn;
@@ -495,6 +496,166 @@ void Pipeline::reencode() {
   }
 }
 
+
+static void _padzcut(double *src, int dx, int dy, double z, int w, int h, double *dst) {
+  for (int y = 0; y < h; ++y) {
+    for (int x = 0; x < w; ++x) {
+
+      double rx, ry;
+//      if (z > 1.0) {
+        rx = (((double)w/2.0) + (x - dx - ((double)w/2.0)) / z);
+        ry = (((double)h/2.0) + (y - dy - ((double)h/2.0)) / z);
+//      } else {
+//        rx = (((double)w/2.0) + (x - ((double)w/2.0)) / z - dx);
+//        ry = (((double)h/2.0) + (y - ((double)h/2.0)) / z - dy);
+//      }
+
+      int rx0 = floorl(rx), rx1 = rx0 + 1;
+      int ry0 = floorl(ry), ry1 = ry0 + 1;
+      double bx = rx - rx0;
+      double by = ry - ry0;
+
+//      {
+//        bx = (bx > 0.5 ? 1.0 : 0.0);
+//        by = (by > 0.5 ? 1.0 : 0.0);
+//      }
+
+      if (rx0 < 0) { rx0 = 0; } if (rx0 >= w) { rx0 = w - 1; }
+      if (rx1 < 1) { rx1 = 1; } if (rx1 >= w) { rx1 = w - 1; }
+      if (ry0 < 0) { ry0 = 0; } if (ry0 >= h) { ry0 = h - 1; }
+      if (ry1 < 0) { ry1 = 0; } if (ry1 >= h) { ry1 = h - 1; }
+
+      for (int c = 0; c < 3; ++c) {
+        *dst++ = 
+          (1.0-bx) * (1.0-by) * src[ry0 * w * 3 + rx0 * 3 + c] +
+          (bx) * (1.0-by) * src[ry0 * w * 3 + rx1 * 3 + c] +
+          (1.0-bx) * (by) * src[ry1 * w * 3 + rx0 * 3 + c] +
+          (bx) * (by) * src[ry1 * w * 3 + rx1 * 3 + c];
+      }
+    }
+  }
+}
+
+
+static double _err2(double *outbuf, double *tgtbuf, unsigned int n) {
+  double e2 = 0;
+  for (unsigned int j = 0; j < n; ++j)
+    e2 += (outbuf[j] - tgtbuf[j]) * (outbuf[j] - tgtbuf[j]);
+  e2 /= (double)n;
+  return e2;
+}
+
+static double _shifterr(Pipeline *pipe, double *srcbuf, int dx, int dy, double z) {
+  double *tgtbuf = new double[pipe->outlay->n];
+  double *outbuf = new double[pipe->outlay->n];
+
+  assert(pipe->outlay->n % 3 == 0);
+  int dim = lround(sqrt((double)pipe->outlay->n / 3.0));
+  assert(dim * dim * 3 == pipe->outlay->n);
+
+  _padzcut(srcbuf, dx, dy, z, dim, dim, tgtbuf);
+  memcpy(pipe->outbuf, tgtbuf, sizeof(double) * pipe->outlay->n);
+  pipe->reencode();
+  pipe->generate();
+  memcpy(outbuf, pipe->outbuf, sizeof(double) * pipe->outlay->n);
+  double e2 = _err2(outbuf, tgtbuf, pipe->outlay->n);
+
+  delete[] tgtbuf;
+  delete[] outbuf;
+
+  return e2;
+}
+
+void Pipeline::autolign(unsigned int iters, int dzoom) {
+  assert(mbn == 1);
+  assert(outlay->n % 3 == 0);
+  int dim = lround(sqrt((double)outlay->n / 3.0));
+  assert(dim * dim * 3 == outlay->n);
+
+  double *srcbuf = new double[outlay->n];
+
+  ctrlock = 0;
+  tgtlock = -1;
+  memcpy(srcbuf, outbuf, sizeof(double) * outlay->n);
+
+  struct Pos { int dx, dy, z;
+    Pos() { dx = 0; dy = 0; z = 0; }
+    Pos(int _dx, int _dy, int _z) { dx = _dx; dy = _dy; z = _z; }
+    Pos(const Pos &p) { dx = p.dx; dy = p.dy; z = p.z; }
+    bool operator < (const Pos &p) const {
+      if (dx < p.dx) {
+        return true;
+      } else if (dx > p.dx) {
+        return false;
+      }
+
+      if (dy < p.dy) {
+        return true;
+      } else if (dy > p.dy) {
+        return false;
+      }
+
+      if (z < p.z) {
+        return true;
+      } else {
+        return false;
+      }
+    }
+
+    bool operator == (const Pos &p) const {
+      return (dx == p.dx && dx == p.dy && z == p.z);
+    }
+  };
+  std::multimap<double, Pos> errpos;
+  std::set<Pos> seen;
+
+  Pos best = {0, 0, 128};
+  double orige = -1;
+  Pos orig = best;
+  std::multimap<double, Pos> q;
+  q.insert(std::make_pair(0.0, best));
+
+  for (int i = 0; i < iters && q.begin() != q.end(); ++i) {
+    Pos x;
+    double score = q.begin()->first;
+    x = q.begin()->second;
+    q.erase(q.begin());
+
+    double ez = exp(((double)x.z - 128.0) / 64.0);
+    double e = _shifterr(this, srcbuf, x.dx, x.dy, ez);
+    if (i == 0)
+      orige = e;
+    errpos.insert(std::make_pair(e, x));
+
+    score = e;
+
+    { Pos tmp(x.dx - 1, x.dy + 0, x.z); if (!seen.count(tmp)) { q.insert(std::make_pair(score, tmp)); seen.insert(tmp); } }
+    { Pos tmp(x.dx + 1, x.dy + 0, x.z); if (!seen.count(tmp)) { q.insert(std::make_pair(score, tmp)); seen.insert(tmp); } }
+    { Pos tmp(x.dx + 0, x.dy - 1, x.z); if (!seen.count(tmp)) { q.insert(std::make_pair(score, tmp)); seen.insert(tmp); } }
+    { Pos tmp(x.dx + 0, x.dy + 1, x.z); if (!seen.count(tmp)) { q.insert(std::make_pair(score, tmp)); seen.insert(tmp); } }
+    if (dzoom) {
+      { Pos tmp(x.dx + 0, x.dy + 0, x.z - dzoom); if (!seen.count(tmp)) { q.insert(std::make_pair(score, tmp)); seen.insert(tmp); } }
+      { Pos tmp(x.dx + 0, x.dy + 0, x.z + dzoom); if (!seen.count(tmp)) { q.insert(std::make_pair(score, tmp)); seen.insert(tmp); } }
+    }
+
+    fprintf(stderr, "autolign dx=%d dy=%d z=%d e=%lf\n", x.dx, x.dy, x.z, e);
+  }
+
+  auto errposi = errpos.begin();
+  double newe = errposi->first;
+  if (1) { // newe < orige * 0.9) {
+    Pos newp = errposi->second;
+    double newez = exp(((double)newp.z - 128.0) / 64.0);
+    fprintf(stderr, "autolign best dx=%d dy=%d z=%lf e=%lf\n", newp.dx, newp.dy, newez, newe);
+
+    _padzcut(srcbuf, newp.dx, newp.dy, newez, dim, dim, outbuf);
+  } else {
+    memcpy(outbuf, srcbuf, dim * dim * 3 * sizeof(double));
+  }
+
+  delete[] srcbuf;
+}
+
 void Pipeline::burn(uint32_t which, double nu, double pi) {
   assert(stages.size());
   Project *proj = final();
@@ -531,6 +692,15 @@ void Pipeline::burn(uint32_t which, double nu, double pi) {
 
   for (unsigned int i = 0; i < stages.size(); ++i) {
     Project *proj = stages[i];
+
+    for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
+      memcpy(
+        proj->ctxbuf + mbi * proj->ctxlay->n + 0,
+        ctxbuf + mbi * ctxlay->n,
+        sizeof(double) * ctxlay->n
+      );
+    }
+
     if (which & (1 << i)) {
       // fprintf(stderr, "burning stage %u nu=%lf\n", i, nu);
       proj->burn(nu, pi);
@@ -538,6 +708,117 @@ void Pipeline::burn(uint32_t which, double nu, double pi) {
   }
 }
 
+
+void Pipeline::recombine() {
+  const unsigned int js = 8;
+
+  assert(stages.size());
+  assert(mbn % 2 == 0);
+  assert(ctrlay->n % js == 0);
+
+  for (unsigned int mbi = 0; mbi < mbn; mbi += 2) {
+    for (unsigned int j = mbi * ctxlay->n, jn = j + ctxlay->n; j < jn; ++j) {
+      if (randuint() % 2) {
+        unsigned int k = j + ctxlay->n;
+        std::swap(ctxbuf[j], ctxbuf[k]);
+      }
+    }
+  }
+
+  unsigned int coff = 0;
+  for (unsigned int i = 0; i < stages.size(); ++i) {
+    assert(coff < ctrlay->n);
+    memcpy(stages[i]->ctrbuf, ctrbuf + coff * mbn, mbn * stages[i]->ctrlay->n * sizeof(double));
+    coff += stages[i]->ctrlay->n;
+  }
+  assert(coff == ctrlay->n);
+
+  for (unsigned int i = 0; i < stages.size(); ++i) {
+    assert(mbn == stages[i]->mbn);
+    const Layout *sctrlay = stages[i]->ctrlay;
+    double *sctrbuf = stages[i]->ctrbuf;
+
+    for (unsigned int mbi = 0; mbi < mbn; mbi += 2) {
+      for (unsigned int j = mbi * sctrlay->n, jn = j + sctrlay->n; j < jn; j += js) {
+        if (randuint() % 2) {
+          for (unsigned int s = j, sn = j + js, t = s + sctrlay->n; s < sn; ++s, ++t) {
+            std::swap(sctrbuf[s], sctrbuf[t]);
+          }
+        }
+      }
+    }
+  }
+
+  {
+    unsigned int coff = 0;
+    for (unsigned int i = 0; i < stages.size(); ++i) {
+      assert(coff < ctrlay->n);
+      memcpy(
+        ctrbuf + coff * mbn,
+        stages[i]->ctrbuf,
+        mbn * stages[i]->ctrlay->n * sizeof(double)
+      );
+      coff += stages[i]->ctrlay->n;
+    }
+    assert(coff == ctrlay->n);
+  }
+}
+
+
+
+
+
+void Pipeline::condition(uint32_t which, double yo, double wu) {
+  assert(stages.size());
+  Project *proj = final();
+  memcpy(proj->adjbuf, outbuf, mbn * sizeof(double) * outlay->n);
+
+  for (int i = stages.size() - 2; i >= 0; --i) {
+    Project *lastproj = proj;
+    proj = stages[i];
+    unsigned int dim = lround(sqrt(lastproj->outlay->n / 3));
+    assert(dim * dim * 3 == lastproj->outlay->n);
+    assert(dim * dim * 3 == proj->outlay->n * 4);
+    assert(lastproj->tgtlay->n == 3 * proj->outlay->n);
+    assert(lastproj->ctxlay->n == proj->outlay->n + ctxlay->n);
+
+    for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
+      twiddle3(
+        lastproj->adjbuf + mbi * lastproj->outlay->n,
+        dim, dim,
+        lastproj->ctxbuf + mbi * lastproj->ctxlay->n + ctxlay->n,
+        lastproj->tgtbuf + mbi * lastproj->tgtlay->n
+      );
+      memcpy(
+        proj->adjbuf + mbi * proj->outlay->n,
+        lastproj->ctxbuf + mbi * lastproj->ctxlay->n + ctxlay->n,
+        sizeof(double) * proj->outlay->n
+      );
+    }
+  }
+
+  proj = initial();
+  assert(proj->ctxlay->n == ctxlay->n);
+  assert(proj->tgtlay->n == proj->outlay->n);
+  memcpy(proj->tgtbuf, proj->adjbuf, sizeof(double) * mbn * proj->outlay->n);
+
+  for (unsigned int i = 0; i < stages.size(); ++i) {
+    Project *proj = stages[i];
+
+    for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
+      memcpy(
+        proj->ctxbuf + mbi * proj->ctxlay->n + 0,
+        ctxbuf + mbi * ctxlay->n,
+        sizeof(double) * ctxlay->n
+      );
+    }
+
+    if (which & (1 << i)) {
+      // fprintf(stderr, "burning stage %u nu=%lf\n", i, nu);
+      proj->condition(yo, wu);
+    }
+  }
+}
 
 
 
@@ -664,4 +945,6 @@ bool Pipeline::load_out_bytes(FILE *infp) {
 void Pipeline::report(const char *prog) {
   for (auto i = stages.begin(); i != stages.end(); ++i) 
     (*i)->report(prog);
+}
+
 }

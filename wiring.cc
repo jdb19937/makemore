@@ -11,6 +11,7 @@
 #include <map>
 #include <algorithm>
 
+namespace makemore {
 using namespace std;
 
 Wiring::Wiring() {
@@ -186,4 +187,6 @@ void Wiring::load_file(const char *fn) {
   }
   load(fp);
   fclose(fp);
+}
+
 }

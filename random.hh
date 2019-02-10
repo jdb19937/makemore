@@ -6,6 +6,8 @@
 
 #include <math.h>
 
+namespace makemore {
+
 extern void seedrand();
 extern void seedrand(unsigned int n);
 
@@ -23,5 +25,7 @@ inline double unsigmoid(double x) {
 }
 
 extern uint64_t hash64(const uint8_t *data, unsigned int len);
+
+}
 
 #endif

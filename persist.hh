@@ -3,6 +3,8 @@
 
 #include <stdio.h>
 
+namespace makemore {
+
 struct Persist {
   inline bool _check_eof(FILE *fp) {
     int c = getc(fp);
@@ -32,6 +34,8 @@ template <class T> inline T *load_new(const char *fn) {
   return ((T *)x);
 }
 #endif
+
+}
   
 
 #endif

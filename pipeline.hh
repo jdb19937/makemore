@@ -9,6 +9,8 @@
 #include "layout.hh"
 #include "project.hh"
 
+namespace makemore {
+
 struct Pipeline {
   unsigned int mbn;
   std::vector<Project*> stages;
@@ -30,10 +32,13 @@ struct Pipeline {
   void fix(unsigned int iters, double blend);
   void reencode();
   void burn(uint32_t which, double nu, double pi);
+  void condition(uint32_t which, double yo, double wu);
   void generate();
+  void recombine();
   void uptarget();
   void retarget();
   void readjust();
+  void autolign(unsigned int iters = 64, int dzoom = 0);
 
   void load();
   void save();
@@ -49,5 +54,7 @@ struct Pipeline {
 
   void report(const char *prog);
 };
+
+}
 
 #endif

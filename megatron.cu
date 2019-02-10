@@ -10,6 +10,8 @@
 #include "cudamem.hh"
 #include "megatron.hh"
 
+namespace makemore {
+
 __global__ void gpu_megatron_feed(
   const double *in,
   double *fin, double *out, double *fout,
@@ -404,15 +406,17 @@ void Megatron::randomize(double disp) {
 
 void Megatron::sync(double t) {
   if (t == 1) {
-    ::decude(weight, wn, cweight);
+    decude(weight, wn, cweight);
     return;
   }
 
   if (t == 0) {
-    ::encude(cweight, wn, weight);
+    encude(cweight, wn, weight);
     return;
   }
 
   assert(0);
   // cusync(wn, weight, cweight, t);
+}
+
 }

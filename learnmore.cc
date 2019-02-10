@@ -1,3 +1,7 @@
+#include <string.h>
+
+#include <math.h>
+
 #include "project.hh"
 #include "topology.hh"
 #include "random.hh"
@@ -6,8 +10,9 @@
 #include "pipeline.hh"
 
 #include "parson.hh"
+#include "warp.hh"
 
-#include <math.h>
+using namespace makemore;
 
 int usage() {
   fprintf(stderr,
@@ -104,29 +109,60 @@ int main(int argc, char **argv) {
 
   ParsonDB *parsons = new ParsonDB(argv[0]);
   Pipeline *pipe = open_pipeline(mbn);
+  double *tmp_tgt = new double[64 * 64 * 3];
+  double *tmp_ctx = new double[72];
 
   fprintf(stderr, "learnmore mu=%lf nu=%lf pi=%lf xi=%lf yo=%lf wu=%lf\n", mu, nu, pi, xi, yo, wu);
 
   unsigned int i = 0;
   while (1) {
-    pipe->load();
+    double *ctx, *out;
 
-
-    double *ctx = pipe->ctxbuf, *out = pipe->outbuf;
+    ctx = pipe->ctxbuf;
+    out = pipe->outbuf;
     for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
       Parson *p = parsons->pick();
 
       for (unsigned int j = 0; j < Parson::nattrs; ++j)
-        *ctx++ = (double)(p->attrs[j] + 0.5) / 256.0;
+        tmp_ctx[j] = (double)(p->attrs[j] + 0.5) / 256.0;
+
+      tmp_ctx[40] = 0.5;
+      tmp_ctx[41] = 0.5;
+      tmp_ctx[42] = 0.5;
+      tmp_ctx[43] = 0.5;
+
+      if (0) {
+        int dx = -3 + (randuint() % 7);
+        int dy = -3 + (randuint() % 7);
+
+        iwarp(p->target, dx, dy, 64, 64, tmp_tgt);
+
+        tmp_ctx[40] += ((double)dx / 8.0);
+        tmp_ctx[41] += ((double)dy / 8.0);
+      } else {
+        memcpy(tmp_tgt, p->target, sizeof(double) * 64 * 64 * 3);
+      }
+
+      for (unsigned int j = 0; j < Parson::nattrs; ++j)
+        *ctx++ = tmp_ctx[j];
       for (unsigned int j = 0; j < Parson::dim * Parson::dim * 3; ++j)
-        *out++ = p->target[j];
+        *out++ = tmp_tgt[j];
     }
 
     pipe->ctrlock = 0;
     pipe->tgtlock = -1;
+    
+//    pipe->reencode();
+    if (nu > 0 || pi > 0) 
+      pipe->burn(-1, nu, pi);
 
-    pipe->reencode();
-    pipe->burn(-1, nu, pi);
+    if (yo > 0 || wu > 0) {
+      pipe->reencode();
+      pipe->recombine();
+      pipe->generate();
+
+      pipe->condition(-1, yo, wu);
+    }
 
     if (i % 100 == 0) {
       pipe->report("learnmore");

@@ -6,6 +6,8 @@
 
 #include <vector>
 
+namespace makemore {
+
 struct Topology : Persist {
   unsigned int nweights;
   std::vector<Wiring*> wirings;
@@ -27,5 +29,7 @@ struct Topology : Persist {
   virtual void load(FILE *fp);
   virtual void save(FILE *fp) const;
 };
+
+}
 
 #endif

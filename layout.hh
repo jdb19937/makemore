@@ -8,6 +8,8 @@
 #include "random.hh"
 #include "persist.hh"
 
+namespace makemore {
+
 struct Layout : Persist {
   unsigned int n;
   double *x, *y, *r;
@@ -41,5 +43,7 @@ struct Layout : Persist {
 
   Layout &operator +=(const Layout &x);
 };
+
+}
 
 #endif

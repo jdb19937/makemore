@@ -6,6 +6,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <netinet/in.h>
+
+namespace makemore {
   
 void Topology::save(FILE *fp) const {
   uint32_t tmp = htonl(wirings.size());
@@ -41,4 +43,6 @@ void Topology::load(FILE *fp) {
 
     prev = wire;
   }
+}
+
 }

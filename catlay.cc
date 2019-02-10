@@ -1,5 +1,7 @@
 #include "layout.hh"
 
+using namespace makemore;
+
 int main(int argc, char **argv) {
   Layout x;
 

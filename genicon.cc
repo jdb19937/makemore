@@ -4,6 +4,8 @@
 #include "ppm.hh"
 #include "random.hh"
 
+using namespace makemore;
+
 int main(int argc, char **argv) {
   int w = 58;
   int h = 58;

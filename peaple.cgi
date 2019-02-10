@@ -87,6 +87,12 @@ body {
   font-family: courier;
 }
 
+.geoattrclass {
+  padding-top: 1px;
+  padding-left: 3px;
+  font-family: courier;
+  font-size: small
+}
 .colattrclass {
   padding-top: 1px;
   padding-left: 3px;
@@ -599,8 +605,9 @@ doubleclick('attrstatic', genrandomattrs, 'attrcon')
 
     <input type=button id=ctrlockbutton onClick="lockallcontrols()" value="lock all stage controls">
     <input type=button id=tgtlockbutton onClick="lockalltargets()" value="lock all stage targets">
-    <input type=button id=ctrlockbutton onClick="unlockallcontrols()" value="unlock all stage controls">
-    <input type=button id=ctrlockbutton onClick="unlockalltargets()" value="unlock all stage targets">
+    <input type=button id=ctrunlockbutton onClick="unlockallcontrols()" value="unlock all stage controls">
+    <input type=button id=tgtunlockbutton onClick="unlockalltargets()" value="unlock all stage targets">
+
   <input type="button" for="imageLoader" value="file to target" onClick="getElementById('imageLoader').click()"/>
 <input type="file" size="60" id="imageLoader" name="imageLoader" accept="image/png, image/jpeg"/>
 
@@ -613,24 +620,51 @@ doubleclick('attrstatic', genrandomattrs, 'attrcon')
  <!-- <input type="button" value="toggle legend" onClick="togglelegend()"> -->
 <div style="display: none"><canvas id="imageCanvas" width=64 height=64></canvas></div>
   </td>
-</tr><tr>
-<td></td>
-<td align=right>
+</tr>
+</table>
 
+<table width=1550><tr>
+<td width=50></td>
+
+<td align=right colspan=1>
+<table><tr><td>
+<div style='border-style: solid; border-width: 1px; border-color: #111111'>
+
+<table><tr>
+<td width=2></td>  <td>
+<td valign=middle style='padding-right: 20px; font-size: x-large' >
+<b>align</b>
+</td>
+
+<td><input type=button value="shift left 1px" onClick="doshift(-1, 0,0)"></td>
+<td><input type=button value="shift right 1px" onClick="doshift(1, 0,0)"></td>
+<td><input type=button value="shift up 1px" onClick="doshift(0, -1,0)"></td>
+<td><input type=button value="shift down 1px" onClick="doshift(0, 1,0)"></td>
+<td><input type=button value="zoom in 1/8" onClick="doshift(0, 0, 8)"></td>
+<td><input type=button value="zoom out 1/8" onClick="doshift(0, 0, -8)"></td>
+<td><input type=button value="autolign" onClick="doautolign()"></td>
+<td><input type=button value="autolign+zoom" onClick="dozoomalign()"></td>
+
+</tr></table>
+
+</div>
+</td></tr></table>
+</td>
+
+
+<td align=right colspan=1>
 
 <table><tr><td>
 <div style='border-style: solid; border-width: 1px; border-color: #111111'>
 <table><tr>
 <td width=2></td>  <td>
-<td valign=middle style='padding-right: 20px' >
-<b>color guide</b>
+<td valign=middle style='padding-right: 20px; font-size: x-large' >
+<b>warp</b>
 </td>
-<td width=100 onMouseOver="document.getElementById('colattrhint').style.visibility = 'visible'" onMouseOut="document.getElementById('colattrhint').style.visibility = 'hidden'"> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='colattr2' style='border: 3px solid gray; background-color: black; width: 16; height: 16'></div> </td><td valign=center class='colattrclass'> #center  </td></tr></table>   </td>
-<td width=100 onMouseOver="document.getElementById('colattrhint').style.visibility = 'visible'" onMouseOut="document.getElementById('colattrhint').style.visibility = 'hidden'"> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='colattr0' style='border: 3px solid gray; background-color: black; width: 16; height: 16'></div> </td><td valign=center class='colattrclass'> #edge  </td></tr></table>   </td>
-<td width=100 onMouseOver="document.getElementById('colattrhint').style.visibility = 'visible'" onMouseOut="document.getElementById('colattrhint').style.visibility = 'hidden'"> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='colattr3' style='border: 3px solid gray; background-color: black; width: 16; height: 16'></div> </td><td valign=center class='colattrclass'> #mouth  </td></tr></table>   </td>
-<td width=100 onMouseOver="document.getElementById('colattrhint').style.visibility = 'visible'" onMouseOut="document.getElementById('colattrhint').style.visibility = 'hidden'"> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='colattr1' style='border: 3px solid gray; background-color: black; width: 16; height: 16'></div> </td><td valign=center class='colattrclass'> #hair  </td></tr></table>   </td>
-
-   <td><input type="button" style="width: 120px" value="set from target" onClick="colattrsync()"></td>
+<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr40' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> #warp_x  </td></tr></table>   </td>
+<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr41' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> #warp_y  </td></tr></table>   </td>
+<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr42' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> #warp_z  </td></tr></table>   </td>
+<td> <table cellpadding=0 cellspacing=1 ><tr><td> <div id='attr43' style='border: 3px solid gray; background-color: gray; width: 16; height: 16'></div> </td><td valign=center class='attrclass'> #warp_r  </td></tr></table>   </td>
 </tr></table>
 </div>
 </td></tr></table>
@@ -1250,7 +1284,15 @@ var ctx = canvas.getContext('2d');
     reader.onload = function(event){
         var img = new Image();
         img.onload = function(){
-            ctx.drawImage(img,0,0,64,64);
+            var sx = 0; var sy = 0;
+            var sw = img.width; var sh = img.height;
+            if (sw < sh) {
+              sh = sw;
+            } else if (sh < sw) {
+              sx = Math.floor((sw - sh) / 2);
+              sw = sh;
+            }
+            ctx.drawImage(img,sx,sy,sw,sh,0,0,64,64);
             var rgbdata = ctx.getImageData(0, 0, 64, 64).data;
             applyloaded(rgbdata)
         }
@@ -1282,7 +1324,8 @@ function setparsontarget() {
   }
 }
 
-function applyloaded(rgbdata) {
+function applyloaded(rgbdata, hyper) {
+//alert('here')
   var stage4 = document.getElementById('stage4');
   var adjctx = document.getElementById('stage4adj').getContext('2d')
   var scale = stage4.scale
@@ -1364,7 +1407,11 @@ function applyloaded(rgbdata) {
 
   window.tgtlock = 15
 
-  requpdate()
+  if (hyper) {
+    requpdate(hyper)
+  } else {
+    requpdate()
+  }
 }
 
 
@@ -2056,13 +2103,42 @@ function doubleclick(id, cb, targetdivid) {
 function burnin() {
   //alert('$DOTIPADDR has no burns left.')
    doburnin();
-   alert('feel the burn\nnu=0.02 pi=0.02');
+   alert('feel the burn\nnu=0.005 pi=0.005 iters=8');
 }
 
 function doburnin() {
   var hyper = new Uint8Array(8);
   hyper.fill(0);
   hyper[2] = -1
+  requpdate(hyper)
+}
+
+function doautolign() {
+  var hyper = new Uint8Array(8);
+  hyper.fill(0);
+  var iters = 128
+  hyper[3] = iters / 4
+  requpdate(hyper)
+
+  alert('autoligning target\niters=' + iters);
+}
+
+function dozoomalign() {
+  var hyper = new Uint8Array(8);
+  hyper.fill(0);
+  var iters = 128
+  hyper[3] = -iters / 4
+  requpdate(hyper)
+
+  alert('zoomaligning target\niters=' + iters);
+}
+
+function doshift(dx, dy, zoom) {
+  var hyper = new Uint8Array(8);
+  hyper.fill(0);
+  hyper[4] = dx;
+  hyper[5] = dy;
+  hyper[6] = zoom;
   requpdate(hyper)
 }
 
@@ -2325,17 +2401,11 @@ function requpdate(hyper) {
 
   var reqattrs = new Uint8Array(reqbuf.buffer, reqoff, tattrs)
   reqoff += tattrs
-  for (var i = 0; i < 40; ++i) {
+  for (var i = 0; i < 44; ++i) {
     var at = document.getElementById('attr' + i)
     reqattrs[i] = at.curval
   }
-  for (var i = 0; i < 4; ++i) {
-    var at = document.getElementById('colattr' + i)
-    reqattrs[40 + i * 3 + 0] = at.curval[0]
-    reqattrs[40 + i * 3 + 1] = at.curval[1]
-    reqattrs[40 + i * 3 + 2] = at.curval[2]
-  }
-  for (var i = 52; i < 68; ++i) {
+  for (var i = 44; i < 68; ++i) {
     reqattrs[i] = 128;
   }
   reqattrs[68] = 255;
@@ -2412,25 +2482,12 @@ function unsigmoid(y) {
 
 
 function updatectx(newattrs) {
-  for (var i = 0; i < 40; ++i) {
+  for (var i = 0; i < 44; ++i) {
           var at1 = document.getElementById('attr' + i)
           var nval = newattrs[i];
           at1.style.backgroundColor = mkcol([nval, nval, nval])
           at1.curval = nval
 
-  }
-  for (var i = 0; i < 4; ++i) {
-          var at1 = document.getElementById('colattr' + i)
-          at1.style.backgroundColor = mkcol(labtorgb([
-            newattrs[40 + i * 3 + 0],
-            newattrs[40 + i * 3 + 1],
-            newattrs[40 + i * 3 + 2]
-          ]))
-          at1.curval = [
-            newattrs[40 + i * 3 + 0],
-            newattrs[40 + i * 3 + 1],
-            newattrs[40 + i * 3 + 2]
-          ];
   }
 }
 
@@ -2989,7 +3046,7 @@ function reloadprofile() {
 
 function colattrsync() {
   var stage1 = document.getElementById('stage1')
-  var lab = new Uint8Array(8*8*3)
+  var lab = new Float64Array(8*8*3)
   for (var i = 0; i < 192; ++i) {
     lab[i] = (stage1.adjlab[i]-128)*2.0 + stage1.origlab[i]
   }
@@ -2999,12 +3056,12 @@ function colattrsync() {
   var edgecount = 0;
   for (var y = 0; y < 8; ++y) {
     for (var x = 0; x < 8; ++x) {
-      if (!(x == 0 || y == 0 || x == 7))
-        continue;
-      for (var c = 0; c < 3; ++c) {
-        edgesum[c] += lab[y * 24 + x * 3 + c];
+      if (x == 0 || y == 0 || x == 7) {
+        for (var c = 0; c < 3; ++c) {
+          edgesum[c] += lab[y * 24 + x * 3 + c];
+        }
+        ++edgecount;
       }
-      ++edgecount;
     }
   }
   var edgemean = new Array(3)
@@ -3313,7 +3370,14 @@ sh = img.width
       var ctx = canvas.getContext('2d');
       ctx.drawImage(img,sx,sy,sw,sh,0,0,64,64);
       var rgbdata = ctx.getImageData(0, 0, 64, 64).data;
-      applyloaded(rgbdata)
+
+//  var hyper = new Uint8Array(8);
+//  hyper.fill(0);
+//  hyper[3] = 32
+
+//      applyloaded(rgbdata,hyper)
+
+applyloaded(rgbdata)
     }
   })
   .catch(error => console.error('takePhoto() error:', error));
@@ -3483,8 +3547,8 @@ window.onload = function() {
           if (event.shiftKey) { pick_color(curval, curval, curval); return }
 
           var nval;
-          if (curval >= 0 && curval < 127) { nval = 127; }
-          else if (curval >= 127 && curval < 255) { nval = 255; }
+          if (curval >= 0 && curval < 128) { nval = 128; }
+          else if (curval >= 128 && curval < 255) { nval = 255; }
           else if (curval == 255) { nval = 0; }
 
           at1.style.backgroundColor = mkcol([nval, nval, nval])
@@ -3496,7 +3560,7 @@ window.onload = function() {
       }
     )
   };
-  for (var i = 0; i < 40; i = i + 1) {
+  for (var i = 0; i < 44; i = i + 1) {
     f(i)
   }
 
@@ -3531,6 +3595,7 @@ window.onload = function() {
   }
 
   var h = function(i) { 
+return;
     var at0 = document.getElementById('colattr' + i)
     at0.curval = [0,0,0]
     at0.addEventListener('click',

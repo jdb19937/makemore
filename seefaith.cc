@@ -6,6 +6,8 @@
 
 #include <math.h>
 
+using namespace makemore;
+
 int main() {
   seedrand();
 

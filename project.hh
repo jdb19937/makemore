@@ -8,6 +8,8 @@
 #include <string>
 #include <map>
 
+namespace makemore {
+
 struct Project {
   std::string dir;
   std::map<std::string, std::string> config;
@@ -36,6 +38,8 @@ struct Project {
   double *tgtbuf, *sepbuf;
   double *outbuf, *adjbuf;
 
+  double *cutgtlayx, *cutgtlayy;
+
   unsigned int rounds;
 
   Project(const char *_dir, unsigned int _mbn);
@@ -57,6 +61,7 @@ struct Project {
 
 
   void burn(double nu, double pi);
+  void condition(double yo, double wu);
   void reencode(bool force);
   void separate();
   void reconstruct();
@@ -74,5 +79,7 @@ struct Project {
   void encode_tgt();
   void encode_out();
 };
+
+}
 
 #endif

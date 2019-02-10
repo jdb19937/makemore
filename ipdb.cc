@@ -20,6 +20,8 @@
 #include "ipdb.hh"
 #include "random.hh"
 
+namespace makemore {
+
 void IPDB::create(const char *_fn, unsigned int n) {
   assert(strlen(_fn) < 4000);
   std::string fn = _fn;
@@ -81,3 +83,4 @@ IPDB::Entry *IPDB::find(uint32_t ip) {
   return (db + h % n);
 }
 
+}

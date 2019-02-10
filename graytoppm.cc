@@ -4,6 +4,8 @@
 
 #include "ppm.hh"
 
+using namespace makemore;
+
 int main(int argc, char **argv) {
   assert(argc == 3);
   unsigned int w = atoi(argv[1]);

@@ -12,6 +12,8 @@
 #include <string>
 #include <map>
 
+namespace makemore {
+
 struct Parson {
   static bool valid_nom(const char *);
   static uint64_t hash_nom(const char *nom, unsigned int variant = 0);
@@ -120,5 +122,7 @@ struct ParsonDB {
     return p->exists();
   }
 };
+
+}
 
 #endif

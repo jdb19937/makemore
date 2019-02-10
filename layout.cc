@@ -5,6 +5,8 @@
 #include <math.h>
 
 #include "layout.hh"
+
+namespace makemore {
   
 Layout::Layout(unsigned int _n) {
   n = _n;
@@ -120,3 +122,4 @@ Layout &Layout::operator +=(const Layout &lay) {
   return *this;
 }
 
+}

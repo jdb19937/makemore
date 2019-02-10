@@ -7,6 +7,7 @@
 #include <math.h>
 
 typedef std::vector<double> Vec;
+using namespace makemore;
 
 void untwiddle3(const double *lo, const double *hi, unsigned int w, unsigned int h, double *z) {
   assert(w % 2 == 0 && h % 2 == 0);

@@ -15,6 +15,8 @@
 #include "sampler.hh"
 #include "random.hh"
 
+namespace makemore {
+
 Sampler::Sampler(const char *_fn, unsigned int _k, unsigned long _inbuflen, unsigned long _membuflen, unsigned int _batch) {
   feeder_pid = 0;
   buffer_pid = 0;
@@ -265,10 +267,13 @@ void Sampler::start() {
   assert(fp);
 }
 
+}
  
 
  
 #if SAMPLER_MAIN
+using namespace makemore;
+
 int main(int argc, char **argv) {
   assert(argc >= 3);
   const char *fn = argv[1];

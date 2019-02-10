@@ -8,6 +8,8 @@
 #include <string>
 #include <map>
 
+namespace makemore {
+
 struct IPDB {
   struct Entry {
     uint32_t ip;
@@ -30,6 +32,8 @@ struct IPDB {
 
   unsigned int burns_left(uint32_t ip);
   void use_burns(uint32_t ip, unsigned int burns);
+};
+
 };
 
 #endif

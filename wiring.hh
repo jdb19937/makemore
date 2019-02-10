@@ -6,6 +6,8 @@
 #include <vector>
 #include <set>
 
+namespace makemore {
+
 struct Wiring {
   unsigned int inn, outn, wn;
   //std::set<std::pair<unsigned int, unsigned int> > connected;
@@ -39,5 +41,7 @@ struct Wiring {
     std::vector< std::vector<unsigned int> > &mow
   ) const;
 };
+
+}
 
 #endif
