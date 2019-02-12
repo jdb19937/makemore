@@ -60,7 +60,7 @@ void Vocab::decode(const Tagbag &_tb, string *strp) {
   assert(n > 0);
 
   *strp = "";
-  unsigned int nw = 16, iw;
+  unsigned int nw = 6, iw;
   Tagbag tb = _tb;
 
   for (iw = 0; iw < nw; ++iw) {

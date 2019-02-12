@@ -36,7 +36,7 @@ Script::Script(const char *_fn, Vocab *vocab) {
 
     std::string req, rsp;
     vector<string>::iterator wvi;
-    for (wvi = wv.begin(); wvi != wv.end() && *wvi != "->"; ++wvi) {
+    for (wvi = wv.begin(); wvi != wv.end() && strncmp(wvi->c_str(), "->", 2); ++wvi) {
       if (vocab && (*wvi)[0] != '$')
         vocab->add(*wvi);
       req += *wvi;
@@ -45,6 +45,12 @@ Script::Script(const char *_fn, Vocab *vocab) {
     if (req.length())
       req.erase(req.length() - 1);
     assert(wvi != wv.end());
+
+    unsigned int copies = 1;
+    if (!strncmp(wvi->c_str(), "->*", 3))
+      copies = atoi(wvi->c_str() + 3);
+    if (copies > 32)
+      copies = 32;
 
     ++wvi;
     for (; wvi != wv.end(); ++wvi) {
@@ -56,7 +62,8 @@ Script::Script(const char *_fn, Vocab *vocab) {
     if (rsp.length())
       rsp.erase(rsp.length() - 1);
 
-    templates.push_back(make_pair(req, rsp));
+    for (unsigned int copy = 0; copy < copies; ++copy)
+      templates.push_back(make_pair(req, rsp));
   }
 
   fclose(fp);
