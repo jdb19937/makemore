@@ -4,6 +4,8 @@
 #include <assert.h>
 #include <string.h>
 
+#include <string>
+
 #include "random.hh"
 
 namespace makemore {
@@ -51,6 +53,13 @@ struct Tagbag {
   Tagbag operator * (double w) {
     Tagbag tb = *this;
     return (tb *= w);
+  }
+
+  void add(const char *tag, double w = 1) {
+    Tagbag tb(tag, w);
+    for (unsigned int i = 0; i < n; ++i) {
+       vec[i] += tb.vec[i];
+    }
   }
 
   void add(const Tagbag &tb) {
@@ -107,6 +116,10 @@ struct Tagbag {
   }
 
   void encode(const char *str, unsigned int seed = 0);
+
+  void encode(const std::string &str, unsigned int seed = 0) {
+    encode(str.c_str(), seed);
+  }
 };
 
 }

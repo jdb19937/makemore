@@ -9,7 +9,8 @@ using namespace makemore;
 
 void usage() {
   fprintf(stderr, "Usage: makelay [\n");
-  fprintf(stderr, "   -grid dim [coverage [chans]] |\n");
+  fprintf(stderr, "  -grid dim [coverage [chans]] |\n");
+  fprintf(stderr, "  -text |\n");
   fprintf(stderr, "  -rand n [coverage] |\n");
   fprintf(stderr, "  -center n [radius]\n");
   fprintf(stderr, "]\n");
@@ -17,10 +18,10 @@ void usage() {
 }
 
 int main(int argc, char **argv) {
-  if (argc < 3)
+  if (argc < 2)
     usage();
 
-  enum { GRID, RAND, CENTER } type;
+  enum { GRID, RAND, CENTER, TEXT, LINE } type;
 
   if (!strcmp(argv[1], "-grid")) {
     type = GRID;
@@ -28,6 +29,10 @@ int main(int argc, char **argv) {
     type = RAND;
   } else if (!strcmp(argv[1], "-center")) {
     type = CENTER;
+  } else if (!strcmp(argv[1], "-text")) {
+    type = TEXT;
+  } else if (!strcmp(argv[1], "-line")) {
+    type = LINE;
   } else {
     usage();
   }
@@ -51,6 +56,14 @@ int main(int argc, char **argv) {
     double r = 1.0;
     if (argc > 3) r = strtod(argv[3], NULL);
     lay = Layout::new_square_center(n, r);
+  } else if (type == TEXT) {
+    lay = Layout::new_text();
+  } else if (type == LINE) {
+    unsigned int dim = atoi(argv[2]);
+    double cov = 1.0;
+    if (argc > 3) cov = strtod(argv[3], NULL);
+    if (argc > 4) chan = atoi(argv[4]);
+    lay = Layout::new_line(dim, cov, chan);
   } else {
     assert(0);
   }

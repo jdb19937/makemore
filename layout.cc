@@ -46,6 +46,35 @@ Layout *Layout::new_square_grid(unsigned int dim, double s, unsigned int chan) {
   return l;
 }
 
+Layout *Layout::new_line(unsigned int dim, double s, unsigned int chan) {
+  Layout *l = new Layout(dim * chan);
+
+  double r = s / (double)dim;
+  for (unsigned int i = 0; i < dim; ++i) {
+    for (unsigned int c = 0; c < chan; ++c) {
+      l->x[chan * i + c] = ((double)i + 0.5) / (double)dim;
+      l->y[chan * i + c] = 0.5;
+      l->r[chan * i + c] = r;
+    }
+  }
+
+  return l;
+}
+
+Layout *Layout::new_text(unsigned int bits, unsigned int chan) {
+  Layout *l = new Layout(bits * chan);
+
+  for (unsigned int c = 0; c < chan; ++c) {
+    for (unsigned int i = 0; i < bits; ++i) {
+      l->x[bits * c + i] = ((double)i + 0.5) / (double)bits;
+      l->y[bits * c + i] = 0.5;
+      l->r[bits * c + i] = 0;
+    }
+  }
+
+  return l;
+}
+
 Layout *Layout::new_square_random(unsigned int n, double s) {
   Layout *l = new Layout(n);
 

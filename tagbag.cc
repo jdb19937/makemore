@@ -3,6 +3,7 @@
 #include <string>
 
 #include "tagbag.hh"
+#include "strutils.hh"
 
 #include "sha256.c"
 
@@ -26,23 +27,6 @@ Tagbag::Tagbag(const char *tag, double w) {
   }
 }
 
-static void split(const char *str, vector<string> *words) {
-  words->clear();
-
-  const char *p = str;
-
-  while (const char *q = strchr(p, ' ')) {
-    words->push_back(string(p, q - p));
-
-    p = q + 1;
-    while (*p == ' ')
-      p++;
-  }
-
-  if (*p)
-    words->push_back(string(p));
-}
-
 void varsubst(vector<string> *words, unsigned int seed) {
   char buf[32];
 
@@ -52,6 +36,10 @@ void varsubst(vector<string> *words, unsigned int seed) {
       *wi = string(w + 1);
       sprintf(buf, "[%08X]", seed);
       *wi += buf;
+//    } else if (strchr(w, '/')) {
+//      std::vector<std::string> walt;
+//      split(w, '/', &walt);
+//      *wi = walt[randuint() % walt.size()];
     }
   }
 }
@@ -60,15 +48,17 @@ void varsubst(vector<string> *words, unsigned int seed) {
 void Tagbag::encode(const char *str, unsigned int seed) {
   clear();
   vector<string> strv;
-  split(str, &strv);
+  split(str, ' ', &strv);
   varsubst(&strv, seed);
 
   unsigned int nw = strv.size(), iw;
   for (iw = 0; iw < nw; ++iw) {
+//fprintf(stderr, "%s ", strv[iw].c_str());
     Tagbag tw(strv[iw].c_str());
     tw.mul(1.0 / (1.0 + (double)iw));
     add(tw);
   }
+//fprintf(stderr, "\n");
 }
   
 }

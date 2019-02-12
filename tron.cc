@@ -37,7 +37,7 @@ void Tron::update_stats(int errsignif) {
 
   double z = pow(1.0 - errdecay, (double)rounds);
 
-  double nerr2 = sqrt(cusumsq(fout, outn) / outn);
+  double nerr2 = sqrt(cusumsq(fout, outn) / (double)outn);
   err2 *= (1.0 - z);
   err2 *= (1.0 - errdecay);
   err2 += errdecay * nerr2;
