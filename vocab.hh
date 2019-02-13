@@ -4,7 +4,7 @@
 #include <assert.h>
 #include <string.h>
 
-#include "wordvec.hh"
+#include "hashbag.hh"
 
 #include <string>
 #include <vector>
@@ -17,7 +17,7 @@ struct Vocab {
 
   unsigned int n;
   std::vector<char *> tags;
-  std::vector<Wordvec> bags;
+  std::vector<Hashbag> bags;
 
   std::set<std::string> seen_tag;
 
@@ -26,7 +26,7 @@ struct Vocab {
     add(tagstr.c_str());
   }
 
-  const char *closest(const Wordvec &x, const Wordvec **y) const;
+  const char *closest(const Hashbag &x, const Hashbag **y) const;
 };
 
 }

@@ -59,7 +59,7 @@ void Vocab::add(const char *str) {
   }
 }
 
-const char *Vocab::closest(const Wordvec &x, const Wordvec **y) const {
+const char *Vocab::closest(const Hashbag &x, const Hashbag **y) const {
   const double *m = (const double *)bags.data();
   unsigned int k = 256;
 

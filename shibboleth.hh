@@ -8,14 +8,14 @@
 
 #include "random.hh"
 #include "vocab.hh"
-#include "wordvec.hh"
+#include "hashbag.hh"
 
 namespace makemore {
 
 struct Shibboleth {
   const double omul = 0.2;
 
-  Wordvec avec, ovec;
+  Hashbag avec, ovec;
   unsigned int wn;
 
   void clear() {

@@ -62,7 +62,7 @@ static void varsubst(vector<string> *words, unsigned int seed) {
 }
 
 void Shibboleth::push(const char *word) {
-  Wordvec wvec(word);
+  Hashbag wvec(word);
 
   ovec -= avec;
   avec += wvec;
@@ -72,7 +72,7 @@ void Shibboleth::push(const char *word) {
 }
 
 void Shibboleth::unshift(const char *word) {
-  Wordvec wvec(word);
+  Hashbag wvec(word);
 
   ovec += avec;
   avec += wvec;
@@ -101,8 +101,8 @@ void Shibboleth::encode(const char *str, Vocab *vocab, unsigned int seed) {
 }
 
 std::string Shibboleth::decode(const Vocab &vocab) {
-  Wordvec tvec = avec;
-  const Wordvec *uvecp = NULL;
+  Hashbag tvec = avec;
+  const Hashbag *uvecp = NULL;
 
   vector<string> out;
 
@@ -116,20 +116,20 @@ std::string Shibboleth::decode(const Vocab &vocab) {
     tvec -= *uvecp;
   }
 
-  Wordvec pvec = ovec;
+  Hashbag pvec = ovec;
   pvec *= (1.0 / omul);
 
   struct cmp_t {
-    const Wordvec *ovecp;
+    const Hashbag *ovecp;
 
-    cmp_t(const Wordvec *_ovecp) : ovecp(_ovecp) { }
+    cmp_t(const Hashbag *_ovecp) : ovecp(_ovecp) { }
 
     bool operator () (const std::string &x, const std::string &y) {
-      Wordvec xvec(x.c_str()), yvec(y.c_str());
+      Hashbag xvec(x.c_str()), yvec(y.c_str());
 
-      Wordvec tvec = yvec;
+      Hashbag tvec = yvec;
       tvec -= xvec;
-      Wordvec uvec = tvec;
+      Hashbag uvec = tvec;
       uvec.mul(-1);
 
       tvec -= *ovecp;
