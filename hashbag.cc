@@ -1,8 +1,8 @@
-#define __MAKEMORE_WORDVEC_CC__ 1
+#define __MAKEMORE_HASHBAG_CC__ 1
 #include <vector>
 #include <string>
 
-#include "wordvec.hh"
+#include "hashbag.hh"
 #include "strutils.hh"
 #include "closest.hh"
 #include "vocab.hh"
@@ -12,7 +12,7 @@
 namespace makemore {
 using namespace std;
 
-void Wordvec::add(const char *tag, double w) {
+void Hashbag::add(const char *tag, double w) {
   uint8_t hash[64];
 
   SHA256_CTX sha;

@@ -1,5 +1,5 @@
-#ifndef __MAKEMORE_WORDVEC_HH__
-#define __MAKEMORE_WORDVEC_HH__ 1
+#ifndef __MAKEMORE_HASHBAG_HH__
+#define __MAKEMORE_HASHBAG_HH__ 1
 
 #include <assert.h>
 #include <string.h>
@@ -10,7 +10,7 @@
 
 namespace makemore {
 
-struct Wordvec {
+struct Hashbag {
   const static unsigned int n = 256;
   double vec[n];
 
@@ -18,22 +18,22 @@ struct Wordvec {
     memset(vec, 0, sizeof(vec));
   }
 
-  Wordvec() {
+  Hashbag() {
     clear();
   }
 
-  Wordvec(const Wordvec &t) {
+  Hashbag(const Hashbag &t) {
     copy(t);
   }
 
-  Wordvec(const char *tag) {
+  Hashbag(const char *tag) {
     clear();
     add(tag);
   }
 
   void add(const char *tag, double m = 1.0);
 
-  void copy(const Wordvec &t) {
+  void copy(const Hashbag &t) {
     memcpy(vec, t.vec, sizeof(vec));
   }
 
@@ -45,46 +45,46 @@ struct Wordvec {
   }
   
 
-  Wordvec &operator *= (double w) {
+  Hashbag &operator *= (double w) {
     mul(w);
     return *this;
   }
 
-  Wordvec operator * (double w) {
-    Wordvec tb = *this;
+  Hashbag operator * (double w) {
+    Hashbag tb = *this;
     return (tb *= w);
   }
 
-  void add(const Wordvec &tb) {
+  void add(const Hashbag &tb) {
     for (unsigned int i = 0; i < n; ++i) {
        vec[i] += tb.vec[i];
     }
   }
 
-  void sub(const Wordvec &tb) {
+  void sub(const Hashbag &tb) {
     for (unsigned int i = 0; i < n; ++i) {
        vec[i] -= tb.vec[i];
     }
   }
 
-  Wordvec &operator += (const Wordvec &tb) {
+  Hashbag &operator += (const Hashbag &tb) {
     add(tb);
     return *this;
   }
 
-  Wordvec &operator -= (const Wordvec &tb) {
+  Hashbag &operator -= (const Hashbag &tb) {
     sub(tb);
     return *this;
   }
 
-  Wordvec operator + (const Wordvec &tb1) {
-    Wordvec tb0 = *this;
+  Hashbag operator + (const Hashbag &tb1) {
+    Hashbag tb0 = *this;
     tb0.add(tb1);
     return tb0;
   }
 
-  Wordvec operator - (const Wordvec &tb1) {
-    Wordvec tb0 = *this;
+  Hashbag operator - (const Hashbag &tb1) {
+    Hashbag tb0 = *this;
     tb0.sub(tb1);
     return tb0;
   }
@@ -103,7 +103,7 @@ struct Wordvec {
     }
   }
 
-  Wordvec &operator =(const Wordvec &tb) {
+  Hashbag &operator =(const Hashbag &tb) {
     copy(tb);
     return *this;
   }
