@@ -7,12 +7,13 @@
 #include <string>
 
 #include "random.hh"
+#include "vocab.hh"
 #include "wordvec.hh"
 
 namespace makemore {
 
 struct Shibboleth {
-  const double omul = 0.1;
+  const double omul = 0.2;
 
   Wordvec avec, ovec;
   unsigned int wn;
@@ -48,10 +49,10 @@ struct Shibboleth {
   void push(const char *);
   void push(const std::string &x) { push(x.c_str()); }
 
-  void encode(const char *str, unsigned int seed = 0);
+  void encode(const char *str, class Vocab *vocab = NULL, unsigned int seed = 0);
 
-  void encode(const std::string &str, unsigned int seed = 0) {
-    encode(str.c_str(), seed);
+  void encode(const std::string &str, class Vocab *vocab = NULL, unsigned int seed = 0) {
+    encode(str.c_str(), vocab, seed);
   }
 
   std::string decode(const class Vocab &vocab);

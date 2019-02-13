@@ -28,13 +28,33 @@ static void vecsub(double *x, const double *y) {
     x[i] -= y[i];
 }
 
+static void addstars(vector<string> &words) {
+  set<string> seen;
+
+  for (auto wi = words.begin(); wi != words.end(); ++wi) {
+    if (*wi->c_str() == '$' || *wi->c_str() == '*')
+      continue;
+    while (seen.count(*wi))
+      *wi = std::string("*") + *wi;
+    seen.insert(*wi);
+  }
+}
+
+static void delstars(vector<string> &words) {
+  for (auto wi = words.begin(); wi != words.end(); ++wi) {
+    const char *p = wi->c_str();
+    while (*p == '*' && p[1])
+      p++;
+    *wi = p;
+  }
+}
+
 static void varsubst(vector<string> *words, unsigned int seed) {
   char buf[32];
 
   for (auto wi = words->begin(); wi != words->end(); ++wi) {
     const char *w = wi->c_str();
     if (*w == '$') {
-      *wi = string(w + 1);
       sprintf(buf, "[%08X]", seed);
       *wi += buf;
     }
@@ -62,10 +82,16 @@ void Shibboleth::unshift(const char *word) {
 }
   
   
-void Shibboleth::encode(const char *str, unsigned int seed) {
+void Shibboleth::encode(const char *str, Vocab *vocab, unsigned int seed) {
   vector<string> strv;
   split(str, ' ', &strv);
+  addstars(strv);
   varsubst(&strv, seed);
+
+  if (vocab)
+    vocab->add(join(strv, ' '));
+
+//fprintf(stderr, "enc %s\n", join(strv, ' ').c_str());
 
   clear();
   for (auto i = strv.begin(); i != strv.end(); ++i)
@@ -114,6 +140,8 @@ std::string Shibboleth::decode(const Vocab &vocab) {
   } cmp(&pvec);
 
   std::sort(out.begin(), out.end(), cmp);
+
+  delstars(out);
 
   return join(out, ' ');
 }

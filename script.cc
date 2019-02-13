@@ -79,8 +79,8 @@ void Script::pick(Shibboleth *req, Shibboleth *rsp) {
   unsigned int seed = randuint();
 
   const Template &tpl = templates[i];
-  req->encode(tpl.first, seed);
-  rsp->encode(tpl.second, seed);
+  req->encode(tpl.first, NULL, seed);
+  rsp->encode(tpl.second, NULL, seed);
 }
 
 }

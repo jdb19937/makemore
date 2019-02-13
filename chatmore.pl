@@ -12,6 +12,7 @@ my $module = $::m // 'Morescript';
 eval "require $module";
 warn $@ if $@;
 
+our $iters;
 my $interpreter = $module->new(\&ask);
 
 sub ask {

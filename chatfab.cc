@@ -37,9 +37,7 @@ fprintf(stderr, "ask reqstr=%s depth=%d\n", reqstr.c_str(), depth);
 
 
   std::string rspstr;
-
-  vocab.add(reqstr);
-  req.encode(reqstr);
+  req.encode(reqstr, &vocab);
 
   memcpy(confab.ctxbuf, (double *)&req, sizeof(double) * 512);
 

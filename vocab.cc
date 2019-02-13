@@ -30,15 +30,17 @@ Vocab::Vocab() {
 }
 
 void Vocab::add(const char *str) {
-  vector<string> phrases;
-  split(str, ',', &phrases);
+  vector<string> words;
+  split(str, ' ', &words);
 
-  for (auto pi = phrases.begin(); pi != phrases.end(); ++pi) {
-    vector<string> words;
-    split(pi->c_str(), ' ', &words);
-
+  for (unsigned int stars = 0; stars < 4; ++stars) {
     for (auto wi = words.begin(); wi != words.end(); ++wi) {
-      const char *tag = wi->c_str();
+      std::string word = "";
+      for (unsigned int j = 0; j < stars; ++j)
+        word += "*";
+      word += wi->c_str();
+
+      const char *tag = word.c_str();
       if (seen_tag.count(tag))
         continue;
 
