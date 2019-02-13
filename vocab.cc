@@ -14,7 +14,8 @@ using namespace std;
 Vocab::Vocab() {
   n = 1;
   tags.resize(1);
-  tags[0] = new char[1]();
+  tags[0] = new char[1];
+  strcpy(tags[0], "");
 
   bags.resize(1);
   bags[0].clear();
@@ -56,35 +57,21 @@ void Vocab::add(const char *str) {
   }
 }
 
-void Vocab::decode(const Tagbag &_tb, string *strp) {
-  assert(n > 0);
+const char *Vocab::closest(const Wordvec &x, const Wordvec **y) const {
+  const double *m = (const double *)bags.data();
+  unsigned int k = 256;
 
-  *strp = "";
-  unsigned int nw = 6, iw;
-  Tagbag tb = _tb;
+  unsigned int i = makemore::closest(x.vec, m, k, n);
+  assert(i >= 0 && i < n);
 
-  for (iw = 0; iw < nw; ++iw) {
-    const double *x = tb.vec;
-    const double *m = (const double *)bags.data();
-    unsigned int k = 256;
+  const char *w = tags[i];
+  if (i == 0)
+    return NULL;
 
-    unsigned int i = closest(x, m, k, n);
-    assert(i >= 0 && i < n);
+  if (y)
+    *y = &bags[i];
 
-    const char *w = tags[i];
-    if (i == 0)
-      break;
-
-    if (iw > 0)
-      *strp += " ";
-    *strp += w;
-
-    tb.sub(bags[i]);
-    tb.mul((double)(iw + 2) / (double)(iw + 1));
-  }
-
-  if (iw == nw)
-    *strp += " ...";
+  return w;
 }
 
 }

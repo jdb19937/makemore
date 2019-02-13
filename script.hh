@@ -1,7 +1,7 @@
 #ifndef __MAKEMORE_SCRIPT_HH__
 #define __MAKEMORE_SCRIPT_HH__ 1
 
-#include "tagbag.hh"
+#include "shibboleth.hh"
 #include "vocab.hh"
 
 #include <string>
@@ -18,7 +18,7 @@ struct Script {
   Script(const char *_fn, Vocab *vocab = NULL);
   ~Script();
 
-  void pick(Tagbag *req, Tagbag *rsp, unsigned int ntb);
+  void pick(Shibboleth *req, Shibboleth *rsp);
 };
 
 }

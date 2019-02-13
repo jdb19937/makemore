@@ -1,5 +1,5 @@
-#ifndef __MAKEMORE_TAGBAG_HH__
-#define __MAKEMORE_TAGBAG_HH__ 1
+#ifndef __MAKEMORE_WORDVEC_HH__
+#define __MAKEMORE_WORDVEC_HH__ 1
 
 #include <assert.h>
 #include <string.h>
@@ -10,7 +10,7 @@
 
 namespace makemore {
 
-struct Tagbag {
+struct Wordvec {
   const static unsigned int n = 256;
   double vec[n];
 
@@ -18,24 +18,24 @@ struct Tagbag {
     memset(vec, 0, sizeof(vec));
   }
 
-  Tagbag() {
+  Wordvec() {
     clear();
   }
 
-  void copy(const Tagbag &t) {
+  Wordvec(const Wordvec &t) {
+    copy(t);
+  }
+
+  Wordvec(const char *tag) {
+    clear();
+    add(tag);
+  }
+
+  void add(const char *tag, double m = 1.0);
+
+  void copy(const Wordvec &t) {
     memcpy(vec, t.vec, sizeof(vec));
   }
-
-  Tagbag(const Tagbag &t) {
-    copy(t);
-  }
-
-  Tagbag(const Tagbag &t, double w) {
-    copy(t);
-    mul(w);
-  }
-
-  Tagbag(const char *tag, double w = 1);
 
   void mul(double w) {
     if (w == 1.0)
@@ -45,53 +45,46 @@ struct Tagbag {
   }
   
 
-  Tagbag &operator *= (double w) {
+  Wordvec &operator *= (double w) {
     mul(w);
     return *this;
   }
 
-  Tagbag operator * (double w) {
-    Tagbag tb = *this;
+  Wordvec operator * (double w) {
+    Wordvec tb = *this;
     return (tb *= w);
   }
 
-  void add(const char *tag, double w = 1) {
-    Tagbag tb(tag, w);
+  void add(const Wordvec &tb) {
     for (unsigned int i = 0; i < n; ++i) {
        vec[i] += tb.vec[i];
     }
   }
 
-  void add(const Tagbag &tb) {
-    for (unsigned int i = 0; i < n; ++i) {
-       vec[i] += tb.vec[i];
-    }
-  }
-
-  void sub(const Tagbag &tb) {
+  void sub(const Wordvec &tb) {
     for (unsigned int i = 0; i < n; ++i) {
        vec[i] -= tb.vec[i];
     }
   }
 
-  Tagbag &operator += (const Tagbag &tb) {
+  Wordvec &operator += (const Wordvec &tb) {
     add(tb);
     return *this;
   }
 
-  Tagbag &operator -= (const Tagbag &tb) {
+  Wordvec &operator -= (const Wordvec &tb) {
     sub(tb);
     return *this;
   }
 
-  Tagbag operator + (const Tagbag &tb1) {
-    Tagbag tb0 = *this;
+  Wordvec operator + (const Wordvec &tb1) {
+    Wordvec tb0 = *this;
     tb0.add(tb1);
     return tb0;
   }
 
-  Tagbag operator - (const Tagbag &tb1) {
-    Tagbag tb0 = *this;
+  Wordvec operator - (const Wordvec &tb1) {
+    Wordvec tb0 = *this;
     tb0.sub(tb1);
     return tb0;
   }
@@ -110,15 +103,16 @@ struct Tagbag {
     }
   }
 
-  Tagbag &operator =(const Tagbag &tb) {
+  Wordvec &operator =(const Wordvec &tb) {
     copy(tb);
     return *this;
   }
 
-  void encode(const char *str, unsigned int seed = 0);
-
-  void encode(const std::string &str, unsigned int seed = 0) {
-    encode(str.c_str(), seed);
+  double abs() {
+    double e = 0;
+    for (unsigned int i = 0; i < n; ++i)
+      e += vec[i] * vec[i];
+    return e;
   }
 };
 

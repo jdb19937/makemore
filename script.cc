@@ -47,7 +47,7 @@ Script::Script(const char *_fn, Vocab *vocab) {
     assert(wvi != wv.end());
 
     unsigned int copies = 1;
-    if (!strncmp(wvi->c_str(), "->*", 3))
+    if (!strncmp(wvi->c_str(), "->x", 3))
       copies = atoi(wvi->c_str() + 3);
     if (copies > 32)
       copies = 32;
@@ -73,35 +73,14 @@ Script::Script(const char *_fn, Vocab *vocab) {
 Script::~Script() {
 }
 
-void Script::pick(Tagbag *req, Tagbag *rsp, unsigned int ntb) {
+void Script::pick(Shibboleth *req, Shibboleth *rsp) {
   assert(templates.size());
   unsigned int i = randuint() % templates.size();
-
   unsigned int seed = randuint();
 
   const Template &tpl = templates[i];
-
-//fprintf(stderr, "%s -> %s\n", tpl.first.c_str(), tpl.second.c_str());
-
-  std::string reqstr = tpl.first;
-  std::vector<std::string> reqparts;
-  split(reqstr.c_str(), ',', &reqparts);
-  for (unsigned int i = 0; i < ntb; ++i) {
-    if (i < reqparts.size())
-      req[i].encode(reqparts[i], seed);
-    else
-      req[i].clear();
-  }
-
-  std::string rspstr = tpl.second;
-  std::vector<std::string> rspparts;
-  split(rspstr.c_str(), ',', &rspparts);
-  for (unsigned int i = 0; i < ntb; ++i) {
-    if (i < rspparts.size())
-      rsp[i].encode(rspparts[i], seed);
-    else
-      rsp[i].clear();
-  }
+  req->encode(tpl.first, seed);
+  rsp->encode(tpl.second, seed);
 }
 
 }
