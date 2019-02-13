@@ -1,0 +1,69 @@
+# echo $x -> $x
+# echo $x $y -> $x $y
+# echo $x $y $z -> $x $y $z
+# echo $x $y $z $w -> $x $y $z $w
+
+# increment a one-digit number
+inc1 0 -> 1
+inc1 1 -> 2
+inc1 2 -> 3
+inc1 3 -> 4
+inc1 4 -> 5
+inc1 5 -> 6
+inc1 6 -> 7
+inc1 7 -> 8
+inc1 8 -> 9
+inc1 9 -> 10
+
+# increment a two-digit number
+inc2 $x $y ->x8 % $x !2 inc1 $y
+inc2 $x  9 ->x8 % !2 inc1 $x 0
+inc2 9   9 ->   100
+
+# increment a three-digit number
+inc3 $x $y $z ->x8 % $x !3 inc2 $y $z
+inc3 $x  9  9 ->x8 % !2 inc1 $x 00
+
+# increment any number
+incany $x       -> !! inc1 $x
+incany $x $y    -> !! inc2 $x $y
+incany $x $y $z -> !! inc3 $x $y $z
+inc $x          ->x4 !! incany @ $x
+
+
+# decrement a one-digit number
+dec1 0 -> less than 0
+dec1 1 -> 0
+dec1 2 -> 1
+dec1 3 -> 2
+dec1 4 -> 3
+dec1 5 -> 4
+dec1 6 -> 5
+dec1 7 -> 6
+dec1 8 -> 7
+dec1 9 -> 8
+
+# decrement a two-digit number
+dec2 $x $y ->x8 % $x !2 dec1 $y
+dec2 $x 0 ->x8 % !2 dec1 $x 9
+dec2 1 0 -> 9
+
+# decrement a three-digit number
+dec3 $x $y $z ->x8 % $x !3 dec2 $y $z
+dec3 $x  0  0 ->x8 % !2 dec1 $x 99
+dec3 1 0 0 -> 99
+
+# decrement any number
+decany $x       -> !! dec1 $x
+decany $x $y    -> !! dec2 $x $y
+decany $x $y $z -> !! dec3 $x $y $z
+dec $x          ->x4 !! decany @ $x
+
+
+# add two numbers recursively
+$x + $y ->x4 !! !2 inc $x + !2 dec $y
+$x + 0 -> $x
+
+# subtract two numbers recursively
+$x - $y ->x4 !! !2 dec $x - !2 dec $y
+$x - 0 -> $x

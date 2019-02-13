@@ -1,0 +1,24 @@
+hello how are you -> i am fine
+hello how are you -> i am good
+what is your nom -> bob what is yours
+what is your name -> bob what is yours
+my name is $x -> hello $x
+bye -> goodbye
+goodbye -> goodbye
+reverse $x $y -> $y $x
+echo $x -> $x
+skip $x $y -> $y
+$x -> i dont understand $x
+$x nevermind -> okay i dont mind
+
+isa $x $y -> i dont think so
+isa cat animal -> yes
+isa dog animal -> yes
+isa linus dog -> yes
+isa linus cat -> no
+
+-> previously on the x files
+
+spell $x -> like this @ $x
+say $x -> okay $x
+say $x $y -> okay $x $y
