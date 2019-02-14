@@ -18,8 +18,9 @@ sub interpret {
   while (@w) {
     my $w = shift(@w);
 
-    if ($w =~ /^\!(\d+)$/) {
-      my $n = $1 + 0;
+    if ($w =~ /^\!(\d)(.*$)/) {
+      my $n = $1 + 1;
+      unshift(@w, $2);
       my $req = join(' ', splice(@w, 0, $n));
       push @out, split /\s+/, $this->ask($req);
     } else {
