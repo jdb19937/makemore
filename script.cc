@@ -33,37 +33,72 @@ Script::Script(const char *_fn, Vocab *vocab) {
 
     vector<string> wv;
     split(q, ' ', &wv);
+    vector<string>::iterator sepi;
 
-    std::string req, rsp;
+    for (sepi = wv.begin(); sepi != wv.end(); ++sepi) {
+      if (!strncmp(sepi->c_str(), "->", 2))
+        break;
+      if (*sepi == "-:")
+        break;
+    }
+
+    if (sepi == wv.end()) {
+      fprintf(stderr, "malformed rule case 1: %s\n", q);
+      continue;
+    }
+
     vector<string>::iterator wvi;
-    for (wvi = wv.begin(); wvi != wv.end() && strncmp(wvi->c_str(), "->", 2); ++wvi) {
-      if (vocab && (*wvi)[0] != '$')
-        vocab->add(*wvi);
-      req += *wvi;
-      req += " ";
+    if (*sepi == "-:") {
+      wvi = wv.begin();
+      const std::string &key = *wvi;
+
+      ++wvi;
+      if (sepi != wvi) {
+        fprintf(stderr, "malformed rule case 2: %s\n", q);
+        continue;
+      }
+
+      ++wvi;
+      if (wvi == wv.end()) {
+        fprintf(stderr, "malformed rule case 3: %s\n", q);
+        continue;
+      }
+
+      for (; wvi != wv.end(); ++wvi) {
+        const std::string &val = *wvi;
+//fprintf(stderr, "define [%s -> %s]\n", key.c_str(), val.c_str());
+        defines.insert(make_pair(key, val));
+      }
+    } else {
+      std::string req, rsp;
+      for (wvi = wv.begin(); wvi != sepi; ++wvi) {
+        if (vocab && (*wvi)[0] != '$')
+          vocab->add(*wvi);
+        if (req.length())
+          req += " ";
+        req += *wvi;
+      }
+      assert(wvi != wv.end());
+
+      unsigned int copies = 1;
+      if (!strncmp(wvi->c_str(), "->x", 3))
+        copies = atoi(wvi->c_str() + 3);
+      if (copies > 32)
+        copies = 32;
+  
+      ++wvi;
+      for (; wvi != wv.end(); ++wvi) {
+        if (vocab && (*wvi)[0] != '$')
+          vocab->add(*wvi);
+        if (rsp.length())
+          rsp += " ";
+        rsp += *wvi;
+      }
+//fprintf(stderr, "template [%s -> %s]\n", req.c_str(), rsp.c_str());
+  
+      for (unsigned int copy = 0; copy < copies; ++copy)
+        templates.push_back(make_pair(req, rsp));
     }
-    if (req.length())
-      req.erase(req.length() - 1);
-    assert(wvi != wv.end());
-
-    unsigned int copies = 1;
-    if (!strncmp(wvi->c_str(), "->x", 3))
-      copies = atoi(wvi->c_str() + 3);
-    if (copies > 32)
-      copies = 32;
-
-    ++wvi;
-    for (; wvi != wv.end(); ++wvi) {
-      if (vocab && (*wvi)[0] != '$')
-        vocab->add(*wvi);
-      rsp += *wvi;
-      rsp += " ";
-    }
-    if (rsp.length())
-      rsp.erase(rsp.length() - 1);
-
-    for (unsigned int copy = 0; copy < copies; ++copy)
-      templates.push_back(make_pair(req, rsp));
   }
 
   fclose(fp);
@@ -79,8 +114,10 @@ void Script::pick(Shibboleth *req, Shibboleth *rsp) {
   unsigned int seed = randuint();
 
   const Template &tpl = templates[i];
-  req->encode(tpl.first, NULL, seed);
-  rsp->encode(tpl.second, NULL, seed);
+
+  map<string, string> assign;
+  req->encode(tpl.first.c_str(), NULL, seed, &defines, &assign);
+  rsp->encode(tpl.second.c_str(), NULL, seed, &defines, &assign);
 }
 
 }

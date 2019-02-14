@@ -5,12 +5,15 @@
 #include "vocab.hh"
 
 #include <string>
+#include <map>
 
 namespace makemore {
 
 struct Script {
   typedef std::pair<std::string, std::string> Template;
   std::vector<Template> templates;
+
+  std::multimap<std::string, std::string> defines;
 
   std::string fn;
   FILE *fp;

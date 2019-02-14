@@ -1,3 +1,5 @@
+num  -: 0 1 2 3 4 5 6 7 8 9
+
 # increment a one-digit number
 inc 0 -> 1
 inc 1 -> 2
@@ -11,16 +13,16 @@ inc 8 -> 9
 inc 9 -> 10
 
 # increment a two-digit number
-inc $x $y ->x8 % $x !1inc $y
-inc $x  9 ->x8 % !1inc $x 0
-inc 9   9 ->   100
+inc $num:x $num:y ->x8 % $num:x !!inc $num:y
+inc $num:x 9      ->x8 % !!inc $num:x 0
+inc 9      9      ->   100
 
 # increment a three-digit number
-inc $x $y $z ->x8 % $x !2inc $y $z
-inc $x  9  9 ->x8 % !1inc $x 00
+inc $num:x  $num:y $num:z ->x8 % $num:x !!!inc $num:y $num:z
+inc $num:x  9      9      ->x8 % !!inc $num:x 00
 
 # increment any number
-inc $x ->x4 !! inc @ $x
+inc $x ->x4 ! inc @ $x
 
 
 # decrement a one-digit number
@@ -35,23 +37,23 @@ dec 8 -> 7
 dec 9 -> 8
 
 # decrement a two-digit number
-dec $x $y ->x8 % $x !1dec $y
-dec $x  0 ->x8 % !1dec $x 9
-dec  1  0 -> 9
+dec $num:x $num:y ->x8 % $num:x !!dec $num:y
+dec $num:x 0      ->x8 % !!dec $num:x 9
+dec 1      0      ->   9
 
 # decrement a three-digit number
-dec $x $y $z ->x8 % $x !2dec $y $z
-dec $x  0  0 ->x8 % !1dec $x 99
-dec  1  0  0 ->   99
+dec $num:x $num:y $num:z ->x8 % $num:x !!!dec $num:y $num:z
+dec $num:x 0      0      ->x8 % !!dec $num:x 99
+dec 1      0      0      ->   99
 
 # decrement any number
-dec $x          ->x4 !! dec @ $x
+dec $x          ->x4 ! dec @ $x
 
 
 # add two numbers recursively
-$x + $y ->x4 !! !1inc $x + !1dec $y
+$x + $y ->x4 ! !!inc $x + !!dec $y
 $x + 0 -> $x
 
 # subtract two numbers recursively
-$x - $y ->x4 !! !1dec $x - !1dec $y
+$x - $y ->x4 ! !!dec $x - !!dec $y
 $x - 0 -> $x

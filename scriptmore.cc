@@ -27,7 +27,7 @@ std::string ask(Confab &confab, Vocab &vocab, std::string reqstr) {
   Shibboleth req, rsp;
 
   std::string rspstr;
-  req.encode(reqstr, &vocab);
+  req.encode(reqstr.c_str(), &vocab);
 
   memcpy(confab.ctxbuf, (double *)&req, sizeof(double) * 512);
 

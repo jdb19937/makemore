@@ -18,8 +18,8 @@ sub interpret {
   while (@w) {
     my $w = shift(@w);
 
-    if ($w =~ /^\!(\d)(.*$)/) {
-      my $n = $1 + 1;
+    if ($w =~ /^(\!+)(.+$)/) {
+      my $n = length($1);
       unshift(@w, $2);
       my $req = join(' ', splice(@w, 0, $n));
       push @out, split /\s+/, $this->ask($req);
@@ -48,8 +48,8 @@ sub interpret {
 
   $rsp = join(' ', @out);
 
-  if ($rsp =~ /^\!\! /) {
-    $rsp = $this->ask(substr($rsp, 3));
+  if (substr($rsp, 0, 2) eq "! ") {
+    $rsp = $this->ask(substr($rsp, 2));
   }
 
   $rsp

@@ -49,14 +49,45 @@ static void delstars(vector<string> &words) {
   }
 }
 
-static void varsubst(vector<string> *words, unsigned int seed) {
+static void varsubst(vector<string> *words, unsigned int seed, multimap<string, string> *defines, map<string, string> *assign) {
   char buf[32];
 
   for (auto wi = words->begin(); wi != words->end(); ++wi) {
-    const char *w = wi->c_str();
-    if (*w == '$') {
-      sprintf(buf, "[%08X]", seed);
-      *wi += buf;
+    std::string wstr = *wi;
+
+    if (wstr[0] == '$') {
+      if (assign) {
+        auto kvi = assign->find(wstr);
+        if (kvi != assign->end()) {
+          *wi = kvi->second;
+           continue;
+        }
+      }
+
+      vector<string> vals;
+      if (defines) {
+        const char *p = wstr.c_str() + 1;
+        const char *q = strchr(p, ':');
+        if (!q)
+          q = p + strlen(p);
+        std::string key(p, q - p);
+
+        auto r = defines->equal_range(key);
+        for (auto ri = r.first; ri != r.second; ++ri)
+          vals.push_back(ri->second);
+      }
+
+      if (vals.size()) {
+        string val = vals[randuint() % vals.size()];
+        if (assign)
+          assign->insert(make_pair(wstr, val));
+        *wi = val;
+      } else {
+        sprintf(buf, "[%08X]", seed);
+        if (assign)
+          assign->insert(make_pair(wstr, wstr + buf));
+        *wi = wstr + buf;
+      }
     }
   }
 }
@@ -82,11 +113,11 @@ void Shibboleth::unshift(const char *word) {
 }
   
   
-void Shibboleth::encode(const char *str, Vocab *vocab, unsigned int seed) {
+void Shibboleth::encode(const char *str, Vocab *vocab, unsigned int seed, multimap<string, string> *defines, map<string, string> *assign) {
   vector<string> strv;
   split(str, ' ', &strv);
+  varsubst(&strv, seed, defines, assign);
   addstars(strv);
-  varsubst(&strv, seed);
 
   if (vocab)
     vocab->add(join(strv, ' '));

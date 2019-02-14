@@ -44,6 +44,8 @@ void Vocab::add(const char *str) {
       if (seen_tag.count(tag))
         continue;
 
+//fprintf(stderr, "adding tag [%s]\n", tag);
+
       tags.resize(n + 1);
       tags[n] = new char[strlen(tag) + 1];
       strcpy(tags[n], tag);

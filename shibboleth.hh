@@ -5,6 +5,7 @@
 #include <string.h>
 
 #include <string>
+#include <map>
 
 #include "random.hh"
 #include "vocab.hh"
@@ -49,11 +50,7 @@ struct Shibboleth {
   void push(const char *);
   void push(const std::string &x) { push(x.c_str()); }
 
-  void encode(const char *str, class Vocab *vocab = NULL, unsigned int seed = 0);
-
-  void encode(const std::string &str, class Vocab *vocab = NULL, unsigned int seed = 0) {
-    encode(str.c_str(), vocab, seed);
-  }
+  void encode(const char *str, class Vocab *vocab = NULL, unsigned int seed = 0, std::multimap<std::string, std::string> *defines = NULL, std::map<std::string, std::string> *assign = NULL);
 
   std::string decode(const class Vocab &vocab);
 };
