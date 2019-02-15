@@ -15,9 +15,31 @@ using namespace std;
 void Hashbag::add(const char *tag, double w) {
   uint8_t hash[64];
 
+  if (!*tag)
+    return;
+
   if (*tag == '-') {
+    unsigned int m = 1;
     ++tag;
-    w = -w;
+    while (*tag == '-') {
+      ++m;
+      ++tag;
+    }
+
+    add(tag, -w * (double)m);
+    return;
+  }
+
+  if (*tag == '+') {
+    unsigned int m = 1;
+    ++tag;
+    while (*tag == '+') {
+      ++m;
+      ++tag;
+    }
+
+    add(tag, w * (double)m);
+    return;
   }
 
   SHA256_CTX sha;
