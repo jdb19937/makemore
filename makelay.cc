@@ -10,7 +10,7 @@ using namespace makemore;
 void usage() {
   fprintf(stderr, "Usage: makelay [\n");
   fprintf(stderr, "  -grid dim [coverage [chans]] |\n");
-  fprintf(stderr, "  -text |\n");
+  fprintf(stderr, "  -text chans |\n");
   fprintf(stderr, "  -rand n [coverage] |\n");
   fprintf(stderr, "  -center n [radius]\n");
   fprintf(stderr, "]\n");
@@ -57,7 +57,9 @@ int main(int argc, char **argv) {
     if (argc > 3) r = strtod(argv[3], NULL);
     lay = Layout::new_square_center(n, r);
   } else if (type == TEXT) {
-    lay = Layout::new_text();
+    chan = 4;
+    if (argc > 2) chan = atoi(argv[2]);
+    lay = Layout::new_text(chan);
   } else if (type == LINE) {
     unsigned int dim = atoi(argv[2]);
     double cov = 1.0;

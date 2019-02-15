@@ -10,7 +10,21 @@ sub ask {
   $this->{ask}->(@_)
 }
 
-sub interpret {
+sub do_reqsubst {
+  my ($this, $rsp, $req) = @_;
+  my @rsp = split /\s+/, $rsp;
+  my @req = split /\s+/, $req;
+
+  for (@rsp) {
+    if (/^\\([1-9])$/) {
+      $_ = $req[$1 - 1];
+    }
+  }
+
+  join ' ', @rsp
+}
+
+sub do_eval {
   my ($this, $rsp) = @_;
   my @w = split /\s+/, $rsp;
 
@@ -28,8 +42,14 @@ sub interpret {
     }
   }
 
-  @w = @out; 
-  @out = ( );
+  join(' ', @out)
+}
+
+sub do_joinmerge {
+  my ($this, $rsp) = @_;
+
+  my @w = split(/\s+/, $rsp);
+  my @out = ( );
   
   while (@w) {
     my $w = shift(@w);
@@ -46,7 +66,16 @@ sub interpret {
     }
   }
 
-  $rsp = join(' ', @out);
+  join(' ', @out)
+}
+
+
+sub interpret {
+  my ($this, $rsp, $req) = @_;
+
+  $rsp = $this->do_reqsubst($rsp, $req);
+  $rsp = $this->do_eval($rsp);
+  $rsp = $this->do_joinmerge($rsp);
 
   if (substr($rsp, 0, 2) eq "! ") {
     $rsp = $this->ask(substr($rsp, 2));

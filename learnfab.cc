@@ -4,6 +4,7 @@
 #include "shibboleth.hh"
 #include "script.hh"
 #include "confab.hh"
+#include "brane.hh"
 
 using namespace makemore;
 
@@ -15,24 +16,23 @@ int main() {
   confab.load();
 
   Script scr("script.txt");
+  Brane brane(&confab);
 
-  assert(confab.ctxlay->n == 512);
-  assert(confab.tgtlay->n == 512);
-  assert(sizeof(Shibboleth) >= 512 * sizeof(double));
+  assert(sizeof(Shibboleth) * 2 == confab.ctxlay->n * sizeof(double));
+  assert(sizeof(Shibboleth) * 7 == confab.tgtlay->n * sizeof(double));
   assert(confab.mbn == mbn);
 
   Shibboleth req, rsp;
+  Rule rules[mbn];
 
   int i = 0;
   while (1) {
     for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
-      scr.pick(&req, &rsp);
-
-      memcpy(confab.ctxbuf + mbi * 512, (double *)&req, sizeof(double) * 512);
-      memcpy(confab.tgtbuf + mbi * 512, (double *)&rsp, sizeof(double) * 512);
+      const Rule *r = scr.pick();
+      rules[mbi] = *r;
+      rules[mbi].prepare();
     }
- 
-    confab.burn(0.002, 0.002);
+    brane.burn(rules, mbn, 0.001);
 
     if (i % 1000 == 0) {
       confab.report("learnfab");

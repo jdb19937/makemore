@@ -11,11 +11,19 @@
 namespace makemore {
 
 struct Hashbag {
-  const static unsigned int n = 256;
+  const static unsigned int n = 128;
   double vec[n];
 
   void clear() {
     memset(vec, 0, sizeof(vec));
+  }
+
+  double size() const {
+    double e2 = 0;
+    for (unsigned int i = 0; i < n; ++i)
+      e2 += (vec[i] * vec[i]);
+    e2 /= (double)n;
+    return e2;
   }
 
   Hashbag() {
@@ -31,26 +39,47 @@ struct Hashbag {
     add(tag);
   }
 
+  static Hashbag random() {
+    char buf[32];
+    sprintf(buf, "%08x", randuint());
+    return Hashbag(buf);
+  }
+
+
   void add(const char *tag, double m = 1.0);
 
   void copy(const Hashbag &t) {
     memcpy(vec, t.vec, sizeof(vec));
   }
 
+  void mul(const Hashbag &x) {
+    for (unsigned int i = 0; i < n; ++i)
+      vec[i] *= x.vec[i];
+  }
+  
   void mul(double w) {
     if (w == 1.0)
       return;
     for (unsigned int i = 0; i < n; ++i)
       vec[i] *= w;
   }
-  
+
+  Hashbag &operator *= (const Hashbag &x) {
+    mul(x);
+    return *this;
+  }
 
   Hashbag &operator *= (double w) {
     mul(w);
     return *this;
   }
 
-  Hashbag operator * (double w) {
+  Hashbag operator * (const Hashbag &x) const {
+    Hashbag tb = *this;
+    return (tb *= x);
+  }
+
+  Hashbag operator * (double w) const {
     Hashbag tb = *this;
     return (tb *= w);
   }
@@ -77,13 +106,13 @@ struct Hashbag {
     return *this;
   }
 
-  Hashbag operator + (const Hashbag &tb1) {
+  Hashbag operator + (const Hashbag &tb1) const {
     Hashbag tb0 = *this;
     tb0.add(tb1);
     return tb0;
   }
 
-  Hashbag operator - (const Hashbag &tb1) {
+  Hashbag operator - (const Hashbag &tb1) const {
     Hashbag tb0 = *this;
     tb0.sub(tb1);
     return tb0;

@@ -232,6 +232,8 @@ void Confab::load_ctx(FILE *infp) {
 
 
 void Confab::generate(unsigned int reps) {
+  scramble(0, 0);
+
   assert(geninlay->n == ctxlay->n + ctrlay->n);
 
   for (unsigned int mbi = 0; mbi < mbn; ++mbi) {

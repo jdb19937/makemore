@@ -3,6 +3,7 @@
 
 #include "shibboleth.hh"
 #include "vocab.hh"
+#include "rule.hh"
 
 #include <string>
 #include <map>
@@ -10,10 +11,7 @@
 namespace makemore {
 
 struct Script {
-  typedef std::pair<std::string, std::string> Template;
-  std::vector<Template> templates;
-
-  std::multimap<std::string, std::string> defines;
+  std::vector<Rule> rules;
 
   std::string fn;
   FILE *fp;
@@ -21,7 +19,7 @@ struct Script {
   Script(const char *_fn, Vocab *vocab = NULL);
   ~Script();
 
-  void pick(Shibboleth *req, Shibboleth *rsp);
+  const Rule *pick();
 };
 
 }

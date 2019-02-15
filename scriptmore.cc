@@ -5,10 +5,9 @@
 #include "script.hh"
 #include "confab.hh"
 #include "strutils.hh"
+#include "brane.hh"
 
 using namespace makemore;
-
-  unsigned int tbn = 4;
 
 std::string normpart(const std::string &x) {
   std::vector<std::string> xp;
@@ -27,14 +26,15 @@ std::string ask(Confab &confab, Vocab &vocab, std::string reqstr) {
   Shibboleth req, rsp;
 
   std::string rspstr;
-  req.encode(reqstr.c_str(), &vocab);
+  vocab.add(reqstr.c_str());
+  req.encode(reqstr.c_str());
 
-  memcpy(confab.ctxbuf, (double *)&req, sizeof(double) * 512);
+  memcpy(confab.ctxbuf, (double *)&req, sizeof(Shibboleth));
 
   confab.scramble(0, 0);
   confab.generate();
 
-  memcpy((double *)&rsp, confab.outbuf, sizeof(double) * 512);
+  memcpy((double *)&rsp, confab.outbuf, sizeof(Shibboleth));
 
   rspstr = rsp.decode(vocab);
   return rspstr;
@@ -50,6 +50,8 @@ int main() {
     Script scr("script.txt", &vocab);
   }
 
+  Brane brane(&confab);
+
   char buf[4096];
 
   while (1) {
@@ -63,10 +65,12 @@ int main() {
 
     confab.load();
 
-    int iters = 0;
-    std::string reqstr = buf;
-    std::string rspstr = ask(confab, vocab, reqstr);
+    Shibboleth reqshib;
+    vocab.add(buf);
+    reqshib.encode(buf);
+    Shibboleth rspshib = brane.ask(reqshib);
 
+    std::string rspstr = rspshib.decode(vocab);
     printf("%s\n", rspstr.c_str());
   }
 

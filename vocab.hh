@@ -18,8 +18,9 @@ struct Vocab {
   unsigned int n;
   std::vector<char *> tags;
   std::vector<Hashbag> bags;
-
   std::set<std::string> seen_tag;
+
+  void clear();
 
   void add(const char *tag);
   void add(const std::string &tagstr) {

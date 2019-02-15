@@ -6,6 +6,7 @@
 
 #include <string>
 #include <map>
+#include <algorithm>
 
 #include "random.hh"
 #include "vocab.hh"
@@ -14,15 +15,29 @@
 namespace makemore {
 
 struct Shibboleth {
-  const double omul = 0.2;
-
-  Hashbag avec, ovec;
-  unsigned int wn;
+  Hashbag head, torso, rear, pairs;
 
   void clear() {
-    wn = 0;
-    avec.clear();
-    ovec.clear();
+    head.clear();
+    torso.clear();
+    rear.clear();
+    pairs.clear();
+  }
+
+  bool is_empty() const {
+    return (head.size() <= 0.5);
+  }
+
+  bool is_single() const {
+    return (rear.size() <= 0.5);
+  }
+
+  double size() const {
+    double n = 0;
+    n += (head.size() > 0.5) ? 1.0 : 0.0;
+    n += (rear.size() > 0.5) ? 1.0 : 0.0;
+    n += torso.size();
+    return n;
   }
 
   Shibboleth() {
@@ -30,9 +45,10 @@ struct Shibboleth {
   }
 
   void copy(const Shibboleth &t) {
-    wn = t.wn;
-    avec = t.avec;
-    ovec = t.ovec;
+    head = t.head;
+    torso = t.torso;
+    pairs = t.pairs;
+    rear = t.rear;
   }
 
   Shibboleth(const Shibboleth &t) {
@@ -44,14 +60,15 @@ struct Shibboleth {
     return *this;
   }
 
+  void reverse() {
+    std::swap(head, rear);
+  }
 
-  void unshift(const char *);
-  void unshift(const std::string &x) { unshift(x.c_str()); }
-  void push(const char *);
-  void push(const std::string &x) { push(x.c_str()); }
+  void append(const char *);
+  void append(const Shibboleth &x);
+  void append(const Hashbag &);
 
-  void encode(const char *str, class Vocab *vocab = NULL, unsigned int seed = 0, std::multimap<std::string, std::string> *defines = NULL, std::map<std::string, std::string> *assign = NULL);
-
+  void encode(const char *str);
   std::string decode(const class Vocab &vocab);
 };
 

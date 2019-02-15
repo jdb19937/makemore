@@ -7,32 +7,20 @@
 #include "strutils.hh"
 #include "closest.hh"
 #include "vocab.hh"
+#include "wildmap.hh"
 
 #include "sha256.c"
 
 namespace makemore {
+double pairmul = 0.1;
+
 using namespace std;
-
-static void vecadd(double *x, const double *y) {
-  for (unsigned int i = 0; i < 256; ++i)
-    x[i] += y[i];
-}
-
-static void vecmul(double *x, double m) {
-  for (unsigned int i = 0; i < 256; ++i)
-    x[i] *= m;
-}
-
-static void vecsub(double *x, const double *y) {
-  for (unsigned int i = 0; i < 256; ++i)
-    x[i] -= y[i];
-}
 
 static void addstars(vector<string> &words) {
   set<string> seen;
 
   for (auto wi = words.begin(); wi != words.end(); ++wi) {
-    if (*wi->c_str() == '$' || *wi->c_str() == '*')
+    if (*wi->c_str() == '*')
       continue;
     while (seen.count(*wi))
       *wi = std::string("*") + *wi;
@@ -49,131 +37,210 @@ static void delstars(vector<string> &words) {
   }
 }
 
-static void varsubst(vector<string> *words, unsigned int seed, multimap<string, string> *defines, map<string, string> *assign) {
+static void varsubst(vector<string> *words, multimap<string, string> *defines) {
   char buf[32];
 
   for (auto wi = words->begin(); wi != words->end(); ++wi) {
     std::string wstr = *wi;
 
-    if (wstr[0] == '$') {
-      if (assign) {
-        auto kvi = assign->find(wstr);
-        if (kvi != assign->end()) {
-          *wi = kvi->second;
-           continue;
-        }
-      }
-
+    if (wstr == "*") {
+      sprintf(buf, "[%08X]", randuint());
+      *wi = buf;
+    } else if (defines) {
       vector<string> vals;
-      if (defines) {
-        const char *p = wstr.c_str() + 1;
-        const char *q = strchr(p, ':');
-        if (!q)
-          q = p + strlen(p);
-        std::string key(p, q - p);
+      std::string key(wstr);
 
-        auto r = defines->equal_range(key);
-        for (auto ri = r.first; ri != r.second; ++ri)
-          vals.push_back(ri->second);
-      }
+      auto r = defines->equal_range(wstr);
+      for (auto ri = r.first; ri != r.second; ++ri)
+        vals.push_back(ri->second);
 
       if (vals.size()) {
         string val = vals[randuint() % vals.size()];
-        if (assign)
-          assign->insert(make_pair(wstr, val));
         *wi = val;
-      } else {
-        sprintf(buf, "[%08X]", seed);
-        if (assign)
-          assign->insert(make_pair(wstr, wstr + buf));
-        *wi = wstr + buf;
       }
     }
   }
 }
 
-void Shibboleth::push(const char *word) {
-  Hashbag wvec(word);
+void Shibboleth::append(const Hashbag &bag) {
+  unsigned int n = lround(size()); 
 
-  ovec -= avec;
-  avec += wvec;
-  wvec *= (double)wn;
-  ovec += wvec;
-  ++wn;
+  if (n == 0) {
+    head = bag;
+    return;
+  } else if (n == 1) {
+    rear = bag;
+    pairs.add(head * rear * pairmul);
+    return;
+  }
+
+  Hashbag prev = rear;
+  torso.add(rear);
+  rear = bag;
+
+  prev *= bag;
+  pairs.add(prev * pairmul);
 }
 
-void Shibboleth::unshift(const char *word) {
-  Hashbag wvec(word);
-
-  ovec += avec;
-  avec += wvec;
-  wvec *= (double)wn;
-  ovec -= wvec;
-  ++wn;
+void Shibboleth::append(const char *word) {
+  append(Hashbag(word));
 }
-  
-  
-void Shibboleth::encode(const char *str, Vocab *vocab, unsigned int seed, multimap<string, string> *defines, map<string, string> *assign) {
-  vector<string> strv;
-  split(str, ' ', &strv);
-  varsubst(&strv, seed, defines, assign);
-  addstars(strv);
 
-  if (vocab)
-    vocab->add(join(strv, ' '));
+void Shibboleth::append(const Shibboleth &shib) {
+  unsigned int n = lround(size()); 
+  unsigned int shibn = lround(shib.size());
 
-//fprintf(stderr, "enc %s\n", join(strv, ' ').c_str());
+  if (shibn == 0)
+    return;
+
+  if (n == 0) {
+    copy(shib);
+    return;
+  } else if (n == 1) {
+    if (shibn == 1) {
+      rear = shib.head;
+      pairs.add(head * rear * pairmul);
+      return;
+    }
+
+    Hashbag tmp = head;
+    copy(shib);
+    torso.add(head);
+    pairs.add(head * tmp * pairmul);
+    head = tmp;
+    return;
+  }
+
+  torso.add(rear);
+  torso.add(shib.head);
+  torso.add(shib.torso);
+  pairs.add(rear * shib.head * pairmul);
+  rear = shib.rear;
+}
+
+void Shibboleth::encode(const char *str) {
+  vector<string> words;
+  split(str, ' ', &words);
+//  addstars(words);
+
+//fprintf(stderr, "enc %s\n", join(words, ' ').c_str());
 
   clear();
-  for (auto i = strv.begin(); i != strv.end(); ++i)
-    push(*i);
 
-  ovec *= omul;
+  unsigned int wn = words.size();
+  if (wn == 0) {
+    return;
+  }
+  head.add(words[0].c_str());
+
+  if (wn == 1)
+    return;
+  rear.add(words[wn - 1].c_str());
+  
+  for (unsigned int wi = 1; wi < wn - 1; ++wi) {
+    torso.add(words[wi].c_str());
+  }
+
+  char buf[1024];
+  for (unsigned int wi = 0, wj = wi + 1; wj < wn; ++wi, ++wj) {
+    const char *wa = words[wi].c_str();
+    const char *wb = words[wj].c_str();
+
+    Hashbag pairbag(wa);
+    pairbag *= Hashbag(wb);
+
+    pairs.add(pairbag);
+  }
+
+//fprintf(stderr, "pairsize=%lf\n", pairs.size());
+  pairs *= pairmul;
+
 }
 
 std::string Shibboleth::decode(const Vocab &vocab) {
-  Hashbag tvec = avec;
+  Hashbag tvec = torso;
   const Hashbag *uvecp = NULL;
 
-  vector<string> out;
+  const char *headword = vocab.closest(head, NULL);
+  if (!headword)
+    return "";
 
-  unsigned int outn = 8;
-  for (unsigned int outi = 0; outi < outn; ++outi) {
+  const char *rearword = vocab.closest(rear, NULL);
+  if (!rearword)
+    return headword;
+
+  map<string, unsigned int> whb;
+  for (unsigned int outi = 0; outi < 16; ++outi) {
     const char *w = vocab.closest(tvec, &uvecp);
     if (!w)
       break;
-
-    out.push_back(w);
+    ++whb[w];
     tvec -= *uvecp;
   }
 
-  Hashbag pvec = ovec;
-  pvec *= (1.0 / omul);
+  vector<string> front, back;
 
-  struct cmp_t {
-    const Hashbag *ovecp;
+  Hashbag tpairs = pairs;
+  tpairs *= (1.0 / pairmul);
+  std::string prevword0 = headword;
+  std::string prevword1 = rearword;
 
-    cmp_t(const Hashbag *_ovecp) : ovecp(_ovecp) { }
+  while (whb.begin() != whb.end()) {
+    double bestd = -1;
+    int bestdir = -1;
+    std::string bestnextword;
+    Hashbag bestpairbag;
 
-    bool operator () (const std::string &x, const std::string &y) {
-      Hashbag xvec(x.c_str()), yvec(y.c_str());
+    for (auto whi = whb.begin(); whi != whb.end(); ++whi) {
+      std::string nextword = whi->first;
 
-      Hashbag tvec = yvec;
-      tvec -= xvec;
-      Hashbag uvec = tvec;
-      uvec.mul(-1);
-
-      tvec -= *ovecp;
-      uvec -= *ovecp;
-
-      return (tvec.abs() < uvec.abs());
+      Hashbag pairbag0(prevword0.c_str());
+      pairbag0 *= Hashbag(nextword.c_str());
+      double d0 = (pairbag0 - tpairs).abs();
+      if (bestd < 0 || d0 < bestd) {
+        bestnextword = nextword;
+        bestpairbag = pairbag0;
+        bestdir = 0;
+        bestd = d0;
+      }
+     
+#if 1
+      Hashbag pairbag1(prevword1.c_str());
+      pairbag1 *= Hashbag(nextword.c_str());
+      double d1 = (pairbag1 - tpairs).abs();
+      if (bestd < 0 || d1 < bestd) {
+        bestnextword = nextword;
+        bestpairbag = pairbag1;
+        bestdir = 1;
+        bestd = d1;
+      }
+#endif
     }
-  } cmp(&pvec);
 
-  std::sort(out.begin(), out.end(), cmp);
+    --whb[bestnextword];
+    if (whb[bestnextword] == 0)
+      whb.erase(bestnextword);
 
-  delstars(out);
+    tpairs -= bestpairbag;
 
+    if (bestdir == 0) {
+      front.push_back(bestnextword);
+      prevword0 = bestnextword;
+    } else if (bestdir == 1) {
+      back.push_back(bestnextword);
+      prevword1 = bestnextword;
+    }
+  }
+
+  std::vector<std::string> out;
+  out.push_back(headword);
+  for (auto i = 0; i < front.size(); ++i)
+    out.push_back(front[i]);
+  for (int i = back.size() - 1; i >= 0; --i)
+    out.push_back(back[i]);
+  out.push_back(rearword);
+
+//  delstars(out);
   return join(out, ' ');
 }
 

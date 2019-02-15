@@ -16,7 +16,7 @@ our $iters;
 my $interpreter = $module->new(\&ask);
 
 sub ask {
-  return "..." if ++$iters > 64;
+  return "..." if ++$iters > 1024;
 
   my $req = shift;
   print $sout "$req\n";
@@ -27,7 +27,7 @@ sub ask {
   warn(('  ' x $depth) . "rsp=$rsp\n");
 
   $depth++;
-  $rsp = $interpreter->interpret($rsp);
+  $rsp = $interpreter->interpret($rsp, $req);
   $depth--;
 
   $rsp

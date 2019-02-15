@@ -5,6 +5,7 @@
 #include <math.h>
 
 #include "layout.hh"
+#include "hashbag.hh"
 
 namespace makemore {
   
@@ -61,8 +62,10 @@ Layout *Layout::new_line(unsigned int dim, double s, unsigned int chan) {
   return l;
 }
 
-Layout *Layout::new_text(unsigned int bits, unsigned int chan) {
+Layout *Layout::new_text(unsigned int chan) {
+  const unsigned int bits = Hashbag::n;
   Layout *l = new Layout(bits * chan);
+fprintf(stderr, "bits=%u chan=%u\n", bits, chan);
 
   for (unsigned int c = 0; c < chan; ++c) {
     for (unsigned int i = 0; i < bits; ++i) {
