@@ -14,6 +14,7 @@ struct Rule {
   Shibboleth req, mem;
   Shibboleth cmd, out, nem, buf[4];
   Wildmap reqwild, memwild;
+  unsigned int multiplicity;
   bool prepared;
 
   Rule() {

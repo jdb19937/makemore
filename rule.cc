@@ -1,4 +1,9 @@
 #define __MAKEMORE_RULE_CC__ 1
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <netinet/in.h>
+
 #include "rule.hh"
 #include "strutils.hh"
 
@@ -55,11 +60,12 @@ unsigned int Rule::parse(const char *line) {
     reqstr = a;
   }
 
-  unsigned int weight = 1;
+  multiplicity = 1;
   if (sep[2] >= '0' && sep[2] <= '9')
-    weight = atoi(sep + 2);
-  if (weight > 32)
-    weight = 32;
+    multiplicity = atoi(sep + 2);
+  if (multiplicity > 32)
+    multiplicity = 32;
+  assert(multiplicity >= 0);
   while (*sep && !isspace(*sep))
     ++sep;
   while (isspace(*sep))
@@ -137,10 +143,12 @@ fprintf(stderr, "bufstr[3]=[%s]\n", bufstr[3].c_str());
   buf[2].encode(bufstr[2].c_str());
   buf[3].encode(bufstr[3].c_str());
 
-  return weight;
+  return multiplicity;
 }
 
 void Rule::save(FILE *fp) const {
+  size_t ret;
+
   req.save(fp);
   mem.save(fp);
   cmd.save(fp);
@@ -151,11 +159,17 @@ void Rule::save(FILE *fp) const {
   buf[2].save(fp);
   buf[3].save(fp);
 
+  uint32_t nm = htonl(multiplicity);
+  ret = fwrite(&nm, 1, 4, fp);
+  assert(ret == 4);
+
   reqwild.save(fp);
   memwild.save(fp);
 }
 
 void Rule::load(FILE *fp) {
+  size_t ret;
+
   req.load(fp);
   mem.load(fp);
   cmd.load(fp);
@@ -168,6 +182,11 @@ void Rule::load(FILE *fp) {
 
   reqwild.load(fp);
   memwild.load(fp);
+
+  uint32_t nm;
+  ret = fread(&nm, 1, 4, fp);
+  assert(ret == 4);
+  multiplicity = (unsigned int)ntohl(nm);
 }
 
 
