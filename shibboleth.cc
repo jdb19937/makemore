@@ -314,4 +314,18 @@ std::string Shibboleth::decode(const Vocab &vocab) const {
   return join(out, ' ');
 }
 
+void Shibboleth::save(FILE *fp) const {
+  head.save(fp);
+  torso.save(fp);
+  rear.save(fp);
+  pairs.save(fp);
+}
+
+void Shibboleth::load(FILE *fp) {
+  head.load(fp);
+  torso.load(fp);
+  rear.load(fp);
+  pairs.load(fp);
+}
+
 }

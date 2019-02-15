@@ -140,4 +140,35 @@ fprintf(stderr, "bufstr[3]=[%s]\n", bufstr[3].c_str());
   return weight;
 }
 
+void Rule::save(FILE *fp) const {
+  req.save(fp);
+  mem.save(fp);
+  cmd.save(fp);
+  out.save(fp);
+  nem.save(fp);
+  buf[0].save(fp);
+  buf[1].save(fp);
+  buf[2].save(fp);
+  buf[3].save(fp);
+
+  reqwild.save(fp);
+  memwild.save(fp);
+}
+
+void Rule::load(FILE *fp) {
+  req.load(fp);
+  mem.load(fp);
+  cmd.load(fp);
+  out.load(fp);
+  nem.load(fp);
+  buf[0].load(fp);
+  buf[1].load(fp);
+  buf[2].load(fp);
+  buf[3].load(fp);
+
+  reqwild.load(fp);
+  memwild.load(fp);
+}
+
+
 }

@@ -3,6 +3,8 @@
 
 #include <assert.h>
 #include <string.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 #include <string>
 
@@ -140,6 +142,18 @@ struct Hashbag {
   void negate() {
     for (unsigned int i = 0; i < n; ++i)
       vec[i] = -vec[i];
+  }
+
+  void save(FILE *fp) const {
+    size_t ret;
+    ret = fwrite(vec, sizeof(double), n, fp);
+    assert(ret == n);
+  }
+
+  void load(FILE *fp) {
+    size_t ret;
+    ret = fread(vec, sizeof(double), n, fp);
+    assert(ret == n);
   }
 };
 

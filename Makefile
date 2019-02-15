@@ -28,7 +28,7 @@ LABTOOLS = \
   labshrink labhifreq labtogray grayhifreq \
   reconlab recongray 
 
-MORETOOLS = makemore makelay catlay wireup maketop makemap chatfab learnfab learnmore genicon servemore makeparsonsdat sampler makeipdat errstats fillparsonsdat autolign dumpbranetxt
+MORETOOLS = makemore makelay catlay wireup maketop makemap chatfab learnfab learnmore genicon servemore makeparsonsdat sampler makeipdat errstats fillparsonsdat autolign dumpbranetxt morecc
 
 .PHONY: all
 all: $(LIB) $(MORETOOLS)
@@ -245,6 +245,9 @@ learnfab: learnfab.o $(LIB)
 dumpbranetxt.o: $(LIBHDR)
 dumpbranetxt: dumpbranetxt.o $(LIB)
 	$(CXX) -o $@ $(CXXFLAGS) $^ $(LDFLAGS) $(CULDFLAGS)
+morecc.o: $(LIBHDR)
+morecc: morecc.o $(LIB)
+	$(CXX) -o $@ $(CXXFLAGS) $^ $(LDFLAGS) $(CULDFLAGS)
 learnmore.o: $(LIBHDR)
 learnmore: learnmore.o $(LIB)
 	$(CXX) -o $@ $(CXXFLAGS) $^ $(LDFLAGS) $(CULDFLAGS)
@@ -319,4 +322,4 @@ dataclean: clean
 
 
 branecode.tsv: dumpbranetxt
-	./dumpbranetxt > $@
+	./dumpbranetxt |sort > $@

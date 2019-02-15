@@ -13,10 +13,11 @@ namespace makemore {
 struct Wildmap {
   struct Entry {
     Hashbag ctx;
+    Hashbag tmp;
+
     bool consec_prev, consec_next;
     bool is_head, is_rear;
-
-    Hashbag tmp;
+    uint32_t _pad;
   };
 
   std::vector<Entry> map;
@@ -44,6 +45,9 @@ struct Wildmap {
   void parse(const char *str);
 
   void mutate(Shibboleth *shib);
+
+  void save(FILE *fp) const;
+  void load(FILE *fp);
 };
  
 }

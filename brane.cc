@@ -82,10 +82,18 @@ void Brane::_init_vocab() {
       sprintf(buf, "n%c%c", *p, *c);
       sprintf(desc, "negate %s %s", partdesc(*p), bufdesc(*c));
       vocab.add(buf, desc);
+
+      sprintf(buf, "z%c%c", *p, *c);
+      sprintf(desc, "zero %s %s", partdesc(*p), bufdesc(*c));
+      vocab.add(buf, desc);
     }
 
     sprintf(buf, "n%c", *c);
     sprintf(desc, "negate %s", bufdesc(*c));
+    vocab.add(buf, desc);
+
+    sprintf(buf, "z%c", *c);
+    sprintf(desc, "zero %s", bufdesc(*c));
     vocab.add(buf, desc);
   }
 
@@ -153,8 +161,10 @@ void Brane::burn(const Rule *rule, unsigned int mbn, double pi) {
 
 Shibboleth Brane::ask(const Shibboleth &req, Shibboleth *memp, const Vocab *user, unsigned int depth) {
   Shibboleth rsp[7];
+  Shibboleth *nemp;
 
-//fprintf(stderr, "ask req %lf %lf %lf (%lf)\n", req.head.size(), req.torso.size(), req.rear.size(), req.pairs.size());
+//fprintf(stderr, "ask req=[%s]\n", req.decode(*user).c_str());
+//fprintf(stderr, "ask mem=[%s]\n", memp->decode(*user).c_str());
 
   if (depth > max_depth) {
     Shibboleth dots;
@@ -171,12 +181,15 @@ Shibboleth Brane::ask(const Shibboleth &req, Shibboleth *memp, const Vocab *user
   if (memp) {
     memcpy(confab->ctxbuf + k, (double *)memp, sizeof(Shibboleth));
   } else {
-    memset(confab->ctxbuf + k, 0, sizeof(Shibboleth));
+    Shibboleth zeromem;
+    memcpy(confab->ctxbuf + k, (double *)&zeromem, sizeof(Shibboleth));
   }
 
   confab->generate();
 
   memcpy((double *)rsp, confab->outbuf, sizeof(Shibboleth) * 7);
+  nemp = rsp + 2;
+  nemp->clear();
 
   string cmdstr = rsp[0].decode(vocab);
 //fprintf(stderr, "cmdstr=%s\n", cmdstr.c_str());
@@ -191,7 +204,7 @@ Shibboleth Brane::ask(const Shibboleth &req, Shibboleth *memp, const Vocab *user
       {
         assert(cmdi->length() == 2);
         Shibboleth *eval = wbufmap(cmd[1], rsp);
-        *eval = ask(*eval, memp, user, depth + 1);
+        *eval = ask(*eval, nemp, user, depth + 1);
         break;
       }
     case 'r':
@@ -201,6 +214,27 @@ Shibboleth Brane::ask(const Shibboleth &req, Shibboleth *memp, const Vocab *user
         rev->reverse();
         break;
       }
+    case 'z':
+      {
+        const Shibboleth *from;
+        Shibboleth *to;
+        if (cmdi->length() == 2) {
+          to = wbufmap(cmd[1], rsp);
+          to->clear();
+        } else if (cmdi->length() == 3) {
+          to = wbufmap(cmd[2], rsp);
+  
+          switch (cmd[1]) {
+          case '^': to->head.clear(); break;
+          case '%': to->torso.clear(); break;
+          case '$': to->rear.clear(); break;
+          default: assert(0);
+          }
+        } else {
+          assert(0);
+        }
+      }
+      break;
     case 'n':
       {
         const Shibboleth *from;
@@ -236,6 +270,7 @@ Shibboleth Brane::ask(const Shibboleth &req, Shibboleth *memp, const Vocab *user
   
           from = rbufmap(cmd[2], &req, rsp);
           to = wbufmap(cmd[3], rsp);
+//fprintf(stderr, "copy to=%s from=%s\n", to->decode(*user).c_str(), from->decode(*user).c_str());
   
           switch (cmd[1]) {
           case '^': to->copy(from->head); break;
@@ -312,7 +347,7 @@ Shibboleth Brane::ask(const Shibboleth &req, Shibboleth *memp, const Vocab *user
 //fprintf(stderr, "outstr1=%s\n", rsp[1].decode(*user).c_str());
 
   if (memp)
-    memcpy(memp, rsp + 2, sizeof(Shibboleth));
+    memcpy(memp, nemp, sizeof(Shibboleth));
   return rsp[1];
 }
 

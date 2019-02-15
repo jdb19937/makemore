@@ -1,10 +1,16 @@
 #define __MAKEMORE_WILDMAP_CC__
-#include "wildmap.hh"
-#include "hashbag.hh"
-#include "strutils.hh"
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <sys/types.h>
+#include <netinet/in.h>
 
 #include <vector>
 #include <string>
+
+#include "wildmap.hh"
+#include "hashbag.hh"
+#include "strutils.hh"
 
 namespace makemore {
 
@@ -129,6 +135,33 @@ void Wildmap::mutate(Shibboleth *shib) {
 #endif
 
 //fprintf(stderr, "ps1=%lf\n", shib->pairs.size());
+}
+
+
+void Wildmap::save(FILE *fp) const {
+  size_t ret;
+  unsigned int n = map.size();
+
+  uint32_t hn = htonl(n);
+  ret = fwrite(&hn, 1, 4, fp);
+  assert(ret == 4);
+
+  ret = fwrite(map.data(), sizeof(Entry), n, fp);
+  assert(ret == n);
+}
+
+void Wildmap::load(FILE *fp) {
+  size_t ret;
+
+  uint32_t hn;
+  ret = fread(&hn, 1, 4, fp);
+  assert(ret == 4);
+
+  unsigned int n = ntohl(hn);
+  map.resize(n);
+
+  ret = fread(map.data(), sizeof(Entry), n, fp);
+  assert(ret == n);
 }
 
 }

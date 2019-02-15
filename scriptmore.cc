@@ -40,6 +40,22 @@ std::string ask(Confab &confab, Vocab &vocab, std::string reqstr) {
   return rspstr;
 }
 
+static void parsereqmem(const char *in, std::string *req, std::string *mem) {
+  if (const char *p = strchr(in, '(')) {
+    ++p;
+
+    const char *q = strchr(p, ')');
+    if (!q)
+      q = p + strlen(p);
+
+    *mem = std::string(p, q - p);
+    *req = std::string(in, p - in - 1);
+  } else {
+    *req = in;
+    *mem = "";
+  }
+}
+
 int main() {
   setbuf(stdout, NULL);
   seedrand();
@@ -65,10 +81,15 @@ int main() {
 
     confab.load();
 
-    Shibboleth reqshib;
     vocab.add(buf);
-    reqshib.encode(buf);
-    Shibboleth rspshib = brane.ask(reqshib, NULL, &vocab);
+
+    std::string reqstr, memstr;
+    parsereqmem(buf, &reqstr, &memstr);
+    Shibboleth reqshib;
+    reqshib.encode(reqstr.c_str());
+    Shibboleth memshib;
+    memshib.encode(memstr.c_str());
+    Shibboleth rspshib = brane.ask(reqshib, &memshib, &vocab);
 
     std::string rspstr = rspshib.decode(vocab);
     printf("%s\n", rspstr.c_str());

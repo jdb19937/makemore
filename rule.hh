@@ -52,6 +52,9 @@ struct Rule {
     memwild.mutate(&mem);
     prepared = true;
   }
+
+  void load(FILE *fp);
+  void save(FILE *fp) const;
 };
 
 }
