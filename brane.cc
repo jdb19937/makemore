@@ -151,7 +151,7 @@ void Brane::burn(const Rule *rule, unsigned int mbn, double pi) {
   confab->burn(pi, pi);
 }
 
-Shibboleth Brane::ask(const Shibboleth &req, Shibboleth *memp, unsigned int depth) {
+Shibboleth Brane::ask(const Shibboleth &req, Shibboleth *memp, const Vocab *user, unsigned int depth) {
   Shibboleth rsp[7];
 
 //fprintf(stderr, "ask req %lf %lf %lf (%lf)\n", req.head.size(), req.torso.size(), req.rear.size(), req.pairs.size());
@@ -180,6 +180,7 @@ Shibboleth Brane::ask(const Shibboleth &req, Shibboleth *memp, unsigned int dept
 
   string cmdstr = rsp[0].decode(vocab);
 //fprintf(stderr, "cmdstr=%s\n", cmdstr.c_str());
+//fprintf(stderr, "outstr0=%s\n", rsp[1].decode(*user).c_str());
   vector<string> cmds;
   split(cmdstr.c_str(), ' ', &cmds);
 
@@ -190,7 +191,7 @@ Shibboleth Brane::ask(const Shibboleth &req, Shibboleth *memp, unsigned int dept
       {
         assert(cmdi->length() == 2);
         Shibboleth *eval = wbufmap(cmd[1], rsp);
-        *eval = ask(*eval, memp, depth + 1);
+        *eval = ask(*eval, memp, user, depth + 1);
         break;
       }
     case 'r':
@@ -255,7 +256,9 @@ Shibboleth Brane::ask(const Shibboleth &req, Shibboleth *memp, unsigned int dept
           from = rbufmap(cmd[1], &req, rsp);
           to = wbufmap(cmd[2], rsp);
   
+//fprintf(stderr, "append0 to=%s from=%s\n", to->decode(*user).c_str(), from->decode(*user).c_str());
           to->append(*from);
+//fprintf(stderr, "append1 to=%s from=%s\n", to->decode(*user).c_str(), from->decode(*user).c_str());
 
         } else if (cmdi->length() == 4) {
   
@@ -281,7 +284,9 @@ Shibboleth Brane::ask(const Shibboleth &req, Shibboleth *memp, unsigned int dept
           from = rbufmap(cmd[1], &req, rsp);
           to = wbufmap(cmd[2], rsp);
   
+//fprintf(stderr, "prepend0 to=%s from=%s\n", to->decode(*user).c_str(), from->decode(*user).c_str());
           to->prepend(*from);
+//fprintf(stderr, "prepend1 to=%s from=%s\n", to->decode(*user).c_str(), from->decode(*user).c_str());
 
         } else if (cmdi->length() == 4) {
   
@@ -303,6 +308,8 @@ Shibboleth Brane::ask(const Shibboleth &req, Shibboleth *memp, unsigned int dept
       assert(0);
     }
   }
+
+//fprintf(stderr, "outstr1=%s\n", rsp[1].decode(*user).c_str());
 
   if (memp)
     memcpy(memp, rsp + 2, sizeof(Shibboleth));

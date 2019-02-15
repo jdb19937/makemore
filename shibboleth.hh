@@ -87,7 +87,7 @@ struct Shibboleth {
   void prepend(const Shibboleth &x);
 
   void encode(const char *str);
-  std::string decode(const class Vocab &vocab);
+  std::string decode(const class Vocab &vocab) const;
 };
 
 }

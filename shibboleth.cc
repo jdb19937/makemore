@@ -111,6 +111,13 @@ void Shibboleth::prepend(const Shibboleth &shib) {
     return;
   }
 
+  if (shibn == 1) {
+    torso.add(head);
+    pairs.add(head * shib.head * pairmul);
+    head = shib.head;
+    return;
+  }
+
   torso.add(head);
   torso.add(shib.rear);
   torso.add(shib.torso);
@@ -167,6 +174,13 @@ void Shibboleth::append(const Shibboleth &shib) {
     return;
   }
 
+  if (shibn == 1) {
+    torso.add(rear);
+    pairs.add(rear * shib.head * pairmul);
+    rear = shib.head;
+    return;
+  }
+
   torso.add(rear);
   torso.add(shib.head);
   torso.add(shib.torso);
@@ -213,7 +227,7 @@ void Shibboleth::encode(const char *str) {
 
 }
 
-std::string Shibboleth::decode(const Vocab &vocab) {
+std::string Shibboleth::decode(const Vocab &vocab) const {
   Hashbag tvec = torso;
   const Hashbag *uvecp = NULL;
 

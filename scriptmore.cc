@@ -68,7 +68,7 @@ int main() {
     Shibboleth reqshib;
     vocab.add(buf);
     reqshib.encode(buf);
-    Shibboleth rspshib = brane.ask(reqshib);
+    Shibboleth rspshib = brane.ask(reqshib, NULL, &vocab);
 
     std::string rspstr = rspshib.decode(vocab);
     printf("%s\n", rspstr.c_str());

@@ -18,7 +18,7 @@ struct Brane {
   ~Brane();
 
   void _init_vocab();
-  Shibboleth ask(const Shibboleth &req, Shibboleth *memp = NULL, unsigned int depth = 0);
+  Shibboleth ask(const Shibboleth &req, Shibboleth *memp = NULL, const Vocab *user = NULL, unsigned int depth = 0);
   void burn(const Rule *rule, unsigned int mbn, double nu);
 };
 

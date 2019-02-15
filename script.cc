@@ -31,6 +31,9 @@ Script::Script(const char *_fn, Vocab *vocab) {
     if (!*q)
       continue;
 
+    if (vocab)
+      vocab->add(q);
+
     Rule r;
     unsigned int copies = r.parse(q);
     for (unsigned int copy = 0; copy < copies; ++copy)
