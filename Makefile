@@ -316,3 +316,7 @@ dataclean: clean
 	rm -rf celeba-dataset
 	rm -f $(DATASETS)
 	rm -f $(LAYOUTS)
+
+
+branecode.tsv: dumpbranetxt
+	./dumpbranetxt > $@

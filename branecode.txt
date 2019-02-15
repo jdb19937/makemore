@@ -1,0 +1,39 @@
+branecode is a low-level language used in text synthesis to direct recursive calls back
+into the generator without a full decoding of the generator output. It runs inside the
+GPU and operates directly on shibboleths.  There are about 1000 instructions, which
+take no arguments, and a branecode script is simply a list of these instructions.
+
+There are a fixed set of shibboleth registers:
+
+	I (primary input)
+	J (primary output)
+	M (memory input)
+	N (memory output)
+	1 (register 1)
+	2 (register 2)
+	3 (register 3)
+	4 (register 4)
+
+These registers can be manipulated with the following opcodes:
+
+	a (append)
+	c (copy)
+	p (prepend)
+	n (negate)
+	r (reverse)
+	e (evaluate)
+
+A shibboleth has three parts (head, torso, rear) which can be independently addressed using
+a part specifier:
+
+	^ (front)
+	% (torso)
+	$ (rear)
+
+A branecode instruction is the concatenation of an opcode, an optional part specifier in
+some cases, and one or two argument registers.  A part specifier is permitted only in
+"a", "c"," "p"," and "n" instructions.  "n", "r", and "e" instructions require one argument
+(the register to be negated, reversed, or evaluated respectively), and "a", "c", and "p"
+instructions require two arguments (the source and destination).
+
+branecode.tsv is a table of all the branecode instructions and their descriptions.

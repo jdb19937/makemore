@@ -29,7 +29,6 @@ static const char *bufdesc(char c) {
   switch (c) {
   case 'I': return "primary input";
   case 'J': return "primary output";
-  case 'C': return "command";
   case 'M': return "memory input";
   case 'N': return "memory output";
   case '1': return "register 1";
@@ -43,7 +42,7 @@ static const char *bufdesc(char c) {
 void Brane::_init_vocab() {
   char buf[256], desc[256];
 
-  const char *rbuf = "IJCMN1234";
+  const char *rbuf = "IJMN1234";
   const char *wbuf = "JN1234";
   const char *parts = "^%$";
 
@@ -105,7 +104,6 @@ static const Shibboleth *rbufmap(char cbuf, const Shibboleth *req, const Shibbol
   switch (cbuf) {
   case 'I': return req;
   case 'M': return req + 1;
-  case 'C': return rsp;
   case 'J': return rsp + 1;
   case 'N': return rsp + 2;
   case '1': return rsp + 3;
