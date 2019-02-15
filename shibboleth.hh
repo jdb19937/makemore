@@ -51,6 +51,13 @@ struct Shibboleth {
     rear = t.rear;
   }
 
+  void copy(const Hashbag &h) {
+    head = h;
+    torso.clear();
+    rear.clear();
+    pairs.clear();
+  }
+  
   Shibboleth(const Shibboleth &t) {
     copy(t);
   }
@@ -64,9 +71,20 @@ struct Shibboleth {
     std::swap(head, rear);
   }
 
+  void negate() {
+    head.negate();
+    rear.negate();
+    torso.negate();
+    // don't negate pairs
+  }
+
   void append(const char *);
   void append(const Shibboleth &x);
   void append(const Hashbag &);
+
+  void prepend(const char *);
+  void prepend(const Hashbag &);
+  void prepend(const Shibboleth &x);
 
   void encode(const char *str);
   std::string decode(const class Vocab &vocab);

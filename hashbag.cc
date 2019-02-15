@@ -15,6 +15,11 @@ using namespace std;
 void Hashbag::add(const char *tag, double w) {
   uint8_t hash[64];
 
+  if (*tag == '-') {
+    ++tag;
+    w = -w;
+  }
+
   SHA256_CTX sha;
   sha256_init(&sha);
   sha256_update(&sha, (const uint8_t *)"#", 1);

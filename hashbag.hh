@@ -137,11 +137,9 @@ struct Hashbag {
     return *this;
   }
 
-  double abs() {
-    double e = 0;
+  void negate() {
     for (unsigned int i = 0; i < n; ++i)
-      e += vec[i] * vec[i];
-    return e;
+      vec[i] = -vec[i];
   }
 };
 

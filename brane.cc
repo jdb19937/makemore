@@ -16,34 +16,88 @@ Brane::~Brane() {
 
 }
 
+static const char *partdesc(char c) {
+  switch (c) {
+  case '^': return "head of";
+  case '$': return "rear of";
+  case '%': return "torso of";
+  default: assert(0);
+  }
+}
+
+static const char *bufdesc(char c) {
+  switch (c) {
+  case 'I': return "primary input";
+  case 'J': return "primary output";
+  case 'C': return "command";
+  case 'M': return "memory input";
+  case 'N': return "memory output";
+  case '1': return "register 1";
+  case '2': return "register 2";
+  case '3': return "register 3";
+  case '4': return "register 4";
+  default: assert(0);
+  }
+}
+
 void Brane::_init_vocab() {
-  char buf[256];
+  char buf[256], desc[256];
+
+  const char *rbuf = "IJCMN1234";
+  const char *wbuf = "JN1234";
+  const char *parts = "^%$";
 
   vocab.clear();
-  for (const char *b = "IPCMN1234"; *b; ++b) {
-    for (const char *c = "PN1234"; *c; ++c) {
-      for (const char *p = "^%$*"; *p; ++p) {
+  for (const char *b = rbuf; *b; ++b) {
+    for (const char *c = wbuf; *c; ++c) {
+      for (const char *p = parts; *p; ++p) {
+        sprintf(buf, "p%c%c%c", *p, *b, *c);
+        sprintf(desc, "prepend %s %s to %s", partdesc(*p), bufdesc(*b), bufdesc(*c));
+        vocab.add(buf, desc);
+
         sprintf(buf, "a%c%c%c", *p, *b, *c);
-        vocab.add(buf);
+        sprintf(desc, "append %s %s to %s", partdesc(*p), bufdesc(*b), bufdesc(*c));
+        vocab.add(buf, desc);
 
         sprintf(buf, "c%c%c%c", *p, *b, *c);
-        vocab.add(buf);
+        sprintf(desc, "copy %s %s to %s", partdesc(*p), bufdesc(*b), bufdesc(*c));
+        vocab.add(buf, desc);
       }
 
+      sprintf(buf, "p%c%c", *b, *c);
+      sprintf(desc, "prepend %s to %s", bufdesc(*b), bufdesc(*c));
+      vocab.add(buf, desc);
+
       sprintf(buf, "a%c%c", *b, *c);
-      vocab.add(buf);
+      sprintf(desc, "append %s to %s", bufdesc(*b), bufdesc(*c));
+      vocab.add(buf, desc);
 
       sprintf(buf, "c%c%c", *b, *c);
-      vocab.add(buf);
+      sprintf(desc, "copy %s to %s", bufdesc(*b), bufdesc(*c));
+      vocab.add(buf, desc);
     }
   }
 
-  for (const char *b = "PN1234"; *b; ++b) {
+  for (const char *c = wbuf; *c; ++c) {
+    for (const char *p = parts; *p; ++p) {
+      sprintf(buf, "n%c%c", *p, *c);
+      sprintf(desc, "negate %s %s", partdesc(*p), bufdesc(*c));
+      vocab.add(buf, desc);
+    }
+
+    sprintf(buf, "n%c", *c);
+    sprintf(desc, "negate %s", bufdesc(*c));
+    vocab.add(buf, desc);
+  }
+
+  for (const char *b = wbuf; *b; ++b) {
     sprintf(buf, "e%c", *b);
-    vocab.add(buf);
+    sprintf(desc, "evaluate %s", bufdesc(*b));
+    vocab.add(buf, desc);
 
     sprintf(buf, "r%c", *b);
-    vocab.add(buf);
+    sprintf(desc, "reverse %s", bufdesc(*b));
+    vocab.add(buf, desc);
   }
 }
 
@@ -52,7 +106,7 @@ static const Shibboleth *rbufmap(char cbuf, const Shibboleth *req, const Shibbol
   case 'I': return req;
   case 'M': return req + 1;
   case 'C': return rsp;
-  case 'P': return rsp + 1;
+  case 'J': return rsp + 1;
   case 'N': return rsp + 2;
   case '1': return rsp + 3;
   case '2': return rsp + 4;
@@ -64,7 +118,7 @@ static const Shibboleth *rbufmap(char cbuf, const Shibboleth *req, const Shibbol
 
 static Shibboleth *wbufmap(char cbuf, Shibboleth *rsp) {
   switch (cbuf) {
-  case 'P': return rsp + 1;
+  case 'J': return rsp + 1;
   case 'N': return rsp + 2;
   case '1': return rsp + 3;
   case '2': return rsp + 4;
@@ -148,6 +202,27 @@ Shibboleth Brane::ask(const Shibboleth &req, Shibboleth *memp, unsigned int dept
         rev->reverse();
         break;
       }
+    case 'n':
+      {
+        const Shibboleth *from;
+        Shibboleth *to;
+        if (cmdi->length() == 2) {
+          to = wbufmap(cmd[1], rsp);
+          to->negate();
+        } else if (cmdi->length() == 3) {
+          to = wbufmap(cmd[2], rsp);
+  
+          switch (cmd[1]) {
+          case '^': to->head.negate(); break;
+          case '%': to->torso.negate(); break;
+          case '$': to->rear.negate(); break;
+          default: assert(0);
+          }
+        } else {
+          assert(0);
+        }
+      }
+      break;
     case 'c':
       {
         const Shibboleth *from;
@@ -164,10 +239,9 @@ Shibboleth Brane::ask(const Shibboleth &req, Shibboleth *memp, unsigned int dept
           to = wbufmap(cmd[3], rsp);
   
           switch (cmd[1]) {
-          case '^': to->clear(); to->append(from->head); break;
-          case '%': to->clear(); to->append(from->torso); break;
-          case '$': to->clear(); to->append(from->rear); break;
-          case '*': *to = *from; break;
+          case '^': to->copy(from->head); break;
+          case '%': to->copy(from->torso); break;
+          case '$': to->copy(from->rear); break;
           default: assert(0);
           }
         } else {
@@ -194,7 +268,32 @@ Shibboleth Brane::ask(const Shibboleth &req, Shibboleth *memp, unsigned int dept
           case '^': to->append(from->head); break;
           case '%': to->append(from->torso); break;
           case '$': to->append(from->rear); break;
-          case '*': to->append(*from); break;
+          default: assert(0);
+          }
+        } else {
+          assert(0);
+        }
+      }
+      break;
+    case 'p':
+      {
+        const Shibboleth *from;
+        Shibboleth *to;
+        if (cmdi->length() == 3) {
+          from = rbufmap(cmd[1], &req, rsp);
+          to = wbufmap(cmd[2], rsp);
+  
+          to->prepend(*from);
+
+        } else if (cmdi->length() == 4) {
+  
+          from = rbufmap(cmd[2], &req, rsp);
+          to = wbufmap(cmd[3], rsp);
+
+          switch (cmd[1]) {
+          case '^': to->prepend(from->head); break;
+          case '%': to->prepend(from->torso); break;
+          case '$': to->prepend(from->rear); break;
           default: assert(0);
           }
         } else {

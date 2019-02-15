@@ -62,6 +62,62 @@ static void varsubst(vector<string> *words, multimap<string, string> *defines) {
   }
 }
 
+void Shibboleth::prepend(const Hashbag &bag) {
+  unsigned int n = lround(size()); 
+
+  if (n == 0) {
+    head = bag;
+    return;
+  } else if (n == 1) {
+    rear = head;
+    head = bag;
+    pairs.add(head * rear * pairmul);
+    return;
+  }
+
+  Hashbag prev = head;
+  torso.add(head);
+  head = bag;
+
+  prev *= bag;
+  pairs.add(prev * pairmul);
+}
+
+void Shibboleth::prepend(const char *word) {
+  prepend(Hashbag(word));
+}
+
+void Shibboleth::prepend(const Shibboleth &shib) {
+  unsigned int n = lround(size()); 
+  unsigned int shibn = lround(shib.size());
+
+  if (shibn == 0)
+    return;
+
+  if (n == 0) {
+    copy(shib);
+    return;
+  } else if (n == 1) {
+    if (shibn == 1) {
+      rear = head;
+      head = shib.head;
+      pairs.add(head * rear * pairmul);
+      return;
+    }
+
+    Hashbag tmp = head;
+    copy(shib);
+    append(tmp);
+    return;
+  }
+
+  torso.add(head);
+  torso.add(shib.rear);
+  torso.add(shib.torso);
+  pairs.add(head * shib.rear * pairmul);
+  head = shib.head;
+}
+
 void Shibboleth::append(const Hashbag &bag) {
   unsigned int n = lround(size()); 
 
@@ -196,7 +252,7 @@ std::string Shibboleth::decode(const Vocab &vocab) {
 
       Hashbag pairbag0(prevword0.c_str());
       pairbag0 *= Hashbag(nextword.c_str());
-      double d0 = (pairbag0 - tpairs).abs();
+      double d0 = (pairbag0 - tpairs).size();
       if (bestd < 0 || d0 < bestd) {
         bestnextword = nextword;
         bestpairbag = pairbag0;
@@ -207,7 +263,7 @@ std::string Shibboleth::decode(const Vocab &vocab) {
 #if 1
       Hashbag pairbag1(prevword1.c_str());
       pairbag1 *= Hashbag(nextword.c_str());
-      double d1 = (pairbag1 - tpairs).abs();
+      double d1 = (pairbag1 - tpairs).size();
       if (bestd < 0 || d1 < bestd) {
         bestnextword = nextword;
         bestpairbag = pairbag1;

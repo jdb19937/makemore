@@ -35,35 +35,38 @@ void Vocab::clear() {
   bags[0].clear();
 }
 
-void Vocab::add(const char *str) {
+void Vocab::add(const char *str, const char *desc) {
   vector<string> words;
   split(str, ' ', &words);
 
-  for (unsigned int stars = 0; stars < 1; ++stars) {
-    for (auto wi = words.begin(); wi != words.end(); ++wi) {
-      std::string word = "";
-      for (unsigned int j = 0; j < stars; ++j)
-        word += "*";
-      word += wi->c_str();
+  for (auto wi = words.begin(); wi != words.end(); ++wi) {
+    std::string word = "";
+    word += wi->c_str();
 
-      const char *tag = word.c_str();
-      if (seen_tag.count(tag))
-        continue;
+    const char *tag = word.c_str();
+    if (seen_tag.count(tag))
+      continue;
 
 //fprintf(stderr, "adding tag [%s]\n", tag);
 
-      tags.resize(n + 1);
-      tags[n] = new char[strlen(tag) + 1];
-      strcpy(tags[n], tag);
+    tags.resize(n + 1);
+    tags[n] = new char[strlen(tag) + 1];
+    strcpy(tags[n], tag);
 
-      bags.resize(n + 1);
-      bags[n].clear();
-      bags[n].add(tag);
+    bags.resize(n + 1);
+    bags[n].clear();
+    bags[n].add(tag);
 
-      seen_tag.insert(tag);
-
-      ++n;
+    descs.resize(n + 1);
+    descs[n] = NULL;
+    if (desc) {
+      descs[n] = new char[strlen(desc) + 1];
+      strcpy(descs[n], desc);
     }
+
+    seen_tag.insert(tag);
+
+    ++n;
   }
 }
 
