@@ -13,6 +13,25 @@
 namespace makemore {
 using namespace std;
 
+static int hexnum(char c) {
+  if (c >= '0' && c <= '9')
+    return c - '0';
+  if (c >= 'A' && c <= 'F')
+    return c - 'A' + 10;
+  return -1;
+}
+
+static bool is_selfhash(const char *tag) {
+  if (strlen(tag) != 33)
+    return false;
+  if (*tag != '~')
+    return false;
+  for (unsigned int i = 1; i < 33; ++i)
+    if (hexnum(tag[i]) < 0)
+      return false;
+  return true;
+}
+
 void Hashbag::add(const char *tag, double w) {
   uint8_t hash[64];
 
@@ -53,6 +72,18 @@ void Hashbag::add(const char *tag, double w) {
     for (unsigned int i = 0; i < ntagparts; ++i)
       add(tagparts[i].c_str(), w * z);
 
+    return;
+  }
+
+  if (is_selfhash(tag)) {
+    ++tag;
+    for (unsigned int i = 0; i < 32; ++i) {
+      int h = hexnum(tag[i]);
+      vec[i * 4 + 0] += (h & 1) ? 1.0 : -1.0;
+      vec[i * 4 + 1] += (h & 2) ? 1.0 : -1.0;
+      vec[i * 4 + 2] += (h & 4) ? 1.0 : -1.0;
+      vec[i * 4 + 3] += (h & 8) ? 1.0 : -1.0;
+    }
     return;
   }
 
