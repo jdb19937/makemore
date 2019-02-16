@@ -31,10 +31,10 @@ static const char *bufdesc(char c) {
   case 'J': return "primary output";
   case 'M': return "memory input";
   case 'N': return "memory output";
+  case 'A': return "auxiliary input";
+  case 'B': return "auxiliary output";
   case '1': return "register 1";
   case '2': return "register 2";
-  case '3': return "register 3";
-  case '4': return "register 4";
   default: assert(0);
   }
 }
@@ -42,8 +42,8 @@ static const char *bufdesc(char c) {
 void Brane::_init_vocab() {
   char buf[256], desc[256];
 
-  const char *rbuf = "IJMN1234";
-  const char *wbuf = "JN1234";
+  const char *rbuf = "ABIJMN12";
+  const char *wbuf = "BJN12";
   const char *parts = "^%$";
 
   vocab.clear();
@@ -117,6 +117,14 @@ void Brane::_init_vocab() {
     sprintf(buf, "j%c", *b);
     sprintf(desc, "join %s", bufdesc(*b));
     vocab.add(buf, desc);
+
+    sprintf(buf, "x%c", *b);
+    sprintf(desc, "decode %s and randomly choose word", bufdesc(*b));
+    vocab.add(buf, desc);
+
+    sprintf(buf, "y%c", *b);
+    sprintf(desc, "randomly choose head or rear of %s", bufdesc(*b));
+    vocab.add(buf, desc);
   }
 
   vocab.add("nop", "do nothing");
@@ -124,14 +132,14 @@ void Brane::_init_vocab() {
 
 static const Shibboleth *rbufmap(char cbuf, const Shibboleth *req, const Shibboleth *rsp) {
   switch (cbuf) {
-  case 'I': return req;
+  case 'I': return req + 0;
   case 'M': return req + 1;
+  case 'A': return req + 2;
   case 'J': return rsp + 1;
   case 'N': return rsp + 2;
-  case '1': return rsp + 3;
-  case '2': return rsp + 4;
-  case '3': return rsp + 5;
-  case '4': return rsp + 6;
+  case 'B': return rsp + 3;
+  case '1': return rsp + 4;
+  case '2': return rsp + 5;
   default: assert(0);
   }
 }
@@ -140,43 +148,42 @@ static Shibboleth *wbufmap(char cbuf, Shibboleth *rsp) {
   switch (cbuf) {
   case 'J': return rsp + 1;
   case 'N': return rsp + 2;
-  case '1': return rsp + 3;
-  case '2': return rsp + 4;
-  case '3': return rsp + 5;
-  case '4': return rsp + 6;
+  case 'B': return rsp + 3;
+  case '1': return rsp + 4;
+  case '2': return rsp + 5;
   default: assert(0);
   }
 }
 
 void Brane::burn(const Rule *rule, unsigned int mbn, double pi) {
-  Shibboleth req[2], rsp[7];
+  Shibboleth req[3], rsp[6];
 
   assert(mbn == confab->mbn);
   for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
     req[0] = rule[mbi].req;
     req[1] = rule[mbi].mem;
+    req[2] = rule[mbi].aux;
 
 //fprintf(stderr, "burn req %lf %lf %lf (%lf)\n", req[0].head.size(), req[0].torso.size(), req[0].rear.size(), req[0].pairs.size());
 //fprintf(stderr, "burn rsp %lf %lf %lf (%lf)\n", rsp[1].head.size(), rsp[1].torso.size(), rsp[1].rear.size(), rsp[1].pairs.size());
     rsp[0] = rule[mbi].cmd;
     rsp[1] = rule[mbi].out;
     rsp[2] = rule[mbi].nem;
-    rsp[3] = rule[mbi].buf[0];
-    rsp[4] = rule[mbi].buf[1];
-    rsp[5] = rule[mbi].buf[2];
-    rsp[6] = rule[mbi].buf[3];
+    rsp[3] = rule[mbi].bux;
+    rsp[4] = rule[mbi].reg1;
+    rsp[5] = rule[mbi].reg2;
 
-    memcpy(confab->ctxbuf + mbi * confab->ctxlay->n, (double *)req, sizeof(Shibboleth) * 2);
-    memcpy(confab->tgtbuf + mbi * confab->tgtlay->n, (double *)rsp, sizeof(Shibboleth) * 7);
+    memcpy(confab->ctxbuf + mbi * confab->ctxlay->n, (double *)req, sizeof(Shibboleth) * 3);
+    memcpy(confab->tgtbuf + mbi * confab->tgtlay->n, (double *)rsp, sizeof(Shibboleth) * 6);
   }
 
   confab->burn(pi, pi);
 }
 
-Shibboleth Brane::ask(const Shibboleth &in, Shibboleth *memp, unsigned int depth) {
-  Shibboleth req[2];
-  Shibboleth rsp[7];
-  Shibboleth *nemp;
+Shibboleth Brane::ask(const Shibboleth &in, Shibboleth *memp, Shibboleth *auxp, unsigned int depth) {
+  Shibboleth req[3];
+  Shibboleth rsp[6];
+  Shibboleth *nemp, *buxp;
 
   if (depth > max_depth) {
     Shibboleth dots;
@@ -185,28 +192,33 @@ Shibboleth Brane::ask(const Shibboleth &in, Shibboleth *memp, unsigned int depth
   }
 
   req[0] = in;
-  req[1] = *memp;
+  if (memp)
+    req[1] = *memp;
+  if (auxp)
+    req[2] = *auxp;
 
-//fprintf(stderr, "ask in  [%s]\n", in.decode(confab->vocab).c_str());
-//fprintf(stderr, "ask mem [%s]\n", memp->decode(confab->vocab).c_str());
+fprintf(stderr, "ask in  [%s]\n", in.decode(confab->vocab).c_str());
+fprintf(stderr, "ask mem [%s]\n", memp->decode(confab->vocab).c_str());
 
   unsigned int k = sizeof(Shibboleth) / sizeof(double);
   assert(confab->mbn == 1);
-  assert(confab->ctxlay->n * sizeof(double) == 2 * sizeof(Shibboleth)); 
-  assert(confab->tgtlay->n * sizeof(double) == 7 * sizeof(Shibboleth));
+  assert(confab->ctxlay->n * sizeof(double) == 3 * sizeof(Shibboleth)); 
+  assert(confab->tgtlay->n * sizeof(double) == 6 * sizeof(Shibboleth));
 
-  memcpy(confab->ctxbuf, (double *)req, sizeof(Shibboleth) * 2);
+  memcpy(confab->ctxbuf, (double *)req, sizeof(Shibboleth) * 3);
 
   confab->generate();
 
-  memcpy((double *)rsp, confab->outbuf, sizeof(Shibboleth) * 7);
+  memcpy((double *)rsp, confab->outbuf, sizeof(Shibboleth) * 6);
   nemp = rsp + 2;
+  buxp = rsp + 3;
   nemp->clear();
+  buxp->clear();
 
   string cmdstr = rsp[0].decode(vocab);
   vector<string> cmds;
   split(cmdstr.c_str(), ' ', &cmds);
-//fprintf(stderr, "ask cmd [%s]\n", cmdstr.c_str());
+fprintf(stderr, "ask cmd [%s]\n", cmdstr.c_str());
 
   for (auto cmdi = cmds.begin(); cmdi != cmds.end(); ++cmdi) { 
     const char *cmd = cmdi->c_str();
@@ -218,7 +230,7 @@ Shibboleth Brane::ask(const Shibboleth &in, Shibboleth *memp, unsigned int depth
       {
         assert(cmdi->length() == 2);
         Shibboleth *eval = wbufmap(cmd[1], rsp);
-        *eval = ask(*eval, nemp, depth + 1);
+        *eval = ask(*eval, nemp, buxp, depth + 1);
         break;
       }
     case 'd':
@@ -269,6 +281,35 @@ Shibboleth Brane::ask(const Shibboleth &in, Shibboleth *memp, unsigned int depth
         }
 
         dec->encode(joined.c_str());
+        break;
+      }
+    case 'x':
+      {
+        assert(cmdi->length() == 2);
+        Shibboleth *dec = wbufmap(cmd[1], rsp);
+
+        string decstr = dec->decode(confab->vocab);
+
+        vector<string> words;
+        split(decstr.c_str(), ' ', &words);
+
+        if (words.size()) {
+          dec->encode(words[randuint() % words.size()].c_str());
+        } else {
+          dec->clear();
+        }
+        break;
+      }
+    case 'y':
+      {
+        assert(cmdi->length() == 2);
+        Shibboleth *sh = wbufmap(cmd[1], rsp);
+
+        sh->torso.clear();
+        sh->pairs.clear();
+        if (randuint() % 2)
+          sh->head = sh->rear;
+        sh->rear.clear();
         break;
       }
     case 'r':
@@ -354,8 +395,6 @@ Shibboleth Brane::ask(const Shibboleth &in, Shibboleth *memp, unsigned int depth
           from = rbufmap(cmd[1], req, rsp);
           to = wbufmap(cmd[2], rsp);
   
-//fprintf(stderr, "append from [%s]\n", from->decode(confab->vocab).c_str());
-//fprintf(stderr, "append mem  [%s]\n", memp->decode(confab->vocab).c_str());
           to->append(*from);
 
         } else if (cmdi->length() == 4) {
@@ -363,12 +402,17 @@ Shibboleth Brane::ask(const Shibboleth &in, Shibboleth *memp, unsigned int depth
           from = rbufmap(cmd[2], req, rsp);
           to = wbufmap(cmd[3], rsp);
 
+fprintf(stderr, "append from [%s]\n", from->decode(confab->vocab).c_str());
+fprintf(stderr, "append to [%s]\n", to->decode(confab->vocab).c_str());
+fprintf(stderr, "append mem  [%s]\n", memp->decode(confab->vocab).c_str());
+
           switch (cmd[1]) {
           case '^': to->append(from->head); break;
           case '%': to->append(from->torso); break;
           case '$': to->append(from->rear); break;
           default: assert(0);
           }
+fprintf(stderr, "append to' [%s]\n", to->decode(confab->vocab).c_str());
         } else {
           assert(0);
         }
@@ -405,7 +449,10 @@ Shibboleth Brane::ask(const Shibboleth &in, Shibboleth *memp, unsigned int depth
     }
   }
 
-  memcpy(memp, nemp, sizeof(Shibboleth));
+  if (memp)
+    memcpy(memp, nemp, sizeof(Shibboleth));
+  if (auxp)
+    memcpy(auxp, buxp, sizeof(Shibboleth));
   return rsp[1];
 }
 

@@ -6,14 +6,10 @@ a^12	append head of register 1 to register 2
 a$12	append rear of register 1 to register 2
 a12	append register 1 to register 2
 a%12	append torso of register 1 to register 2
-a^13	append head of register 1 to register 3
-a$13	append rear of register 1 to register 3
-a13	append register 1 to register 3
-a%13	append torso of register 1 to register 3
-a^14	append head of register 1 to register 4
-a$14	append rear of register 1 to register 4
-a14	append register 1 to register 4
-a%14	append torso of register 1 to register 4
+a^1B	append head of register 1 to auxiliary output
+a$1B	append rear of register 1 to auxiliary output
+a1B	append register 1 to auxiliary output
+a%1B	append torso of register 1 to auxiliary output
 a^1J	append head of register 1 to primary output
 a$1J	append rear of register 1 to primary output
 a1J	append register 1 to primary output
@@ -30,14 +26,10 @@ a^22	append head of register 2 to register 2
 a$22	append rear of register 2 to register 2
 a22	append register 2 to register 2
 a%22	append torso of register 2 to register 2
-a^23	append head of register 2 to register 3
-a$23	append rear of register 2 to register 3
-a23	append register 2 to register 3
-a%23	append torso of register 2 to register 3
-a^24	append head of register 2 to register 4
-a$24	append rear of register 2 to register 4
-a24	append register 2 to register 4
-a%24	append torso of register 2 to register 4
+a^2B	append head of register 2 to auxiliary output
+a$2B	append rear of register 2 to auxiliary output
+a2B	append register 2 to auxiliary output
+a%2B	append torso of register 2 to auxiliary output
 a^2J	append head of register 2 to primary output
 a$2J	append rear of register 2 to primary output
 a2J	append register 2 to primary output
@@ -46,54 +38,46 @@ a^2N	append head of register 2 to memory output
 a$2N	append rear of register 2 to memory output
 a2N	append register 2 to memory output
 a%2N	append torso of register 2 to memory output
-a^31	append head of register 3 to register 1
-a$31	append rear of register 3 to register 1
-a31	append register 3 to register 1
-a%31	append torso of register 3 to register 1
-a^32	append head of register 3 to register 2
-a$32	append rear of register 3 to register 2
-a32	append register 3 to register 2
-a%32	append torso of register 3 to register 2
-a^33	append head of register 3 to register 3
-a$33	append rear of register 3 to register 3
-a33	append register 3 to register 3
-a%33	append torso of register 3 to register 3
-a^34	append head of register 3 to register 4
-a$34	append rear of register 3 to register 4
-a34	append register 3 to register 4
-a%34	append torso of register 3 to register 4
-a^3J	append head of register 3 to primary output
-a$3J	append rear of register 3 to primary output
-a3J	append register 3 to primary output
-a%3J	append torso of register 3 to primary output
-a^3N	append head of register 3 to memory output
-a$3N	append rear of register 3 to memory output
-a3N	append register 3 to memory output
-a%3N	append torso of register 3 to memory output
-a^41	append head of register 4 to register 1
-a$41	append rear of register 4 to register 1
-a41	append register 4 to register 1
-a%41	append torso of register 4 to register 1
-a^42	append head of register 4 to register 2
-a$42	append rear of register 4 to register 2
-a42	append register 4 to register 2
-a%42	append torso of register 4 to register 2
-a^43	append head of register 4 to register 3
-a$43	append rear of register 4 to register 3
-a43	append register 4 to register 3
-a%43	append torso of register 4 to register 3
-a^44	append head of register 4 to register 4
-a$44	append rear of register 4 to register 4
-a44	append register 4 to register 4
-a%44	append torso of register 4 to register 4
-a^4J	append head of register 4 to primary output
-a$4J	append rear of register 4 to primary output
-a4J	append register 4 to primary output
-a%4J	append torso of register 4 to primary output
-a^4N	append head of register 4 to memory output
-a$4N	append rear of register 4 to memory output
-a4N	append register 4 to memory output
-a%4N	append torso of register 4 to memory output
+aA1	append auxiliary input to register 1
+a^A1	append head of auxiliary input to register 1
+a$A1	append rear of auxiliary input to register 1
+a%A1	append torso of auxiliary input to register 1
+aA2	append auxiliary input to register 2
+a^A2	append head of auxiliary input to register 2
+a$A2	append rear of auxiliary input to register 2
+a%A2	append torso of auxiliary input to register 2
+aAB	append auxiliary input to auxiliary output
+a^AB	append head of auxiliary input to auxiliary output
+a$AB	append rear of auxiliary input to auxiliary output
+a%AB	append torso of auxiliary input to auxiliary output
+aAJ	append auxiliary input to primary output
+a^AJ	append head of auxiliary input to primary output
+a$AJ	append rear of auxiliary input to primary output
+a%AJ	append torso of auxiliary input to primary output
+aAN	append auxiliary input to memory output
+a^AN	append head of auxiliary input to memory output
+a$AN	append rear of auxiliary input to memory output
+a%AN	append torso of auxiliary input to memory output
+aB1	append auxiliary output to register 1
+a^B1	append head of auxiliary output to register 1
+a$B1	append rear of auxiliary output to register 1
+a%B1	append torso of auxiliary output to register 1
+aB2	append auxiliary output to register 2
+a^B2	append head of auxiliary output to register 2
+a$B2	append rear of auxiliary output to register 2
+a%B2	append torso of auxiliary output to register 2
+aBB	append auxiliary output to auxiliary output
+a^BB	append head of auxiliary output to auxiliary output
+a$BB	append rear of auxiliary output to auxiliary output
+a%BB	append torso of auxiliary output to auxiliary output
+aBJ	append auxiliary output to primary output
+a^BJ	append head of auxiliary output to primary output
+a$BJ	append rear of auxiliary output to primary output
+a%BJ	append torso of auxiliary output to primary output
+aBN	append auxiliary output to memory output
+a^BN	append head of auxiliary output to memory output
+a$BN	append rear of auxiliary output to memory output
+a%BN	append torso of auxiliary output to memory output
 a^I1	append head of primary input to register 1
 aI1	append primary input to register 1
 a$I1	append rear of primary input to register 1
@@ -102,14 +86,10 @@ a^I2	append head of primary input to register 2
 aI2	append primary input to register 2
 a$I2	append rear of primary input to register 2
 a%I2	append torso of primary input to register 2
-a^I3	append head of primary input to register 3
-aI3	append primary input to register 3
-a$I3	append rear of primary input to register 3
-a%I3	append torso of primary input to register 3
-a^I4	append head of primary input to register 4
-aI4	append primary input to register 4
-a$I4	append rear of primary input to register 4
-a%I4	append torso of primary input to register 4
+a^IB	append head of primary input to auxiliary output
+aIB	append primary input to auxiliary output
+a$IB	append rear of primary input to auxiliary output
+a%IB	append torso of primary input to auxiliary output
 a^IJ	append head of primary input to primary output
 aIJ	append primary input to primary output
 a$IJ	append rear of primary input to primary output
@@ -126,14 +106,10 @@ a^J2	append head of primary output to register 2
 aJ2	append primary output to register 2
 a$J2	append rear of primary output to register 2
 a%J2	append torso of primary output to register 2
-a^J3	append head of primary output to register 3
-aJ3	append primary output to register 3
-a$J3	append rear of primary output to register 3
-a%J3	append torso of primary output to register 3
-a^J4	append head of primary output to register 4
-aJ4	append primary output to register 4
-a$J4	append rear of primary output to register 4
-a%J4	append torso of primary output to register 4
+a^JB	append head of primary output to auxiliary output
+aJB	append primary output to auxiliary output
+a$JB	append rear of primary output to auxiliary output
+a%JB	append torso of primary output to auxiliary output
 a^JJ	append head of primary output to primary output
 aJJ	append primary output to primary output
 a$JJ	append rear of primary output to primary output
@@ -150,14 +126,10 @@ a^M2	append head of memory input to register 2
 aM2	append memory input to register 2
 a$M2	append rear of memory input to register 2
 a%M2	append torso of memory input to register 2
-a^M3	append head of memory input to register 3
-aM3	append memory input to register 3
-a$M3	append rear of memory input to register 3
-a%M3	append torso of memory input to register 3
-a^M4	append head of memory input to register 4
-aM4	append memory input to register 4
-a$M4	append rear of memory input to register 4
-a%M4	append torso of memory input to register 4
+a^MB	append head of memory input to auxiliary output
+aMB	append memory input to auxiliary output
+a$MB	append rear of memory input to auxiliary output
+a%MB	append torso of memory input to auxiliary output
 a^MJ	append head of memory input to primary output
 aMJ	append memory input to primary output
 a$MJ	append rear of memory input to primary output
@@ -174,14 +146,10 @@ a^N2	append head of memory output to register 2
 aN2	append memory output to register 2
 a$N2	append rear of memory output to register 2
 a%N2	append torso of memory output to register 2
-a^N3	append head of memory output to register 3
-aN3	append memory output to register 3
-a$N3	append rear of memory output to register 3
-a%N3	append torso of memory output to register 3
-a^N4	append head of memory output to register 4
-aN4	append memory output to register 4
-a$N4	append rear of memory output to register 4
-a%N4	append torso of memory output to register 4
+a^NB	append head of memory output to auxiliary output
+aNB	append memory output to auxiliary output
+a$NB	append rear of memory output to auxiliary output
+a%NB	append torso of memory output to auxiliary output
 a^NJ	append head of memory output to primary output
 aNJ	append memory output to primary output
 a$NJ	append rear of memory output to primary output
@@ -198,14 +166,10 @@ c^12	copy head of register 1 to register 2
 c$12	copy rear of register 1 to register 2
 c12	copy register 1 to register 2
 c%12	copy torso of register 1 to register 2
-c^13	copy head of register 1 to register 3
-c$13	copy rear of register 1 to register 3
-c13	copy register 1 to register 3
-c%13	copy torso of register 1 to register 3
-c^14	copy head of register 1 to register 4
-c$14	copy rear of register 1 to register 4
-c14	copy register 1 to register 4
-c%14	copy torso of register 1 to register 4
+c^1B	copy head of register 1 to auxiliary output
+c$1B	copy rear of register 1 to auxiliary output
+c1B	copy register 1 to auxiliary output
+c%1B	copy torso of register 1 to auxiliary output
 c^1J	copy head of register 1 to primary output
 c$1J	copy rear of register 1 to primary output
 c1J	copy register 1 to primary output
@@ -222,14 +186,10 @@ c^22	copy head of register 2 to register 2
 c$22	copy rear of register 2 to register 2
 c22	copy register 2 to register 2
 c%22	copy torso of register 2 to register 2
-c^23	copy head of register 2 to register 3
-c$23	copy rear of register 2 to register 3
-c23	copy register 2 to register 3
-c%23	copy torso of register 2 to register 3
-c^24	copy head of register 2 to register 4
-c$24	copy rear of register 2 to register 4
-c24	copy register 2 to register 4
-c%24	copy torso of register 2 to register 4
+c^2B	copy head of register 2 to auxiliary output
+c$2B	copy rear of register 2 to auxiliary output
+c2B	copy register 2 to auxiliary output
+c%2B	copy torso of register 2 to auxiliary output
 c^2J	copy head of register 2 to primary output
 c$2J	copy rear of register 2 to primary output
 c2J	copy register 2 to primary output
@@ -238,54 +198,46 @@ c^2N	copy head of register 2 to memory output
 c$2N	copy rear of register 2 to memory output
 c2N	copy register 2 to memory output
 c%2N	copy torso of register 2 to memory output
-c^31	copy head of register 3 to register 1
-c$31	copy rear of register 3 to register 1
-c31	copy register 3 to register 1
-c%31	copy torso of register 3 to register 1
-c^32	copy head of register 3 to register 2
-c$32	copy rear of register 3 to register 2
-c32	copy register 3 to register 2
-c%32	copy torso of register 3 to register 2
-c^33	copy head of register 3 to register 3
-c$33	copy rear of register 3 to register 3
-c33	copy register 3 to register 3
-c%33	copy torso of register 3 to register 3
-c^34	copy head of register 3 to register 4
-c$34	copy rear of register 3 to register 4
-c34	copy register 3 to register 4
-c%34	copy torso of register 3 to register 4
-c^3J	copy head of register 3 to primary output
-c$3J	copy rear of register 3 to primary output
-c3J	copy register 3 to primary output
-c%3J	copy torso of register 3 to primary output
-c^3N	copy head of register 3 to memory output
-c$3N	copy rear of register 3 to memory output
-c3N	copy register 3 to memory output
-c%3N	copy torso of register 3 to memory output
-c^41	copy head of register 4 to register 1
-c$41	copy rear of register 4 to register 1
-c41	copy register 4 to register 1
-c%41	copy torso of register 4 to register 1
-c^42	copy head of register 4 to register 2
-c$42	copy rear of register 4 to register 2
-c42	copy register 4 to register 2
-c%42	copy torso of register 4 to register 2
-c^43	copy head of register 4 to register 3
-c$43	copy rear of register 4 to register 3
-c43	copy register 4 to register 3
-c%43	copy torso of register 4 to register 3
-c^44	copy head of register 4 to register 4
-c$44	copy rear of register 4 to register 4
-c44	copy register 4 to register 4
-c%44	copy torso of register 4 to register 4
-c^4J	copy head of register 4 to primary output
-c$4J	copy rear of register 4 to primary output
-c4J	copy register 4 to primary output
-c%4J	copy torso of register 4 to primary output
-c^4N	copy head of register 4 to memory output
-c$4N	copy rear of register 4 to memory output
-c4N	copy register 4 to memory output
-c%4N	copy torso of register 4 to memory output
+cA1	copy auxiliary input to register 1
+c^A1	copy head of auxiliary input to register 1
+c$A1	copy rear of auxiliary input to register 1
+c%A1	copy torso of auxiliary input to register 1
+cA2	copy auxiliary input to register 2
+c^A2	copy head of auxiliary input to register 2
+c$A2	copy rear of auxiliary input to register 2
+c%A2	copy torso of auxiliary input to register 2
+cAB	copy auxiliary input to auxiliary output
+c^AB	copy head of auxiliary input to auxiliary output
+c$AB	copy rear of auxiliary input to auxiliary output
+c%AB	copy torso of auxiliary input to auxiliary output
+cAJ	copy auxiliary input to primary output
+c^AJ	copy head of auxiliary input to primary output
+c$AJ	copy rear of auxiliary input to primary output
+c%AJ	copy torso of auxiliary input to primary output
+cAN	copy auxiliary input to memory output
+c^AN	copy head of auxiliary input to memory output
+c$AN	copy rear of auxiliary input to memory output
+c%AN	copy torso of auxiliary input to memory output
+cB1	copy auxiliary output to register 1
+c^B1	copy head of auxiliary output to register 1
+c$B1	copy rear of auxiliary output to register 1
+c%B1	copy torso of auxiliary output to register 1
+cB2	copy auxiliary output to register 2
+c^B2	copy head of auxiliary output to register 2
+c$B2	copy rear of auxiliary output to register 2
+c%B2	copy torso of auxiliary output to register 2
+cBB	copy auxiliary output to auxiliary output
+c^BB	copy head of auxiliary output to auxiliary output
+c$BB	copy rear of auxiliary output to auxiliary output
+c%BB	copy torso of auxiliary output to auxiliary output
+cBJ	copy auxiliary output to primary output
+c^BJ	copy head of auxiliary output to primary output
+c$BJ	copy rear of auxiliary output to primary output
+c%BJ	copy torso of auxiliary output to primary output
+cBN	copy auxiliary output to memory output
+c^BN	copy head of auxiliary output to memory output
+c$BN	copy rear of auxiliary output to memory output
+c%BN	copy torso of auxiliary output to memory output
 c^I1	copy head of primary input to register 1
 cI1	copy primary input to register 1
 c$I1	copy rear of primary input to register 1
@@ -294,14 +246,10 @@ c^I2	copy head of primary input to register 2
 cI2	copy primary input to register 2
 c$I2	copy rear of primary input to register 2
 c%I2	copy torso of primary input to register 2
-c^I3	copy head of primary input to register 3
-cI3	copy primary input to register 3
-c$I3	copy rear of primary input to register 3
-c%I3	copy torso of primary input to register 3
-c^I4	copy head of primary input to register 4
-cI4	copy primary input to register 4
-c$I4	copy rear of primary input to register 4
-c%I4	copy torso of primary input to register 4
+c^IB	copy head of primary input to auxiliary output
+cIB	copy primary input to auxiliary output
+c$IB	copy rear of primary input to auxiliary output
+c%IB	copy torso of primary input to auxiliary output
 c^IJ	copy head of primary input to primary output
 cIJ	copy primary input to primary output
 c$IJ	copy rear of primary input to primary output
@@ -318,14 +266,10 @@ c^J2	copy head of primary output to register 2
 cJ2	copy primary output to register 2
 c$J2	copy rear of primary output to register 2
 c%J2	copy torso of primary output to register 2
-c^J3	copy head of primary output to register 3
-cJ3	copy primary output to register 3
-c$J3	copy rear of primary output to register 3
-c%J3	copy torso of primary output to register 3
-c^J4	copy head of primary output to register 4
-cJ4	copy primary output to register 4
-c$J4	copy rear of primary output to register 4
-c%J4	copy torso of primary output to register 4
+c^JB	copy head of primary output to auxiliary output
+cJB	copy primary output to auxiliary output
+c$JB	copy rear of primary output to auxiliary output
+c%JB	copy torso of primary output to auxiliary output
 c^JJ	copy head of primary output to primary output
 cJJ	copy primary output to primary output
 c$JJ	copy rear of primary output to primary output
@@ -342,14 +286,10 @@ c^M2	copy head of memory input to register 2
 cM2	copy memory input to register 2
 c$M2	copy rear of memory input to register 2
 c%M2	copy torso of memory input to register 2
-c^M3	copy head of memory input to register 3
-cM3	copy memory input to register 3
-c$M3	copy rear of memory input to register 3
-c%M3	copy torso of memory input to register 3
-c^M4	copy head of memory input to register 4
-cM4	copy memory input to register 4
-c$M4	copy rear of memory input to register 4
-c%M4	copy torso of memory input to register 4
+c^MB	copy head of memory input to auxiliary output
+cMB	copy memory input to auxiliary output
+c$MB	copy rear of memory input to auxiliary output
+c%MB	copy torso of memory input to auxiliary output
 c^MJ	copy head of memory input to primary output
 cMJ	copy memory input to primary output
 c$MJ	copy rear of memory input to primary output
@@ -366,14 +306,10 @@ c^N2	copy head of memory output to register 2
 cN2	copy memory output to register 2
 c$N2	copy rear of memory output to register 2
 c%N2	copy torso of memory output to register 2
-c^N3	copy head of memory output to register 3
-cN3	copy memory output to register 3
-c$N3	copy rear of memory output to register 3
-c%N3	copy torso of memory output to register 3
-c^N4	copy head of memory output to register 4
-cN4	copy memory output to register 4
-c$N4	copy rear of memory output to register 4
-c%N4	copy torso of memory output to register 4
+c^NB	copy head of memory output to auxiliary output
+cNB	copy memory output to auxiliary output
+c$NB	copy rear of memory output to auxiliary output
+c%NB	copy torso of memory output to auxiliary output
 c^NJ	copy head of memory output to primary output
 cNJ	copy memory output to primary output
 c$NJ	copy rear of memory output to primary output
@@ -384,20 +320,17 @@ c$NN	copy rear of memory output to memory output
 c%NN	copy torso of memory output to memory output
 d1	decode register 1
 d2	decode register 2
-d3	decode register 3
-d4	decode register 4
+dB	decode auxiliary output
 dJ	decode primary output
 dN	decode memory output
 e1	evaluate register 1
 e2	evaluate register 2
-e3	evaluate register 3
-e4	evaluate register 4
+eB	evaluate auxiliary output
 eJ	evaluate primary output
 eN	evaluate memory output
 j1	join register 1
 j2	join register 2
-j3	join register 3
-j4	join register 4
+jB	join auxiliary output
 jJ	join primary output
 jN	join memory output
 n^1	negate head of register 1
@@ -408,14 +341,10 @@ n^2	negate head of register 2
 n$2	negate rear of register 2
 n2	negate register 2
 n%2	negate torso of register 2
-n^3	negate head of register 3
-n$3	negate rear of register 3
-n3	negate register 3
-n%3	negate torso of register 3
-n^4	negate head of register 4
-n$4	negate rear of register 4
-n4	negate register 4
-n%4	negate torso of register 4
+nB	negate auxiliary output
+n^B	negate head of auxiliary output
+n$B	negate rear of auxiliary output
+n%B	negate torso of auxiliary output
 n^J	negate head of primary output
 nJ	negate primary output
 n$J	negate rear of primary output
@@ -433,14 +362,10 @@ p^12	prepend head of register 1 to register 2
 p$12	prepend rear of register 1 to register 2
 p12	prepend register 1 to register 2
 p%12	prepend torso of register 1 to register 2
-p^13	prepend head of register 1 to register 3
-p$13	prepend rear of register 1 to register 3
-p13	prepend register 1 to register 3
-p%13	prepend torso of register 1 to register 3
-p^14	prepend head of register 1 to register 4
-p$14	prepend rear of register 1 to register 4
-p14	prepend register 1 to register 4
-p%14	prepend torso of register 1 to register 4
+p^1B	prepend head of register 1 to auxiliary output
+p$1B	prepend rear of register 1 to auxiliary output
+p1B	prepend register 1 to auxiliary output
+p%1B	prepend torso of register 1 to auxiliary output
 p^1J	prepend head of register 1 to primary output
 p$1J	prepend rear of register 1 to primary output
 p1J	prepend register 1 to primary output
@@ -457,14 +382,10 @@ p^22	prepend head of register 2 to register 2
 p$22	prepend rear of register 2 to register 2
 p22	prepend register 2 to register 2
 p%22	prepend torso of register 2 to register 2
-p^23	prepend head of register 2 to register 3
-p$23	prepend rear of register 2 to register 3
-p23	prepend register 2 to register 3
-p%23	prepend torso of register 2 to register 3
-p^24	prepend head of register 2 to register 4
-p$24	prepend rear of register 2 to register 4
-p24	prepend register 2 to register 4
-p%24	prepend torso of register 2 to register 4
+p^2B	prepend head of register 2 to auxiliary output
+p$2B	prepend rear of register 2 to auxiliary output
+p2B	prepend register 2 to auxiliary output
+p%2B	prepend torso of register 2 to auxiliary output
 p^2J	prepend head of register 2 to primary output
 p$2J	prepend rear of register 2 to primary output
 p2J	prepend register 2 to primary output
@@ -473,54 +394,46 @@ p^2N	prepend head of register 2 to memory output
 p$2N	prepend rear of register 2 to memory output
 p2N	prepend register 2 to memory output
 p%2N	prepend torso of register 2 to memory output
-p^31	prepend head of register 3 to register 1
-p$31	prepend rear of register 3 to register 1
-p31	prepend register 3 to register 1
-p%31	prepend torso of register 3 to register 1
-p^32	prepend head of register 3 to register 2
-p$32	prepend rear of register 3 to register 2
-p32	prepend register 3 to register 2
-p%32	prepend torso of register 3 to register 2
-p^33	prepend head of register 3 to register 3
-p$33	prepend rear of register 3 to register 3
-p33	prepend register 3 to register 3
-p%33	prepend torso of register 3 to register 3
-p^34	prepend head of register 3 to register 4
-p$34	prepend rear of register 3 to register 4
-p34	prepend register 3 to register 4
-p%34	prepend torso of register 3 to register 4
-p^3J	prepend head of register 3 to primary output
-p$3J	prepend rear of register 3 to primary output
-p3J	prepend register 3 to primary output
-p%3J	prepend torso of register 3 to primary output
-p^3N	prepend head of register 3 to memory output
-p$3N	prepend rear of register 3 to memory output
-p3N	prepend register 3 to memory output
-p%3N	prepend torso of register 3 to memory output
-p^41	prepend head of register 4 to register 1
-p$41	prepend rear of register 4 to register 1
-p41	prepend register 4 to register 1
-p%41	prepend torso of register 4 to register 1
-p^42	prepend head of register 4 to register 2
-p$42	prepend rear of register 4 to register 2
-p42	prepend register 4 to register 2
-p%42	prepend torso of register 4 to register 2
-p^43	prepend head of register 4 to register 3
-p$43	prepend rear of register 4 to register 3
-p43	prepend register 4 to register 3
-p%43	prepend torso of register 4 to register 3
-p^44	prepend head of register 4 to register 4
-p$44	prepend rear of register 4 to register 4
-p44	prepend register 4 to register 4
-p%44	prepend torso of register 4 to register 4
-p^4J	prepend head of register 4 to primary output
-p$4J	prepend rear of register 4 to primary output
-p4J	prepend register 4 to primary output
-p%4J	prepend torso of register 4 to primary output
-p^4N	prepend head of register 4 to memory output
-p$4N	prepend rear of register 4 to memory output
-p4N	prepend register 4 to memory output
-p%4N	prepend torso of register 4 to memory output
+pA1	prepend auxiliary input to register 1
+p^A1	prepend head of auxiliary input to register 1
+p$A1	prepend rear of auxiliary input to register 1
+p%A1	prepend torso of auxiliary input to register 1
+pA2	prepend auxiliary input to register 2
+p^A2	prepend head of auxiliary input to register 2
+p$A2	prepend rear of auxiliary input to register 2
+p%A2	prepend torso of auxiliary input to register 2
+pAB	prepend auxiliary input to auxiliary output
+p^AB	prepend head of auxiliary input to auxiliary output
+p$AB	prepend rear of auxiliary input to auxiliary output
+p%AB	prepend torso of auxiliary input to auxiliary output
+pAJ	prepend auxiliary input to primary output
+p^AJ	prepend head of auxiliary input to primary output
+p$AJ	prepend rear of auxiliary input to primary output
+p%AJ	prepend torso of auxiliary input to primary output
+pAN	prepend auxiliary input to memory output
+p^AN	prepend head of auxiliary input to memory output
+p$AN	prepend rear of auxiliary input to memory output
+p%AN	prepend torso of auxiliary input to memory output
+pB1	prepend auxiliary output to register 1
+p^B1	prepend head of auxiliary output to register 1
+p$B1	prepend rear of auxiliary output to register 1
+p%B1	prepend torso of auxiliary output to register 1
+pB2	prepend auxiliary output to register 2
+p^B2	prepend head of auxiliary output to register 2
+p$B2	prepend rear of auxiliary output to register 2
+p%B2	prepend torso of auxiliary output to register 2
+pBB	prepend auxiliary output to auxiliary output
+p^BB	prepend head of auxiliary output to auxiliary output
+p$BB	prepend rear of auxiliary output to auxiliary output
+p%BB	prepend torso of auxiliary output to auxiliary output
+pBJ	prepend auxiliary output to primary output
+p^BJ	prepend head of auxiliary output to primary output
+p$BJ	prepend rear of auxiliary output to primary output
+p%BJ	prepend torso of auxiliary output to primary output
+pBN	prepend auxiliary output to memory output
+p^BN	prepend head of auxiliary output to memory output
+p$BN	prepend rear of auxiliary output to memory output
+p%BN	prepend torso of auxiliary output to memory output
 p^I1	prepend head of primary input to register 1
 pI1	prepend primary input to register 1
 p$I1	prepend rear of primary input to register 1
@@ -529,14 +442,10 @@ p^I2	prepend head of primary input to register 2
 pI2	prepend primary input to register 2
 p$I2	prepend rear of primary input to register 2
 p%I2	prepend torso of primary input to register 2
-p^I3	prepend head of primary input to register 3
-pI3	prepend primary input to register 3
-p$I3	prepend rear of primary input to register 3
-p%I3	prepend torso of primary input to register 3
-p^I4	prepend head of primary input to register 4
-pI4	prepend primary input to register 4
-p$I4	prepend rear of primary input to register 4
-p%I4	prepend torso of primary input to register 4
+p^IB	prepend head of primary input to auxiliary output
+pIB	prepend primary input to auxiliary output
+p$IB	prepend rear of primary input to auxiliary output
+p%IB	prepend torso of primary input to auxiliary output
 p^IJ	prepend head of primary input to primary output
 pIJ	prepend primary input to primary output
 p$IJ	prepend rear of primary input to primary output
@@ -553,14 +462,10 @@ p^J2	prepend head of primary output to register 2
 pJ2	prepend primary output to register 2
 p$J2	prepend rear of primary output to register 2
 p%J2	prepend torso of primary output to register 2
-p^J3	prepend head of primary output to register 3
-pJ3	prepend primary output to register 3
-p$J3	prepend rear of primary output to register 3
-p%J3	prepend torso of primary output to register 3
-p^J4	prepend head of primary output to register 4
-pJ4	prepend primary output to register 4
-p$J4	prepend rear of primary output to register 4
-p%J4	prepend torso of primary output to register 4
+p^JB	prepend head of primary output to auxiliary output
+pJB	prepend primary output to auxiliary output
+p$JB	prepend rear of primary output to auxiliary output
+p%JB	prepend torso of primary output to auxiliary output
 p^JJ	prepend head of primary output to primary output
 pJJ	prepend primary output to primary output
 p$JJ	prepend rear of primary output to primary output
@@ -577,14 +482,10 @@ p^M2	prepend head of memory input to register 2
 pM2	prepend memory input to register 2
 p$M2	prepend rear of memory input to register 2
 p%M2	prepend torso of memory input to register 2
-p^M3	prepend head of memory input to register 3
-pM3	prepend memory input to register 3
-p$M3	prepend rear of memory input to register 3
-p%M3	prepend torso of memory input to register 3
-p^M4	prepend head of memory input to register 4
-pM4	prepend memory input to register 4
-p$M4	prepend rear of memory input to register 4
-p%M4	prepend torso of memory input to register 4
+p^MB	prepend head of memory input to auxiliary output
+pMB	prepend memory input to auxiliary output
+p$MB	prepend rear of memory input to auxiliary output
+p%MB	prepend torso of memory input to auxiliary output
 p^MJ	prepend head of memory input to primary output
 pMJ	prepend memory input to primary output
 p$MJ	prepend rear of memory input to primary output
@@ -601,14 +502,10 @@ p^N2	prepend head of memory output to register 2
 pN2	prepend memory output to register 2
 p$N2	prepend rear of memory output to register 2
 p%N2	prepend torso of memory output to register 2
-p^N3	prepend head of memory output to register 3
-pN3	prepend memory output to register 3
-p$N3	prepend rear of memory output to register 3
-p%N3	prepend torso of memory output to register 3
-p^N4	prepend head of memory output to register 4
-pN4	prepend memory output to register 4
-p$N4	prepend rear of memory output to register 4
-p%N4	prepend torso of memory output to register 4
+p^NB	prepend head of memory output to auxiliary output
+pNB	prepend memory output to auxiliary output
+p$NB	prepend rear of memory output to auxiliary output
+p%NB	prepend torso of memory output to auxiliary output
 p^NJ	prepend head of memory output to primary output
 pNJ	prepend memory output to primary output
 p$NJ	prepend rear of memory output to primary output
@@ -619,16 +516,24 @@ p$NN	prepend rear of memory output to memory output
 p%NN	prepend torso of memory output to memory output
 r1	reverse register 1
 r2	reverse register 2
-r3	reverse register 3
-r4	reverse register 4
+rB	reverse auxiliary output
 rJ	reverse primary output
 rN	reverse memory output
 s1	spell register 1
 s2	spell register 2
-s3	spell register 3
-s4	spell register 4
+sB	spell auxiliary output
 sJ	spell primary output
 sN	spell memory output
+x1	decode register 1 and randomly choose word
+x2	decode register 2 and randomly choose word
+xB	decode auxiliary output and randomly choose word
+xJ	decode primary output and randomly choose word
+xN	decode memory output and randomly choose word
+y1	randomly choose head or rear of register 1
+y2	randomly choose head or rear of register 2
+yB	randomly choose head or rear of auxiliary output
+yJ	randomly choose head or rear of primary output
+yN	randomly choose head or rear of memory output
 z^1	zero head of register 1
 z$1	zero rear of register 1
 z1	zero register 1
@@ -637,14 +542,10 @@ z^2	zero head of register 2
 z$2	zero rear of register 2
 z2	zero register 2
 z%2	zero torso of register 2
-z^3	zero head of register 3
-z$3	zero rear of register 3
-z3	zero register 3
-z%3	zero torso of register 3
-z^4	zero head of register 4
-z$4	zero rear of register 4
-z4	zero register 4
-z%4	zero torso of register 4
+zB	zero auxiliary output
+z^B	zero head of auxiliary output
+z$B	zero rear of auxiliary output
+z%B	zero torso of auxiliary output
 z^J	zero head of primary output
 zJ	zero primary output
 z$J	zero rear of primary output

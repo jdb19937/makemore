@@ -36,7 +36,7 @@ static string norm(string x) {
 }
 
 unsigned int Rule::parse(const char *line) {
-  string reqstr, memstr, outstr, nemstr, cmdstr, bufstr[4];
+  string reqstr, memstr, auxstr, outstr, nemstr, buxstr, cmdstr, reg1str, reg2str;
 
   const char *sep = strstr(line, "->");
   assert(sep);
@@ -55,7 +55,14 @@ unsigned int Rule::parse(const char *line) {
     ++r;
     while (isspace(*r))
       ++r;
-    assert(!*r);
+    assert(!*r || *r == '(');
+
+    if (*r == '(') {
+      ++r;
+      q = strchr(r, ')');
+      assert(q);
+      auxstr = string(r, q - r);
+    }
   } else {
     reqstr = a;
   }
@@ -99,49 +106,57 @@ unsigned int Rule::parse(const char *line) {
     ++r;
     while (isspace(*r))
       ++r;
-    assert(!*r);
+    assert(!*r || *r == '(');
+
+    if (*r == '(') {
+      ++r;
+      q = strchr(r, ')');
+      assert(q);
+      buxstr = string(r, q - r);
+    }
   } else {
     outstr = c;
   }
   
-  for (unsigned int j = 1; j < 5 && j < bparts.size(); ++j) {
-    bufstr[j - 1] = bparts[j];
-  }
+  if (bparts.size() >= 2)
+    reg1str = bparts[1];
+  if (bparts.size() >= 3)
+    reg2str = bparts[2];
 
   reqstr = norm(reqstr);
   memstr = norm(memstr);
+  auxstr = norm(auxstr);
   nemstr = norm(nemstr);
+  buxstr = norm(buxstr);
   outstr = norm(outstr);
   cmdstr = norm(cmdstr);
-  bufstr[0] = norm(bufstr[0]);
-  bufstr[1] = norm(bufstr[1]);
-  bufstr[2] = norm(bufstr[2]);
-  bufstr[3] = norm(bufstr[3]);
+  reg1str = norm(reg1str);
+  reg2str = norm(reg2str);
 
 #if 0
 fprintf(stderr, "reqstr=[%s]\n", reqstr.c_str());
 fprintf(stderr, "memstr=[%s]\n", memstr.c_str());
+fprintf(stderr, "auxstr=[%s]\n", auxstr.c_str());
 fprintf(stderr, "nemstr=[%s]\n", nemstr.c_str());
+fprintf(stderr, "buxstr=[%s]\n", buxstr.c_str());
 fprintf(stderr, "outstr=[%s]\n", outstr.c_str());
 fprintf(stderr, "cmdstr=[%s]\n", cmdstr.c_str());
-fprintf(stderr, "bufstr[0]=[%s]\n", bufstr[0].c_str());
-fprintf(stderr, "bufstr[1]=[%s]\n", bufstr[1].c_str());
-fprintf(stderr, "bufstr[2]=[%s]\n", bufstr[2].c_str());
-fprintf(stderr, "bufstr[3]=[%s]\n", bufstr[3].c_str());
+fprintf(stderr, "reg1str=[%s]\n", reg1str.c_str());
+fprintf(stderr, "reg2str=[%s]\n", reg2str.c_str());
 #endif
 
   reqwild.parse(reqstr);
   memwild.parse(memstr);
+  auxwild.parse(auxstr);
 
   req.encode(reqstr.c_str());
   mem.encode(memstr.c_str());
   nem.encode(nemstr.c_str());
   cmd.encode(cmdstr.c_str());
   out.encode(outstr.c_str());
-  buf[0].encode(bufstr[0].c_str());
-  buf[1].encode(bufstr[1].c_str());
-  buf[2].encode(bufstr[2].c_str());
-  buf[3].encode(bufstr[3].c_str());
+  bux.encode(buxstr.c_str());
+  reg1.encode(reg1str.c_str());
+  reg2.encode(reg2str.c_str());
 
   return multiplicity;
 }
@@ -151,16 +166,17 @@ void Rule::save(FILE *fp) const {
 
   req.save(fp);
   mem.save(fp);
+  aux.save(fp);
   cmd.save(fp);
   out.save(fp);
   nem.save(fp);
-  buf[0].save(fp);
-  buf[1].save(fp);
-  buf[2].save(fp);
-  buf[3].save(fp);
+  bux.save(fp);
+  reg1.save(fp);
+  reg2.save(fp);
 
   reqwild.save(fp);
   memwild.save(fp);
+  auxwild.save(fp);
 
   uint32_t nm = htonl(multiplicity);
   ret = fwrite(&nm, 1, 4, fp);
@@ -172,16 +188,17 @@ void Rule::load(FILE *fp) {
 
   req.load(fp);
   mem.load(fp);
+  aux.load(fp);
   cmd.load(fp);
   out.load(fp);
   nem.load(fp);
-  buf[0].load(fp);
-  buf[1].load(fp);
-  buf[2].load(fp);
-  buf[3].load(fp);
+  bux.load(fp);
+  reg1.load(fp);
+  reg2.load(fp);
 
   reqwild.load(fp);
   memwild.load(fp);
+  auxwild.load(fp);
 
   uint32_t nm;
   ret = fread(&nm, 1, 4, fp);

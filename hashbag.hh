@@ -51,7 +51,7 @@ struct Hashbag {
   void add(const char *tag, double m = 1.0);
 
   void copy(const Hashbag &t) {
-    memcpy(vec, t.vec, sizeof(vec));
+    memcpy(vec, t.vec, sizeof(double) * n);
   }
 
   void mul(const Hashbag &x) {

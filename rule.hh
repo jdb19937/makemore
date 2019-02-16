@@ -11,9 +11,11 @@
 namespace makemore {
 
 struct Rule {
-  Shibboleth req, mem;
-  Shibboleth cmd, out, nem, buf[4];
-  Wildmap reqwild, memwild;
+  Shibboleth req, mem, aux;
+  Shibboleth cmd, out, nem, bux;
+  Shibboleth reg1, reg2;
+
+  Wildmap reqwild, memwild, auxwild;
   unsigned int multiplicity;
   bool prepared;
 
@@ -25,15 +27,16 @@ struct Rule {
   void copy(const Rule &r) {
     req = r.req;
     mem = r.mem;
+    aux = r.aux;
     cmd = r.cmd;
     out = r.out;
     nem = r.nem;
-    buf[0] = r.buf[0];
-    buf[1] = r.buf[1];
-    buf[2] = r.buf[2];
-    buf[3] = r.buf[3];
+    bux = r.bux;
+    reg1 = r.reg1;
+    reg2 = r.reg2;
     reqwild = r.reqwild;
     memwild = r.memwild;
+    auxwild = r.auxwild;
     prepared = r.prepared;
   }
 
@@ -52,6 +55,7 @@ struct Rule {
     assert(!prepared);
     reqwild.mutate(&req);
     memwild.mutate(&mem);
+    auxwild.mutate(&aux);
     prepared = true;
   }
 

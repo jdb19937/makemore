@@ -19,8 +19,8 @@ int main() {
   script.load("test.confab/script.more");
   Brane brane(&confab);
 
-  assert(sizeof(Shibboleth) * 2 == confab.ctxlay->n * sizeof(double));
-  assert(sizeof(Shibboleth) * 7 == confab.tgtlay->n * sizeof(double));
+  assert(sizeof(Shibboleth) * 3 == confab.ctxlay->n * sizeof(double));
+  assert(sizeof(Shibboleth) * 6 == confab.tgtlay->n * sizeof(double));
   assert(confab.mbn == mbn);
 
   Shibboleth req, rsp;
