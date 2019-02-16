@@ -22,25 +22,7 @@ std::string normpart(const std::string &x) {
 }
 
 
-std::string ask(Confab &confab, Vocab &vocab, std::string reqstr) {
-  Shibboleth req, rsp;
-
-  std::string rspstr;
-  vocab.add(reqstr.c_str());
-  req.encode(reqstr.c_str());
-
-  memcpy(confab.ctxbuf, (double *)&req, sizeof(Shibboleth));
-
-  confab.scramble(0, 0);
-  confab.generate();
-
-  memcpy((double *)&rsp, confab.outbuf, sizeof(Shibboleth));
-
-  rspstr = rsp.decode(vocab);
-  return rspstr;
-}
-
-static void parsereqmem(const char *in, std::string *req, std::string *mem) {
+static bool parsereqmem(const char *in, std::string *req, std::string *mem) {
   if (const char *p = strchr(in, '(')) {
     ++p;
 
@@ -50,9 +32,11 @@ static void parsereqmem(const char *in, std::string *req, std::string *mem) {
 
     *mem = std::string(p, q - p);
     *req = std::string(in, p - in - 1);
+    return true;
   } else {
     *req = in;
     *mem = "";
+    return false;
   }
 }
 
@@ -64,6 +48,7 @@ int main() {
   Brane brane(&confab);
 
   char buf[4096];
+  Shibboleth memshib;
 
   while (1) {
     *buf = 0;
@@ -78,15 +63,22 @@ int main() {
     confab.vocab.add(buf);
 
     std::string reqstr, memstr;
-    parsereqmem(buf, &reqstr, &memstr);
+    bool newmem = parsereqmem(buf, &reqstr, &memstr);
     Shibboleth reqshib;
     reqshib.encode(reqstr.c_str());
-    Shibboleth memshib;
-    memshib.encode(memstr.c_str());
+    if (newmem) {
+      memshib.encode(memstr.c_str());
+    }
     Shibboleth rspshib = brane.ask(reqshib, &memshib);
 
     std::string rspstr = rspshib.decode(confab.vocab);
-    printf("%s\n", rspstr.c_str());
+    std::string nemstr = memshib.decode(confab.vocab);
+
+    if (nemstr != "") {
+      printf("%s (%s)\n", rspstr.c_str(), nemstr.c_str());
+    } else {
+      printf("%s\n", rspstr.c_str());
+    }
   }
 
   return 0;

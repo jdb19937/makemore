@@ -173,7 +173,8 @@ void Brane::burn(const Rule *rule, unsigned int mbn, double pi) {
   confab->burn(pi, pi);
 }
 
-Shibboleth Brane::ask(const Shibboleth &req, Shibboleth *memp, unsigned int depth) {
+Shibboleth Brane::ask(const Shibboleth &in, Shibboleth *memp, unsigned int depth) {
+  Shibboleth req[2];
   Shibboleth rsp[7];
   Shibboleth *nemp;
 
@@ -183,18 +184,18 @@ Shibboleth Brane::ask(const Shibboleth &req, Shibboleth *memp, unsigned int dept
     return dots;
   }
 
+  req[0] = in;
+  req[1] = *memp;
+
+//fprintf(stderr, "ask in  [%s]\n", in.decode(confab->vocab).c_str());
+//fprintf(stderr, "ask mem [%s]\n", memp->decode(confab->vocab).c_str());
+
   unsigned int k = sizeof(Shibboleth) / sizeof(double);
   assert(confab->mbn == 1);
   assert(confab->ctxlay->n * sizeof(double) == 2 * sizeof(Shibboleth)); 
   assert(confab->tgtlay->n * sizeof(double) == 7 * sizeof(Shibboleth));
 
-  memcpy(confab->ctxbuf, (double *)&req, sizeof(Shibboleth));
-  if (memp) {
-    memcpy(confab->ctxbuf + k, (double *)memp, sizeof(Shibboleth));
-  } else {
-    Shibboleth zeromem;
-    memcpy(confab->ctxbuf + k, (double *)&zeromem, sizeof(Shibboleth));
-  }
+  memcpy(confab->ctxbuf, (double *)req, sizeof(Shibboleth) * 2);
 
   confab->generate();
 
@@ -205,6 +206,7 @@ Shibboleth Brane::ask(const Shibboleth &req, Shibboleth *memp, unsigned int dept
   string cmdstr = rsp[0].decode(vocab);
   vector<string> cmds;
   split(cmdstr.c_str(), ' ', &cmds);
+//fprintf(stderr, "ask cmd [%s]\n", cmdstr.c_str());
 
   for (auto cmdi = cmds.begin(); cmdi != cmds.end(); ++cmdi) { 
     const char *cmd = cmdi->c_str();
@@ -323,14 +325,14 @@ Shibboleth Brane::ask(const Shibboleth &req, Shibboleth *memp, unsigned int dept
         const Shibboleth *from;
         Shibboleth *to;
         if (cmdi->length() == 3) {
-          from = rbufmap(cmd[1], &req, rsp);
+          from = rbufmap(cmd[1], req, rsp);
           to = wbufmap(cmd[2], rsp);
   
           *to = *from;
 
         } else if (cmdi->length() == 4) {
   
-          from = rbufmap(cmd[2], &req, rsp);
+          from = rbufmap(cmd[2], req, rsp);
           to = wbufmap(cmd[3], rsp);
   
           switch (cmd[1]) {
@@ -349,14 +351,16 @@ Shibboleth Brane::ask(const Shibboleth &req, Shibboleth *memp, unsigned int dept
         const Shibboleth *from;
         Shibboleth *to;
         if (cmdi->length() == 3) {
-          from = rbufmap(cmd[1], &req, rsp);
+          from = rbufmap(cmd[1], req, rsp);
           to = wbufmap(cmd[2], rsp);
   
+//fprintf(stderr, "append from [%s]\n", from->decode(confab->vocab).c_str());
+//fprintf(stderr, "append mem  [%s]\n", memp->decode(confab->vocab).c_str());
           to->append(*from);
 
         } else if (cmdi->length() == 4) {
   
-          from = rbufmap(cmd[2], &req, rsp);
+          from = rbufmap(cmd[2], req, rsp);
           to = wbufmap(cmd[3], rsp);
 
           switch (cmd[1]) {
@@ -375,14 +379,14 @@ Shibboleth Brane::ask(const Shibboleth &req, Shibboleth *memp, unsigned int dept
         const Shibboleth *from;
         Shibboleth *to;
         if (cmdi->length() == 3) {
-          from = rbufmap(cmd[1], &req, rsp);
+          from = rbufmap(cmd[1], req, rsp);
           to = wbufmap(cmd[2], rsp);
   
           to->prepend(*from);
 
         } else if (cmdi->length() == 4) {
   
-          from = rbufmap(cmd[2], &req, rsp);
+          from = rbufmap(cmd[2], req, rsp);
           to = wbufmap(cmd[3], rsp);
 
           switch (cmd[1]) {
@@ -401,8 +405,7 @@ Shibboleth Brane::ask(const Shibboleth &req, Shibboleth *memp, unsigned int dept
     }
   }
 
-  if (memp)
-    memcpy(memp, nemp, sizeof(Shibboleth));
+  memcpy(memp, nemp, sizeof(Shibboleth));
   return rsp[1];
 }
 
