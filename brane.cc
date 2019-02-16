@@ -109,6 +109,14 @@ void Brane::_init_vocab() {
     sprintf(buf, "d%c", *b);
     sprintf(desc, "decode %s", bufdesc(*b));
     vocab.add(buf, desc);
+
+    sprintf(buf, "s%c", *b);
+    sprintf(desc, "spell %s", bufdesc(*b));
+    vocab.add(buf, desc);
+
+    sprintf(buf, "j%c", *b);
+    sprintf(desc, "join %s", bufdesc(*b));
+    vocab.add(buf, desc);
   }
 
   vocab.add("nop", "do nothing");
@@ -224,6 +232,46 @@ Shibboleth Brane::ask(const Shibboleth &req, Shibboleth *memp, const Vocab *user
         string decstr = dec->decode(*user);
 
         dec->encode(decstr.c_str());
+        break;
+      }
+    case 's':
+      {
+        assert(cmdi->length() == 2);
+        Shibboleth *dec = wbufmap(cmd[1], rsp);
+
+        string decstr = dec->decode(*user);
+
+        string spelling;
+        char sbuf[4];
+
+        for (auto i = decstr.begin(); i != decstr.end(); ++i) {
+          if (*i == ' ')
+            continue;
+          sprintf(sbuf, "%s%c", spelling.length() ? " " : "", *i);
+          spelling += sbuf;
+        }
+
+        dec->encode(spelling.c_str());
+        break;
+      }
+    case 'j':
+      {
+        assert(cmdi->length() == 2);
+        Shibboleth *dec = wbufmap(cmd[1], rsp);
+
+        string decstr = dec->decode(*user);
+
+        string joined;
+        char sbuf[4];
+
+        for (auto i = decstr.begin(); i != decstr.end(); ++i) {
+          if (*i == ' ')
+            continue;
+          sprintf(sbuf, "%c", *i);
+          joined += sbuf;
+        }
+
+        dec->encode(joined.c_str());
         break;
       }
     case 'r':

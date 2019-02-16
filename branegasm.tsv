@@ -394,6 +394,12 @@ e3	evaluate register 3
 e4	evaluate register 4
 eJ	evaluate primary output
 eN	evaluate memory output
+j1	join register 1
+j2	join register 2
+j3	join register 3
+j4	join register 4
+jJ	join primary output
+jN	join memory output
 n^1	negate head of register 1
 n$1	negate rear of register 1
 n1	negate register 1
@@ -617,6 +623,12 @@ r3	reverse register 3
 r4	reverse register 4
 rJ	reverse primary output
 rN	reverse memory output
+s1	spell register 1
+s2	spell register 2
+s3	spell register 3
+s4	spell register 4
+sJ	spell primary output
+sN	spell memory output
 z^1	zero head of register 1
 z$1	zero rear of register 1
 z1	zero register 1

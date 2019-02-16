@@ -1,4 +1,5 @@
 #define __MAKEMORE_HASHBAG_CC__ 1
+
 #include <vector>
 #include <string>
 
@@ -39,6 +40,19 @@ void Hashbag::add(const char *tag, double w) {
     }
 
     add(tag, w * (double)m);
+    return;
+  }
+
+  if (strchr(tag, '/')) {
+    vector<string> tagparts;
+    split(tag, '/', &tagparts);
+    unsigned int ntagparts = tagparts.size();
+    assert(ntagparts >= 2);
+
+    double z = 1.0 / sqrt((double)ntagparts);
+    for (unsigned int i = 0; i < ntagparts; ++i)
+      add(tagparts[i].c_str(), w * z);
+
     return;
   }
 
