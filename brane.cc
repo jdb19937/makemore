@@ -106,6 +106,8 @@ void Brane::_init_vocab() {
     sprintf(desc, "reverse %s", bufdesc(*b));
     vocab.add(buf, desc);
   }
+
+  vocab.add("nop", "do nothing");
 }
 
 static const Shibboleth *rbufmap(char cbuf, const Shibboleth *req, const Shibboleth *rsp) {
@@ -199,6 +201,9 @@ Shibboleth Brane::ask(const Shibboleth &req, Shibboleth *memp, const Vocab *user
 
   for (auto cmdi = cmds.begin(); cmdi != cmds.end(); ++cmdi) { 
     const char *cmd = cmdi->c_str();
+    if (!strcmp(cmd, "nop"))
+      continue;
+
     switch (cmd[0]) {
     case 'e':
       {

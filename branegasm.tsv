@@ -412,6 +412,7 @@ n^N	negate head of memory output
 nN	negate memory output
 n$N	negate rear of memory output
 n%N	negate torso of memory output
+nop	do nothing
 p^11	prepend head of register 1 to register 1
 p$11	prepend rear of register 1 to register 1
 p11	prepend register 1 to register 1

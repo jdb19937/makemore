@@ -11,7 +11,7 @@ inc 9 -> 1 0
 
 inc * 0 ->     p%IJ: 1
 inc * 9 ->     a%I1 e1 p1J: 0, inc
-inc * * ->x8   a$IJ eJ p%IJ: inc
+inc * * ->x4   a$IJ eJ p%IJ: inc
 
 dec 1 -> 0
 dec 2 -> 1
@@ -26,9 +26,9 @@ dec 1 0 -> 9
 
 dec * 9 ->     p%IJ: 8
 dec * 0 ->     a%I1 e1 p1J: 9, dec
-dec * * ->x8   a$IJ eJ p%IJ: dec
+dec * * ->x4   a$IJ eJ p%IJ: dec
 
-add *   (*)   ->x8        a$I1 e1 aM2 e2 a1J c2N eJ: add, inc, dec
+add *   (*)   ->x8    nop a$I1 e1 aM2 e2 a1J c2N eJ: add, inc, dec
 add * * (* *) ->x8   a%I1 a$I1 e1 aM2 e2 a1J c2N eJ: add, inc, dec
 add * * (*)   ->x8   a%I1 a$I1 e1 aM2 e2 a1J c2N eJ: add, inc, dec
 
