@@ -7,9 +7,9 @@ my %seen;
 ++$seen{'*'};
 
 {
-  my $branegasm_fn = "$Bin/branegasm.tsv";
-  open(my $branegasm_fp, "<", $branegasm_fn) or die "$0: $branegasm_fn: $!\n";
-  while (<$branegasm_fp>) {
+  my $moregasm_fn = "$Bin/moregasm.tsv";
+  open(my $moregasm_fp, "<", $moregasm_fn) or die "$0: $moregasm_fn: $!\n";
+  while (<$moregasm_fp>) {
     chomp;
     my ($word) = split /\t/;
     ++$seen{$word};
