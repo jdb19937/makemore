@@ -15,7 +15,8 @@ int main() {
   Confab confab("test.confab", mbn);
   confab.load();
 
-  Script scr("script.txt");
+  Script script;
+  script.load("script.more");
   Brane brane(&confab);
 
   assert(sizeof(Shibboleth) * 2 == confab.ctxlay->n * sizeof(double));
@@ -28,7 +29,7 @@ int main() {
   int i = 0;
   while (1) {
     for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
-      const Rule *r = scr.pick();
+      const Rule *r = script.pick();
       rules[mbi] = *r;
       rules[mbi].prepare();
     }

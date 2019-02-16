@@ -61,8 +61,8 @@ unsigned int Rule::parse(const char *line) {
   }
 
   multiplicity = 1;
-  if (sep[2] >= '0' && sep[2] <= '9')
-    multiplicity = atoi(sep + 2);
+  if (sep[2] == 'x')
+    multiplicity = atoi(sep + 3);
   if (multiplicity > 32)
     multiplicity = 32;
   assert(multiplicity >= 0);
@@ -159,12 +159,12 @@ void Rule::save(FILE *fp) const {
   buf[2].save(fp);
   buf[3].save(fp);
 
+  reqwild.save(fp);
+  memwild.save(fp);
+
   uint32_t nm = htonl(multiplicity);
   ret = fwrite(&nm, 1, 4, fp);
   assert(ret == 4);
-
-  reqwild.save(fp);
-  memwild.save(fp);
 }
 
 void Rule::load(FILE *fp) {

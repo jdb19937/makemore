@@ -20,6 +20,7 @@ makelay
 maketop
 makemap
 wireup
+morecc
 
 libmakemore.a
 

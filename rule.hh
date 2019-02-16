@@ -19,6 +19,7 @@ struct Rule {
 
   Rule() {
     prepared = false;
+    multiplicity = 1;
   }
 
   void copy(const Rule &r) {
