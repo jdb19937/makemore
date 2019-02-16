@@ -13,11 +13,11 @@ namespace makemore {
 struct Script {
   std::vector<Rule> rules;
 
-  std::string fn;
-  FILE *fp;
-
-  Script(const char *_fn, Vocab *vocab = NULL);
+  Script();
   ~Script();
+
+  void load(FILE *fp);
+  void load(const char *fn);
 
   const Rule *pick();
 };

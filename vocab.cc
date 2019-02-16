@@ -87,4 +87,43 @@ const char *Vocab::closest(const Hashbag &x, const Hashbag **y) const {
   return w;
 }
 
+void Vocab::load(const char *fn) {
+  FILE *fp;
+  assert(fp = fopen(fn, "r"));
+  load(fp);
+  fclose(fp);
+}
+
+void Vocab::load(FILE *fp) {
+  char buf[4096];
+
+  while (1) {
+    *buf = 0;
+    char *unused = fgets(buf, sizeof(buf) - 1, fp);
+    buf[sizeof(buf) - 1] = 0;
+    char *p = strchr(buf, '\n');
+    if (!p)
+      break;
+    *p = 0;
+
+    p = strchr(buf, '#');
+    if (p)
+      *p = 0;
+    char *q = buf;
+    while (*q == ' ')
+      ++q;
+    if (!*q)
+      continue;
+
+    char *desc = strchr(q, '\t');
+    if (desc) {
+      *desc = 0;
+      ++desc;
+    }
+
+    add(q, desc);
+  }
+}
+ 
+
 }

@@ -7,12 +7,12 @@ my %seen;
 ++$seen{'*'};
 
 {
-  my $branecode_fn = "$Bin/branecode.tsv";
-  open(my $branecode_fp, "<", $branecode_fn) or die "$0: $branecode_fn: $!\n";
-  while (<$branecode_fp>) {
+  my $branegasm_fn = "$Bin/branegasm.tsv";
+  open(my $branegasm_fp, "<", $branegasm_fn) or die "$0: $branegasm_fn: $!\n";
+  while (<$branegasm_fp>) {
     chomp;
-    my ($code) = split /\t/;
-    ++$seen{$code};
+    my ($word) = split /\t/;
+    ++$seen{$word};
   }
   close($branecode_fp);
 }

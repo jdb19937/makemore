@@ -8,40 +8,29 @@
 namespace makemore {
 using namespace std;
 
-Script::Script(const char *_fn, Vocab *vocab) {
-  fn = _fn;
-  assert(fp = fopen(fn.c_str(), "r"));
+Script::Script() {
 
-  char buf[4096];
+}
+
+void Script::load(const char *fn) {
+  FILE *fp;
+  assert(fp = fopen(fn, "r"));
+  load(fp);
+  fclose(fp);
+}
+
+void Script::load(FILE *fp) {
   while (1) {
-    *buf = 0;
-    char *unused = fgets(buf, sizeof(buf) - 1, fp);
-    buf[sizeof(buf) - 1] = 0;
-    char *p = strchr(buf, '\n');
-    if (!p)
+    int c = getc(fp);
+    if (c == EOF)
       break;
-    *p = 0;
-
-    p = strchr(buf, '#');
-    if (p)
-      *p = 0;
-    const char *q = buf;
-    while (*q == ' ')
-      ++q;
-    if (!*q)
-      continue;
-
-    if (vocab)
-      vocab->add(q);
-
+    ungetc(c, fp);
+   
     Rule r;
-    unsigned int copies = r.parse(q);
-    for (unsigned int copy = 0; copy < copies; ++copy)
+    r.load(fp);
+    for (unsigned int copy = 0; copy < r.multiplicity; ++copy)
       rules.push_back(r);
   }
-
-  fclose(fp);
-  fp = NULL;
 }
 
 Script::~Script() {

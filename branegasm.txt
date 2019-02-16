@@ -1,7 +1,7 @@
-branecode is a low-level language used in text synthesis to direct recursive calls back
+branegasm is a low-level language used in text synthesis to direct recursive calls back
 into the generator without a full decoding of the generator output. It runs inside the
 GPU and operates directly on shibboleths.  There are about 1000 instructions, which
-take no arguments, and a branecode script is simply a list of these instructions.
+take no arguments, and a branegasm program is simply a list of these instructions.
 
 There are a fixed set of shibboleth registers:
 
@@ -36,4 +36,4 @@ some cases, and one or two argument registers.  A part specifier is permitted on
 (the register to be negated, reversed, or evaluated respectively), and "a", "c", and "p"
 instructions require two arguments (the source and destination).
 
-branecode.tsv is a table of all the branecode instructions and their descriptions.
+branegasm.tsv is a table of all the branecode instructions and their descriptions.

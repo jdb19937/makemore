@@ -41,6 +41,9 @@ struct Vocab {
       }
     }
   }
+
+  void load(FILE *fp);
+  void load(const char *fn);
 };
 
 }

@@ -62,9 +62,10 @@ int main() {
 
   Vocab vocab;
   Confab confab("test.confab", 1);
-  {
-    Script scr("script.txt", &vocab);
-  }
+
+  FILE *tok = popen("./moretok.pl script.txt", "r");
+  vocab.load(tok);
+  pclose(tok);
 
   Brane brane(&confab);
 
