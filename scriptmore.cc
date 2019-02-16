@@ -60,13 +60,7 @@ int main() {
   setbuf(stdout, NULL);
   seedrand();
 
-  Vocab vocab;
   Confab confab("test.confab", 1);
-
-  FILE *tok = popen("./moretok.pl script.txt", "r");
-  vocab.load(tok);
-  pclose(tok);
-
   Brane brane(&confab);
 
   char buf[4096];
@@ -81,8 +75,7 @@ int main() {
       break;
 
     confab.load();
-
-    vocab.add(buf);
+    confab.vocab.add(buf);
 
     std::string reqstr, memstr;
     parsereqmem(buf, &reqstr, &memstr);
@@ -90,22 +83,11 @@ int main() {
     reqshib.encode(reqstr.c_str());
     Shibboleth memshib;
     memshib.encode(memstr.c_str());
-    Shibboleth rspshib = brane.ask(reqshib, &memshib, &vocab);
+    Shibboleth rspshib = brane.ask(reqshib, &memshib);
 
-    std::string rspstr = rspshib.decode(vocab);
+    std::string rspstr = rspshib.decode(confab.vocab);
     printf("%s\n", rspstr.c_str());
   }
-
-#if 0
-  Vocab &v = scr.vocab;
-
-  std::string str;
-  v.decode(req, &str);
-  printf("%s\n", str.c_str());
-
-  v.decode(rsp, &str);
-  printf("%s\n", str.c_str());
-#endif
 
   return 0;
 }

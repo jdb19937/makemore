@@ -160,6 +160,10 @@ Confab::Confab(const char *_dir, unsigned int _mbn) {
   assert(dis->inn == enc->inn);
   assert(mbn == dis->outn);
 
+  char vocabfn[4096];
+  sprintf(vocabfn, "%s/vocab.txt", _dir);
+  vocab.load(vocabfn);
+
   rounds = 0;
 }
 

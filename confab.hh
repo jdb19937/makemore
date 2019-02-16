@@ -4,6 +4,7 @@
 #include "layout.hh"
 #include "topology.hh"
 #include "multitron.hh"
+#include "vocab.hh"
 
 #include <string>
 #include <map>
@@ -36,6 +37,8 @@ struct Confab {
   double *outbuf, *adjbuf;
 
   unsigned int rounds;
+
+  Vocab vocab;
 
   Confab(const char *_dir, unsigned int _mbn);
   ~Confab();

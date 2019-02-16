@@ -16,7 +16,7 @@ int main() {
   confab.load();
 
   Script script;
-  script.load("script.more");
+  script.load("test.confab/script.more");
   Brane brane(&confab);
 
   assert(sizeof(Shibboleth) * 2 == confab.ctxlay->n * sizeof(double));
