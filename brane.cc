@@ -105,6 +105,10 @@ void Brane::_init_vocab() {
     sprintf(buf, "r%c", *b);
     sprintf(desc, "reverse %s", bufdesc(*b));
     vocab.add(buf, desc);
+
+    sprintf(buf, "d%c", *b);
+    sprintf(desc, "decode %s", bufdesc(*b));
+    vocab.add(buf, desc);
   }
 
   vocab.add("nop", "do nothing");
@@ -210,6 +214,16 @@ Shibboleth Brane::ask(const Shibboleth &req, Shibboleth *memp, const Vocab *user
         assert(cmdi->length() == 2);
         Shibboleth *eval = wbufmap(cmd[1], rsp);
         *eval = ask(*eval, nemp, user, depth + 1);
+        break;
+      }
+    case 'd':
+      {
+        assert(cmdi->length() == 2);
+        Shibboleth *dec = wbufmap(cmd[1], rsp);
+
+        string decstr = dec->decode(*user);
+
+        dec->encode(decstr.c_str());
         break;
       }
     case 'r':

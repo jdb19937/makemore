@@ -382,6 +382,12 @@ c^NN	copy head of memory output to memory output
 cNN	copy memory output to memory output
 c$NN	copy rear of memory output to memory output
 c%NN	copy torso of memory output to memory output
+d1	decode register 1
+d2	decode register 2
+d3	decode register 3
+d4	decode register 4
+dJ	decode primary output
+dN	decode memory output
 e1	evaluate register 1
 e2	evaluate register 2
 e3	evaluate register 3
