@@ -321,5 +321,5 @@ dataclean: clean
 	rm -f $(LAYOUTS)
 
 
-branecode.tsv: dumpbranetxt
+branegasm.tsv: dumpbranetxt
 	./dumpbranetxt |sort > $@
