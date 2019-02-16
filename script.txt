@@ -1,36 +1,36 @@
-inc 0 -> 1
-inc 1 -> 2
-inc 2 -> 3
-inc 3 -> 4
-inc 4 -> 5
-inc 5 -> 6
-inc 6 -> 7
-inc 7 -> 8
-inc 8 -> 9
-inc 9 -> 1 0
+inc 0 -> dJ: 1
+inc 1 -> dJ: 2
+inc 2 -> dJ: 3
+inc 3 -> dJ: 4
+inc 4 -> dJ: 5
+inc 5 -> dJ: 6
+inc 6 -> dJ: 7
+inc 7 -> dJ: 8
+inc 8 -> dJ: 9
+inc 9 -> dJ: 1 0
 
-inc * 0 ->     p%IJ: 1
-inc * 9 ->     a%I1 e1 p1J: 0, inc
-inc * * ->x4   a$IJ eJ p%IJ: inc
+inc * 0 ->     p%IJ dJ: 1
+inc * 9 ->     a%I1 e1 p1J dJ: 0, inc
+inc * * ->x4   a$IJ eJ p%IJ dJ: inc
 
-dec 1 -> 0
-dec 2 -> 1
-dec 3 -> 2
-dec 4 -> 3
-dec 5 -> 4
-dec 6 -> 5
-dec 7 -> 6
-dec 8 -> 7
-dec 9 -> 8
-dec 1 0 -> 9
+dec 1 -> dJ: 0
+dec 2 -> dJ: 1
+dec 3 -> dJ: 2
+dec 4 -> dJ: 3
+dec 5 -> dJ: 4
+dec 6 -> dJ: 5
+dec 7 -> dJ: 6
+dec 8 -> dJ: 7
+dec 9 -> dJ: 8
+dec 1 0 -> dJ: 9
 
-dec * 9 ->     p%IJ: 8
-dec * 0 ->     a%I1 e1 p1J: 9, dec
-dec * * ->x4   a$IJ eJ p%IJ: dec
+dec * 9 ->     p%IJ dJ: 8
+dec * 0 ->     a%I1 e1 p1J dJ: 9, dec
+dec * * ->x4   a$IJ eJ p%IJ dJ: dec
 
-add *   (*)   ->x8    nop a$I1 e1 aM2 e2 a1J c2N eJ: add, inc, dec
-add * * (* *) ->x8   a%I1 a$I1 e1 aM2 e2 a1J c2N eJ: add, inc, dec
-add * * (*)   ->x8   a%I1 a$I1 e1 aM2 e2 a1J c2N eJ: add, inc, dec
+add *   (*)   ->x8    nop a$I1 e1 aM2 e2 a1J c2N dJ eJ: add, inc, dec
+add * * (* *) ->x8   a%I1 a$I1 e1 aM2 e2 a1J c2N dJ eJ: add, inc, dec
+add * * (*)   ->x8   a%I1 a$I1 e1 aM2 e2 a1J c2N dJ eJ: add, inc, dec
 
-add * * (0)   ->   c%IJ a$IJ: 0
-add *   (0)   ->        c$IJ: 0
+add * * (0)   ->   c%IJ a$IJ dJ: 0
+add *   (0)   ->        c$IJ dJ: 0
