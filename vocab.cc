@@ -70,11 +70,16 @@ void Vocab::add(const char *str, const char *desc) {
   }
 }
 
-const char *Vocab::closest(const Hashbag &x, const Hashbag **y) const {
+const char *Vocab::closest(const Hashbag &x, const Hashbag **y, bool force) const {
   const double *m = (const double *)bags.data();
   unsigned int k = Hashbag::n;
 
-  unsigned int i = makemore::closest(x.vec, m, k, n);
+  unsigned int i;
+  if (force) {
+    i = makemore::closest(x.vec, m + k, k, n - 1) + 1;
+  } else {
+    i = makemore::closest(x.vec, m, k, n);
+  }
   assert(i >= 0 && i < n);
 
   const char *w = tags[i];

@@ -48,7 +48,7 @@ int main() {
   Brane brane(&confab);
 
   char buf[4096];
-  Shibboleth memshib;
+  Shibboleth memshib, auxshib;
 
   while (1) {
     *buf = 0;
@@ -69,16 +69,16 @@ int main() {
     if (newmem) {
       memshib.encode(memstr.c_str());
     }
-    Shibboleth rspshib = brane.ask(reqshib, &memshib);
+    Shibboleth rspshib = brane.ask(reqshib, &memshib, &auxshib);
 
     std::string rspstr = rspshib.decode(confab.vocab);
     std::string nemstr = memshib.decode(confab.vocab);
 
-    if (nemstr != "") {
-      printf("%s (%s)\n", rspstr.c_str(), nemstr.c_str());
-    } else {
+//    if (nemstr != "") {
+//      printf("%s (%s)\n", rspstr.c_str(), nemstr.c_str());
+//    } else {
       printf("%s\n", rspstr.c_str());
-    }
+//    }
   }
 
   return 0;

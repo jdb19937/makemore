@@ -133,7 +133,7 @@ unsigned int Rule::parse(const char *line) {
   reg1str = norm(reg1str);
   reg2str = norm(reg2str);
 
-#if 0
+#if 1
 fprintf(stderr, "reqstr=[%s]\n", reqstr.c_str());
 fprintf(stderr, "memstr=[%s]\n", memstr.c_str());
 fprintf(stderr, "auxstr=[%s]\n", auxstr.c_str());

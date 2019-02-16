@@ -30,7 +30,7 @@ struct Vocab {
     add(tagstr.c_str(), desc);
   }
 
-  const char *closest(const Hashbag &x, const Hashbag **y) const;
+  const char *closest(const Hashbag &x, const Hashbag **y, bool force = false) const;
 
   void dump() {
     for (unsigned int i = 1; i < n; ++i) {

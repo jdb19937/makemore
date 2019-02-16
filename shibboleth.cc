@@ -12,6 +12,7 @@
 #include "sha256.c"
 
 namespace makemore {
+
 double pairmul = 0.1;
 
 using namespace std;
@@ -228,19 +229,23 @@ void Shibboleth::encode(const char *str) {
 }
 
 std::string Shibboleth::decode(const Vocab &vocab) const {
-  Hashbag tvec = torso;
-  const Hashbag *uvecp = NULL;
-
+fprintf(stderr, "heads=%lf torsos=%lf rears=%lf\n", head.size(), torso.size(), rear.size());
+  // const char *headword = vocab.closest(head, NULL, head.size() > 0.5);
   const char *headword = vocab.closest(head, NULL);
   if (!headword)
     return "";
 
+  // const char *rearword = vocab.closest(rear, NULL, rear.size() > 0.5);
   const char *rearword = vocab.closest(rear, NULL);
   if (!rearword)
     return headword;
 
+  Hashbag tvec = torso;
+  const Hashbag *uvecp = NULL;
+
   map<string, unsigned int> whb;
   for (unsigned int outi = 0; outi < 16; ++outi) {
+//    const char *w = vocab.closest(tvec, &uvecp, tvec.size() > 0.5);
     const char *w = vocab.closest(tvec, &uvecp);
     if (!w)
       break;

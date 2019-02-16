@@ -212,8 +212,8 @@ fprintf(stderr, "ask mem [%s]\n", memp->decode(confab->vocab).c_str());
   memcpy((double *)rsp, confab->outbuf, sizeof(Shibboleth) * 6);
   nemp = rsp + 2;
   buxp = rsp + 3;
-  nemp->clear();
-  buxp->clear();
+  // nemp->clear();
+  // buxp->clear();
 
   string cmdstr = rsp[0].decode(vocab);
   vector<string> cmds;
@@ -394,6 +394,10 @@ fprintf(stderr, "ask cmd [%s]\n", cmdstr.c_str());
         if (cmdi->length() == 3) {
           from = rbufmap(cmd[1], req, rsp);
           to = wbufmap(cmd[2], rsp);
+
+fprintf(stderr, "append from [%s]\n", from->decode(confab->vocab).c_str());
+fprintf(stderr, "append to [%s]\n", to->decode(confab->vocab).c_str());
+fprintf(stderr, "append mem  [%s]\n", memp->decode(confab->vocab).c_str());
   
           to->append(*from);
 
@@ -402,9 +406,6 @@ fprintf(stderr, "ask cmd [%s]\n", cmdstr.c_str());
           from = rbufmap(cmd[2], req, rsp);
           to = wbufmap(cmd[3], rsp);
 
-fprintf(stderr, "append from [%s]\n", from->decode(confab->vocab).c_str());
-fprintf(stderr, "append to [%s]\n", to->decode(confab->vocab).c_str());
-fprintf(stderr, "append mem  [%s]\n", memp->decode(confab->vocab).c_str());
 
           switch (cmd[1]) {
           case '^': to->append(from->head); break;
@@ -448,6 +449,9 @@ fprintf(stderr, "append to' [%s]\n", to->decode(confab->vocab).c_str());
       assert(0);
     }
   }
+
+fprintf(stderr, "out=[%s]\n", rsp[1].decode(confab->vocab).c_str());
+fprintf(stderr, "nem=[%s]\n", nemp->decode(confab->vocab).c_str());
 
   if (memp)
     memcpy(memp, nemp, sizeof(Shibboleth));

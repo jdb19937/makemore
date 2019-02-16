@@ -1,0 +1,14 @@
+whats your name -> bob whats yours (name)
+* (name) -> aIJ a1J: hi, pleased to meet you
+
+europe who -> do you know someone in europe
+who's there -> its me bob
+
+tell me a joke -> knock knock (joke1)
+who's there (joke1) -> cJB: europe (joke2)
+europe who (joke2) -> no i'm not
+
+* (joke1) ->x16 you're supposed to say who's there (joke1)
+* * (joke1) ->x16 you're supposed to say who's there (joke1)
+* (joke2) ->x16 aAJ a1J: you're supposed to say (joke2), who
+* * (joke2) ->x16 aAJ a1J: you're supposed to say (joke2), who
