@@ -13,7 +13,7 @@
 namespace makemore {
 
 struct Hashbag {
-  const static unsigned int n = 128;
+  const static unsigned int n = 256;
   double vec[n];
 
   void clear() {
@@ -26,6 +26,13 @@ struct Hashbag {
       e2 += (vec[i] * vec[i]);
     e2 /= (double)n;
     return e2;
+  }
+
+  double sum() const {
+    double s = 0;
+    for (unsigned int i = 0; i < n; ++i)
+      s += vec[i];
+    return s;
   }
 
   Hashbag() {
@@ -155,6 +162,8 @@ struct Hashbag {
     ret = fread(vec, sizeof(double), n, fp);
     assert(ret == n);
   }
+
+  std::string guesstract(const class Vocab &v, double nfloor = 0.125);
 };
 
 }

@@ -228,25 +228,23 @@ void Shibboleth::encode(const char *str) {
 
 }
 
-std::string Shibboleth::decode(const Vocab &vocab) const {
+std::string Shibboleth::decode(const Vocab &vocab, bool force_head) const {
 fprintf(stderr, "heads=%lf torsos=%lf rears=%lf\n", head.size(), torso.size(), rear.size());
-  // const char *headword = vocab.closest(head, NULL, head.size() > 0.5);
-  const char *headword = vocab.closest(head, NULL);
+  const char *headword = vocab.closest(head, NULL, force_head);
   if (!headword)
     return "";
 
-  // const char *rearword = vocab.closest(rear, NULL, rear.size() > 0.5);
-  const char *rearword = vocab.closest(rear, NULL);
+  const char *rearword = vocab.closest(rear, NULL, false);
   if (!rearword)
     return headword;
 
   Hashbag tvec = torso;
+  long outn = 16;
   const Hashbag *uvecp = NULL;
 
   map<string, unsigned int> whb;
-  for (unsigned int outi = 0; outi < 16; ++outi) {
-//    const char *w = vocab.closest(tvec, &uvecp, tvec.size() > 0.5);
-    const char *w = vocab.closest(tvec, &uvecp);
+  for (unsigned int outi = 0; outi < outn; ++outi) {
+    const char *w = vocab.closest(tvec, &uvecp, false);
     if (!w)
       break;
     ++whb[w];

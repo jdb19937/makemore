@@ -10,39 +10,53 @@
 
 namespace makemore {
 
-Pipeline::Pipeline(unsigned int _mbn) {
+Pipeline::Pipeline(const char *_dir, unsigned int _mbn) : Project(_dir, _mbn) {
   mbn = _mbn;
   assert(mbn > 0);
 
-  ctxlay = NULL;
-  outlay = NULL;
   ctrlay = new Layout;
   adjlay = new Layout;
 
-  ctrbuf = NULL;
-  adjbuf = NULL;
-  outbuf = NULL;
-  ctxbuf = NULL;
+  assert(config["type"] == "pipeline");
+
+  assert(config["n_stages"] != "");
+  unsigned int n_stages = (unsigned int)atoi(config["n_stages"].c_str());
+  assert(n_stages > 0);
+
+  char stagedir[4096];
+  assert(strlen(_dir) < 4000);
+  for (unsigned int i = 1; i <= n_stages; ++i) {
+    sprintf(stagedir, "%s/stage%u.proj", _dir, i);
+    Stage *proj = new Stage(stagedir, mbn);
+    _add_stage(proj);
+  }
+
+  _setup();
+
+  ctxbuf = new double[ctxlay->n * mbn];
+  ctrbuf = new double[ctrlay->n * mbn];
+  adjbuf = new double[adjlay->n * mbn];
+  outbuf = new double[outlay->n * mbn];
 
   tgtlock = 0;
   ctrlock = (unsigned)-1;
 }
 
-Project *Pipeline::initial() {
+Stage *Pipeline::initial() {
   assert(stages.size());
   return stages[0];
 }
 
-Project *Pipeline::final() {
+Stage *Pipeline::final() {
   assert(stages.size());
   return stages[stages.size() - 1];
 }
 
-void Pipeline::add_stage(Project *proj) {
+void Pipeline::_add_stage(Stage *proj) {
   assert(proj->mbn == mbn);
 
   if (stages.size()) {
-    Project *prev = final();
+    Stage *prev = final();
     assert(ctxlay);
     assert(ctxlay->n + prev->outlay->n == proj->ctxlay->n);
   }
@@ -51,20 +65,8 @@ void Pipeline::add_stage(Project *proj) {
   *ctrlay += *proj->ctrlay;
   *adjlay += *proj->outlay;
 
-  _setup();
-}
-
-void Pipeline::_setup() {
-  assert(stages.size());
-
-  unsigned int f = stages.size() - 1;
   ctxlay = initial()->ctxlay;
   outlay = final()->outlay;
-
-  delete[] ctxbuf; ctxbuf = new double[ctxlay->n * mbn];
-  delete[] ctrbuf; ctrbuf = new double[ctrlay->n * mbn];
-  delete[] adjbuf; adjbuf = new double[adjlay->n * mbn];
-  delete[] outbuf; outbuf = new double[outlay->n * mbn];
 }
 
 Pipeline::~Pipeline() {
@@ -75,6 +77,11 @@ Pipeline::~Pipeline() {
   delete[] ctrbuf;
   delete[] adjbuf;
   delete[] outbuf;
+
+  for (auto i = stages.begin(); i != stages.end(); ++i) {
+    delete *i;
+  }
+  stages.clear();
 }
   
 
@@ -104,7 +111,7 @@ void Pipeline::generate(
 
 
 
-  Project *proj;
+  Stage *proj;
 
   proj = initial();
   assert(ctxlay->n == proj->ctxlay->n);
@@ -112,8 +119,8 @@ void Pipeline::generate(
   proj->generate();
 
   for (unsigned int i = 1; i < stages.size(); ++i) {
-    Project *lastproj = stages[i - 1];
-    Project *proj = stages[i];
+    Stage *lastproj = stages[i - 1];
+    Stage *proj = stages[i];
 
     assert(proj->ctxlay->n == ctxlay->n + lastproj->outlay->n);
     assert(proj->mbn == lastproj->mbn);
@@ -186,7 +193,7 @@ void Pipeline::retarget() {
 
 
 
-  Project *proj = initial();
+  Stage *proj = initial();
   assert(proj->ctxlay->n == ctxlay->n);
   memcpy(proj->ctxbuf, ctxbuf, mbn * ctxlay->n * sizeof(double));
 
@@ -195,8 +202,8 @@ void Pipeline::retarget() {
     proj->outbuf[j] += proj->adjbuf[j];
 
   for (unsigned int i = 1; i < stages.size(); ++i) {
-    Project *lastproj = stages[i - 1];
-    Project *proj = stages[i];
+    Stage *lastproj = stages[i - 1];
+    Stage *proj = stages[i];
 
     assert(proj->ctxlay->n == ctxlay->n + lastproj->outlay->n);
     assert(proj->mbn == lastproj->mbn);
@@ -225,12 +232,12 @@ void Pipeline::retarget() {
 }
 
 void Pipeline::uptarget() {
-  Project *proj = final();
+  Stage *proj = final();
   assert(proj->outlay->n == outlay->n);
   memcpy(proj->adjbuf, outbuf, mbn * sizeof(double) * outlay->n);
 
   for (int i = stages.size() - 2; i >= 0; --i) {
-    Project *lastproj = proj;
+    Stage *lastproj = proj;
     proj = stages[i];
     unsigned int dim = lround(sqrt(lastproj->outlay->n / 3));
     assert(dim * dim * 3 == lastproj->outlay->n);
@@ -264,8 +271,8 @@ void Pipeline::uptarget() {
 
 
   for (unsigned int i = 0; i < stages.size(); ++i) {
-    Project *lastproj = i > 0 ? stages[i-1] : NULL;
-    Project *proj = stages[i];
+    Stage *lastproj = i > 0 ? stages[i-1] : NULL;
+    Stage *proj = stages[i];
 
     if (lastproj) {
       assert(proj->ctxlay->n == ctxlay->n + lastproj->outlay->n);
@@ -303,12 +310,12 @@ void Pipeline::uptarget() {
 
 
 void Pipeline::readjust() {
-  Project *proj = final();
+  Stage *proj = final();
   assert(proj->outlay->n == outlay->n);
   memcpy(proj->adjbuf, outbuf, mbn * sizeof(double) * outlay->n);
 
   for (int i = stages.size() - 2; i >= 0; --i) {
-    Project *lastproj = proj;
+    Stage *lastproj = proj;
     proj = stages[i];
     unsigned int dim = lround(sqrt(lastproj->outlay->n / 3));
     assert(dim * dim * 3 == lastproj->outlay->n);
@@ -340,8 +347,8 @@ void Pipeline::readjust() {
 
 
   for (unsigned int i = 0; i < stages.size(); ++i) {
-    Project *lastproj = i > 0 ? stages[i-1] : NULL;
-    Project *proj = stages[i];
+    Stage *lastproj = i > 0 ? stages[i-1] : NULL;
+    Stage *proj = stages[i];
 
     if (lastproj) {
       assert(proj->ctxlay->n == ctxlay->n + lastproj->outlay->n);
@@ -422,11 +429,11 @@ void Pipeline::fix(unsigned int iters, double blend) {
 
 void Pipeline::reencode() {
   assert(stages.size());
-  Project *proj = final();
+  Stage *proj = final();
   memcpy(proj->adjbuf, outbuf, mbn * sizeof(double) * outlay->n);
 
   for (int i = stages.size() - 2; i >= 0; --i) {
-    Project *lastproj = proj;
+    Stage *lastproj = proj;
     proj = stages[i];
     unsigned int dim = lround(sqrt(lastproj->outlay->n / 3));
     assert(dim * dim * 3 == lastproj->outlay->n);
@@ -455,7 +462,7 @@ void Pipeline::reencode() {
   memcpy(proj->tgtbuf, proj->adjbuf, sizeof(double) * mbn * proj->outlay->n);
 
   for (unsigned int i = 0; i < stages.size(); ++i) {
-    Project *proj = stages[i];
+    Stage *proj = stages[i];
 
     for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
       memcpy(
@@ -464,7 +471,7 @@ void Pipeline::reencode() {
         sizeof(double) * ctxlay->n
       );
       if (i > 0) {
-        Project *lastproj = stages[i - 1];
+        Stage *lastproj = stages[i - 1];
         assert(proj->ctxlay->n == ctxlay->n + lastproj->outlay->n);
         memcpy(
           proj->ctxbuf + mbi * proj->ctxlay->n + ctxlay->n,
@@ -480,6 +487,9 @@ void Pipeline::reencode() {
     proj->generate();
   }
 
+  proj = final();
+  assert(outlay->n == proj->outlay->n);
+  memcpy(outbuf, proj->outbuf, sizeof(double) * mbn * outlay->n);
 
   {
     unsigned int coff = 0;
@@ -658,11 +668,11 @@ void Pipeline::autolign(unsigned int iters, int dzoom) {
 
 void Pipeline::burn(uint32_t which, double nu, double pi) {
   assert(stages.size());
-  Project *proj = final();
+  Stage *proj = final();
   memcpy(proj->adjbuf, outbuf, mbn * sizeof(double) * outlay->n);
 
   for (int i = stages.size() - 2; i >= 0; --i) {
-    Project *lastproj = proj;
+    Stage *lastproj = proj;
     proj = stages[i];
     unsigned int dim = lround(sqrt(lastproj->outlay->n / 3));
     assert(dim * dim * 3 == lastproj->outlay->n);
@@ -691,7 +701,7 @@ void Pipeline::burn(uint32_t which, double nu, double pi) {
   memcpy(proj->tgtbuf, proj->adjbuf, sizeof(double) * mbn * proj->outlay->n);
 
   for (unsigned int i = 0; i < stages.size(); ++i) {
-    Project *proj = stages[i];
+    Stage *proj = stages[i];
 
     for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
       memcpy(
@@ -770,11 +780,11 @@ void Pipeline::recombine() {
 
 void Pipeline::condition(uint32_t which, double yo, double wu) {
   assert(stages.size());
-  Project *proj = final();
+  Stage *proj = final();
   memcpy(proj->adjbuf, outbuf, mbn * sizeof(double) * outlay->n);
 
   for (int i = stages.size() - 2; i >= 0; --i) {
-    Project *lastproj = proj;
+    Stage *lastproj = proj;
     proj = stages[i];
     unsigned int dim = lround(sqrt(lastproj->outlay->n / 3));
     assert(dim * dim * 3 == lastproj->outlay->n);
@@ -803,7 +813,7 @@ void Pipeline::condition(uint32_t which, double yo, double wu) {
   memcpy(proj->tgtbuf, proj->adjbuf, sizeof(double) * mbn * proj->outlay->n);
 
   for (unsigned int i = 0; i < stages.size(); ++i) {
-    Project *proj = stages[i];
+    Stage *proj = stages[i];
 
     for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
       memcpy(
@@ -832,8 +842,8 @@ void Pipeline::burnin(
 
 
   for (unsigned int i = 0; i < stages.size(); ++i) {
-    Project *lastproj = i > 0 ? stages[i-1] : NULL;
-    Project *proj = stages[i];
+    Stage *lastproj = i > 0 ? stages[i-1] : NULL;
+    Stage *proj = stages[i];
 
     if (lastproj) {
       unsigned int n = proj->ctxlay->n;
@@ -871,14 +881,14 @@ void Pipeline::scramble(double mean, double dev) {
  
 void Pipeline::load() {
   for (auto pi = stages.begin(); pi != stages.end(); ++pi) {
-    Project *proj = *pi;
+    Stage *proj = *pi;
     proj->load();
   }
 }
 
 void Pipeline::save() {
   for (auto pi = stages.begin(); pi != stages.end(); ++pi) {
-    Project *proj = *pi;
+    Stage *proj = *pi;
     proj->save();
   }
 }

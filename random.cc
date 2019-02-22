@@ -46,6 +46,11 @@ double randgauss() {
   return gaussian(generator);
 }
 
+double randexp(double lambda) {
+  std::exponential_distribution<double> exponential(lambda);
+  return exponential(generator);
+}
+
 
 double randrange(double a, double b) {
   std::uniform_real_distribution<double> uniform(a, b);

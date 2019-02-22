@@ -71,7 +71,7 @@ int main() {
     }
     Shibboleth rspshib = brane.ask(reqshib, &memshib, &auxshib);
 
-    std::string rspstr = rspshib.decode(confab.vocab);
+    std::string rspstr = rspshib.decode(confab.vocab, true);
     std::string nemstr = memshib.decode(confab.vocab);
 
 //    if (nemstr != "") {

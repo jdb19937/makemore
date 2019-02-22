@@ -160,6 +160,8 @@ void Brane::burn(const Rule *rule, unsigned int mbn, double pi) {
 
   assert(mbn == confab->mbn);
   for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
+    assert(rule[mbi].prepared);
+
     req[0] = rule[mbi].req;
     req[1] = rule[mbi].mem;
     req[2] = rule[mbi].aux;

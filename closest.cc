@@ -24,13 +24,13 @@ unsigned int closest(const double *x, const double *m, unsigned int k, unsigned 
       z += d * d;
     }
 
-//fprintf(stderr, "closest i=%u z=%lf\n", i, z);
     if (bestz < 0 || z < bestz) {
       bestz = z;
       besti = i;
     }
+ fprintf(stderr, "closest i=%u z=%lf besti=%u bestz=%lf\n", i, z, besti, bestz);
   }
-//fprintf(stderr, "best i=%u\n", besti);
+fprintf(stderr, "best i=%u\n", besti);
 
   return besti;
 }

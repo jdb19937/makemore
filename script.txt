@@ -27,6 +27,7 @@ dec 1 0 -> dJ: 9
 dec * 9 ->     p%IJ dJ: 8
 dec * 0 ->     a%I1 e1 p1J dJ: 9, dec
 dec * * ->x4   a$IJ eJ p%IJ dJ: dec
+dec 1 * ->     a$IJ eJ p%IJ dJ: dec
 
 add *   (*)   ->x8    nop a$I1 e1 aM2 e2 a1J c2N dJ eJ: add, inc, dec
 add * * (* *) ->x8   a%I1 a$I1 e1 aM2 e2 a1J c2N dJ eJ: add, inc, dec

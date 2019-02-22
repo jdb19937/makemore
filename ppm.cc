@@ -175,6 +175,29 @@ void PPM::pastelab(const double *vec, unsigned int vw, unsigned int vh, unsigned
   }
 }
 
+void PPM::pastelab(const uint8_t *vec, unsigned int vw, unsigned int vh, unsigned int x0, unsigned int y0) {
+  assert(y0 + vh <= h);
+  assert(x0 + vw <= w);
+
+  unsigned int i = 0;
+  for (unsigned int vy = 0; vy < vh; ++vy) {
+    unsigned int y = y0 + vy;
+    unsigned int yw3 = y * w * 3;
+
+    for (unsigned int vx = 0; vx < vw; ++vx) {
+      unsigned int x = x0 + vx;
+      unsigned int x3 = x * 3;
+
+      labtorgb(
+        (double)vec[i+0] / 256.0, (double)vec[i+1] / 256.0, (double)vec[i+2] / 256.0,
+        data+yw3+x3+0, data+yw3+x3+1, data+yw3+x3+2
+      );
+
+      i += 3;
+    }
+  }
+}
+
 void PPM::cutlab(double *vec, unsigned int vw, unsigned int vh, unsigned int x0, unsigned int y0) {
   assert(y0 + vh <= h);
   assert(x0 + vw <= w);

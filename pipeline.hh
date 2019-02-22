@@ -7,13 +7,13 @@
 #include <vector>
 
 #include "layout.hh"
+#include "stage.hh"
 #include "project.hh"
 
 namespace makemore {
 
-struct Pipeline {
-  unsigned int mbn;
-  std::vector<Project*> stages;
+struct Pipeline : Project {
+  std::vector<Stage*> stages;
 
   Layout *ctrlay, *adjlay;
   const Layout *outlay, *ctxlay;
@@ -21,13 +21,13 @@ struct Pipeline {
   double *ctrbuf, *adjbuf, *outbuf, *ctxbuf;
   uint32_t tgtlock, ctrlock;
 
-  Pipeline(unsigned int _mbn);
+  Pipeline(const char *_dir, unsigned int _mbn = 1);
   void _setup();
-  void add_stage(Project *);
-  ~Pipeline();
+  void _add_stage(Stage *);
+  virtual ~Pipeline();
 
-  Project *initial();
-  Project *final();
+  Stage *initial();
+  Stage *final();
 
   void fix(unsigned int iters, double blend);
   void reencode();

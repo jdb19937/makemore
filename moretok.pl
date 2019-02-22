@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/perl -s
 
 use FindBin qw($Bin);
 
@@ -21,6 +21,11 @@ $| = 1;
 
 while (<>) {
   chomp;
+
+  if ($::rhs) {
+    s/^->\S*//;
+    s/.*?\s->\S*//;
+  }
 
   for (split /[\s:\(\),]+/) {
     next if /^->/;

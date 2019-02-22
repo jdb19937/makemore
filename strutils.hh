@@ -23,6 +23,8 @@ inline std::string join(const std::vector<std::string> &v, char sep) {
   return join(v, buf);
 }
 
+bool read_line(FILE *, std::string *);
+
 }
 
 #endif

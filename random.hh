@@ -11,12 +11,12 @@ namespace makemore {
 extern void seedrand();
 extern void seedrand(unsigned int n);
 
+extern double randexp(double lambda = 1.0);
 extern double randgauss();
 extern double randrange(double a, double b);
-inline double randunit() {
-  return randrange(0.0, 1.0);
-}
 extern unsigned int randuint();
+
+inline uint8_t randbit() { return randuint() % 2; }
 
 inline double sigmoid(double x) { return 1.0 / (1.0 + exp(-x)); }
 inline double unsigmoid(double x) {

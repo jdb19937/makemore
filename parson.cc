@@ -20,7 +20,11 @@
 #include "surnoms.c"
 
 #include "parson.hh"
+#include "hashbag.hh"
+#include "numutils.hh"
 #include "random.hh"
+#include "pipeline.hh"
+#include "ppm.hh"
 
 namespace makemore {
 
@@ -43,20 +47,6 @@ uint64_t Parson::hash_nom(const char *nom, unsigned int variant) {
   return h;
 }
 
-uint64_t Parson::hash_tag(const char *tag) {
-  uint8_t hash[32];
-  SHA256_CTX sha;
-  sha256_init(&sha);
-  sha256_update(&sha, (const uint8_t *)"#", 1);
-  sha256_update(&sha, (const uint8_t *)tag, strlen(tag));
-  sha256_final(&sha, hash);
-
-  uint64_t h;
-  memcpy(&h, hash, 8);
-  return h;
-}
-
-
 bool Parson::valid_nom(const char *nom) {
   if (strlen(nom) > 31)
     return false;
@@ -70,6 +60,25 @@ bool Parson::valid_nom(const char *nom) {
     if (!nom[i])
       break;
     if (!(nom[i] >= 'a' && nom[i] <= 'z' || nom[i] == '_' || nom[i] >= '0' && nom[i] <= '9')) {
+      return false;
+    }
+  }
+  return true;
+}
+
+bool Parson::valid_tag(const char *tag) {
+  if (strlen(tag) > 31)
+    return false;
+  if (!tag[0])
+    return false;
+
+  if (tag[0] >= '0' && tag[0] <= '9')
+    return false;
+
+  for (unsigned int i = 0; i < 32; ++i) {
+    if (!tag[i])
+      break;
+    if (!(tag[i] >= 'a' && tag[i] <= 'z' || tag[i] == '_' || tag[i] >= '0' && tag[i] <= '9')) {
       return false;
     }
   }
@@ -152,7 +161,7 @@ void Parson::paren_noms(const char *nom, char *mnom, char *fnom) {
   sprintf(fnom, "%s_%s", fprenom, fsurnom);
 }
 
-std::string Parson::bread(const char *nom0, const char *nom1, uint8_t gender) {
+std::string Parson::bread_nom(const char *nom0, const char *nom1, uint8_t gender) {
   std::string newnom;
 
   unsigned int prenomid;
@@ -177,16 +186,64 @@ std::string Parson::bread(const char *nom0, const char *nom1, uint8_t gender) {
 
   return newnom;
 }
-  
-void Parson::add_fren(const char *fnom) {
-  assert(valid_nom(fnom));
-  for (int i = 0; i < nfrens; ++i)
-    if (!strcmp(frens[i], fnom))
+
+bool Parson::has_tag(const char *tag) {
+  for (unsigned int i = 0; i < ntags; ++i)
+    if (!strcmp(tags[i], tag))
+      return true;
+  return false;
+}
+
+bool Parson::has_fren(const char *nom) {
+  for (unsigned int i = 0; i < nfrens; ++i)
+    if (!strcmp(frens[i], nom))
+      return true;
+  return false;
+}
+
+void Parson::add_tag(const char *tag) {
+  assert(valid_tag(tag));
+
+  for (unsigned int i = 0; i < ntags; ++i)
+    if (!strcmp(tags[i], tag))
+      return;
+  memmove(tags + 1, tags, sizeof(Tag) * (ntags - 1));
+  memset(tags[0], 0, sizeof(Tag));
+  strcpy(tags[0], tag);
+}
+
+
+void Parson::add_fren(const char *nom) {
+  assert(valid_nom(nom));
+
+  for (unsigned int i = 0; i < nfrens; ++i)
+    if (!strcmp(frens[i], nom))
       return;
   memmove(frens + 1, frens, sizeof(Nom) * (nfrens - 1));
   memset(frens[0], 0, sizeof(Nom));
-  strcpy(frens[0], fnom);
+  strcpy(frens[0], nom);
 }
+
+void Parson::del_tag(const char *tag) {
+  assert(valid_tag(tag));
+  for (unsigned int i = 0; i < ntags; ++i) {
+    if (!strcmp(tags[i], tag)) {
+      memmove(tags + i, tags + i + 1, sizeof(Tag) * (ntags - i - 1));
+      memset(tags + ntags - 1, 0, sizeof(Tag));
+    }
+  }
+}
+
+void Parson::del_fren(const char *nom) {
+  assert(valid_nom(nom));
+  for (unsigned int i = 0; i < nfrens; ++i) {
+    if (!strcmp(frens[i], nom)) {
+      memmove(frens + i, frens + i + 1, sizeof(Nom) * (nfrens - i - 1));
+      memset(frens + nfrens - 1, 0, sizeof(Nom));
+    }
+  }
+}
+
 
 void Parson::set_parens(const char *anom, const char *bnom) {
   if (anom)
@@ -211,7 +268,7 @@ void Parson::initialize(const char *_nom, double mean, double dev) {
 
   memset(nom, 0, sizeof(Nom));
   strcpy(nom, _nom);
-  hash = hash_nom(_nom);
+  uint64_t hash = hash_nom(_nom);
 
   seedrand(hash);
 
@@ -220,14 +277,10 @@ void Parson::initialize(const char *_nom, double mean, double dev) {
 
   memset(tags, 0, sizeof(tags));
 
-  for (unsigned int i = 0; i < nattrs; ++i)
-    attrs[i] = (randuint() % 2) ? 255 : 0;
-  if (nattrs >= 21) {
-    if (female_nom(nom))
-      attrs[20] = 0;
-    else
-      attrs[20] = 255;
-  }
+  if (female_nom(nom))
+    strcpy(tags[0], "female");
+  else
+    strcpy(tags[0], "male");
 
   created = 0;
   revised = 0;
@@ -236,224 +289,80 @@ void Parson::initialize(const char *_nom, double mean, double dev) {
 
   visits = 0;
   visited = 0;
-  _activity = 0;
+  last_activity = 0;
 
+  generated = 0;
   target_lock = 0;
   control_lock = 0xFF;
   memset(parens, 0, sizeof(parens));
   paren_noms(nom, parens[0], parens[1]);
   memset(frens, 0, sizeof(frens));
   memset(target, 0, sizeof(target));
+  memset(partrait, 0, sizeof(partrait));
 
   seedrand();
 }
 
-void ParsonDB::fill_fam(const char *nom, Parson::Nom *fam) {
-  std::set<std::string> seen;
+void Parson::load_pipe(Pipeline *pipe, unsigned int mbi) {
+  assert(pipe->ctrlay->n == ncontrols * pipe->mbn);
+  unsigned long dd3 = dim * dim * 3;
+  assert(pipe->outlay->n == dd3 * pipe->mbn);
 
-  Parson *p = find(nom);
-  assert(p);
+  dtobv(pipe->ctrbuf + mbi * ncontrols, controls, ncontrols);
+  dtobv(pipe->outbuf + mbi * dd3, partrait, dd3);
+}
 
-  seen.insert(nom);
-  seen.insert(p->parens[0]);
-  seen.insert(p->parens[1]);
+void Parson::save_pipe(Pipeline *pipe, unsigned int mbi) {
+  unsigned long dd3 = dim * dim * 3;
+  assert(pipe->outlay->n == dd3 * pipe->mbn);
+  assert(sizeof(target) == dd3 * sizeof(double));
 
-  memset(fam, 0, sizeof(Parson::Nom) * nfam);
-  unsigned int fami = 0;
+  unsigned long hashlen = pipe->ctxlay->n / pipe->mbn;
+  assert(hashlen * pipe->mbn == pipe->ctxlay->n);
+  assert(hashlen <= Hashbag::n);
+  assert(hashlen * sizeof(double) <= sizeof(Hashbag));
 
-  Parson *pp0 = find(p->parens[0]);
-  Parson *pp1 = find(p->parens[1]);
-  if (pp0 == pp1)
-    pp1 = NULL;
+  Hashbag ph;
+  bagtags(&ph);
+  memcpy(pipe->ctxbuf + mbi * hashlen, &ph, hashlen * sizeof(double));
+  btodv(target, pipe->outbuf + mbi * dd3, dd3 * sizeof(double));
 
-  for (unsigned int i = 0; i < Parson::nfrens && fami < nfam; ++i) {
-    const char *pfnom = p->frens[i];
-    if (seen.count(pfnom))
-      continue;
-    Parson *pf = find(p->frens[i]);
-    if (!pf)
-      continue;
-    if (p->fraternal(pf) || !strcmp(pf->parens[0], nom) || !strcmp(pf->parens[1], nom)) {
-      strcpy(fam[fami++], pf->nom);
-      seen.insert(pf->nom);
+}
+
+void Parson::generate(Pipeline *pipe, long min_age) {
+  time_t now = time(NULL);
+  if (min_age > 0) {
+    if (now < generated + min_age) {
+      return;
+    }
+  } else if (min_age < 0) {
+    if (generated > 0) {
+      return;
     }
   }
+  
+  assert(pipe->mbn == 1);
+  load_pipe(pipe, 0);
 
-  if (pp0) {
-    for (unsigned int i = 0; i < Parson::nfrens && fami < nfam; ++i) {
-      const char *pfnom = pp0->frens[i];
-      if (seen.count(pfnom))
-        continue;
-      Parson *pf = find(pfnom);
-      if (!pf)
-        continue;
-      if (p->fraternal(pf)) {
-        strcpy(fam[fami++], pf->nom);
-        seen.insert(pf->nom);
-      }
-    }
-  }
+  pipe->ctrlock = 0;
+  pipe->tgtlock = -1;
+  pipe->reencode();
 
-  if (pp1) {
-    for (unsigned int i = 0; i < Parson::nfrens && fami < nfam; ++i) {
-      const char *pfnom = pp1->frens[i];
-      if (seen.count(pfnom))
-        continue;
-      Parson *pf = find(pfnom);
-      if (!pf)
-        continue;
-      if (p->fraternal(pf)) {
-        strcpy(fam[fami++], pf->nom); 
-        seen.insert(pf->nom);
-      }
-    }
-  }
+  save_pipe(pipe, 0);
+  generated = now;
 }
 
-void ParsonDB::create(const char *_fn, unsigned int n) {
-  assert(strlen(_fn) < 4000);
-  std::string fn = _fn;
-
-  int fd = ::open(fn.c_str(), O_RDWR | O_CREAT | O_EXCL, 0777);
-  assert(fd != -1);
-
-  int ret;
-  ret = ::ftruncate(fd, n * sizeof(Parson));
-  assert(ret == 0);
-
-  ret = ::close(fd);
-  assert(ret == 0);
-
-  ParsonDB *pdb = new ParsonDB(fn.c_str());
-  assert(pdb->n == n);
-  memset((uint8_t *)pdb->db, 0, n * sizeof(Parson));
-  delete pdb;
+void Parson::paste_target(PPM *ppm, unsigned int x0, unsigned int y0) {
+  assert(x0 + dim < ppm->w);
+  assert(y0 + dim < ppm->h);
+  ppm->pastelab(target, dim, dim, x0, y0);
 }
 
-ParsonDB::ParsonDB(const char *_fn) {
-  assert(strlen(_fn) < 4000);
-  fn = _fn;
-
-  fd = ::open(fn.c_str(), O_RDWR | O_CREAT, 0777);
-  assert(fd != -1);
-
-  off_t size = ::lseek(fd, 0, SEEK_END);
-  assert(size > 0);
-  assert(size % sizeof(Parson) == 0);
-  n = size / sizeof(Parson);
-
-  assert(0 == ::lseek(fd, 0, SEEK_SET));
-
-  size_t map_size = (size + 4095) & ~4095;
-  void *map = ::mmap(NULL, map_size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
-  assert(map != NULL);
-  assert(map != MAP_FAILED);
-
-  db = (Parson *)map;
-}
-
-ParsonDB::~ParsonDB() {
-  size_t map_size = ((n * sizeof(Parson)) + 4095) & ~4095;
-  ::munmap((void *)db, map_size);
-  ::close(fd);
-}
-
-Parson *ParsonDB::pick() {
-  unsigned int tries = 0;
-
-  while (1) {
-    Parson *cand = db + randuint() % n;
-    if (!cand->created)
-      continue;
-    return cand;
-  }
+void Parson::paste_partrait(PPM *ppm, unsigned int x0, unsigned int y0) {
+  assert(x0 + dim < ppm->w);
+  assert(y0 + dim < ppm->h);
+  ppm->pastelab(partrait, dim, dim, x0, y0);
 }
 
 
-Parson *ParsonDB::pick(bool male) {
-  unsigned int tries = 0;
-
-  while (1) {
-    Parson *cand = db + randuint() % n;
-    if (!cand->created)
-      continue;
-
-    if (cand->attrs[20] == 255 * male) {
-      return cand;
-    }
-
-    ++tries;
-    assert(tries < 65536);
-  }
 }
-
-Parson *ParsonDB::pick(bool male, bool old) {
-  unsigned int tries = 0;
-
-  while (1) {
-    Parson *cand = db + randuint() % n;
-    if (!cand->created)
-      continue;
-
-    if (cand->attrs[20] == 255 * male && cand->attrs[39] == 255 * !old) {
-      return cand;
-    }
-
-    ++tries;
-    assert(tries < 65536);
-  }
-}
-
-Parson *ParsonDB::find(const char *nom) {
-  if (!Parson::valid_nom(nom))
-    return NULL;
-
-  Parson *p = NULL;
-  std::multimap<double, Parson*> act_cand;
-
-  for (unsigned int j = 0; j < nvariants; ++j) {
-    Parson *cand = db + Parson::hash_nom(nom, j) % n;
-
-    if (!strcmp(cand->nom, nom)) {
-      p = cand;
-      break;
-    }
-
-    double act = cand->activity();
-    act_cand.insert(std::make_pair(act, cand));
-  }
-
-  if (!p) {
-    auto i = act_cand.begin(); 
-    p = i->second;
-
-    while (i != act_cand.end()) {
-      if (!i->second->created) {
-        p = i->second;
-        break;
-      }
-      ++i;
-    }
-
-    p->initialize(nom, 0, 1);
-
-    const char *dan_nom = "synthetic_dan_brumleve";
-    if (strcmp(nom, dan_nom)) {
-      p->add_fren(dan_nom);
-      Parson *dan = find(dan_nom);
-      dan->add_fren(nom);
-
-      memcpy(dan->parens[0], dan->nom, 32);
-      memcpy(dan->parens[1], dan->nom, 32);
-    }
-  }
-
-  return p;
-}
-
-}
-
-//int main(){
-//  Parson p;
-//  printf("%lu\n", (uint8_t *)p.frens - (uint8_t *)&p);
-//}

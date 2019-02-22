@@ -12,67 +12,56 @@
 #include <string>
 #include <map>
 
+#include "hashbag.hh"
+
 namespace makemore {
 
 struct Parson {
   static bool valid_nom(const char *);
+  static bool valid_tag(const char *);
   static uint64_t hash_nom(const char *nom, unsigned int variant = 0);
-  static uint64_t hash_tag(const char *tag);
   static bool female_nom(const char *);
-  static std::string bread(const char *nom0, const char *nom1, uint8_t);
+  static std::string bread_nom(const char *nom0, const char *nom1, uint8_t);
   static void paren_noms(const char *, char *, char *);
 
   const static unsigned int nfrens = 16;
-  const static unsigned int ntags = 0;
+  const static unsigned int ntags = 8;
   const static unsigned int dim = 64;
   const static unsigned int ncontrols = 1920;
-  const static unsigned int nattrs = 72;
   typedef char Nom[32];
   typedef char Tag[32];
 
-  uint64_t hash;
+  // 27 * 32
   Nom nom;
+  Nom frens[nfrens];
+  Nom parens[2];
+  Tag tags[ntags];
 
+  // 16
   uint32_t created;
   uint32_t revised;
   uint32_t creator;
   uint32_t revisor;
 
+  // 16
   uint32_t visited;
   uint32_t visits;
-  double _activity;
+  double last_activity;
 
-  double activity() const {
-    time_t now = time(NULL);
-    double dt = (double)(now - visited) / (double)(1 << 20);
-    if (dt < 0)
-      dt = 0;
-    return (_activity * exp(-dt));
-  }
-
-  void visit(unsigned int count = 1) {
-    time_t now = time(NULL);
-    double dt = (double)(now - visited) / (double)(1 << 20);
-
-    _activity *= exp(-dt);
-    visited = now;
-
-    _activity += (double)count;
-    visits += count;
-  }
-
+  // 8
+  uint32_t generated;
   uint8_t target_lock;
   uint8_t control_lock;
-  uint8_t _pad[6];
+  uint8_t _pad[2];
 
-  Tag tags[ntags];
-  uint8_t attrs[nattrs];
+  // 1920
+  uint8_t controls[ncontrols];
 
-  double controls[ncontrols];
-  double target[dim * dim * 3];
+  // 64 * 64 * 3
+  uint8_t target[dim * dim * 3];
 
-  Nom frens[nfrens];
-  Nom parens[2];
+  // 64 * 64 * 3
+  uint8_t partrait[dim * dim * 3];
 
   bool exists() {
     return (nom[0] != 0);
@@ -80,10 +69,18 @@ struct Parson {
 
   void initialize(const char *_nom, double mean, double dev);
 
-  void add_fren(const char *fnom);
   void set_parens(const char *anom, const char *bnom);
 
-  bool fraternal(const Parson *p) {
+  bool has_fren(const char *nom);
+  void add_fren(const char *fnom);
+  void del_fren(const char *fnom);
+
+  bool has_tag(const char *tag);
+  void add_tag(const char *tag);
+  void del_tag(const char *tag);
+
+
+  bool fraternal(const Parson *p) const {
     if (*parens[0] && *p->parens[0] && !strcmp(parens[0], p->parens[0]))
       return true;
     if (*parens[1] && *p->parens[0] && !strcmp(parens[1], p->parens[0]))
@@ -94,33 +91,40 @@ struct Parson {
       return true;
     return false;
   }
-};
 
-struct ParsonDB {
-  const static unsigned int nfam = 9;
-  const static unsigned int nvariants = 16;
-
-  std::string fn;
-  int fd;
-
-  Parson *db;
-  unsigned int n;
-
-  static void create(const char *_fn, unsigned int _n);
-  void fill_fam(const char *nom, Parson::Nom *);
-
-  ParsonDB(const char *_fn);
-  ~ParsonDB();
-
-  Parson *find(const char *pname);
-  Parson *pick();
-  Parson *pick(bool male);
-  Parson *pick(bool male, bool old);
-
-  bool exists(const char *qname) {
-    Parson *p = find(qname);
-    return p->exists();
+  double activity() const {
+    time_t now = time(NULL);
+    double dt = (double)(now - visited) / (double)(1 << 20);
+    if (dt < 0)
+      dt = 0;
+    return (last_activity * exp(-dt));
   }
+
+  void visit(unsigned int count = 1) {
+    time_t now = time(NULL);
+    double dt = (double)(now - visited) / (double)(1 << 20);
+
+    last_activity *= exp(-dt);
+    visited = now;
+
+    last_activity += (double)count;
+    visits += count;
+  }
+
+  void generate(class Pipeline *pipe, long min_age = 0);
+
+  void bagtags(Hashbag *h) {
+    h->clear();
+    for (unsigned int i = 0; i < ntags; ++i)
+      if (*tags[i])
+        h->add(tags[i]);
+  }
+
+  void load_pipe(class Pipeline *pipe, unsigned int mbi);
+  void save_pipe(class Pipeline *pipe, unsigned int mbi);
+
+  void paste_partrait(class PPM *ppm, unsigned int x0 = 0, unsigned int y0 = 0);
+  void paste_target(class PPM *ppm, unsigned int x0 = 0, unsigned int y0 = 0);
 };
 
 }

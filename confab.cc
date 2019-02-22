@@ -9,6 +9,7 @@
 #include "twiddle.hh"
 #include "closest.hh"
 #include "confab.hh"
+#include "shibboleth.hh"
 
 namespace makemore {
 
@@ -106,12 +107,8 @@ Confab::Confab(const char *_dir, unsigned int _mbn) {
   gentop->load_file(gentopfn);
   gen = new Multitron(*gentop, mbn, genmapfn);
 
-  if (config["activated"] == "1") {
-    gen->mt1->activated = true;
-  } else {
-    assert(config["activated"] == "0" || config["activated"] == "");
-    gen->mt1->activated = false;
-  }
+  gen->mt1->activated = false;
+  enc->mt1->activated = true;
 
   encinlay = new Layout(*ctxlay);
   *encinlay += *tgtlay;
@@ -122,7 +119,6 @@ Confab::Confab(const char *_dir, unsigned int _mbn) {
   *geninlay += *ctrlay;
   assert(gen->inn == mbn * geninlay->n);
   assert(gen->outn == mbn * tgtlay->n);
-
 
   encpass = new Passthrutron(ctxlay->n, mbn, enc);
   genpass = new Passthrutron(ctxlay->n, mbn, gen);
@@ -160,9 +156,9 @@ Confab::Confab(const char *_dir, unsigned int _mbn) {
   assert(dis->inn == enc->inn);
   assert(mbn == dis->outn);
 
-  char vocabfn[4096];
-  sprintf(vocabfn, "%s/vocab.txt", _dir);
-  vocab.load(vocabfn);
+//  char vocabfn[4096];
+//  sprintf(vocabfn, "%s/vocab.txt", _dir);
+//  vocab.load(vocabfn);
 
   rounds = 0;
 }
@@ -236,24 +232,12 @@ void Confab::load_ctx(FILE *infp) {
 
 
 void Confab::generate(unsigned int reps) {
-  scramble(0, 0);
-
-  assert(geninlay->n == ctxlay->n + ctrlay->n);
-
   for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
     encude( ctxbuf + mbi * ctxlay->n, ctxlay->n, cugenin + mbi * geninlay->n + 0);
     encude( ctrbuf + mbi * ctrlay->n, ctrlay->n, cugenin + mbi * geninlay->n + ctxlay->n);
   }
 
-  for (unsigned int i = 1; i < reps; ++i) {
-    assert(enc->outn == mbn * ctrlay->n);
-    const double *cuencout = genenc->feed(cugenin, NULL);
-    decude(cuencout, enc->outn, fakectr);
-
-    for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
-      encude(fakectr + mbi * ctrlay->n, ctrlay->n, cugenin + mbi * geninlay->n + ctxlay->n);
-    }
-  }
+  assert(geninlay->n == ctxlay->n + ctrlay->n);
 
   const double *cugenout = gen->feed(cugenin, NULL);
   decude(cugenout, gen->outn, tgtbuf);
@@ -294,7 +278,109 @@ void Confab::reencode() {
   decude(cuencout, enc->outn, ctrbuf);
 }
 
+#if 0
+void Confab::condition(double yo, double wu) {
+  assert(mbn % 2 == 0);
+
+  for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
+    for (unsigned int j = mbi * ctrlay->n, jn = j + ctrlay->n; j < jn; ++j)
+      fakectr[j] = sigmoid(randgauss());
+  }
+
+  for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
+    encude( ctxbuf + mbi * ctxlay->n, ctxlay->n, cugenin + mbi * geninlay->n + 0);
+    encude(fakectr + mbi * ctrlay->n, ctrlay->n, cugenin + mbi * geninlay->n + ctxlay->n);
+  }
+  const double *cugenout = gen->feed(cugenin, NULL);
+
+  for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
+    for (unsigned int j = mbi * ctrlay->n, jn = j + ctrlay->n; j < jn; ++j)
+      fakectr[j] = mbi % 2 ? 1.0 : 0.0;
+  }
+
+  for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
+    encude(ctxbuf + mbi * ctxlay->n, ctxlay->n, cuencin + mbi * encinlay->n + 0);
+    if (mbi % 2) {
+      encude(tgtbuf + mbi * tgtlay->n, tgtlay->n, cuencin + mbi * encinlay->n + ctxlay->n);
+    } else {
+      cucopy(cugenout + mbi * tgtlay->n, tgtlay->n, cuencin + mbi * encinlay->n + ctxlay->n);
+    }
+  }
+
+  encude(fakectr, enc->outn, cuenctgt);
+  enc->feed(cuencin, NULL);
+  enc->target(cuenctgt);
+  enc->train(yo);
+
+
+
+  for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
+    for (unsigned int j = mbi * ctrlay->n, jn = j + ctrlay->n; j < jn; ++j)
+      fakectr[j] = 1.0;
+  }
+  encude(fakectr, enc->outn, cuenctgt);
+  genenc->feed(cugenin, NULL);
+  enc->target(cuenctgt, false);
+  enc->train(0);
+
+  genpass->update_stats();
+  genpass->train(wu);
+}
+#endif
+void Confab::condition(double yo, double wu) {
+  assert(mbn % 2 == 0);
+
+  for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
+    encude(ctxbuf + mbi * ctxlay->n, ctxlay->n, cuencin + mbi * encinlay->n + 0);
+    encude(tgtbuf + mbi * tgtlay->n, tgtlay->n, cuencin + mbi * encinlay->n + ctxlay->n);
+  }
+
+  const double *cuencout = enc->feed(cuencin, NULL);
+  decude(cuencout, enc->outn, fakectr);
+  for (unsigned int mbi = 0; mbi < mbn; mbi += 2) {
+    for (unsigned int j = mbi * ctrlay->n, jn = j + ctrlay->n; j < jn; ++j) {
+      fakectr[j] = sigmoid(randgauss());
+    } 
+  }
+
+  for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
+    encude( ctxbuf + mbi * ctxlay->n, ctxlay->n, cugenin + mbi * geninlay->n + 0);
+    encude(fakectr + mbi * ctrlay->n, ctrlay->n, cugenin + mbi * geninlay->n + ctxlay->n);
+  }
+
+  for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
+    for (unsigned int j = mbi * ctrlay->n, jn = j + ctrlay->n; j < jn; ++j) {
+      fakectr[j] = mbi % 2 ? 1.0 : 0.0;
+    }
+  }
+  for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
+    encude(fakectr + mbi * ctrlay->n, ctrlay->n, cuenctgt + mbi * ctrlay->n);
+  }
+
+  genenc->feed(cugenin, NULL);
+  enc->target(cuenctgt);
+  enc->train(yo);
+
+
+  for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
+    for (unsigned int j = mbi * ctrlay->n, jn = j + ctrlay->n; j < jn; ++j) {
+      fakectr[j] = mbi % 2 ? 0.0 : 1.0;
+    }
+  }
+  for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
+    encude(fakectr + mbi * ctrlay->n, ctrlay->n, cuenctgt + mbi * ctrlay->n);
+  }
+
+  genenc->feed(cugenin, NULL);
+  genenc->target(cuenctgt);
+  enc->train(0);
+
+  genpass->train(wu);
+  
+}
+
 void Confab::burn(double nu, double pi) {
+#if 1
   assert(encinlay->n == ctxlay->n + tgtlay->n);
   for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
     encude(ctxbuf + mbi * ctxlay->n, ctxlay->n, cuencin + mbi * encinlay->n + 0);
@@ -304,13 +390,29 @@ void Confab::burn(double nu, double pi) {
   encude(tgtbuf, gen->outn, cugentgt);
 
   encgen->feed(cuencin, NULL);
-  gen->target(cugentgt);
-
+  encgen->target(cugentgt);
   gen->train(pi);
 
   encpass->update_stats();
   encpass->train(nu);
+#endif
+
+#if 0
+
+  scramble(0,0);
+  for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
+    encude(ctxbuf + mbi * ctxlay->n, ctxlay->n, cugenin + mbi * geninlay->n + 0);
+    encude(ctrbuf + mbi * ctrlay->n, ctrlay->n, cugenin + mbi * geninlay->n + ctxlay->n);
+  }
+  assert(gen->outn == mbn * tgtlay->n);
+  encude(tgtbuf, gen->outn, cugentgt);
+
+  gen->feed(cugenin, NULL);
+  gen->target(cugentgt);
+  gen->train(pi);
+#endif
 }
+
 
 void Confab::report(const char *prog) {
   fprintf(

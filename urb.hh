@@ -1,35 +1,21 @@
 #ifndef __MAKEMORE_URB_HH__
 #define __MAKEMORE_URB_HH__ 1
 
+#include "pipeline.hh"
 #include "parson.hh"
+#include "zone.hh"
 
 namespace makemore {
 
 struct Urb {
-  const static unsigned int nfam = 9;
-  const static unsigned int nvariants = 16;
+  unsigned int mbn;
+  std::string dir;
 
-  std::string fn;
-  int fd;
+  Zone *zone;
+  Pipeline *pipe1, *pipex;
 
-  Parson *db;
-  unsigned int n;
-
-  static void create(const char *_fn, unsigned int _n);
-  void fill_fam(const char *nom, Parson::Nom *);
-
-  Urb(const char *_fn);
+  Urb(const char *_dir, unsigned int _mbn = 8);
   ~Urb();
-
-  Parson *find(const char *pname);
-  Parson *pick();
-  Parson *pick(bool male);
-  Parson *pick(bool male, bool old);
-
-  bool exists(const char *qname) {
-    Parson *p = find(qname);
-    return p->exists();
-  }
 };
 
 }

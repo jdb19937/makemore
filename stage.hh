@@ -1,21 +1,20 @@
-#ifndef __MAKEMORE_CONFAB_HH__
-#define __MAKEMORE_CONFAB_HH__ 1
+#ifndef __MAKEMORE_STAGE_HH__
+#define __MAKEMORE_STAGE_HH__ 1
 
 #include "layout.hh"
 #include "topology.hh"
 #include "multitron.hh"
-#include "vocab.hh"
+#include "project.hh"
 
 #include <string>
 #include <map>
 
 namespace makemore {
 
-struct Confab {
-  std::string dir;
-  std::map<std::string, std::string> config;
-
-  unsigned int mbn;
+struct Stage : Project {
+  bool do_zoom;
+  unsigned int lowoff;
+  double shrinkage;
 
   Layout *tgtlay, *ctrlay, *ctxlay, *outlay;
   Layout *encinlay, *geninlay;
@@ -36,13 +35,23 @@ struct Confab {
   double *tgtbuf, *sepbuf;
   double *outbuf, *adjbuf;
 
+  double *cutgtlayx, *cutgtlayy;
+
   unsigned int rounds;
 
-  Vocab vocab;
+  Stage(const char *_dir, unsigned int _mbn = 1);
+  virtual ~Stage();
 
-  Confab(const char *_dir, unsigned int _mbn);
-  ~Confab();
+  void load_ctxtgt(FILE *infp);
+  void train_recombine(double yo, double wu, unsigned int js);
+  void train_scramble(double yo, double wu);
+  void train_fidelity(double nu, double pi, double dcut);
+  void train_judgement(double mu, double dcut);
+  void train_creativity(double xi, double dcut);
 
+  double encgenerr();
+
+  void load_ctx(FILE *infp);
   void generate(unsigned int reps = 1);
   void regenerate();
   void passgenerate();
@@ -50,16 +59,16 @@ struct Confab {
 
   void burn(double nu, double pi);
   void condition(double yo, double wu);
-  void reencode();
+  void reencode(bool force);
+  void separate();
+  void reconstruct();
+
   void scramble(double mean, double dev);
 
 
   void report(const char *prog);
   void load();
   void save();
-
-  void load_ctxtgt(FILE *infp);
-  void load_ctx(FILE *infp);
 
   void encode_ctx();
   void encode_ctr();

@@ -33,9 +33,12 @@ void Vocab::clear() {
 
   bags.resize(1);
   bags[0].clear();
+
+  tag_weight.resize(1);
+  tag_weight[0] = 0.0;
 }
 
-void Vocab::add(const char *str, const char *desc) {
+void Vocab::add(const char *str, const char *desc, double weight) {
   vector<string> words;
   split(str, ' ', &words);
 
@@ -55,7 +58,7 @@ void Vocab::add(const char *str, const char *desc) {
 
     bags.resize(n + 1);
     bags[n].clear();
-    bags[n].add(tag);
+    bags[n].add(tag, weight);
 
     descs.resize(n + 1);
     descs[n] = NULL;
@@ -63,6 +66,9 @@ void Vocab::add(const char *str, const char *desc) {
       descs[n] = new char[strlen(desc) + 1];
       strcpy(descs[n], desc);
     }
+
+    tag_weight.resize(n + 1);
+    tag_weight[n] = weight;
 
     seen_tag.insert(tag);
 
@@ -76,9 +82,9 @@ const char *Vocab::closest(const Hashbag &x, const Hashbag **y, bool force) cons
 
   unsigned int i;
   if (force) {
-    i = makemore::closest(x.vec, m + k, k, n - 1) + 1;
+    i = makemore::maxdot(x.vec, m + k, k, n - 1) + 1;
   } else {
-    i = makemore::closest(x.vec, m, k, n);
+    i = makemore::maxdot(x.vec, m, k, n);
   }
   assert(i >= 0 && i < n);
 

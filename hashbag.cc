@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <string>
+#include <algorithm>
 
 #include "hashbag.hh"
 #include "strutils.hh"
@@ -108,9 +109,9 @@ void Hashbag::add(const char *tag, double w) {
   }
 #endif
 
-  assert(n >= 128);
+  assert(n == 256);
 
-  for (unsigned int i = 0; i < 128; ++i) {
+  for (unsigned int i = 0; i < 256; ++i) {
     unsigned int j = (i >> 3);
     unsigned int k = (i & 7);
     int bit = (hash[j] >> k) & 1;
@@ -119,4 +120,46 @@ void Hashbag::add(const char *tag, double w) {
 
 }
 
+std::string Hashbag::guesstract(const Vocab &v, double nfloor) {
+  double sump = 0;
+  vector< pair<double, string> > ps;
+
+  for (auto vi = v.tags.begin(); vi != v.tags.end(); ++vi) {
+    const char *word = *vi;
+
+    double p = (Hashbag(word) * *this).sum();
+    p -= nfloor * (double)Hashbag::n;
+    if (p > 0)
+      ps.push_back(make_pair(p, string(word)));
+  }
+
+  std::sort(ps.begin(), ps.end(), std::greater<>());
+  double total = 0;
+  for (auto i = ps.begin(); i != ps.end(); ++i) {
+    total += i->first;
+  }
+  if (total <= 0)
+    return "?";
+  for (auto i = ps.begin(); i != ps.end(); ++i) {
+    i->first /= total;
+  }
+
+//for (auto i = ps.begin(); i != ps.end(); ++i) {
+//fprintf(stderr, "word=%s p=%lf\n", i->second.c_str(), i->first);
+//}
+
+  string *wordp = NULL;
+  double r = randrange(0, 1.0);
+
+  for (auto i = ps.begin(); i != ps.end() && r > 0; ++i) {
+    r -= i->first;
+    wordp = &i->second;
+  }
+  assert(wordp);
+
+  return *wordp;
+}
+
+  
+ 
 }
