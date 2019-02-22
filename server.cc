@@ -42,6 +42,8 @@ Server::Server(const std::string &_urbdir) {
 
   setcmd("echo", cmd_echo);
   setcmd("GET", cmd_GET);
+
+  setcmd("ppm", cmd_ppm);
 }
 
 Server::~Server() {

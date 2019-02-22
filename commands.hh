@@ -20,5 +20,7 @@ namespace makemore {
 extern bool cmd_echo(CMD_ARGS);
 extern bool cmd_GET(CMD_ARGS);
 
+extern bool cmd_ppm(CMD_ARGS);
+
 }
 #endif

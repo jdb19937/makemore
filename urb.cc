@@ -26,4 +26,14 @@ Urb::~Urb() {
   delete zone;
 }
 
+void Urb::generate(Parson *p, long min_age) {
+  p->generate(pipe1, min_age);
+}
+
+void Urb::generate(Bus *b, long min_age) {
+  if (b->n == 0)
+    return;
+  b->generate(b->n > 1 ? pipex : pipe1, min_age);
+}
+
 }
