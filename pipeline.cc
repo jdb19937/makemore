@@ -42,6 +42,10 @@ Pipeline::Pipeline(const char *_dir, unsigned int _mbn) : Project(_dir, _mbn) {
   ctrlock = (unsigned)-1;
 }
 
+void Pipeline::_setup() {
+
+}
+
 Stage *Pipeline::initial() {
   assert(stages.size());
   return stages[0];

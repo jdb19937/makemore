@@ -67,7 +67,7 @@ bool cmd_ppm(CMD_ARGS) {
   if (!parson)
     return false;
 
-  parson->generate(urb->pipeline);
+  urb->generate(parson);
 
   PPM ppm(64, 64);
   parson->paste_partrait(&ppm);
