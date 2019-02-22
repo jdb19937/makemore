@@ -138,7 +138,7 @@ void Bus::generate(Pipeline *pipe, long min_age) {
   for (unsigned int j = 0; j < todo.size(); j += mbn) {
     for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
       Parson *p = &seat[todo[j + mbi]];
-      p->load_pipe(pipe, mbi);
+      p->_to_pipe(pipe, mbi);
     }
 
     pipe->ctrlock = 0;
@@ -147,7 +147,7 @@ void Bus::generate(Pipeline *pipe, long min_age) {
 
     for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
       Parson *p = &seat[todo[j + mbi]];
-      p->save_pipe(pipe, mbi);
+      p->_from_pipe(pipe, mbi);
       p->generated = now;
     }
   }

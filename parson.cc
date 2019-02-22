@@ -303,7 +303,7 @@ void Parson::initialize(const char *_nom, double mean, double dev) {
   seedrand();
 }
 
-void Parson::load_pipe(Pipeline *pipe, unsigned int mbi) {
+void Parson::_to_pipe(Pipeline *pipe, unsigned int mbi) {
   assert(pipe->ctrlay->n == ncontrols * pipe->mbn);
   unsigned long dd3 = dim * dim * 3;
   assert(pipe->outlay->n == dd3 * pipe->mbn);
@@ -312,7 +312,7 @@ void Parson::load_pipe(Pipeline *pipe, unsigned int mbi) {
   dtobv(pipe->outbuf + mbi * dd3, partrait, dd3);
 }
 
-void Parson::save_pipe(Pipeline *pipe, unsigned int mbi) {
+void Parson::_from_pipe(Pipeline *pipe, unsigned int mbi) {
   unsigned long dd3 = dim * dim * 3;
   assert(pipe->outlay->n == dd3 * pipe->mbn);
   assert(sizeof(target) == dd3 * sizeof(double));
@@ -342,13 +342,13 @@ void Parson::generate(Pipeline *pipe, long min_age) {
   }
   
   assert(pipe->mbn == 1);
-  load_pipe(pipe, 0);
+  _to_pipe(pipe, 0);
 
   pipe->ctrlock = 0;
   pipe->tgtlock = -1;
   pipe->reencode();
 
-  save_pipe(pipe, 0);
+  _from_pipe(pipe, 0);
   generated = now;
 }
 

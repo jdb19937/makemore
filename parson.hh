@@ -120,8 +120,8 @@ struct Parson {
         h->add(tags[i]);
   }
 
-  void load_pipe(class Pipeline *pipe, unsigned int mbi);
-  void save_pipe(class Pipeline *pipe, unsigned int mbi);
+  void _to_pipe(class Pipeline *pipe, unsigned int mbi);
+  void _from_pipe(class Pipeline *pipe, unsigned int mbi);
 
   void paste_partrait(class PPM *ppm, unsigned int x0 = 0, unsigned int y0 = 0);
   void paste_target(class PPM *ppm, unsigned int x0 = 0, unsigned int y0 = 0);
