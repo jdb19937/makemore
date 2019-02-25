@@ -214,61 +214,54 @@ Parson *Zone::right_naybor(Parson *p, unsigned int max_tries) {
 Parson *Zone::import(const Parson &x, bool *evicted, Parson *evictee) {
   if (evicted)
     *evicted = false;
+  assert(Parson::valid_nom(x.nom));
 
-  if (!Parson::valid_nom(x.nom))
-    return NULL;
-
-  Parson *p = NULL;
   multimap<double, Parson*> act_cand;
 
   for (unsigned int j = 0; j < nvariants; ++j) {
     Parson *cand = db + Parson::hash_nom(x.nom, j) % n;
 
-    if (!strcmp(cand->nom, x.nom)) {
-      p = cand;
-      break;
-    }
+    if (!strcmp(cand->nom, x.nom))
+      return cand;
 
     double act = cand->activity();
     act_cand.insert(make_pair(act, cand));
   }
 
-  if (!p) {
-    auto i = act_cand.begin(); 
-    p = i->second;
+  auto i = act_cand.begin(); 
+  Parson *p = i->second;
 
-    while (i != act_cand.end()) {
-      if (!i->second->created) {
-        p = i->second;
-        break;
-      }
-      ++i;
+  while (i != act_cand.end()) {
+    if (!i->second->created) {
+      p = i->second;
+      break;
     }
+    ++i;
+  }
 
-    if (p->created) {
-      if (evicted)
-        *evicted = true;
-      if (evictee)
-        memcpy(evictee, p, sizeof(Parson));
-    }
+  if (p->created) {
+    if (evicted)
+      *evicted = true;
+    if (evictee)
+      memcpy(evictee, p, sizeof(Parson));
+  }
 
-    memcpy(p, &x, sizeof(Parson));
+  memcpy(p, &x, sizeof(Parson));
 
-    const char *dan_nom = "synthetic_dan_brumleve";
-    p->add_fren(dan_nom);
-    if (Parson *dan = find(dan_nom)) {
-      dan->add_fren(p->nom);
-    }
+  const char *dan_nom = "synthetic_dan_brumleve";
+  p->add_fren(dan_nom);
+  if (Parson *dan = find(dan_nom)) {
+    dan->add_fren(p->nom);
+  }
 
-    if (Parson *q = left_naybor(p)) {
-      p->add_fren(q->nom);
-      q->add_fren(p->nom);
-    }
+  if (Parson *q = left_naybor(p)) {
+    p->add_fren(q->nom);
+    q->add_fren(p->nom);
+  }
 
-    if (Parson *q = right_naybor(p)) {
-      p->add_fren(q->nom);
-      q->add_fren(p->nom);
-    }
+  if (Parson *q = right_naybor(p)) {
+    p->add_fren(q->nom);
+    q->add_fren(p->nom);
   }
 
   return p;
