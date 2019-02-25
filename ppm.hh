@@ -56,6 +56,11 @@ struct PPM {
   void pastelab(const uint8_t *vec, unsigned int vw, unsigned int vh, unsigned int x0, unsigned int y0);
   void cutlab(double *vec, unsigned int vw, unsigned int vh, unsigned int x0, unsigned int y0);
   void make(unsigned int _w, unsigned int _h, uint8_t v);
+
+  void write_jpeg(FILE *);
+  void write_jpeg(std::string *);
+
+  double centerlight();
 };
 
 void rgbtoxyz(uint8_t r, uint8_t g, uint8_t b, double *xp, double *yp, double *zp);
@@ -74,6 +79,8 @@ inline void labtorgb(double l, double a, double b, uint8_t *rp, uint8_t *gp, uin
   labtoxyz(l, a, b, &x, &y, &z);
   xyztorgb(x, y, z, rp, gp, bp);
 }
+
+
 
 }
 

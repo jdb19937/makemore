@@ -44,6 +44,20 @@ struct Shibboleth {
     clear();
   }
 
+  void add(const Shibboleth &t) {
+    head.add(t.head);
+    torso.add(t.torso);
+    pairs.add(t.pairs);
+    rear.add(t.rear);
+  }
+
+  void mul(double m) {
+    head.mul(m);
+    torso.mul(m);
+    pairs.mul(m);
+    rear.mul(m);
+  }
+
   void copy(const Shibboleth &t) {
     head = t.head;
     torso = t.torso;

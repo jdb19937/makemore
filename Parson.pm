@@ -1,5 +1,7 @@
 package Parson;
 
+our $size = 28424;
+
 sub _ns {
   my $x = shift;
   my $i = index($x, "\0");
@@ -51,6 +53,7 @@ sub decode {
   $$this{control_data} = _padto(substr($enc, 864 + 40, 1920), 1920);
   $$this{target_data} = _padto(substr($enc, 864 + 40 + 1920, 12288), 12288);
   $$this{partrait_data} = _padto(substr($enc, 864 + 40 + 1920 + 12288, 12288), 12288);
+  $$this{buffer} = _padto(substr($enc, 864 + 40 + 1920 + 12288 + 12288, 1024), 1024);
 
   $this
 }
@@ -71,6 +74,7 @@ sub encode {
     $$this{control_data},
     $$this{target_data},
     $$this{partrait_data},
+    $$this{buffer},
   )
 }
 

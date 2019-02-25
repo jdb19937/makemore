@@ -16,12 +16,10 @@ struct Rule {
   Shibboleth reg1, reg2;
 
   Wildmap reqwild, memwild, auxwild;
-  unsigned int multiplicity;
   bool prepared;
 
   Rule() {
     prepared = false;
-    multiplicity = 1;
   }
 
   void copy(const Rule &r) {

@@ -21,6 +21,8 @@
 
 namespace makemore {
 
+std::map<std::string, Server::Handler> Server::default_cmdtab;
+
 using namespace std;
 
 #define ensure(x) do { \
@@ -37,16 +39,15 @@ static inline double realtime() {
 
 Server::Server(const std::string &_urbdir) {
   urbdir = _urbdir;
+  port = 0;
   s = -1;
   urb = NULL;
 
-  setcmd("echo", cmd_echo);
-  setcmd("GET", cmd_GET);
-
-  setcmd("ppm", cmd_ppm);
+  cmdtab = default_cmdtab;
 }
 
 Server::~Server() {
+  kill();
   close();
 }
 
@@ -67,20 +68,23 @@ void Server::open() {
 void Server::close() {
   if (s >= 0) {
     ::close(s);
+    port = 0;
     s = -1;
   }
 }
 
-void Server::bind(uint16_t port) {
+void Server::bind(uint16_t _port) {
   assert(s >= 0);
   int ret;
   struct sockaddr_in sin;
 
   sin.sin_family = AF_INET;
-  sin.sin_port = htons(port);
+  sin.sin_port = htons(_port);
   sin.sin_addr.s_addr = htonl(INADDR_ANY);
   ret = ::bind(s, (struct sockaddr *)&sin, sizeof(sin));
   assert(ret == 0);
+
+  port = _port;
 }
 
 void Server::listen(int backlog) {
@@ -91,8 +95,10 @@ void Server::listen(int backlog) {
 
 void Server::setup() {
   fprintf(stderr, "opening urb %s\n", urbdir.c_str());
-  urb = new Urb(urbdir.c_str());
+  urb = new Urb(urbdir.c_str(), 2);
   fprintf(stderr, "opened urb %s\n", urbdir.c_str());
+
+  seedrand();
 }
 
 
@@ -115,6 +121,8 @@ void Server::start(unsigned int kids) {
 }
 
 void Server::accept() {
+  stack.clear();
+
   fprintf(stderr, "accepting\n");
 
   struct sockaddr_in sin;
@@ -166,7 +174,7 @@ void Server::handle(FILE *infp, FILE *outfp) {
       return;
     {
       size_t cr = line.find('\r');
-      if (cr > 0)
+      if (cr != string::npos)
         line.erase(cr);
     }
 
@@ -179,6 +187,8 @@ void Server::handle(FILE *infp, FILE *outfp) {
       return;
     vector<string> args(&words.data()[1], &words.data()[words.size()]);
 
+    fprintf(stderr, "got cmd %s\n", cmd.c_str());
+
     Handler h = cmdtab[cmd];
     if (!h)
       return;
@@ -188,5 +198,41 @@ void Server::handle(FILE *infp, FILE *outfp) {
   }
 }
    
+void Server::websockify(uint16_t ws_port, const char *keydir) {
+  assert(port > 0);
+  pid_t ws_pid;
+
+  ws_pid = fork();
+  assert(ws_pid != -1);
+  if (ws_pid) {
+    pids.push_back(ws_pid);
+    return;
+  }
+
+  char buf[256];
+  sprintf(buf, ":%hu", port);
+  std::string portstr = buf;
+  sprintf(buf, "%hu", ws_port);
+  std::string ws_portstr = buf;
+
+  if (keydir) {
+    string certstr = string(keydir) + string("/cert.pem");
+    string privkeystr = string(keydir) + string("/privkey.pem");
+    execlp("websockify",
+      "websockify",
+      "--cert", certstr.c_str(),
+      "--key", privkeystr.c_str(),
+      ws_portstr.c_str(), portstr.c_str(),
+      NULL
+    );
+  } else {
+    execlp("websockify",
+      "websockify", ws_portstr.c_str(), portstr.c_str(),
+      NULL
+    );
+  }
+
+  assert(0);
+}
 
 }

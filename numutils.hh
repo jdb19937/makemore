@@ -26,7 +26,7 @@ inline void btodv(const uint8_t *b, double *d, unsigned int n) {
 
 inline void dtobv(const double *d, uint8_t *b, unsigned int n) {
   for (unsigned int i = 0; i < n; ++i)
-    b[i] = btod(d[i]);
+    b[i] = dtob(d[i]);
 }
 
 }

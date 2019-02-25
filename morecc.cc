@@ -76,8 +76,15 @@ int main(int argc, char **argv) {
       continue;
 
     Rule r;
-    r.parse(q);
+    unsigned int multiplicity = r.parse(q);
     r.save(outfp);
+
+    for (unsigned int i = 1; i < multiplicity; ++i) {
+      Rule rx;
+      unsigned int check = rx.parse(q);
+      assert(check == multiplicity);
+      rx.save(outfp);
+    }
   }
 
 

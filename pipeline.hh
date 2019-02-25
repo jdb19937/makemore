@@ -1,6 +1,7 @@
 #ifndef __MAKEMORE_PIPELINE_HH__
 #define __MAKEMORE_PIPELINE_HH__ 1
 
+#include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
 
@@ -52,7 +53,14 @@ struct Pipeline : Project {
   bool load_out_bytes(FILE *infp);
   void load_out(const double *buf);
 
-  void report(const char *prog);
+  void report(const char *prog, FILE *outfp = stderr);
+
+
+  void generate(class Parson **parsons, unsigned int nparsons, long min_age = 0);
+  void generate(class Parson *parson, long min_age = 0);
+  void generate(class Org *org, long min_age = 0);
+
+  void burn(Parson **parsons, unsigned int nparsons, double nu, double pi);
 };
 
 }

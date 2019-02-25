@@ -7,6 +7,8 @@
 #include "twiddle.hh"
 #include "project.hh"
 #include "layout.hh"
+#include "parson.hh"
+#include "org.hh"
 
 namespace makemore {
 
@@ -956,9 +958,91 @@ bool Pipeline::load_out_bytes(FILE *infp) {
   return true;
 }
 
-void Pipeline::report(const char *prog) {
+void Pipeline::report(const char *prog, FILE *outfp) {
   for (auto i = stages.begin(); i != stages.end(); ++i) 
-    (*i)->report(prog);
+    (*i)->report(prog, outfp);
+}
+
+
+void Pipeline::generate(Parson **parsons, unsigned int nparsons, long min_age) {
+  unsigned int mbi = 0;
+  unsigned long dd3 = Parson::dim * Parson::dim * 3;
+  std::vector<unsigned int> todo;
+  time_t now = time(NULL);
+
+  assert(dd3 == sizeof(Parson::target));
+
+  for (unsigned int i = 0; i < nparsons; ++i) {
+    Parson *p = parsons[i];
+
+    if (min_age > 0) {
+      if (now < p->generated + min_age) {
+        continue;
+      }
+    } else if (min_age < 0) {
+      if (p->generated > 0) {
+        continue;
+      }
+    }
+
+    todo.push_back(i);
+  }
+
+  unsigned long hashlen = ctxlay->n;
+  assert(hashlen == ctxlay->n);
+  assert(hashlen <= Hashbag::n);
+  assert(outlay->n == dd3);
+
+  for (unsigned int j = 0; j < todo.size(); j += mbn) {
+    for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
+      if (j + mbi < todo.size()) {
+        Parson *p = parsons[todo[j + mbi]];
+        p->_to_pipe(this, mbi);
+      }
+    }
+
+    ctrlock = 0;
+    tgtlock = -1;
+    this->reencode();
+
+    for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
+      if (j + mbi < todo.size()) {
+        Parson *p = parsons[todo[j + mbi]];
+        p->_from_pipe(this, mbi);
+        p->generated = now;
+      }
+    }
+  }
+}
+
+void Pipeline::generate(class Parson *parson, long min_age) {
+  generate(&parson, 1, min_age);
+}
+
+void Pipeline::generate(class Org *org, long min_age) {
+  generate(org->member.data(), org->n, min_age);
+}
+
+void Pipeline::burn(Parson **parsons, unsigned int nparsons, double nu, double pi) {
+  assert(nparsons % mbn == 0);
+
+  unsigned int mbi = 0;
+  unsigned long dd3 = Parson::dim * Parson::dim * 3;
+  assert(dd3 == sizeof(Parson::target));
+
+  unsigned long hashlen = ctxlay->n;
+  assert(hashlen == ctxlay->n);
+  assert(hashlen <= Hashbag::n);
+  assert(outlay->n == dd3);
+
+  for (unsigned int j = 0; j < nparsons; j += mbn) {
+    for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
+      Parson *p = parsons[j + mbi];
+      p->_to_pipe(this, mbi);
+    }
+
+    this->burn(-1, nu, pi);
+  }
 }
 
 }

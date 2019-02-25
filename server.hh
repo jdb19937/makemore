@@ -15,23 +15,44 @@
 
 namespace makemore {
 
+
 struct Server {
   typedef bool (*Handler)(Server *, const std::string &, const std::vector<std::string> &, FILE *, FILE *);
+  static std::map<std::string, Handler> default_cmdtab;
+
+  static bool default_cmdset(const std::string &cmd, Handler h) {
+    fprintf(stderr, "adding default server command %s\n", cmd.c_str());
+    assert(cmd.length() < 32);
+    default_cmdtab[cmd] = h;
+    return true;
+  }
 
   int s;
+  uint16_t port;
   std::vector<pid_t> pids;
   std::map<std::string, Handler> cmdtab;
 
   std::string urbdir;
   class Urb *urb;
 
+  std::vector<Parson*> stack;
+
   Server(const std::string &urb);
   ~Server();
 
   void open();
   void close();
-  void bind(uint16_t port);
+  void bind(uint16_t _port);
   void listen(int backlog = 256);
+
+  void websockify(uint16_t ws_port, const char *keydir);
+
+  void websockify(uint16_t ws_port) {
+    websockify(ws_port, NULL);
+  }
+  void websockify(uint16_t ws_port, const std::string &keydir) {
+    websockify(ws_port, keydir.c_str());
+  }
 
   void start(unsigned int kids = 8);
   void accept();
@@ -41,9 +62,10 @@ struct Server {
   void setup();
   void handle(FILE *infp, FILE *outfp);
 
-  void setcmd(const std::string &cmd, Handler h) {
+  bool cmdset(const std::string &cmd, Handler h) {
     assert(cmd.length() < 32);
     cmdtab[cmd] = h;
+    return true;
   }
 };
 

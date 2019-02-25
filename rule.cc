@@ -67,12 +67,11 @@ unsigned int Rule::parse(const char *line) {
     reqstr = a;
   }
 
-  multiplicity = 1;
+  int multiplicity = 1;
   if (sep[2] == 'x')
     multiplicity = atoi(sep + 3);
-  if (multiplicity > 32)
-    multiplicity = 32;
   assert(multiplicity >= 0);
+
   while (*sep && !isspace(*sep))
     ++sep;
   while (isspace(*sep))
@@ -158,7 +157,9 @@ fprintf(stderr, "reg2str=[%s]\n", reg2str.c_str());
   reg1.encode(reg1str.c_str());
   reg2.encode(reg2str.c_str());
 
-  return multiplicity;
+  prepared = false;
+
+  return ((unsigned int)multiplicity);
 }
 
 void Rule::save(FILE *fp) const {
@@ -177,10 +178,6 @@ void Rule::save(FILE *fp) const {
   reqwild.save(fp);
   memwild.save(fp);
   auxwild.save(fp);
-
-  uint32_t nm = htonl(multiplicity);
-  ret = fwrite(&nm, 1, 4, fp);
-  assert(ret == 4);
 }
 
 void Rule::load(FILE *fp) {
@@ -199,11 +196,6 @@ void Rule::load(FILE *fp) {
   reqwild.load(fp);
   memwild.load(fp);
   auxwild.load(fp);
-
-  uint32_t nm;
-  ret = fread(&nm, 1, 4, fp);
-  assert(ret == 4);
-  multiplicity = (unsigned int)ntohl(nm);
 }
 
 

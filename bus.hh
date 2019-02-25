@@ -1,6 +1,9 @@
 #ifndef __MAKEMORE_BUS_HH__
 #define __MAKEMORE_BUS_HH__ 1
 
+#include <stdio.h>
+
+#include <string>
 #include <vector>
 
 #include "parson.hh"
@@ -9,25 +12,29 @@
 namespace makemore {
 
 struct Bus {
-  unsigned int n;
-  std::vector<Parson> seat;
+  std::string fn;
+  FILE *fp;
+  int fd;
+  bool locked;
 
   Bus();
-  Bus(const char *fn);
+  Bus(const std::string &_fn);
   ~Bus();
 
-  void load(const char *);
-  void load(FILE *);
-  void add(const Parson &);
+  void lock();
+  void unlock();
+  void open(const std::string &_fn);
+  void close();
 
-  void save(FILE *);
+  void _seek_end();
 
-  Parson *pick();
-  Parson *pick(const char *tag, unsigned int max_tries);
-  Parson *pick(const char *tag1, const char *tag2, unsigned int max_tries);
 
-  void generate(Pipeline *pipe, long min_age = 0);
-  void burn(Pipeline *pipe);
+  void add(const Parson *p, unsigned int n);
+  void add(const Parson **pp, unsigned int n);
+
+  void add(const Parson &x) {
+    add(&x, 1);
+  }
 };
 
 }

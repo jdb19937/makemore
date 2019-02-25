@@ -1,6 +1,8 @@
 #ifndef __MAKEMORE_STAGE_HH__
 #define __MAKEMORE_STAGE_HH__ 1
 
+#include <stdio.h>
+
 #include "layout.hh"
 #include "topology.hh"
 #include "multitron.hh"
@@ -66,7 +68,7 @@ struct Stage : Project {
   void scramble(double mean, double dev);
 
 
-  void report(const char *prog);
+  void report(const char *prog, FILE *outfp = stderr);
   void load();
   void save();
 

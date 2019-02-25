@@ -28,8 +28,7 @@ void Script::load(FILE *fp) {
    
     Rule r;
     r.load(fp);
-    for (unsigned int copy = 0; copy < r.multiplicity; ++copy)
-      rules.push_back(r);
+    rules.push_back(r);
   }
 }
 

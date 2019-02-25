@@ -30,8 +30,8 @@ void Zone::fill_fam(const char *nom, Parson::Nom *fam) {
   memset(fam, 0, sizeof(Parson::Nom) * nfam);
   unsigned int fami = 0;
 
-  Parson *pp0 = import(p->parens[0]);
-  Parson *pp1 = import(p->parens[1]);
+  Parson *pp0 = find(p->parens[0]);
+  Parson *pp1 = find(p->parens[1]);
   if (pp0 == pp1)
     pp1 = NULL;
 
@@ -99,8 +99,8 @@ void Zone::create(const char *_fn, unsigned int n) {
   delete pdb;
 }
 
-Zone::Zone(const char *_fn) {
-  assert(strlen(_fn) < 4000);
+Zone::Zone(const std::string &_fn) {
+  assert(_fn.length() < 4000);
   fn = _fn;
 
   fd = ::open(fn.c_str(), O_RDWR | O_CREAT, 0777);
@@ -128,24 +128,24 @@ Zone::~Zone() {
 }
 
 Parson *Zone::pick() {
-  unsigned int tries = 0;
+  return pick(64);
+}
 
-  while (1) {
+Parson *Zone::pick(unsigned int max_tries) {
+  for (unsigned int tries = 0; tries < max_tries; ++tries) {
     Parson *cand = db + randuint() % n;
-    if (!cand->created)
-      continue;
-    return cand;
+    if (cand->created)
+      return cand;
   }
+
+  return find("synthetic_dan_brumleve");
 }
 
 
 Parson *Zone::pick(const char *tag, unsigned int max_tries) {
   for (unsigned int tries = 0; tries < max_tries; ++tries) {
     Parson *cand = db + randuint() % n;
-    if (!cand->created)
-      continue;
-
-    if (cand->has_tag(tag)) {
+    if (cand->created && cand->has_tag(tag)) {
       return cand;
     }
   }
@@ -156,15 +156,12 @@ Parson *Zone::pick(const char *tag, unsigned int max_tries) {
 Parson *Zone::pick(const char *tag1, const char *tag2, unsigned int max_tries) {
   for (unsigned int tries = 0; tries < max_tries; ++tries) {
     Parson *cand = db + randuint() % n;
-    if (!cand->created)
-      continue;
-
-    if (cand->has_tag(tag1) && cand->has_tag(tag2)) {
+    if (cand->created && cand->has_tag(tag1) && cand->has_tag(tag2)) {
       return cand;
     }
   }
 
-  return NULL;
+  return find("synthetic_dan_brumleve");
 }
 
 Parson *Zone::find(const char *nom) const {
@@ -180,16 +177,54 @@ Parson *Zone::find(const char *nom) const {
   return NULL;
 }
 
-Parson *Zone::import(const char *nom, Parson *evicted) {
-  assert(Parson::valid_nom(nom));
+Parson *Zone::left_naybor(Parson *p, unsigned int max_tries) {
+  unsigned long i = p - db;
+  if (i >= n)
+    return NULL;
+
+  for (unsigned int tries = 0; tries < max_tries; ++tries) {
+    if (i == 0)
+      i = n;
+    --i;
+
+    Parson *q = db + i;
+    if (*q->nom && q->created)
+      return q;
+  }
+  return NULL;
+}
+
+Parson *Zone::right_naybor(Parson *p, unsigned int max_tries) {
+  unsigned long i = p - db;
+  if (i >= n)
+    return NULL;
+
+  for (unsigned int tries = 0; tries < max_tries; ++tries) {
+    ++i;
+    if (i == n)
+      i = 0;
+
+    Parson *q = db + i;
+    if (*q->nom && q->created)
+      return q;
+  }
+  return NULL;
+}
+
+Parson *Zone::import(const Parson &x, bool *evicted, Parson *evictee) {
+  if (evicted)
+    *evicted = false;
+
+  if (!Parson::valid_nom(x.nom))
+    return NULL;
 
   Parson *p = NULL;
   multimap<double, Parson*> act_cand;
 
   for (unsigned int j = 0; j < nvariants; ++j) {
-    Parson *cand = db + Parson::hash_nom(nom, j) % n;
+    Parson *cand = db + Parson::hash_nom(x.nom, j) % n;
 
-    if (!strcmp(cand->nom, nom)) {
+    if (!strcmp(cand->nom, x.nom)) {
       p = cand;
       break;
     }
@@ -210,19 +245,29 @@ Parson *Zone::import(const char *nom, Parson *evicted) {
       ++i;
     }
 
-    if (evicted)
-      memcpy(evicted, p, sizeof(Parson));
+    if (p->created) {
+      if (evicted)
+        *evicted = true;
+      if (evictee)
+        memcpy(evictee, p, sizeof(Parson));
+    }
 
-    p->initialize(nom, 0, 1);
+    memcpy(p, &x, sizeof(Parson));
 
     const char *dan_nom = "synthetic_dan_brumleve";
-    if (strcmp(nom, dan_nom)) {
-      p->add_fren(dan_nom);
-      Parson *dan = import(dan_nom);
-      dan->add_fren(nom);
+    p->add_fren(dan_nom);
+    if (Parson *dan = find(dan_nom)) {
+      dan->add_fren(p->nom);
+    }
 
-      memcpy(dan->parens[0], dan->nom, 32);
-      memcpy(dan->parens[1], dan->nom, 32);
+    if (Parson *q = left_naybor(p)) {
+      p->add_fren(q->nom);
+      q->add_fren(p->nom);
+    }
+
+    if (Parson *q = right_naybor(p)) {
+      p->add_fren(q->nom);
+      q->add_fren(p->nom);
     }
   }
 

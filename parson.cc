@@ -303,66 +303,219 @@ void Parson::initialize(const char *_nom, double mean, double dev) {
   seedrand();
 }
 
-void Parson::_to_pipe(Pipeline *pipe, unsigned int mbi) {
-  assert(pipe->ctrlay->n == ncontrols * pipe->mbn);
+void Parson::_from_pipe(Pipeline *pipe, unsigned int mbi) {
+  assert(mbi < pipe->mbn);
+  assert(pipe->ctrlay->n == ncontrols);
   unsigned long dd3 = dim * dim * 3;
-  assert(pipe->outlay->n == dd3 * pipe->mbn);
+  assert(pipe->outlay->n == dd3);
 
   dtobv(pipe->ctrbuf + mbi * ncontrols, controls, ncontrols);
   dtobv(pipe->outbuf + mbi * dd3, partrait, dd3);
 }
 
-void Parson::_from_pipe(Pipeline *pipe, unsigned int mbi) {
+void Parson::_to_pipe(Pipeline *pipe, unsigned int mbi) {
+  assert(mbi < pipe->mbn);
   unsigned long dd3 = dim * dim * 3;
-  assert(pipe->outlay->n == dd3 * pipe->mbn);
-  assert(sizeof(target) == dd3 * sizeof(double));
+  assert(pipe->outlay->n == dd3);
+  assert(sizeof(target) == dd3);
 
-  unsigned long hashlen = pipe->ctxlay->n / pipe->mbn;
-  assert(hashlen * pipe->mbn == pipe->ctxlay->n);
+  unsigned long hashlen = pipe->ctxlay->n;
+  assert(hashlen == pipe->ctxlay->n);
   assert(hashlen <= Hashbag::n);
   assert(hashlen * sizeof(double) <= sizeof(Hashbag));
 
   Hashbag ph;
   bagtags(&ph);
   memcpy(pipe->ctxbuf + mbi * hashlen, &ph, hashlen * sizeof(double));
-  btodv(target, pipe->outbuf + mbi * dd3, dd3 * sizeof(double));
+  btodv(target, pipe->outbuf + mbi * dd3, dd3);
 
 }
 
 void Parson::generate(Pipeline *pipe, long min_age) {
-  time_t now = time(NULL);
-  if (min_age > 0) {
-    if (now < generated + min_age) {
-      return;
-    }
-  } else if (min_age < 0) {
-    if (generated > 0) {
-      return;
-    }
-  }
-  
-  assert(pipe->mbn == 1);
-  _to_pipe(pipe, 0);
-
-  pipe->ctrlock = 0;
-  pipe->tgtlock = -1;
-  pipe->reencode();
-
-  _from_pipe(pipe, 0);
-  generated = now;
+  Parson *me = this;
+  pipe->generate(&me, 1, min_age);
 }
 
 void Parson::paste_target(PPM *ppm, unsigned int x0, unsigned int y0) {
-  assert(x0 + dim < ppm->w);
-  assert(y0 + dim < ppm->h);
+  assert(x0 + dim <= ppm->w);
+  assert(y0 + dim <= ppm->h);
   ppm->pastelab(target, dim, dim, x0, y0);
 }
 
 void Parson::paste_partrait(PPM *ppm, unsigned int x0, unsigned int y0) {
-  assert(x0 + dim < ppm->w);
-  assert(y0 + dim < ppm->h);
+  assert(x0 + dim <= ppm->w);
+  assert(y0 + dim <= ppm->h);
   ppm->pastelab(partrait, dim, dim, x0, y0);
 }
 
+bool Parson::load(FILE *fp) {
+  size_t ret;
+  ret = fread((uint8_t *)this, 1, sizeof(Parson), fp);
+
+  if (ret != sizeof(Parson)) {
+    assert(feof(fp));
+    return false;
+  }
+
+  return true;
+}
+
+void Parson::save(FILE *fp) {
+  size_t ret;
+  ret = fwrite((uint8_t *)this, 1, sizeof(Parson), fp);
+  assert(ret == sizeof(Parson));
+}
+
+double Parson::error2() const {
+  double e2 = 0;
+  for (unsigned int i = 0; i < dim * dim * 3; ++i) {
+    double d = (target[i] - partrait[i]);
+    e2 += d * d;
+  }
+  e2 /= (double)(dim * dim * 3);
+  return e2;
+}
+
+double Parson::centerv() const {
+  unsigned int w = dim;
+  unsigned int h = dim;
+  unsigned int x0 = h / 4;
+  unsigned int x1 = w * 3 / 4;
+  unsigned int y0 = h / 4;
+  unsigned int y1 = h * 3 / 4;
+
+  double s = 0;
+  unsigned int tot = 0;
+
+  for (unsigned int y = y0; y < y1; ++y) {
+    for (unsigned int x = x0; x < x1; ++x) {
+      s += partrait[y * w * 3 + x * 3 + 0];
+      ++tot;
+    }
+  }
+  assert(tot > 0);
+  s /= (double)tot;
+  s /= (double)256.0;
+
+  return s;
+}
+
+double Parson::centerh() const {
+  unsigned int w = dim;
+  unsigned int h = dim;
+  unsigned int x0 = h / 4;
+  unsigned int x1 = w * 3 / 4;
+  unsigned int y0 = h / 4;
+  unsigned int y1 = h * 3 / 4;
+
+  double sa = 0, sb = 0;
+  unsigned int tot = 0;
+
+  for (unsigned int y = y0; y < y1; ++y) {
+    for (unsigned int x = x0; x < x1; ++x) {
+      sa += partrait[y * w * 3 + x * 3 + 1];
+      sb += partrait[y * w * 3 + x * 3 + 2];
+      ++tot;
+    }
+  }
+  assert(tot > 0);
+  sa /= (double)tot;
+  sa /= (double)256.0;
+  sb /= (double)tot;
+  sb /= (double)256.0;
+
+  sa -= 0.5;
+  sb -= 0.5;
+
+  return atan2(sb, sa);
+}
+
+double Parson::centers() const {
+  unsigned int w = dim;
+  unsigned int h = dim;
+  unsigned int x0 = h / 4;
+  unsigned int x1 = w * 3 / 4;
+  unsigned int y0 = h / 4;
+  unsigned int y1 = h * 3 / 4;
+
+  double sa = 0, sb = 0;
+  unsigned int tot = 0;
+
+  for (unsigned int y = y0; y < y1; ++y) {
+    for (unsigned int x = x0; x < x1; ++x) {
+      sa += partrait[y * w * 3 + x * 3 + 1];
+      sb += partrait[y * w * 3 + x * 3 + 2];
+      ++tot;
+    }
+  }
+  assert(tot > 0);
+  sa /= (double)tot;
+  sa /= (double)256.0;
+  sb /= (double)tot;
+  sb /= (double)256.0;
+
+  sa -= 0.5;
+  sb -= 0.5;
+
+  return sa * sa + sb * sb;
+}
+
+void Parson::pushbuf(const char *cmd, unsigned int n) {
+  if (n > bufsize) {
+    memcpy(buffer, cmd, bufsize);
+  } else {
+    unsigned int keep = bufsize - n;
+    memmove(buffer + n, buffer, keep);
+    memcpy(buffer, cmd, n);
+  }
+}
+
+void Parson::pushbuf(const char *cmd) {
+  unsigned int n = strlen(cmd) + 1;
+  pushbuf(cmd, n);
+}
+
+char *Parson::popbuf(unsigned int *lenp) {
+  char *endcmd = buffer + bufsize - 1;
+
+  if (*endcmd) {
+    while (endcmd >= buffer && *endcmd)
+      --endcmd;
+    if (endcmd < buffer)
+      return NULL;
+  }
+
+  assert(endcmd >= buffer);
+  assert(!*endcmd);
+
+  while (endcmd >= buffer && !*endcmd)
+    --endcmd;
+  ++endcmd;
+
+  assert(endcmd >= buffer);
+  assert(!*endcmd);
+
+  if (endcmd == buffer)
+    return NULL;
+
+  char *cmd = endcmd;
+  --cmd;
+
+  assert(cmd >= buffer);
+  assert(*cmd);
+
+  while (cmd >= buffer && *cmd)
+    --cmd;
+  ++cmd;
+
+  assert(cmd < endcmd);
+  assert(!*endcmd);
+  assert(*cmd);
+
+  if (lenp)
+    *lenp = (unsigned int)(endcmd - cmd);
+
+  return cmd;
+}
 
 }

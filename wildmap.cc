@@ -28,7 +28,30 @@ void Wildmap::parse(const std::string &str) {
   parse(str.c_str());
 }
 
-void Wildmap::parse(const vector<string> &words) {
+static void randfix(const vector<string> &words, vector<string> *fixated) {
+  for (auto word : words) {
+    if (word == "?") {
+      if (randbit()) {
+        fixated->push_back("*");
+      }
+    } else if (word == "**") {
+      unsigned int nstars = randuint() % 3;
+      for (unsigned int i = 0; i < nstars; ++i)
+        fixated->push_back("*");
+    } else if (word == "***") {
+      unsigned int nstars = randuint() % 4;
+      for (unsigned int i = 0; i < nstars; ++i)
+        fixated->push_back("*");
+    } else {
+      fixated->push_back(word);
+    }
+  }
+}
+
+void Wildmap::parse(const vector<string> &_words) {
+  vector<string> words;
+  randfix(_words, &words);
+
   unsigned int wn = words.size();
   unsigned int prevwi = 0;
 

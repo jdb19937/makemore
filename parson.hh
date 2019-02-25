@@ -5,6 +5,7 @@
 #include <stdint.h>
 #include <string.h>
 #include <time.h>
+#include <assert.h>
 #include <sys/time.h>
 
 #include <math.h>
@@ -28,8 +29,23 @@ struct Parson {
   const static unsigned int ntags = 8;
   const static unsigned int dim = 64;
   const static unsigned int ncontrols = 1920;
+  const static unsigned int bufsize = 1024;
   typedef char Nom[32];
   typedef char Tag[32];
+
+  Parson() {
+    memset(this, 0, sizeof(Parson));
+  }
+
+  Parson(const char *_nom) {
+    memset(this, 0, sizeof(Parson));
+    assert(valid_nom(_nom));
+    strcpy(nom, _nom);
+  }
+
+  ~Parson() {
+
+  }
 
   // 27 * 32
   Nom nom;
@@ -62,6 +78,13 @@ struct Parson {
 
   // 64 * 64 * 3
   uint8_t partrait[dim * dim * 3];
+
+  // 1024
+  char buffer[bufsize];
+
+  char *popbuf(unsigned int *lenp = NULL);
+  void pushbuf(const char *cmd, unsigned int n);
+  void pushbuf(const char *cmd);
 
   bool exists() {
     return (nom[0] != 0);
@@ -125,6 +148,14 @@ struct Parson {
 
   void paste_partrait(class PPM *ppm, unsigned int x0 = 0, unsigned int y0 = 0);
   void paste_target(class PPM *ppm, unsigned int x0 = 0, unsigned int y0 = 0);
+
+  bool load(FILE *fp);
+  void save(FILE *fp);
+
+  double centerh() const;
+  double centers() const;
+  double centerv() const;
+  double error2() const;
 };
 
 }

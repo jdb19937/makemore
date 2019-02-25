@@ -5,11 +5,105 @@
 #include <stdlib.h>
 #include <assert.h>
 
+#include <string>
+
 #include <math.h>
+
+#include <jpeglib.h>
 
 #include "ppm.hh"
 
 namespace makemore {
+
+double PPM::centerlight() {
+  unsigned int x0 = w / 4;
+  unsigned int x1 = w * 3 / 4;
+  unsigned int y0 = h / 4;
+  unsigned int y1 = h * 3 / 4;
+
+  double s = 0;
+  unsigned int tot = 0;
+
+  for (unsigned int y = y0; y < y1; ++y) {
+    for (unsigned int x = x0; x < x1; ++x) {
+      s += data[y * w * 3 + x * 3 + 0];
+      s += data[y * w * 3 + x * 3 + 1];
+      s += data[y * w * 3 + x * 3 + 2];
+      ++tot;
+    }
+  }
+  assert(tot > 0);
+  s /= (double)tot;
+  return s;
+}
+
+void PPM::write_jpeg(std::string *jpeg) {
+  struct jpeg_compress_struct cinfo;
+  struct jpeg_error_mgr jerr;
+
+  JSAMPROW row_pointer[1];
+  int row_stride;
+
+  cinfo.err = jpeg_std_error(&jerr);
+  jpeg_create_compress(&cinfo);
+
+  uint8_t *mem = NULL;
+  unsigned long mem_size;
+  jpeg_mem_dest(&cinfo, &mem, &mem_size);
+
+  cinfo.image_width = w;
+  cinfo.image_height = h;
+  cinfo.input_components = 3;
+  cinfo.in_color_space = JCS_RGB;
+  jpeg_set_defaults(&cinfo);
+  jpeg_set_quality(&cinfo, 90, TRUE);
+
+  jpeg_start_compress(&cinfo, TRUE);
+
+  row_stride = w * 3;
+  while (cinfo.next_scanline < cinfo.image_height) {
+    row_pointer[0] = & data[cinfo.next_scanline * row_stride];
+    (void)jpeg_write_scanlines(&cinfo, row_pointer, 1);
+  }
+
+  jpeg_finish_compress(&cinfo);
+  jpeg_destroy_compress(&cinfo);
+
+  jpeg->resize(mem_size);
+  memcpy((uint8_t *)jpeg->data(), mem, mem_size);
+  ::free(mem);
+}
+
+void PPM::write_jpeg(FILE *outfile) {
+  struct jpeg_compress_struct cinfo;
+  struct jpeg_error_mgr jerr;
+
+  JSAMPROW row_pointer[1];
+  int row_stride;
+
+  cinfo.err = jpeg_std_error(&jerr);
+  jpeg_create_compress(&cinfo);
+
+  jpeg_stdio_dest(&cinfo, outfile);
+
+  cinfo.image_width = w;
+  cinfo.image_height = h;
+  cinfo.input_components = 3;
+  cinfo.in_color_space = JCS_RGB;
+  jpeg_set_defaults(&cinfo);
+  jpeg_set_quality(&cinfo, 90, TRUE);
+
+  jpeg_start_compress(&cinfo, TRUE);
+
+  row_stride = w * 3;
+  while (cinfo.next_scanline < cinfo.image_height) {
+    row_pointer[0] = & data[cinfo.next_scanline * row_stride];
+    (void)jpeg_write_scanlines(&cinfo, row_pointer, 1);
+  }
+
+  jpeg_finish_compress(&cinfo);
+  jpeg_destroy_compress(&cinfo);
+}
 
 bool PPM::read(FILE *fp) {
   int ret = getc(fp);
@@ -485,6 +579,12 @@ void PPM::blurge() {
   data = ndata;
 }
 
+
+
+
+
+
+
 #ifdef PPMBLURGE_MAIN
 int main() {
   PPM p;
@@ -956,4 +1056,6 @@ int main(int argc, char **argv) {
   return 0;
 }
 #endif
+
+
 

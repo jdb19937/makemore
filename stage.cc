@@ -38,16 +38,19 @@ Stage::Stage(const char *_dir, unsigned int _mbn) : Project(_dir, _mbn) {
 
   assert(config["type"] == "stage");
   assert(config["zoom"] == "0" || config["zoom"] == "1");
-  assert(config["lowoff"] != "");
-
-  lowoff = (unsigned int)atoi(config["lowoff"].c_str());
   do_zoom = (config["zoom"] == "1");
 
   if (do_zoom) {
+    assert(config["lowoff"] != "");
+    lowoff = (unsigned int)atoi(config["lowoff"].c_str());
+
     assert((ctxlay->n - lowoff) % 3 == 0);
     assert(lowoff < ctxlay->n);
     assert((ctxlay->n - lowoff) * 3 == tgtlay->n);
   } else {
+    assert(config["lowoff"] == "");
+    lowoff = 0;
+
     assert(tgtlay->n == outlay->n);
   }
 
@@ -675,9 +678,9 @@ void Stage::condition(double yo, double wu) {
 }
 
 
-void Stage::report(const char *prog) {
+void Stage::report(const char *prog, FILE *outfp) {
   fprintf(
-    stderr,
+    outfp,
     "%s %s rounds=%u\n"
     "%s %s encgen_err2=%g encgen_errm=%g\n"
     "%s %s encpass_err2=%g encpass_errm=%g\n"
