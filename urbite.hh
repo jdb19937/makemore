@@ -37,6 +37,20 @@ struct Urbite {
 
     return _parson;
   }
+
+#if 0
+  Parson *resurrect() {
+    Parson *p = parson();
+    if (p)
+      return p;
+
+    _parson = urb->import(nom);
+    assert(_parson);
+    assert(nom == _parson->nom);
+    return _parson;
+  }
+#endif
+
 };
 
 }
