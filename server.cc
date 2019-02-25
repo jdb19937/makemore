@@ -12,6 +12,8 @@
 #include <string.h>
 
 #include <string>
+#include <vector>
+#include <list>
 
 #include "strutils.hh"
 #include "parson.hh"
@@ -248,6 +250,68 @@ void Server::websockify(uint16_t ws_port, const char *keydir) {
   }
 
   assert(0);
+}
+
+void Server::think() {
+  pid_t think_pid;
+
+  think_pid = fork();
+  assert(think_pid != -1);
+  if (think_pid) {
+    pids.push_back(think_pid);
+    return;
+  }
+
+  setup();
+  assert(urb);
+
+  while (1) {
+    fprintf(stderr, "thinking\n");
+    sleep(1);
+  }
+
+  assert(0);
+}
+
+void Server::parcess(Parson *parson) {
+  const unsigned int max_iters = 64;
+
+  assert(urb);
+  if (!parson->nom[0])
+    return;
+
+  list<string> cmds;
+  {
+    char *cmdstr;
+    unsigned int cmdlen;
+    while ((cmdstr = parson->popbuf(&cmdlen))) {
+      string cmd(cmdstr);
+      cmds.push_back(cmd);
+      memset(cmdstr, 0, cmdlen);
+    }
+  }
+
+  unsigned int iters = 0;
+  auto cmdi = cmds.begin();
+  while (cmdi != cmds.end()) {
+    if (iters >= max_iters)
+      break;
+    ++iters;
+
+    string cmd = *cmdi;
+    cmds.erase(cmdi++);
+
+    // send cmd to brane -> reqs
+    vector<string> reqs;
+
+    for (auto reqi = reqs.begin(); reqi != reqs.end(); ++reqi) {
+      // send reqs to server -> new cmds
+      vector<string> rsps;
+
+      for (auto rspi = rsps.rbegin(); rspi != rsps.rend(); ++rspi)
+        cmds.push_front(*reqi + ", " + *rspi);
+    }
+  }
 }
 
 }

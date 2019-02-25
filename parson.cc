@@ -499,8 +499,10 @@ char *Parson::popbuf(unsigned int *lenp) {
   assert(!*endcmd);
   assert(*cmd);
 
-  if (lenp)
-    *lenp = (unsigned int)(endcmd - cmd);
+  if (lenp) {
+    *lenp = (unsigned int)(endcmd - cmd) + 1;
+    assert(*lenp >= 2);
+  }
 
   return cmd;
 }

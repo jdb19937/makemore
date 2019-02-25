@@ -100,7 +100,12 @@ struct Shibboleth {
   void prepend(const Hashbag &);
   void prepend(const Shibboleth &x);
 
+  void encode(const std::string &str) {
+    encode(str.c_str());
+  }
   void encode(const char *str);
+  void encode(const std::vector<std::string> &vec);
+
   std::string decode(const class Vocab &vocab, bool force = false) const;
 
   void save(FILE *fp) const;

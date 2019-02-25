@@ -81,6 +81,9 @@ struct Server {
     cmdtab[cmd] = h;
     return true;
   }
+
+  void think();
+  void parcess(Parson *parson);
 };
 
 }

@@ -231,9 +231,9 @@ NEW_CMD(as) {
 NEW_CMD(to) {
   if (args.size() < 2)
     return false;
-  std::string nom = args[0];
+  string nom = args[0];
 
-  std::string msg = "from ";
+  string msg = "from ";
   msg += self->nom;
 
   for (unsigned int i = 1, n = args.size(); i < n; ++i) {

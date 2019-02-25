@@ -192,10 +192,10 @@ void Shibboleth::append(const Shibboleth &shib) {
 void Shibboleth::encode(const char *str) {
   vector<string> words;
   split(str, ' ', &words);
-//  addstars(words);
+  encode(words);
+}
 
-//fprintf(stderr, "enc %s\n", join(words, ' ').c_str());
-
+void Shibboleth::encode(const vector<string> &words) {
   clear();
 
   unsigned int wn = words.size();
