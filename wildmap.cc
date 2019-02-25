@@ -169,8 +169,10 @@ void Wildmap::save(FILE *fp) const {
   ret = fwrite(&hn, 1, 4, fp);
   assert(ret == 4);
 
-  ret = fwrite(map.data(), sizeof(Entry), n, fp);
-  assert(ret == n);
+  if (n > 0) {
+    ret = fwrite(map.data(), sizeof(Entry), n, fp);
+    assert(ret == n);
+  }
 }
 
 void Wildmap::load(FILE *fp) {

@@ -120,17 +120,26 @@ void Server::start(unsigned int kids) {
   }
 }
 
+static std::string ipstr(uint32_t ip) {
+  char buf[INET_ADDRSTRLEN];
+  const char *retbuf = inet_ntop(AF_INET, &ip, buf, INET_ADDRSTRLEN);
+  assert(retbuf == buf);
+  return std::string(buf);
+}
+
 void Server::accept() {
   stack.clear();
 
   fprintf(stderr, "accepting\n");
 
-  struct sockaddr_in sin;
-  socklen_t sinlen = sizeof(sin);
-  int c = ::accept(s, (struct sockaddr *)&sin, &sinlen);
+  struct sockaddr_in cin;
+  socklen_t cinlen = sizeof(cin);
+  int c = ::accept(s, (struct sockaddr *)&cin, &cinlen);
   assert(c != -1);
 
-  fprintf(stderr, "accepted\n");
+  assert(sizeof(struct in_addr) == 4);
+  memcpy(&client_ip, &cin.sin_addr, 4);
+  fprintf(stderr, "accepted %s\n", ipstr(client_ip).c_str());
 
   int c2 = ::dup(c);
   assert(c2 != -1);
@@ -166,6 +175,9 @@ void Server::kill() {
 }
 
 void Server::handle(FILE *infp, FILE *outfp) {
+  Urbite self(ipstr(client_ip), urb);
+  // fprintf(outfp, "hello %s\n", self.nom.c_str());
+
   while (1) {
     string line;
     if (!read_line(infp, &line))
@@ -189,10 +201,13 @@ void Server::handle(FILE *infp, FILE *outfp) {
 
     fprintf(stderr, "got cmd %s\n", cmd.c_str());
 
-    Handler h = cmdtab[cmd];
+    auto hi = cmdtab.find(cmd);
+    if (hi == cmdtab.end())
+      return;
+    Handler h = hi->second;
     if (!h)
       return;
-    if (!h(this, cmd, args, infp, outfp))
+    if (!h((const Server *)this, urb, &self, cmd, args, infp, outfp))
       return;
     fflush(outfp);
   }

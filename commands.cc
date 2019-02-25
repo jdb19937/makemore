@@ -64,7 +64,7 @@ NEW_CMD(GET) {
     gridargs.push_back("8");
     gridargs.push_back("8");
 bool cmd_grid(CMD_ARGS);
-    cmd_grid(server, "grid", gridargs, infp, outfp);
+    cmd_grid(_server, urb, self, "grid", gridargs, infp, outfp);
     return false;
   }
 
@@ -78,8 +78,6 @@ bool cmd_grid(CMD_ARGS);
 }
 
 NEW_CMD(ppm) {
-  Urb *urb = server->urb;
-
   if (args.size() != 1)
     return false;
   const char *nom = args[0].c_str();
@@ -96,8 +94,6 @@ NEW_CMD(ppm) {
 }
 
 NEW_CMD(jpeg) {
-  Urb *urb = server->urb;
-
   if (args.size() != 1)
     return false;
   const char *nom = args[0].c_str();
@@ -121,8 +117,6 @@ NEW_CMD(jpeg) {
 }
 
 NEW_CMD(import) {
-  Urb *urb = server->urb;
-
   unsigned int n = (unsigned int)-1;
   if (args.size() != 0) {
     if (args.size() != 1)
@@ -148,8 +142,6 @@ NEW_CMD(import) {
 }
 
 NEW_CMD(grid) {
-  Urb *urb = server->urb;
-
   if (args.size() != 2)
     return false;
   unsigned int w = (unsigned int)atoi(args[0].c_str());
@@ -180,8 +172,6 @@ NEW_CMD(grid) {
 }
 
 NEW_CMD(burn) {
-  Urb *urb = server->urb;
-
   if (args.size() < 1)
     return false;
   unsigned int n = (unsigned int)atoi(args[0].c_str());
@@ -205,6 +195,60 @@ NEW_CMD(burn) {
   urb->pipex->save();
   urb->pipex->report("burn", outfp);
   return true;
+}
+
+NEW_CMD(whoami) {
+  fprintf(outfp, "%s\n", self->nom.c_str());
+}
+
+NEW_CMD(as) {
+  if (args.size() < 2)
+    return false;
+
+  string nom = args[0];
+
+  string wrap_cmd = args[1];
+
+  vector<string> wrap_args;
+  if (args.size() >= 3) {
+    wrap_args.resize(args.size() - 2);
+    for (unsigned int i = 2, n = args.size(); i < n; ++i)
+      wrap_args[i - 2] = args[i];
+  }
+
+  Urbite as(nom, urb);
+
+  auto hi = _server->cmdtab.find(wrap_cmd);
+  if (hi == _server->cmdtab.end())
+    return false;
+  Server::Handler h = hi->second;
+  if (!h)
+    return false;
+
+  return h(_server, urb, &as, wrap_cmd, wrap_args, infp, outfp);
+}
+
+NEW_CMD(to) {
+  if (args.size() < 2)
+    return false;
+  std::string nom = args[0];
+
+  std::string msg = "from ";
+  msg += self->nom;
+
+  for (unsigned int i = 1, n = args.size(); i < n; ++i) {
+    msg += " ";
+    msg += args[i];
+  }
+
+  Parson *to = urb->find(nom);
+  if (!to) {
+    fprintf(outfp, "lost\n");
+    return true;
+  }
+
+  to->pushbuf(msg);
+  fprintf(outfp, "sent\n");
 }
 
 }

@@ -86,6 +86,10 @@ struct Parson {
   void pushbuf(const char *cmd, unsigned int n);
   void pushbuf(const char *cmd);
 
+  void pushbuf(const std::string &cmdstr) {
+    pushbuf(cmdstr.c_str(), cmdstr.length() + 1);
+  }
+
   bool exists() {
     return (nom[0] != 0);
   }

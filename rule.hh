@@ -1,21 +1,22 @@
 #ifndef __MAKEMORE_RULE_HH__
 #define __MAKEMORE_RULE_HH__ 1
 
+#include <assert.h>
+
+#include <vector>
+#include <string>
+#include <map>
+
 #include "shibboleth.hh"
 #include "wildmap.hh"
 #include "vocab.hh"
 
-#include <string>
-#include <map>
 
 namespace makemore {
 
 struct Rule {
-  Shibboleth req, mem, aux;
-  Shibboleth cmd, out, nem, bux;
-  Shibboleth reg1, reg2;
-
-  Wildmap reqwild, memwild, auxwild;
+  std::vector<Shibboleth> req, rsp;
+  std::vector<Wildmap> wild;
   bool prepared;
 
   Rule() {
@@ -24,17 +25,8 @@ struct Rule {
 
   void copy(const Rule &r) {
     req = r.req;
-    mem = r.mem;
-    aux = r.aux;
-    cmd = r.cmd;
-    out = r.out;
-    nem = r.nem;
-    bux = r.bux;
-    reg1 = r.reg1;
-    reg2 = r.reg2;
-    reqwild = r.reqwild;
-    memwild = r.memwild;
-    auxwild = r.auxwild;
+    rsp = r.rsp;
+    wild = r.wild;
     prepared = r.prepared;
   }
 
@@ -51,9 +43,12 @@ struct Rule {
 
   void prepare() {
     assert(!prepared);
-    reqwild.mutate(&req);
-    memwild.mutate(&mem);
-    auxwild.mutate(&aux);
+
+    unsigned int nreq = req.size();
+    assert(wild.size() == nreq);
+
+    for (unsigned int i = 0; i < nreq; ++i)
+      wild[i].mutate(&req[i]);
     prepared = true;
   }
 

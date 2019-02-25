@@ -18,13 +18,15 @@ struct Urbite {
   Parson *_parson;
   Urb *urb;
 
-  Urbite(const char *_nom, Urb *_urb) {
+  Urbite(const std::string &_nom, Urb *_urb) {
     nom = _nom;
     urb = _urb;
     _parson = NULL;
   }
 
   Parson *parson() {
+    assert(Parson::valid_nom(nom.c_str()));
+
     if (_parson) {
       if (nom == _parson->nom)
         return _parson;
@@ -35,8 +37,21 @@ struct Urbite {
     assert(!_parson);
     _parson = urb->find(nom);
 
+    if (!_parson) {
+      _parson = urb->import(nom.c_str());
+    }
+    assert(_parson);
+
     return _parson;
   }
+
+  void become(const std::string &_nom) {
+    if (nom == _nom)
+      return;
+    nom = _nom;
+    _parson = NULL;
+  }
+    
 
 #if 0
   Parson *resurrect() {

@@ -6,18 +6,30 @@
 #include <stdint.h>
 #include <unistd.h>
 #include <sys/types.h>
+#include <sys/socket.h>
+#include <arpa/inet.h>
+#include <netinet/in.h>
 
 #include <vector>
 #include <map>
 #include <string>
 
 #include "urb.hh"
+#include "urbite.hh"
 
 namespace makemore {
 
 
 struct Server {
-  typedef bool (*Handler)(Server *, const std::string &, const std::vector<std::string> &, FILE *, FILE *);
+  typedef bool (*Handler)(
+    const Server *,
+    Urb *,
+    Urbite *,
+    const std::string &cmd,
+    const std::vector<std::string> &args,
+    FILE *infp,
+    FILE *outfp)
+  ;
   static std::map<std::string, Handler> default_cmdtab;
 
   static bool default_cmdset(const std::string &cmd, Handler h) {
@@ -33,7 +45,9 @@ struct Server {
   std::map<std::string, Handler> cmdtab;
 
   std::string urbdir;
-  class Urb *urb;
+  Urb *urb;
+
+  uint32_t client_ip;
 
   std::vector<Parson*> stack;
 

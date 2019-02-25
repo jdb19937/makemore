@@ -53,13 +53,15 @@ bool Parson::valid_nom(const char *nom) {
   if (!nom[0])
     return false;
 
-  if (nom[0] >= '0' && nom[0] <= '9')
-    return false;
-
   for (unsigned int i = 0; i < 32; ++i) {
     if (!nom[i])
       break;
-    if (!(nom[i] >= 'a' && nom[i] <= 'z' || nom[i] == '_' || nom[i] >= '0' && nom[i] <= '9')) {
+    if (!(
+      nom[i] >= 'a' && nom[i] <= 'z' ||
+      nom[i] == '.' ||
+      nom[i] == '_' ||
+      nom[i] >= '0' && nom[i] <= '9'
+    )) {
       return false;
     }
   }
@@ -67,22 +69,7 @@ bool Parson::valid_nom(const char *nom) {
 }
 
 bool Parson::valid_tag(const char *tag) {
-  if (strlen(tag) > 31)
-    return false;
-  if (!tag[0])
-    return false;
-
-  if (tag[0] >= '0' && tag[0] <= '9')
-    return false;
-
-  for (unsigned int i = 0; i < 32; ++i) {
-    if (!tag[i])
-      break;
-    if (!(tag[i] >= 'a' && tag[i] <= 'z' || tag[i] == '_' || tag[i] >= '0' && tag[i] <= '9')) {
-      return false;
-    }
-  }
-  return true;
+  return valid_nom(tag);
 }
 
 static std::map<std::string, bool> _gender_map;

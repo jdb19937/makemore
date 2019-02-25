@@ -35,167 +35,109 @@ static string norm(string x) {
   return y;
 }
 
+static void clauses(const string &x, vector<string> *cl) {
+  cl->clear();
+  split(x.c_str(), ',', cl);
+
+  for (auto cli = cl->begin(); cli != cl->end(); ++cli)
+    *cli = norm(*cli);
+}
+
 unsigned int Rule::parse(const char *line) {
-  string reqstr, memstr, auxstr, outstr, nemstr, buxstr, cmdstr, reg1str, reg2str;
+  string reqstr, rspstr;
 
   const char *sep = strstr(line, "->");
-  assert(sep);
+  if (!sep)
+    return 0;
 
-  std::string a = string(line, sep - line);
-  const char *ap = a.c_str();
-  if (const char *q = strchr(ap, '(')) {
-    reqstr = string(ap, q - ap);
-
-    ++q;
-    const char *r = strchr(q, ')');
-    assert(r);
-
-    memstr = string(q, r - q);
-
-    ++r;
-    while (isspace(*r))
-      ++r;
-    assert(!*r || *r == '(');
-
-    if (*r == '(') {
-      ++r;
-      q = strchr(r, ')');
-      assert(q);
-      auxstr = string(r, q - r);
-    }
-  } else {
-    reqstr = a;
-  }
+  reqstr = string(line, sep - line);
+  vector<string> reqparts;
+  clauses(reqstr, &reqparts);
 
   int multiplicity = 1;
   if (sep[2] == 'x')
     multiplicity = atoi(sep + 3);
-  assert(multiplicity >= 0);
+  if (multiplicity < 0)
+    return 0;
 
   while (*sep && !isspace(*sep))
     ++sep;
   while (isspace(*sep))
     ++sep;
 
-  string b = string(sep);
-  vector<string> bparts;
-  split(b.c_str(), ',', &bparts);
-  assert(bparts.size());
+  rspstr = string(sep);
+  vector<string> rspparts;
+  clauses(rspstr, &rspparts);
 
-  string b0 = bparts[0];
-  const char *b0p = b0.c_str();
-  string c;
-  if (const char *q = strchr(b0p, ':')) {
-    cmdstr = string(b0p, q);
-    c = string(q + 1);
-  } else {
-    c = b0;
-  }
 
-  const char *cp = c.c_str();
-  if (const char *q = strchr(cp, '(')) {
-    outstr = string(cp, q - cp);
+  unsigned int nreq = reqparts.size();
+  unsigned int nrsp = rspparts.size();
 
-    ++q;
-    const char *r = strchr(q, ')');
-    assert(r);
+  wild.resize(nreq);
+  for (unsigned int i = 0; i < nreq; ++i)
+    wild[i].parse(reqparts[i]);
 
-    nemstr = string(q, r - q);
+  req.resize(nreq);
+  for (unsigned int i = 0; i < nreq; ++i)
+    req[i].encode(reqparts[i].c_str());
 
-    ++r;
-    while (isspace(*r))
-      ++r;
-    assert(!*r || *r == '(');
-
-    if (*r == '(') {
-      ++r;
-      q = strchr(r, ')');
-      assert(q);
-      buxstr = string(r, q - r);
-    }
-  } else {
-    outstr = c;
-  }
-  
-  if (bparts.size() >= 2)
-    reg1str = bparts[1];
-  if (bparts.size() >= 3)
-    reg2str = bparts[2];
-
-  reqstr = norm(reqstr);
-  memstr = norm(memstr);
-  auxstr = norm(auxstr);
-  nemstr = norm(nemstr);
-  buxstr = norm(buxstr);
-  outstr = norm(outstr);
-  cmdstr = norm(cmdstr);
-  reg1str = norm(reg1str);
-  reg2str = norm(reg2str);
-
-#if 0
-fprintf(stderr, "reqstr=[%s]\n", reqstr.c_str());
-fprintf(stderr, "memstr=[%s]\n", memstr.c_str());
-fprintf(stderr, "auxstr=[%s]\n", auxstr.c_str());
-fprintf(stderr, "nemstr=[%s]\n", nemstr.c_str());
-fprintf(stderr, "buxstr=[%s]\n", buxstr.c_str());
-fprintf(stderr, "outstr=[%s]\n", outstr.c_str());
-fprintf(stderr, "cmdstr=[%s]\n", cmdstr.c_str());
-fprintf(stderr, "reg1str=[%s]\n", reg1str.c_str());
-fprintf(stderr, "reg2str=[%s]\n", reg2str.c_str());
-#endif
-
-  reqwild.parse(reqstr);
-  memwild.parse(memstr);
-  auxwild.parse(auxstr);
-
-  req.encode(reqstr.c_str());
-  mem.encode(memstr.c_str());
-  nem.encode(nemstr.c_str());
-  cmd.encode(cmdstr.c_str());
-  out.encode(outstr.c_str());
-  bux.encode(buxstr.c_str());
-  reg1.encode(reg1str.c_str());
-  reg2.encode(reg2str.c_str());
+  rsp.resize(nrsp);
+  for (unsigned int i = 0; i < nrsp; ++i)
+    rsp[i].encode(rspparts[i].c_str());
 
   prepared = false;
-
   return ((unsigned int)multiplicity);
 }
 
 void Rule::save(FILE *fp) const {
   size_t ret;
 
-  req.save(fp);
-  mem.save(fp);
-  aux.save(fp);
-  cmd.save(fp);
-  out.save(fp);
-  nem.save(fp);
-  bux.save(fp);
-  reg1.save(fp);
-  reg2.save(fp);
+  unsigned int nreq = req.size();
+  assert(nreq == wild.size());
+  uint32_t bnreq = htonl(nreq);
+  ret = fwrite(&bnreq, 4, 1, fp);
+  assert(ret == 1);
 
-  reqwild.save(fp);
-  memwild.save(fp);
-  auxwild.save(fp);
+  for (unsigned int i = 0; i < nreq; ++i) {
+    req[i].save(fp);
+    wild[i].save(fp);
+  }
+
+  unsigned int nrsp = rsp.size();
+  uint32_t bnrsp = htonl(nrsp);
+  ret = fwrite(&bnrsp, 4, 1, fp);
+  assert(ret == 1);
+
+  for (unsigned int i = 0; i < nrsp; ++i) {
+    rsp[i].save(fp);
+  }
 }
 
 void Rule::load(FILE *fp) {
   size_t ret;
 
-  req.load(fp);
-  mem.load(fp);
-  aux.load(fp);
-  cmd.load(fp);
-  out.load(fp);
-  nem.load(fp);
-  bux.load(fp);
-  reg1.load(fp);
-  reg2.load(fp);
+  uint32_t bnreq;
+  ret = fread(&bnreq, 4, 1, fp);
+  assert(ret == 4);
+  unsigned int nreq = ntohl(bnreq);
 
-  reqwild.load(fp);
-  memwild.load(fp);
-  auxwild.load(fp);
+  req.resize(nreq);
+  wild.resize(nreq);
+  for (unsigned int i = 0; i < nreq; ++i) {
+    req[i].load(fp);
+    wild[i].load(fp);
+  }
+
+
+  uint32_t bnrsp;
+  ret = fread(&bnrsp, 4, 1, fp);
+  assert(ret == 4);
+  unsigned int nrsp = ntohl(bnrsp);
+
+  rsp.resize(nrsp);
+  for (unsigned int i = 0; i < nrsp; ++i) {
+    rsp[i].load(fp);
+  }
 }
 
 

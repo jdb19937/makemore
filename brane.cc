@@ -156,6 +156,7 @@ static Shibboleth *wbufmap(char cbuf, Shibboleth *rsp) {
 }
 
 void Brane::burn(const Rule *rule, unsigned int mbn, double pi) {
+#if 0
   Shibboleth req[3], rsp[6];
 
   assert(mbn == confab->mbn);
@@ -180,9 +181,11 @@ void Brane::burn(const Rule *rule, unsigned int mbn, double pi) {
   }
 
   confab->burn(pi, pi);
+#endif
 }
 
 Shibboleth Brane::ask(const Shibboleth &in, Shibboleth *memp, Shibboleth *auxp, unsigned int depth) {
+#if 0
   Shibboleth req[3];
   Shibboleth rsp[6];
   Shibboleth *nemp, *buxp;
@@ -460,6 +463,7 @@ fprintf(stderr, "nem=[%s]\n", nemp->decode(confab->vocab).c_str());
   if (auxp)
     memcpy(auxp, buxp, sizeof(Shibboleth));
   return rsp[1];
+#endif
 }
 
 

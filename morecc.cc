@@ -14,6 +14,8 @@ void usage() {
 }
 
 int main(int argc, char **argv) {
+  seedrand();
+
   const char *infn = "-";
   const char *outfn = "-";
 
@@ -77,7 +79,8 @@ int main(int argc, char **argv) {
 
     Rule r;
     unsigned int multiplicity = r.parse(q);
-    r.save(outfp);
+    if (multiplicity > 0)
+      r.save(outfp);
 
     for (unsigned int i = 1; i < multiplicity; ++i) {
       Rule rx;

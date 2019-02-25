@@ -7,11 +7,14 @@
 #include <vector>
 
 #include "server.hh"
+#include "urbite.hh"
 
 namespace makemore {
 
 #define CMD_ARGS \
-  class Server *server, \
+  const Server *_server, \
+  Urb *urb, \
+  Urbite *self, \
   const std::string &cmd, \
   const std::vector<std::string> &args, \
   FILE *infp, \
