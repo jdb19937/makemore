@@ -318,8 +318,24 @@ void Server::parcess(Urbite *who) {
 
       vector<string> newrsps;
       this->ask(who, req, &newrsps);
-      for (auto rspi = newrsps.begin(); rspi != newrsps.end(); ++rspi)
-        allnewrsps.push_back(rsp + ", " + req + ", " + *rspi);
+
+      for (auto rspi = newrsps.begin(); rspi != newrsps.end(); ++rspi) {
+        std::string withctx;
+
+        withctx = rsp + ", " + req + ", " + *rspi;
+        if (withctx.length() < 256) {
+          allnewrsps.push_back(withctx);
+          continue;
+        }
+
+        withctx = req + ", " + *rspi;
+        if (withctx.length() < 256) {
+          allnewrsps.push_back(withctx);
+          continue;
+        }
+
+        allnewrsps.push_back(*rspi);
+      }
     }
 
     for (auto rspi = allnewrsps.rbegin(); rspi != allnewrsps.rend(); ++rspi)
