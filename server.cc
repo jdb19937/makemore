@@ -311,16 +311,19 @@ void Server::parcess(Urbite *who) {
     string allreq = urb->brane1->ask(rsp);
     vector<string> reqs;
     split(allreq.c_str(), ',', &reqs);
+    vector<string> allnewrsps;
 
-    for (auto reqi = reqs.rbegin(); reqi != reqs.rend(); ++reqi) {
+    for (auto reqi = reqs.begin(); reqi != reqs.end(); ++reqi) {
       const std::string &req = *reqi;
 
       vector<string> newrsps;
       this->ask(who, req, &newrsps);
-
-      for (auto rspi = newrsps.rbegin(); rspi != newrsps.rend(); ++rspi)
-        rsps.push_front(rsp + ", " + req + ", " + *rspi);
+      for (auto rspi = newrsps.begin(); rspi != newrsps.end(); ++rspi)
+        allnewrsps.push_back(rsp + ", " + req + ", " + *rspi);
     }
+
+    for (auto rspi = allnewrsps.rbegin(); rspi != allnewrsps.rend(); ++rspi)
+      rsps.push_front(*rspi);
   }
 }
 
