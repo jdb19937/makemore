@@ -308,7 +308,7 @@ void Server::parcess(Urbite *who) {
     string rsp = *rspi;
     rsps.erase(rspi++);
 
-    string allreq = urb->brane1->ask(rsp);
+    string allreq = urb->brane1->ask(parson, rsp);
     vector<string> reqs;
     split(allreq.c_str(), ',', &reqs);
     vector<string> allnewrsps;

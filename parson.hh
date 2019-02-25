@@ -142,7 +142,7 @@ struct Parson {
 
   void generate(class Pipeline *pipe, long min_age = 0);
 
-  void bagtags(Hashbag *h) {
+  void bagtags(Hashbag *h) const {
     h->clear();
     for (unsigned int i = 0; i < ntags; ++i)
       if (*tags[i])

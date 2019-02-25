@@ -9,6 +9,7 @@
 #include "rule.hh"
 #include "script.hh"
 #include "convo.hh"
+#include "parson.hh"
 
 #include <string>
 #include <map>
@@ -68,9 +69,9 @@ struct Brane : Project {
   void encode_tgt();
   void encode_out();
 
-  void _ask(const Convo &req, Shibbomore *rsp, unsigned int rspn);
+  void _ask(const Hashbag &tags, const Convo &req, Shibbomore *rsp, unsigned int rspn);
 
-  std::string ask(const std::string &req);
+  std::string ask(const Parson *who, const std::string &req);
   void burn(double pi);
 };
 

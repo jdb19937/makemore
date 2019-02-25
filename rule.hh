@@ -15,6 +15,7 @@
 namespace makemore {
 
 struct Rule {
+  Hashbag tags;
   std::vector<Shibbomore> req, rsp;
   std::vector<Wildmore> wild;
   bool prepared;
@@ -24,6 +25,7 @@ struct Rule {
   }
 
   void copy(const Rule &r) {
+    tags = r.tags;
     req = r.req;
     rsp = r.rsp;
     wild = r.wild;

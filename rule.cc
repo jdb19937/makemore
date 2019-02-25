@@ -46,9 +46,23 @@ static void clauses(const string &x, vector<string> *cl) {
 unsigned int Rule::parse(const char *line) {
   string reqstr, rspstr;
 
+  std::string tagstr;
+  vector<string> tagwords;
+  if (const char *tagsep = strchr(line, ':')) {
+    string tagstr(line, tagsep);
+    line = tagsep + 1;
+    split(tagstr.c_str(), ' ', &tagwords);
+  }
+
   const char *sep = strstr(line, "->");
   if (!sep)
     return 0;
+
+  tags.clear();
+  if (tagwords.size()) {
+    for (auto tagi = tagwords.begin(); tagi != tagwords.end(); ++tagi)
+      tags.add(tagi->c_str());
+  }
 
   reqstr = string(line, sep - line);
   vector<string> reqparts;
