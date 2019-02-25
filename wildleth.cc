@@ -1,4 +1,4 @@
-#define __MAKEMORE_WILDMAP_CC__
+#define __MAKEMORE_WILDLETH_CC__
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -8,7 +8,7 @@
 #include <vector>
 #include <string>
 
-#include "wildmap.hh"
+#include "wildleth.hh"
 #include "hashbag.hh"
 #include "strutils.hh"
 
@@ -18,13 +18,13 @@ extern double pairmul;
 
 using namespace std;
 
-void Wildmap::parse(const char *str) {
+void Wildleth::parse(const char *str) {
   vector<string> words;
   split(str, ' ', &words);
   parse(words);
 }
 
-void Wildmap::parse(const std::string &str) {
+void Wildleth::parse(const std::string &str) {
   parse(str.c_str());
 }
 
@@ -48,7 +48,7 @@ static void randfix(const vector<string> &words, vector<string> *fixated) {
   }
 }
 
-void Wildmap::parse(const vector<string> &_words) {
+void Wildleth::parse(const vector<string> &_words) {
   vector<string> words;
   randfix(_words, &words);
 
@@ -85,17 +85,17 @@ void Wildmap::parse(const vector<string> &_words) {
   }
 }
 
-void Wildmap::mutate(Shibboleth *shib) {
+void Wildleth::mutate(Shibboleth *shib) {
   Hashbag negstar("*");
   negstar *= -1.0;
 
-  if (Wildmap::Entry *wh = wild_head())
+  if (Wildleth::Entry *wh = wild_head())
     shib->head = wh->tmp = Hashbag::random();
-  if (Wildmap::Entry *wr = wild_rear())
+  if (Wildleth::Entry *wr = wild_rear())
     shib->rear = wr->tmp = Hashbag::random();
 
   for (unsigned int w = 0; w < map.size(); ++w) {
-    Wildmap::Entry *wt = &map[w];
+    Wildleth::Entry *wt = &map[w];
     if (wt->is_head || wt->is_rear)
       continue;
     wt->tmp = Hashbag::random();
@@ -106,7 +106,7 @@ void Wildmap::mutate(Shibboleth *shib) {
 //fprintf(stderr, "ps0=%lf\n", shib->pairs.size());
   unsigned int wmn = map.size();
   for (unsigned int wmi = 0; wmi < wmn; ++wmi) {
-    const Wildmap::Entry *wme = &map[wmi];
+    const Wildleth::Entry *wme = &map[wmi];
 
     if (wme->consec_prev) {
       shib->pairs.add((wme->ctx + negstar) * negstar * pairmul);
@@ -116,7 +116,7 @@ void Wildmap::mutate(Shibboleth *shib) {
   }
 
   for (unsigned int wmi = 0; wmi < wmn; ++wmi) {
-    const Wildmap::Entry *wme = &map[wmi];
+    const Wildleth::Entry *wme = &map[wmi];
 
     Hashbag tmp = wme->ctx;
     if (wme->consec_prev) {
@@ -161,7 +161,7 @@ void Wildmap::mutate(Shibboleth *shib) {
 }
 
 
-void Wildmap::save(FILE *fp) const {
+void Wildleth::save(FILE *fp) const {
   size_t ret;
   unsigned int n = map.size();
 
@@ -175,7 +175,7 @@ void Wildmap::save(FILE *fp) const {
   }
 }
 
-void Wildmap::load(FILE *fp) {
+void Wildleth::load(FILE *fp) {
   size_t ret;
 
   uint32_t hn;

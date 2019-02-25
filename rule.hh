@@ -7,16 +7,16 @@
 #include <string>
 #include <map>
 
-#include "shibboleth.hh"
-#include "wildmap.hh"
+#include "shibbomore.hh"
+#include "wildmore.hh"
 #include "vocab.hh"
 
 
 namespace makemore {
 
 struct Rule {
-  std::vector<Shibboleth> req, rsp;
-  std::vector<Wildmap> wild;
+  std::vector<Shibbomore> req, rsp;
+  std::vector<Wildmore> wild;
   bool prepared;
 
   Rule() {

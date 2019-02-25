@@ -1,5 +1,5 @@
-#ifndef __MAKEMORE_WILDMAP_HH__
-#define __MAKEMORE_WILDMAP_HH__ 1
+#ifndef __MAKEMORE_WILDLETH_HH__
+#define __MAKEMORE_WILDLETH_HH__ 1
 
 #include <vector>
 #include <string>
@@ -10,7 +10,7 @@
 
 namespace makemore {
 
-struct Wildmap {
+struct Wildleth {
   struct Entry {
     Hashbag ctx;
     Hashbag tmp;
@@ -21,6 +21,10 @@ struct Wildmap {
   };
 
   std::vector<Entry> map;
+
+  void clear() {
+    map.clear();
+  }
 
   Entry *wild_head() {
     if (map.size() < 1)

@@ -137,9 +137,13 @@ Brane::Brane(const char *_dir, unsigned int _mbn) : Project(_dir, _mbn) {
   assert(dis->inn == enc->inn);
   assert(mbn == dis->outn);
 
-//  char vocabfn[4096];
-//  sprintf(vocabfn, "%s/vocab.txt", _dir);
-//  vocab.load(vocabfn);
+  char vocabfn[4096];
+  sprintf(vocabfn, "%s/vocab.txt", dir.c_str());
+  vocab.load(vocabfn);
+
+  char rulesfn[4096];
+  sprintf(rulesfn, "%s/rules.more", dir.c_str());
+  rules.load(rulesfn);
 
   rounds = 0;
 }
@@ -212,7 +216,7 @@ void Brane::load_ctx(FILE *infp) {
 
 
 
-void Brane::generate(unsigned int reps) {
+void Brane::generate() {
   for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
     encude( ctxbuf + mbi * ctxlay->n, ctxlay->n, cugenin + mbi * geninlay->n + 0);
     encude( ctrbuf + mbi * ctrlay->n, ctrlay->n, cugenin + mbi * geninlay->n + ctxlay->n);
@@ -360,8 +364,8 @@ void Brane::condition(double yo, double wu) {
   
 }
 
-void Brane::burn(double nu, double pi) {
-#if 1
+void Brane::_burn(double nu, double pi) {
+#if 0
   assert(encinlay->n == ctxlay->n + tgtlay->n);
   for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
     encude(ctxbuf + mbi * ctxlay->n, ctxlay->n, cuencin + mbi * encinlay->n + 0);
@@ -378,9 +382,8 @@ void Brane::burn(double nu, double pi) {
   encpass->train(nu);
 #endif
 
-#if 0
+#if 1
 
-  scramble(0,0);
   for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
     encude(ctxbuf + mbi * ctxlay->n, ctxlay->n, cugenin + mbi * geninlay->n + 0);
     encude(ctrbuf + mbi * ctrlay->n, ctrlay->n, cugenin + mbi * geninlay->n + ctxlay->n);
@@ -471,6 +474,83 @@ void Brane::encode_ctr() {
     int v = (int)(ctrbuf[j] * 256.0);
     bctrbuf[j] = v < 0 ? 0 : v > 255 ? 255 : v;
   }
+}
+
+std::string Brane::ask(const std::string &reqstr) {
+  Convo req;
+  req.build(reqstr);
+
+  Shibbomore rsp[2];
+  _ask(req, rsp, 2);
+
+  string rspstr = rsp[0].decode(vocab);
+  if (rspstr != "") {
+    string rsp1str = rsp[1].decode(vocab);
+    if (rsp1str != "") {
+      rspstr += ", ";
+      rspstr += rsp1str;
+    }
+  }
+
+  return rspstr;
+}
+  
+
+void Brane::_ask(const Convo &req, Shibbomore *rsp, unsigned int rspn) {
+  assert(mbn == 1);
+  assert(ctxlay->n * sizeof(double) == sizeof(Convo));
+  assert(tgtlay->n * sizeof(double) == sizeof(Shibbomore) * rspn);
+  assert(tgtlay->n == outlay->n);
+
+  memcpy(ctxbuf, &req, sizeof(Convo));
+
+  scramble(0, 0);
+  generate();
+
+  memcpy(rsp, outbuf, sizeof(Shibbomore) * rspn);
+}
+
+
+void Brane::burn(double pi) {
+  assert(ctxlay->n * sizeof(double) == sizeof(Convo));
+  assert(tgtlay->n * sizeof(double) == sizeof(Shibbomore) * 2);
+
+  for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
+    const Rule *rulep = rules.pick();
+    assert(rulep);
+    assert(!rulep->prepared);
+
+    Rule rule = *rulep;
+    rule.prepare();
+    assert(rule.prepared);
+
+    Convo req;
+    req.build(rule.req);
+    
+    Shibbomore rsp[2];
+    switch (rule.rsp.size()) {
+    case 0:
+      rsp[0].clear();
+      rsp[1].clear();
+      break;
+    case 1:
+      rsp[0] = rule.rsp[0];
+      rsp[1].clear();
+      break;
+    default:
+      rsp[0] = rule.rsp[0];
+      rsp[1] = rule.rsp[1];
+      break;
+    }
+
+//fprintf(stderr, "rule: %s -> %s\n", rule.req[0].decode(vocab).c_str(), rule.rsp[0].decode(vocab).c_str());
+
+    memcpy(ctxbuf + mbi * ctxlay->n, &req, sizeof(Convo));
+    memcpy(tgtbuf + mbi * tgtlay->n, rsp, sizeof(Shibbomore) * 2);
+  }
+
+  scramble(0, 0);
+  _burn(0, pi);
 }
 
 }

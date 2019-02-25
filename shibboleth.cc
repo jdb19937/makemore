@@ -7,7 +7,6 @@
 #include "strutils.hh"
 #include "closest.hh"
 #include "vocab.hh"
-#include "wildmap.hh"
 
 #include "sha256.c"
 
@@ -228,25 +227,25 @@ void Shibboleth::encode(const vector<string> &words) {
 
 }
 
-std::string Shibboleth::decode(const Vocab &vocab, bool force_head) const {
-fprintf(stderr, "heads=%lf torsos=%lf rears=%lf\n", head.size(), torso.size(), rear.size());
-  const char *headword = vocab.closest(head, NULL, force_head);
-  if (!headword)
+std::string Shibboleth::decode(const Vocab &vocab) const {
+  if (head.empty())
     return "";
+  const char *headword = vocab.closest(head);
+  assert(headword);
 
-  const char *rearword = vocab.closest(rear, NULL, false);
-  if (!rearword)
+  if (rear.empty())
     return headword;
+  const char *rearword = vocab.closest(rear);
+  assert(rearword);
 
   Hashbag tvec = torso;
   long outn = 16;
   const Hashbag *uvecp = NULL;
 
   map<string, unsigned int> whb;
-  for (unsigned int outi = 0; outi < outn; ++outi) {
-    const char *w = vocab.closest(tvec, &uvecp, false);
-    if (!w)
-      break;
+  for (unsigned int outi = 0; outi < outn && !tvec.empty(); ++outi) {
+    const char *w = vocab.closest(tvec, &uvecp);
+    assert(w);
     ++whb[w];
     tvec -= *uvecp;
   }
@@ -277,7 +276,6 @@ fprintf(stderr, "heads=%lf torsos=%lf rears=%lf\n", head.size(), torso.size(), r
         bestd = d0;
       }
      
-#if 1
       Hashbag pairbag1(prevword1.c_str());
       pairbag1 *= Hashbag(nextword.c_str());
       double d1 = (pairbag1 - tpairs).size();
@@ -287,7 +285,6 @@ fprintf(stderr, "heads=%lf torsos=%lf rears=%lf\n", head.size(), torso.size(), r
         bestdir = 1;
         bestd = d1;
       }
-#endif
     }
 
     --whb[bestnextword];

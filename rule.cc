@@ -118,7 +118,7 @@ void Rule::load(FILE *fp) {
 
   uint32_t bnreq;
   ret = fread(&bnreq, 4, 1, fp);
-  assert(ret == 4);
+  assert(ret == 1);
   unsigned int nreq = ntohl(bnreq);
 
   req.resize(nreq);
@@ -131,7 +131,7 @@ void Rule::load(FILE *fp) {
 
   uint32_t bnrsp;
   ret = fread(&bnrsp, 4, 1, fp);
-  assert(ret == 4);
+  assert(ret == 1);
   unsigned int nrsp = ntohl(bnrsp);
 
   rsp.resize(nrsp);

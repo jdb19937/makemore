@@ -8,7 +8,6 @@
 #include "strutils.hh"
 #include "closest.hh"
 #include "vocab.hh"
-#include "wildmap.hh"
 
 #include "sha256.c"
 
@@ -44,21 +43,19 @@ void Shibbomore::encode(const vector<string>& vec) {
 }
 
 std::string Shibbomore::decode(const Vocab &vocab) const {
-  std::string outstr;
-
-  const char *frontword = vocab.closest(front[0], NULL);
-  if (!frontword)
+  if (front[0].empty())
     return "";
-  outstr += frontword;
+  string outstr = vocab.closest(front[0]);
 
-  if (const char *w = vocab.closest(front[1], NULL)) {
+  const char *w;
+  if (!front[1].empty()) {
     outstr += " ";
-    outstr += w;
-  }
+    outstr += vocab.closest(front[1]);
 
-  if (const char *w = vocab.closest(front[2], NULL)) {
-    outstr += " ";
-    outstr += w;
+    if (!front[2].empty()) {
+      outstr += " ";
+      outstr += vocab.closest(front[2]);
+    }
   }
 
   std::string backstr = backleth.decode(vocab);

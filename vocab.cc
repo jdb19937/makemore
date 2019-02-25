@@ -24,6 +24,13 @@ Vocab::Vocab() {
 }
 
 void Vocab::clear() {
+  n = 0;
+  seen_tag.clear();
+  tags.clear();
+  bags.clear();
+  tag_weight.clear();
+
+#if 0
   seen_tag.clear();
 
   n = 1;
@@ -36,6 +43,7 @@ void Vocab::clear() {
 
   tag_weight.resize(1);
   tag_weight[0] = 0.0;
+#endif
 }
 
 void Vocab::add(const char *str, const char *desc, double weight) {
@@ -76,22 +84,14 @@ void Vocab::add(const char *str, const char *desc, double weight) {
   }
 }
 
-const char *Vocab::closest(const Hashbag &x, const Hashbag **y, bool force) const {
+const char *Vocab::closest(const Hashbag &x, const Hashbag **y) const {
   const double *m = (const double *)bags.data();
   unsigned int k = Hashbag::n;
 
-  unsigned int i;
-  if (force) {
-    i = makemore::maxdot(x.vec, m + k, k, n - 1) + 1;
-  } else {
-    i = makemore::maxdot(x.vec, m, k, n);
-  }
+  unsigned int i = makemore::maxdot(x.vec, m, k, n);
   assert(i >= 0 && i < n);
 
   const char *w = tags[i];
-  if (i == 0)
-    return NULL;
-
   if (y)
     *y = &bags[i];
 

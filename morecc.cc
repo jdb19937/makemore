@@ -3,7 +3,6 @@
 #include <errno.h>
 
 #include "rule.hh"
-#include "wildmap.hh"
 #include "script.hh"
 
 using namespace makemore;

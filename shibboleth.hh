@@ -24,20 +24,16 @@ struct Shibboleth {
     pairs.clear();
   }
 
-  bool is_empty() const {
-    return (head.size() <= 0.5);
-  }
-
-  bool is_single() const {
-    return (rear.size() <= 0.5);
+  bool empty() const {
+    return head.empty();
   }
 
   double size() const {
-    double n = 0;
-    n += (head.size() > 0.5) ? 1.0 : 0.0;
-    n += (rear.size() > 0.5) ? 1.0 : 0.0;
-    n += torso.size();
-    return n;
+    if (head.empty())
+      return 0.0;
+    if (rear.empty())
+      return 1.0;
+    return torso.size() + 2.0;
   }
 
   Shibboleth() {
@@ -106,7 +102,7 @@ struct Shibboleth {
   void encode(const char *str);
   void encode(const std::vector<std::string> &vec);
 
-  std::string decode(const class Vocab &vocab, bool force = false) const;
+  std::string decode(const class Vocab &vocab) const;
 
   void save(FILE *fp) const;
   void load(FILE *fp);

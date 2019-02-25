@@ -5,8 +5,8 @@ CXXFLAGS = -O3
 LDFLAGS = -lm -ljpeg
 CULDFLAGS = -lcuda -lcudart
 
-LIBHDR = cudamem.hh random.hh tron.hh ppm.hh layout.hh megatron.hh wiring.hh persist.hh dataset.hh topology.hh multitron.hh project.hh twiddle.hh sampler.hh closest.hh pipeline.hh parson.hh ipdb.hh warp.hh vocab.hh script.hh strutils.hh hashbag.hh shibboleth.hh brane.hh rule.hh wildmap.hh stage.hh zone.hh bus.hh numutils.hh server.hh commands.hh urb.hh org.hh urbite.hh convo.hh shibbomore.hh
-LIBOBJ = cudamem.o random.o tron.o ppm.o layout.o megatron.o wiring.o persist.o dataset.o topology.o multitron.o project.o twiddle.o sampler.o closest.o pipeline.o parson.o ipdb.o warp.o vocab.o script.o strutils.o hashbag.o shibboleth.o brane.o rule.o wildmap.o stage.o zone.o bus.o numutils.o server.o commands.o urb.o org.o urbite.o convo.o shibbomore.o
+LIBHDR = cudamem.hh random.hh tron.hh ppm.hh layout.hh megatron.hh wiring.hh persist.hh dataset.hh topology.hh multitron.hh project.hh twiddle.hh sampler.hh closest.hh pipeline.hh parson.hh ipdb.hh warp.hh vocab.hh script.hh strutils.hh hashbag.hh shibboleth.hh brane.hh rule.hh wildleth.hh stage.hh zone.hh bus.hh numutils.hh server.hh commands.hh urb.hh org.hh urbite.hh convo.hh shibbomore.hh wildmore.hh
+LIBOBJ = cudamem.o random.o tron.o ppm.o layout.o megatron.o wiring.o persist.o dataset.o topology.o multitron.o project.o twiddle.o sampler.o closest.o pipeline.o parson.o ipdb.o warp.o vocab.o script.o strutils.o hashbag.o shibboleth.o brane.o rule.o wildleth.o stage.o zone.o bus.o numutils.o server.o commands.o urb.o org.o urbite.o convo.o shibbomore.o wildmore.o
 LIB = libmakemore.a
 
 DATASETS = face-attrs.dat face8.dat face16.dat face32.dat face64.dat face128.dat

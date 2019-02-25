@@ -26,19 +26,22 @@ struct Shibbomore {
     backleth.clear();
   }
 
-  bool is_empty() const {
-    return (front[0].size() < 0.5);
+  bool empty() const {
+    return front[0].empty();
   }
 
   double size() const {
-    if (front[0].size() < 0.5)
+    if (front[0].empty())
       return 0.0;
 
     double n = 1.0;
-    if (front[1].size() >= 0.5)
+    if (!front[1].empty()) {
       n += 1.0;
-    if (front[2].size() >= 0.5)
-      n += 1.0;
+      if (!front[2].empty()) {
+        n += 1.0;
+      }
+    }
+
     n += backleth.size();
 
     return n;

@@ -6,6 +6,9 @@
 #include "multitron.hh"
 #include "vocab.hh"
 #include "project.hh"
+#include "rule.hh"
+#include "script.hh"
+#include "convo.hh"
 
 #include <string>
 #include <map>
@@ -13,6 +16,8 @@
 namespace makemore {
 
 struct Brane : Project {
+  Script rules;
+
   Layout *tgtlay, *ctrlay, *ctxlay, *outlay;
   Layout *encinlay, *geninlay;
 
@@ -39,12 +44,12 @@ struct Brane : Project {
   Brane(const char *_dir, unsigned int _mbn);
   ~Brane();
 
-  void generate(unsigned int reps = 1);
+  void generate();
   void regenerate();
   void passgenerate();
 
 
-  void burn(double nu, double pi);
+  void _burn(double nu, double pi);
   void condition(double yo, double wu);
   void reencode();
   void scramble(double mean, double dev);
@@ -62,6 +67,11 @@ struct Brane : Project {
   void encode_adj();
   void encode_tgt();
   void encode_out();
+
+  void _ask(const Convo &req, Shibbomore *rsp, unsigned int rspn);
+
+  std::string ask(const std::string &req);
+  void burn(double pi);
 };
 
 }
