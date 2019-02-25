@@ -83,7 +83,8 @@ struct Server {
   }
 
   void think();
-  void parcess(Parson *parson);
+  void parcess(Urbite *who);
+  void ask(Urbite *who, const std::string& req, std::vector<std::string> *out);
 };
 
 }

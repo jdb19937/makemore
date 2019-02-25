@@ -7,6 +7,7 @@
 #include "pipeline.hh"
 #include "parson.hh"
 #include "zone.hh"
+#include "brane.hh"
 #include "bus.hh"
 
 namespace makemore {
@@ -18,6 +19,7 @@ struct Urb {
   std::vector<Zone*> zones;
   Bus *outgoing;
 
+  Brane *brane1;
   Pipeline *pipe1, *pipex;
 
   Urb(const char *_dir, unsigned int _mbn = 8);

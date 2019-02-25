@@ -253,6 +253,7 @@ void Server::websockify(uint16_t ws_port, const char *keydir) {
 }
 
 void Server::think() {
+  const unsigned int delay = 5000;
   pid_t think_pid;
 
   think_pid = fork();
@@ -264,54 +265,101 @@ void Server::think() {
 
   setup();
   assert(urb);
+  assert(urb->zones.size() > 0);
 
   while (1) {
-    fprintf(stderr, "thinking\n");
-    sleep(1);
+    if (Parson *parson = urb->zones[0]->pick()) {
+      Urbite who(parson->nom, urb);
+      parcess(&who);
+    }
+    usleep(delay);
   }
 
   assert(0);
 }
 
-void Server::parcess(Parson *parson) {
+void Server::parcess(Urbite *who) {
   const unsigned int max_iters = 64;
 
   assert(urb);
-  if (!parson->nom[0])
-    return;
+  assert(who);
+  Parson *parson = who->parson();
 
-  list<string> cmds;
+  list<string> rsps;
   {
-    char *cmdstr;
-    unsigned int cmdlen;
-    while ((cmdstr = parson->popbuf(&cmdlen))) {
-      string cmd(cmdstr);
-      cmds.push_back(cmd);
-      memset(cmdstr, 0, cmdlen);
+    char *rspstr;
+    unsigned int rsplen;
+    while ((rspstr = parson->popbuf(&rsplen))) {
+      string rsp(rspstr);
+      rsps.push_back(rsp);
+      memset(rspstr, 0, rsplen);
     }
   }
 
   unsigned int iters = 0;
-  auto cmdi = cmds.begin();
-  while (cmdi != cmds.end()) {
+  while (1) {
+    auto rspi = rsps.begin();
+    if (rspi == rsps.end())
+      break;
     if (iters >= max_iters)
       break;
     ++iters;
 
-    string cmd = *cmdi;
-    cmds.erase(cmdi++);
+    string rsp = *rspi;
+    rsps.erase(rspi++);
 
-    // send cmd to brane -> reqs
+    string allreq = urb->brane1->ask(rsp);
     vector<string> reqs;
+    split(allreq.c_str(), ',', &reqs);
 
-    for (auto reqi = reqs.begin(); reqi != reqs.end(); ++reqi) {
-      // send reqs to server -> new cmds
-      vector<string> rsps;
+    for (auto reqi = reqs.rbegin(); reqi != reqs.rend(); ++reqi) {
+      const std::string &req = *reqi;
 
-      for (auto rspi = rsps.rbegin(); rspi != rsps.rend(); ++rspi)
-        cmds.push_front(*reqi + ", " + *rspi);
+      vector<string> newrsps;
+      this->ask(who, req, &newrsps);
+
+      for (auto rspi = newrsps.rbegin(); rspi != newrsps.rend(); ++rspi)
+        rsps.push_front(rsp + ", " + req + ", " + *rspi);
     }
   }
+}
+
+
+void Server::ask(Urbite *who, const std::string& req, std::vector<std::string> *out) {
+  out->clear();
+
+  vector<string> words;
+  split(req.c_str(), ' ', &words);
+  if (!words.size())
+    return;
+  string cmd = words[0];
+  if (cmd == "")
+    return;
+  vector<string> args(&words.data()[1], &words.data()[words.size()]);
+
+  auto hi = cmdtab.find(cmd);
+  if (hi == cmdtab.end())
+    return;
+  Handler h = hi->second;
+  if (!h)
+    return;
+
+  FILE *meminfp = fmemopen(NULL, 0, "r");
+  FILE *memoutfp = fmemopen(NULL, 4096, "r+");
+
+  (void) h((const Server *)this, urb, who, cmd, args, meminfp, memoutfp);
+
+  fclose(meminfp);
+
+  int ret = fseek(memoutfp, 0, SEEK_SET);
+  assert(ret == 0);
+
+  std::string line;
+  while (read_line(memoutfp, &line)) {
+    out->push_back(line);
+  }
+
+  fclose(memoutfp);
 }
 
 }

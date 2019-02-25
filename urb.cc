@@ -22,6 +22,8 @@ Urb::Urb(const char *_dir, unsigned int _mbn) {
 
   pipe1 = new Pipeline((dir + "/partrait.proj").c_str(), 1);
   pipex = new Pipeline((dir + "/partrait.proj").c_str(), mbn);
+
+  brane1 = new Brane((dir + "/brane.proj").c_str(), 1);
 }
 
 Urb::~Urb() {
