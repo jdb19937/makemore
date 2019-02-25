@@ -39,7 +39,7 @@ void Urb::generate(Parson *p, long min_age) {
   p->generate(pipe1, min_age);
 }
 
-Parson *Urb::find(const char *nom, unsigned int *tierp) const {
+Parson *Urb::find(const std::string &nom, unsigned int *tierp) const {
 
   for (unsigned int tier = 0, tiers = zones.size(); tier < tiers; ++tier) {
     Zone *zone = zones[tier];

@@ -28,7 +28,7 @@ struct Urb {
   unsigned int tier(const Parson *x) const;
   unsigned int tier(const Zone *zone) const;
   Zone *zone(const Parson *x) const;
-  Parson *find(const char *nom, unsigned int *tierp = NULL) const;
+  Parson *find(const std::string &nom, unsigned int *tierp = NULL) const;
   Parson *import(const Parson &x, unsigned int tier = 0);
 
   void _busout(const Parson &x);

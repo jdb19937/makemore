@@ -164,13 +164,13 @@ Parson *Zone::pick(const char *tag1, const char *tag2, unsigned int max_tries) {
   return find("synthetic_dan_brumleve");
 }
 
-Parson *Zone::find(const char *nom) const {
-  if (!Parson::valid_nom(nom))
+Parson *Zone::find(const std::string &nom) const {
+  if (!Parson::valid_nom(nom.c_str()))
     return NULL;
 
   for (unsigned int j = 0; j < nvariants; ++j) {
-    Parson *cand = db + Parson::hash_nom(nom, j) % n;
-    if (!strcmp(cand->nom, nom))
+    Parson *cand = db + Parson::hash_nom(nom.c_str(), j) % n;
+    if (nom == cand->nom)
       return cand;
   }
 

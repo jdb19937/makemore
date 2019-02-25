@@ -26,11 +26,11 @@ struct Zone {
   Parson *pick(const char *tag, unsigned int max_tries);
   Parson *pick(const char *tag1, const char *tag2, unsigned int max_tries);
 
-  bool exists(const char *nom) const {
+  bool exists(const std::string &nom) const {
     return (find(nom) != NULL);
   }
 
-  Parson *find(const char *nom) const;
+  Parson *find(const std::string &nom) const;
 
   Parson *import(const Parson &x, bool *evicted = NULL, Parson *evictee = NULL);
   Parson *left_naybor(Parson *p, unsigned int tries = 32);
