@@ -29,7 +29,7 @@ struct Parson {
   const static unsigned int ntags = 8;
   const static unsigned int dim = 64;
   const static unsigned int ncontrols = 1920;
-  const static unsigned int bufsize = 1024;
+  const static unsigned int bufsize = 4096;
   typedef char Nom[32];
   typedef char Tag[32];
 
@@ -79,8 +79,10 @@ struct Parson {
   // 64 * 64 * 3
   uint8_t partrait[dim * dim * 3];
 
-  // 1024
+  // 4096
   char buffer[bufsize];
+
+  uint8_t _fill[1272];
 
   char *popbuf(unsigned int *lenp = NULL);
   void pushbuf(const char *cmd, unsigned int n);

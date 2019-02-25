@@ -1,6 +1,6 @@
 package Parson;
 
-our $size = 28424;
+our $size = 32768;
 
 sub _ns {
   my $x = shift;
@@ -53,7 +53,7 @@ sub decode {
   $$this{control_data} = _padto(substr($enc, 864 + 40, 1920), 1920);
   $$this{target_data} = _padto(substr($enc, 864 + 40 + 1920, 12288), 12288);
   $$this{partrait_data} = _padto(substr($enc, 864 + 40 + 1920 + 12288, 12288), 12288);
-  $$this{buffer} = _padto(substr($enc, 864 + 40 + 1920 + 12288 + 12288, 1024), 1024);
+  $$this{buffer} = _padto(substr($enc, 864 + 40 + 1920 + 12288 + 12288, 4096), 4096);
 
   $this
 }
@@ -75,6 +75,7 @@ sub encode {
     $$this{target_data},
     $$this{partrait_data},
     $$this{buffer},
+    "\0" x 1272,
   )
 }
 
