@@ -1,0 +1,186 @@
+#LyX 2.3 created this file. For more info see http://www.lyx.org/
+\lyxformat 544
+\begin_document
+\begin_header
+\save_transient_properties true
+\origin unavailable
+\textclass amsart
+\use_default_options true
+\begin_modules
+theorems-ams
+eqs-within-sections
+figs-within-sections
+\end_modules
+\maintain_unincluded_children false
+\language english
+\language_package default
+\inputencoding auto
+\fontencoding global
+\font_roman "default" "default"
+\font_sans "default" "default"
+\font_typewriter "default" "default"
+\font_math "auto" "auto"
+\font_default_family default
+\use_non_tex_fonts false
+\font_sc false
+\font_osf false
+\font_sf_scale 100 100
+\font_tt_scale 100 100
+\use_microtype false
+\use_dash_ligatures true
+\graphics default
+\default_output_format default
+\output_sync 0
+\bibtex_command default
+\index_command default
+\paperfontsize default
+\spacing single
+\use_hyperref false
+\papersize default
+\use_geometry false
+\use_package amsmath 1
+\use_package amssymb 1
+\use_package cancel 1
+\use_package esint 1
+\use_package mathdots 1
+\use_package mathtools 1
+\use_package mhchem 1
+\use_package stackrel 1
+\use_package stmaryrd 1
+\use_package undertilde 1
+\cite_engine basic
+\cite_engine_type default
+\biblio_style plain
+\use_bibtopic false
+\use_indices false
+\paperorientation portrait
+\suppress_date false
+\justification true
+\use_refstyle 1
+\use_minted 0
+\index Index
+\shortcut idx
+\color #008000
+\end_index
+\secnumdepth 3
+\tocdepth 3
+\paragraph_separation indent
+\paragraph_indentation default
+\is_math_indent 0
+\math_numbering_side default
+\quotes_style english
+\dynamic_quotes 0
+\papercolumns 1
+\papersides 1
+\paperpagestyle default
+\tracking_changes false
+\output_changes false
+\html_math_output 0
+\html_css_as_file 0
+\html_be_strict false
+\end_header
+
+\begin_body
+
+\begin_layout Title
+moretp
+\end_layout
+
+\begin_layout Author
+Dan Brumleve
+\end_layout
+
+\begin_layout Date
+February 28, 2019
+\end_layout
+
+\begin_layout Standard
+moretp is a simple text protocol that allows embedding of binary data.
+\begin_inset Newline newline
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The TCP byte stream is divided into packets.
+ A packet is a line terminated by '
+\backslash
+n' followed by an optional binary part, representing a list of strings.
+ When decoding a packet, lines are processed to remove leading and trailing
+ whitespace and all other whitespace sequences are normalized to a single
+ ' '.
+ After this processing, each line corresponds uniquely to a sequence of
+ non-empty, non-whitespace-containing words.
+\begin_inset Newline newline
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+If any word in a line begins with '<', the rest of the word is passed to
+ strtoul(3) to get a byte count.
+ The total byte count of the words in line is the length of the binary part
+ of the packet.
+ To complete decoding of the packet, each word beginning with '<' is replaced
+ by the corresponding bytes in the packet's binary part.
+ Then the resulting word list is the decoded packet.
+\begin_inset Newline newline
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+To encode a moretp packet, start with a list of a strings.
+ An empty list corresponds to the packet "
+\backslash
+n".
+ If none of the strings contain any whitespace, then the packet is the list
+ joined by ' ' and terminated by '
+\backslash
+n'.
+ If any string contains whitespace, replace it with '<' followed by its
+ length prior to the joining, and append the original string to the final
+ packet.
+ Or, do this for every string whether or not it contains whitespace.
+\begin_inset Newline newline
+\end_inset
+
+
+\end_layout
+
+\begin_layout Example
+A moretp encoder in perl.
+\end_layout
+
+\begin_layout Verbatim
+sub moretpenc {
+\end_layout
+
+\begin_layout Verbatim
+  join(' ', map /
+\backslash
+s/ ? "<" .
+ length : $_, @_) .
+\end_layout
+
+\begin_layout Verbatim
+  "
+\backslash
+n" .
+\end_layout
+
+\begin_layout Verbatim
+  join('', grep /
+\backslash
+s/, @_)
+\end_layout
+
+\begin_layout Verbatim
+} 
+\end_layout
+
+\end_body
+\end_document

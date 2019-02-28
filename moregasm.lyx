@@ -1,0 +1,190 @@
+#LyX 2.2 created this file. For more info see http://www.lyx.org/
+\lyxformat 508
+\begin_document
+\begin_header
+\save_transient_properties true
+\origin unavailable
+\textclass amsart
+\use_default_options true
+\begin_modules
+theorems-ams
+eqs-within-sections
+figs-within-sections
+\end_modules
+\maintain_unincluded_children false
+\language english
+\language_package default
+\inputencoding auto
+\fontencoding global
+\font_roman "default" "default"
+\font_sans "default" "default"
+\font_typewriter "default" "default"
+\font_math "auto" "auto"
+\font_default_family default
+\use_non_tex_fonts false
+\font_sc false
+\font_osf false
+\font_sf_scale 100 100
+\font_tt_scale 100 100
+\graphics default
+\default_output_format default
+\output_sync 0
+\bibtex_command default
+\index_command default
+\paperfontsize default
+\spacing single
+\use_hyperref false
+\papersize default
+\use_geometry false
+\use_package amsmath 1
+\use_package amssymb 1
+\use_package cancel 1
+\use_package esint 1
+\use_package mathdots 1
+\use_package mathtools 1
+\use_package mhchem 1
+\use_package stackrel 1
+\use_package stmaryrd 1
+\use_package undertilde 1
+\cite_engine basic
+\cite_engine_type default
+\biblio_style plain
+\use_bibtopic false
+\use_indices false
+\paperorientation portrait
+\suppress_date false
+\justification true
+\use_refstyle 1
+\index Index
+\shortcut idx
+\color #008000
+\end_index
+\secnumdepth 3
+\tocdepth 3
+\paragraph_separation indent
+\paragraph_indentation default
+\quotes_language english
+\papercolumns 1
+\papersides 1
+\paperpagestyle default
+\tracking_changes false
+\output_changes false
+\html_math_output 0
+\html_css_as_file 0
+\html_be_strict false
+\end_header
+
+\begin_body
+
+\begin_layout Title
+moregasm
+\end_layout
+
+\begin_layout Author
+Dan Brumleve
+\end_layout
+
+\begin_layout Date
+February 28, 2019
+\end_layout
+
+\begin_layout Standard
+Moregasm is a language for training a neural network with text.
+\begin_inset Newline newline
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+A moregasm script is a list of rules separated by newlines.
+ The simplest kind of rule is two lists of words separated by "->", for
+ example:
+\end_layout
+
+\begin_layout LyX-Code
+hello how are you -> hi i am fine goodbye -> bye
+\end_layout
+
+\begin_layout Standard
+A special word is "*" which is substituted with a random word during training,
+ giving it the effect of a wildcard:
+\end_layout
+
+\begin_layout LyX-Code
+* is for dinner -> yum
+\end_layout
+
+\begin_layout Standard
+The first clause of the rule can be a comma-separated list, representing
+ the history of a thread:
+\end_layout
+
+\begin_layout LyX-Code
+whats your name, * whats yours -> bob
+\end_layout
+
+\begin_layout LyX-Code
+* whats yours -> whats my what
+\end_layout
+
+\begin_layout Standard
+The second clause of the rule can also be a comma-separated list, representing
+ multiple output s:
+\end_layout
+
+\begin_layout LyX-Code
+tell me a joke -> okay, what does the fox say
+\end_layout
+
+\begin_layout Standard
+A rule can be prefixed by a list of tags and a ":".
+ Tags can be used to represent different actors or properties, for example:
+\end_layout
+
+\begin_layout LyX-Code
+bob: whats your name, * whats yours -> bob
+\end_layout
+
+\begin_layout LyX-Code
+sam: whats your name, * whats yours -> sam
+\end_layout
+
+\begin_layout LyX-Code
+bob: whos your best friend -> sam
+\end_layout
+
+\begin_layout LyX-Code
+sam: whos your best friend -> bob
+\end_layout
+
+\begin_layout Standard
+A rule can be weighted by appending "x" and a number to the arrow.
+ This causes it to be entered into the training bag that many times.
+ Example:
+\end_layout
+
+\begin_layout LyX-Code
+* ->x4 i dont understand
+\end_layout
+
+\begin_layout Standard
+Comments are marked by "#":
+\end_layout
+
+\begin_layout LyX-Code
+* ->x4 i dont understand # fallback response
+\end_layout
+
+\begin_layout Standard
+That's all there is to the language.
+ A moregasm script is a list of rules.
+ Each rule is compiled to shibboleths.
+ The positions of the wildcards within the clauses are also included, allowing
+ substitutions to be performed.
+ The neural network is then trained from the compiled moregasm code.
+ 
+\end_layout
+
+\end_body
+\end_document
