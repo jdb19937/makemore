@@ -72,6 +72,45 @@ bool Parson::valid_tag(const char *tag) {
   return valid_nom(tag);
 }
 
+void Parson::set_pass(const std::string &password, const std::string &saltstr) {
+  if (password == "") {
+    memset(pass, 0, sizeof(pass));
+    memset(salt, 0, sizeof(pass));
+    return;
+  }
+
+  if (saltstr.length() > sizeof(salt) - 1) {
+    memcpy(salt, saltstr.data(), sizeof(salt) - 1);
+    salt[sizeof(salt) - 1] = 0;
+  } else {
+    memset(salt, 0, sizeof(salt));
+    memcpy(salt, saltstr.data(), saltstr.length());
+  }
+
+  SHA256_CTX sha;
+  sha256_init(&sha);
+  sha256_update(&sha, (const uint8_t *)password.c_str(), password.length() + 1);
+  sha256_update(&sha, (const uint8_t *)salt, sizeof(salt));
+  sha256_final(&sha, pass);
+}
+
+bool Parson::check_pass(const std::string &password) {
+  assert(sizeof(pass) == 32);
+
+  uint8_t check_pass[32];
+  memset(check_pass, 0, sizeof(check_pass));
+  if (!memcmp(check_pass, pass, 32))
+    return true;
+
+  SHA256_CTX sha;
+  sha256_init(&sha);
+  sha256_update(&sha, (const uint8_t *)password.c_str(), password.length() + 1);
+  sha256_update(&sha, (const uint8_t *)salt, sizeof(salt));
+  sha256_final(&sha, check_pass);
+
+  return (0 == memcmp(check_pass, pass, 32));
+}
+
 static std::map<std::string, bool> _gender_map;
 
 static void _make_gender_map() {

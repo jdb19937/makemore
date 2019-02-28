@@ -79,8 +79,12 @@ struct Parson {
   // 1
   uint8_t briefptr;
 
-  // 1135
-  uint8_t _fill[1135];
+  // 64
+  uint8_t pass[32];
+  char salt[32];
+
+  // 1071
+  uint8_t _fill[1071];
 
   // 2048
   uint8_t controls[ncontrols];
@@ -131,6 +135,15 @@ struct Parson {
 
     briefptr = newbriefptr;
   }
+
+  void set_pass(const std::string &password, const std::string &saltstr);
+  void set_pass(const std::string &password) {
+    set_pass(password, "");
+  }
+  void clear_pass() {
+    set_pass("");
+  }
+  bool check_pass(const std::string &password);
 
   bool exists() {
     return (nom[0] != 0);
