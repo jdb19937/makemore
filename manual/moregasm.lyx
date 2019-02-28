@@ -94,6 +94,10 @@ Dan Brumleve
 February 28, 2019
 \end_layout
 
+\begin_layout Section
+overview
+\end_layout
+
 \begin_layout Standard
 Moregasm is a language for training a neural network with text.
 \begin_inset Newline newline
@@ -224,7 +228,19 @@ That's all there is to the language.
  The positions of the wildcards within the clauses are also included, allowing
  substitutions to be performed.
  The neural network is then trained from the compiled moregasm code.
- 
+\end_layout
+
+\begin_layout Section
+tools
+\end_layout
+
+\begin_layout Standard
+moregasm scripts can be compiled with the moregas utility.
+ Example:
+\end_layout
+
+\begin_layout LyX-Code
+$ moregas -o test.more test.txt
 \end_layout
 
 \end_body
