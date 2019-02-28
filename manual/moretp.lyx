@@ -121,8 +121,8 @@ n' followed by an optional binary part, representing a list of strings.
 \begin_layout Standard
 If any word in a line begins with '<', the rest of the word is passed to
  strtoul(3) to get a byte count.
- The total byte count of the words in line is the length of the binary part
- of the packet.
+ The total byte count of the words in the line is the length of the binary
+ part of the packet.
  To complete decoding of the packet, each word beginning with '<' is replaced
  by the corresponding bytes in the packet's binary part.
  Then the resulting word list is the decoded packet.
