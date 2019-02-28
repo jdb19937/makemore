@@ -8,9 +8,8 @@ namespace makemore {
 #define DECAY 0.5
 
 struct Convo {
-  Shibbomore reqhist;
-  Shibbomore rsphist;
-  Shibbomore req;
+  Shibbomore history;
+  Shibbomore current;
 
   Convo() {
 
@@ -18,10 +17,10 @@ struct Convo {
 
   void build(const std::string &str, double decay = DECAY);
   void build(const std::vector<std::string> &strparts, double decay = DECAY);
-  void build(const std::vector<Shibbomore> &shibs, double decay = DECAY);
+  void build(const std::vector<Shibbomore> &shmores, double decay = DECAY);
 
-  void add(const std::string &rspstr, const std::string &reqstr, double decay = DECAY);
-  void add(const Shibbomore &rspshib, const Shibbomore &reqshib, double decay = DECAY);
+  void add(const std::string &str, double decay = DECAY);
+  void add(const Shibbomore &shmore, double decay = DECAY);
 };
 
 #undef DECAY

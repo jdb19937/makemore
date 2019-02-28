@@ -211,7 +211,7 @@ Parson *Zone::right_naybor(Parson *p, unsigned int max_tries) {
   return NULL;
 }
 
-Parson *Zone::import(const Parson &x, bool *evicted, Parson *evictee) {
+Parson *Zone::make(const Parson &x, bool *evicted, Parson *evictee) {
   if (evicted)
     *evicted = false;
   assert(Parson::valid_nom(x.nom));

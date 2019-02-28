@@ -69,7 +69,16 @@ struct Brane : Project {
   void encode_tgt();
   void encode_out();
 
-  void _ask(const Hashbag &tags, const Convo &req, Shibbomore *rsp, unsigned int rspn);
+  struct Request {
+    Hashbag tags;
+    Convo convo;
+  };
+
+  struct Response {
+    Shibbomore shmore[3];
+  };
+
+  void _ask(const Hashbag &tags, const Convo &req, Shibbomore *rsp);
 
   std::string ask(const Parson *who, const std::string &req);
   void burn(double pi);

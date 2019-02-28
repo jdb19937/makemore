@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <time.h>
+#include <sys/fcntl.h>
 #include <sys/socket.h>
 #include <sys/wait.h>
 #include <sys/types.h>
@@ -20,6 +21,7 @@
 #include "server.hh"
 #include "ppm.hh"
 #include "commands.hh"
+#include "agent.hh"
 
 namespace makemore {
 
@@ -27,12 +29,12 @@ std::map<std::string, Server::Handler> Server::default_cmdtab;
 
 using namespace std;
 
-#define ensure(x) do { \
-  if (!(x)) { \
-    fprintf(stderr, "closing (%s)\n", #x); \
-    goto done; \
-  } \
-} while (0)
+void Server::nonblock(int fd) {
+  int flags = fcntl(fd, F_GETFL, 0);
+  assert(flags > 0);
+  int ret = fcntl(fd, F_SETFL, flags | O_NONBLOCK);
+  assert(ret == 0);
+}
 
 static inline double realtime() {
   clock_t c = clock();
@@ -65,6 +67,8 @@ void Server::open() {
   assert(ret == 0);
   ret = setsockopt(s, SOL_SOCKET, SO_REUSEADDR, (const char*)&reuse, sizeof(reuse));
   assert(ret == 0);
+
+  nonblock(s);
 }
 
 void Server::close() {
@@ -105,6 +109,9 @@ void Server::setup() {
 
 
 void Server::start(unsigned int kids) {
+assert(0);
+
+#if 0
   for (unsigned int i = 0; i < kids; ++i) {
     fprintf(stderr, "forking\n");
     if (pid_t pid = fork()) {
@@ -120,6 +127,7 @@ void Server::start(unsigned int kids) {
 
     assert(0);
   }
+#endif
 }
 
 static std::string ipstr(uint32_t ip) {
@@ -130,32 +138,60 @@ static std::string ipstr(uint32_t ip) {
 }
 
 void Server::accept() {
-  stack.clear();
-
   fprintf(stderr, "accepting\n");
 
-  struct sockaddr_in cin;
-  socklen_t cinlen = sizeof(cin);
-  int c = ::accept(s, (struct sockaddr *)&cin, &cinlen);
-  assert(c != -1);
+  for (unsigned int i = 0; i < 16; ++i) {
+    struct sockaddr_in cin;
+    socklen_t cinlen = sizeof(cin);
+    int c = ::accept(s, (struct sockaddr *)&cin, &cinlen);
+    if (c < 0)
+      return;
 
-  assert(sizeof(struct in_addr) == 4);
-  memcpy(&client_ip, &cin.sin_addr, 4);
-  fprintf(stderr, "accepted %s\n", ipstr(client_ip).c_str());
+    nonblock(c);
 
-  int c2 = ::dup(c);
-  assert(c2 != -1);
+    uint32_t agent_ip;
+    assert(sizeof(struct in_addr) == 4);
+    memcpy(&agent_ip, &cin.sin_addr, 4);
+    fprintf(stderr, "accepted %s\n", ipstr(agent_ip).c_str());
 
-  FILE *infp = ::fdopen(c, "rb");
-  FILE *outfp = ::fdopen(c2, "wb");
+    Agent *agent = new Agent(this, NULL, c, agent_ip);
+    assert(agent->who);
 
-  fprintf(stderr, "handling\n");
-  this->handle(infp, outfp);
-  fprintf(stderr, "handled\n");
-
-  fclose(infp);
-  fclose(outfp);
+    nom_agent.insert(make_pair(agent->who->nom, agent));
+    agents.insert(agent);
+  }
 }
+
+void Server::renom(Agent *agent, const std::string &newnom) {
+  assert(agent->who);
+  if (agent->who->nom == newnom)
+    return;
+
+  auto naip = nom_agent.equal_range(agent->who->nom);
+  for (auto nai = naip.first; nai != naip.second; ++nai) {
+    if (nai->second == agent) {
+      nom_agent.erase(nai);
+      break;
+    }
+  }
+
+  agent->who->become(newnom);
+
+  nom_agent.insert(make_pair(agent->who->nom, agent));
+}
+
+void Server::notify(const std::string &nom, const std::string &msg, const Agent *exclude) {
+  auto naip = nom_agent.equal_range(nom);
+
+  for (auto nai = naip.first; nai != naip.second; ++nai) {
+    const std::string &nom = nai->first;
+    Agent *agent = nai->second;
+
+    if (agent != exclude)
+      agent->write(msg + "\n");
+  }
+}
+
 
 void Server::wait() {
   for (auto pidi = pids.begin(); pidi != pids.end(); ++pidi) {
@@ -176,45 +212,6 @@ void Server::kill() {
   }
 }
 
-void Server::handle(FILE *infp, FILE *outfp) {
-  Urbite self(ipstr(client_ip), urb);
-  // fprintf(outfp, "hello %s\n", self.nom.c_str());
-
-  while (1) {
-    string line;
-    if (!read_line(infp, &line))
-      return;
-    if (line == "")
-      return;
-    {
-      size_t cr = line.find('\r');
-      if (cr != string::npos)
-        line.erase(cr);
-    }
-
-    vector<string> words;
-    split(line.c_str(), ' ', &words);
-    if (!words.size())
-      return;
-    string cmd = words[0];
-    if (cmd == "")
-      return;
-    vector<string> args(&words.data()[1], &words.data()[words.size()]);
-
-    fprintf(stderr, "got cmd %s\n", cmd.c_str());
-
-    auto hi = cmdtab.find(cmd);
-    if (hi == cmdtab.end())
-      return;
-    Handler h = hi->second;
-    if (!h)
-      return;
-    if (!h((const Server *)this, urb, &self, cmd, args, infp, outfp))
-      return;
-    fflush(outfp);
-  }
-}
-   
 void Server::websockify(uint16_t ws_port, const char *keydir) {
   assert(port > 0);
   pid_t ws_pid;
@@ -252,133 +249,131 @@ void Server::websockify(uint16_t ws_port, const char *keydir) {
   assert(0);
 }
 
-void Server::think() {
-  const unsigned int delay = 5000;
-  pid_t think_pid;
 
-  think_pid = fork();
-  assert(think_pid != -1);
-  if (think_pid) {
-    pids.push_back(think_pid);
-    return;
+void Server::select() {
+  FD_ZERO(fdsets + 0);
+  FD_ZERO(fdsets + 1);
+  FD_ZERO(fdsets + 2);
+
+  FD_SET(s, fdsets + 0);
+  int nfds = s + 1;
+
+  for (auto agent : agents) {
+    if (agent->s >= nfds)
+      nfds = agent->s + 1;
+
+    if (agent->outbufn)
+      FD_SET(agent->s, fdsets + 1);
+
+    FD_SET(agent->s, fdsets + 0);
   }
 
-  setup();
-  assert(urb);
-  assert(urb->zones.size() > 0);
+  struct timeval timeout;
+  timeout.tv_sec = 0;
+  timeout.tv_usec = 50000;
 
-  while (1) {
-    if (Parson *parson = urb->zones[0]->pick()) {
-      Urbite who(parson->nom, urb);
-      parcess(&who);
-    }
-    usleep(delay);
-  }
-
-  assert(0);
+//  fprintf(stderr, "calling select\n");
+  int ret = ::select(nfds, fdsets + 0, fdsets + 1, fdsets + 2, &timeout);
+//  fprintf(stderr, "select ret=%d\n", ret);
 }
 
-void Server::parcess(Urbite *who) {
-  const unsigned int max_iters = 64;
-
-  assert(urb);
-  assert(who);
-  Parson *parson = who->parson();
-
-  list<string> rsps;
-  {
-    char *rspstr;
-    unsigned int rsplen;
-    while ((rspstr = parson->popbuf(&rsplen))) {
-      string rsp(rspstr);
-      rsps.push_back(rsp);
-      memset(rspstr, 0, rsplen);
-    }
-  }
-
-  unsigned int iters = 0;
+void Server::main() {
   while (1) {
-    auto rspi = rsps.begin();
-    if (rspi == rsps.end())
-      break;
-    if (iters >= max_iters)
-      break;
-    ++iters;
+    auto ai = agents.begin();
+    while (ai != agents.end()) {
+      Agent *agent = *ai;
+      if (agent->s < 0) {
+        fprintf(stderr, "closing %s\n", ipstr(agent->ip).c_str());
 
-    string rsp = *rspi;
-    rsps.erase(rspi++);
-
-    string allreq = urb->brane1->ask(parson, rsp);
-    vector<string> reqs;
-    split(allreq.c_str(), ',', &reqs);
-    vector<string> allnewrsps;
-
-    for (auto reqi = reqs.begin(); reqi != reqs.end(); ++reqi) {
-      const std::string &req = *reqi;
-
-      vector<string> newrsps;
-      this->ask(who, req, &newrsps);
-
-      for (auto rspi = newrsps.begin(); rspi != newrsps.end(); ++rspi) {
-        std::string withctx;
-
-        withctx = rsp + ", " + req + ", " + *rspi;
-        if (withctx.length() < 256) {
-          allnewrsps.push_back(withctx);
-          continue;
+        auto naip = nom_agent.equal_range(agent->who->nom);
+        for (auto nai = naip.first; nai != naip.second; ++nai) {
+          if (nai->second == agent) {
+            nom_agent.erase(nai);
+            break;
+          }
         }
 
-        withctx = req + ", " + *rspi;
-        if (withctx.length() < 256) {
-          allnewrsps.push_back(withctx);
+        agents.erase(ai++);
+        delete agent;
+        continue;
+      }
+      ++ai;
+    }
+ 
+
+    this->select();
+
+    if (FD_ISSET(s, fdsets + 0))
+      this->accept();
+
+    ai = agents.begin();
+    while (ai != agents.end()) {
+      Agent *agent = *ai;
+
+      if (FD_ISSET(agent->s, fdsets + 0)) {
+        if (!agent->slurp()) {
+          fprintf(stderr, "closing %s\n", ipstr(agent->ip).c_str());
+
+          auto naip = nom_agent.equal_range(agent->who->nom);
+          for (auto nai = naip.first; nai != naip.second; ++nai) {
+            if (nai->second == agent) {
+              nom_agent.erase(nai);
+              break;
+            }
+          }
+
+          agents.erase(ai++);
+          delete agent;
           continue;
         }
+      }
 
-        allnewrsps.push_back(*rspi);
+      ++ai;
+    }
+
+    for (auto agent : agents) {
+      if (FD_ISSET(agent->s, fdsets + 1)) {
+        agent->flush();
       }
     }
 
-    for (auto rspi = allnewrsps.rbegin(); rspi != allnewrsps.rend(); ++rspi)
-      rsps.push_front(*rspi);
-  }
-}
+    for (unsigned int i = 0; i < 1024; ++i) {
+      Parson *parson = urb->zones[0]->pick();
+      if (!parson)
+         continue;
+      char *reqstr = parson->popbrief();
+      if (!reqstr)
+         continue;
+
+      string req(reqstr);
+      memset(reqstr, 0, Parson::briefsize);
+
+      Agent agent(this, parson->nom, -1, 0x7F000001);
+      agent.command(req);
+      notify(parson->nom, req);
+
+      if (agent.outbufn)
+        continue;
+      string rspstr = string(agent.outbuf, agent.outbufn);
+      vector<string> rsps;
+      splitlines(rspstr, &rsps);
+
+      for (auto rspi = rsps.rbegin(); rspi != rsps.rend(); ++rspi) {
+        parson->pushbrief(req + ", " + *rspi);
+      }
+    }
 
 
-void Server::ask(Urbite *who, const std::string& req, std::vector<std::string> *out) {
-  out->clear();
+    for (auto agent : agents) {
+      vector<string> lines;
+      agent->parse(&lines);
 
-  vector<string> words;
-  split(req.c_str(), ' ', &words);
-  if (!words.size())
-    return;
-  string cmd = words[0];
-  if (cmd == "")
-    return;
-  vector<string> args(&words.data()[1], &words.data()[words.size()]);
-
-  auto hi = cmdtab.find(cmd);
-  if (hi == cmdtab.end())
-    return;
-  Handler h = hi->second;
-  if (!h)
-    return;
-
-  FILE *meminfp = fmemopen(NULL, 0, "r");
-  FILE *memoutfp = fmemopen(NULL, 4096, "r+");
-
-  (void) h((const Server *)this, urb, who, cmd, args, meminfp, memoutfp);
-
-  fclose(meminfp);
-
-  int ret = fseek(memoutfp, 0, SEEK_SET);
-  assert(ret == 0);
-
-  std::string line;
-  while (read_line(memoutfp, &line)) {
-    out->push_back(line);
+      for (auto line : lines) {
+        agent->command(line);
+      }
+    }
   }
 
-  fclose(memoutfp);
 }
 
 }

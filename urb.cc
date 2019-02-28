@@ -101,7 +101,7 @@ void Urb::_busout(const Parson &x) {
   outgoing->add(x);
 }
 
-Parson *Urb::import(const Parson &x, unsigned int tier) {
+Parson *Urb::make(const Parson &x, unsigned int tier) {
   if (tier >= zones.size()) {
     _busout(x);
     return NULL;
@@ -112,12 +112,12 @@ Parson *Urb::import(const Parson &x, unsigned int tier) {
 
   bool eq;
   Parson q;
-  Parson *p = zone->import(x, &eq, &q);
+  Parson *p = zone->make(x, &eq, &q);
 
   if (!p)
     return NULL;
   if (eq)
-    (void)import(q, tier + 1);
+    (void)make(q, tier + 1);
 
   return p;
 }

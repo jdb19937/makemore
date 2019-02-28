@@ -9,10 +9,11 @@ int main() {
   setbuf(stdout, NULL);
 
   Brane brane("brane.proj", 1);
+  Parson me("dan");
 
   string reqstr;
   while (read_line(stdin, &reqstr)) {
-    string rspstr = brane.ask(reqstr);
+    string rspstr = brane.ask(&me, reqstr);
     printf("%s\n", rspstr.c_str());
   }
 

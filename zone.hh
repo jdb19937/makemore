@@ -32,7 +32,7 @@ struct Zone {
 
   Parson *find(const std::string &nom) const;
 
-  Parson *import(const Parson &x, bool *evicted = NULL, Parson *evictee = NULL);
+  Parson *make(const Parson &x, bool *evicted = NULL, Parson *evictee = NULL);
   Parson *left_naybor(Parson *p, unsigned int tries = 32);
   Parson *right_naybor(Parson *p, unsigned int tries = 32);
 

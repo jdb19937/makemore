@@ -3,10 +3,16 @@
 
 #include <vector>
 #include <string>
+#include <map>
 
 namespace makemore {
 
 extern void split(const char *str, char sep, std::vector<std::string> *words);
+
+extern void splitparts(const std::string &str, std::vector<std::string> *parts);
+extern void splitwords(const std::string &str, std::vector<std::string> *words);
+extern void splitlines(const std::string &str, std::vector<std::string> *lines);
+
 
 inline std::string join(const std::vector<std::string> &v, const char *sep) {
   std::string out;
@@ -23,7 +29,21 @@ inline std::string join(const std::vector<std::string> &v, char sep) {
   return join(v, buf);
 }
 
+inline std::string joinwords(const std::vector<std::string> &v) {
+  std::string out;
+  for (auto i = v.begin(); i != v.end(); ++i) {
+    if (*i->c_str()) {
+      if (out.length())
+        out += " ";
+      out += *i;
+    }
+  }
+  return out;
+}
+
 bool read_line(FILE *, std::string *);
+
+extern std::string varsubst(const std::string &str, const std::map<std::string, std::string>& dict);
 
 }
 

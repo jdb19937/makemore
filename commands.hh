@@ -7,18 +7,15 @@
 #include <vector>
 
 #include "server.hh"
-#include "urbite.hh"
+#include "agent.hh"
 
 namespace makemore {
 
 #define CMD_ARGS \
-  const Server *_server, \
-  Urb *urb, \
-  Urbite *self, \
+  class Agent *agent, \
+  const std::vector<std::string> &thread, \
   const std::string &cmd, \
-  const std::vector<std::string> &args, \
-  FILE *infp, \
-  FILE *outfp
+  const std::vector<std::string> &args
 
 struct _OnStartup {
   _OnStartup(bool x) { }
@@ -29,9 +26,9 @@ extern int _startup_count;
 static int _ref_startup_count = _startup_count;
 
 #define NEW_CMD(name) \
-  bool cmd_ ## name ( CMD_ARGS ); \
+  void cmd_ ## name ( CMD_ARGS ); \
   _OnStartup _add_cmd_ ## name (_startup_count += (int)Server::default_cmdset(#name, cmd_ ## name )); \
-  bool cmd_ ## name ( CMD_ARGS ) 
+  void cmd_ ## name ( CMD_ARGS ) 
   
 }
 #endif

@@ -12,24 +12,25 @@
 
 #include <vector>
 #include <map>
+#include <set>
 #include <string>
 
 #include "urb.hh"
 #include "urbite.hh"
+#include "strutils.hh"
 
 namespace makemore {
 
-
 struct Server {
-  typedef bool (*Handler)(
-    const Server *,
-    Urb *,
-    Urbite *,
+  static void nonblock(int fd);
+
+  typedef void (*Handler)(
+    class Agent *,
+    const std::vector<std::string> &thread,
     const std::string &cmd,
-    const std::vector<std::string> &args,
-    FILE *infp,
-    FILE *outfp)
-  ;
+    const std::vector<std::string> &args
+  );
+
   static std::map<std::string, Handler> default_cmdtab;
 
   static bool default_cmdset(const std::string &cmd, Handler h) {
@@ -41,15 +42,16 @@ struct Server {
 
   int s;
   uint16_t port;
+  fd_set fdsets[3];
+
+  std::set<class Agent*> agents;
+  std::multimap<std::string, class Agent *> nom_agent;
   std::vector<pid_t> pids;
   std::map<std::string, Handler> cmdtab;
 
   std::string urbdir;
   Urb *urb;
 
-  uint32_t client_ip;
-
-  std::vector<Parson*> stack;
 
   Server(const std::string &urb);
   ~Server();
@@ -58,6 +60,10 @@ struct Server {
   void close();
   void bind(uint16_t _port);
   void listen(int backlog = 256);
+  void select();
+
+  void renom(Agent *agent, const std::string &nom);
+  void notify(const std::string &nom, const std::string &msg, const Agent *exclude = NULL);
 
   void websockify(uint16_t ws_port, const char *keydir);
 
@@ -74,7 +80,6 @@ struct Server {
   void kill();
 
   void setup();
-  void handle(FILE *infp, FILE *outfp);
 
   bool cmdset(const std::string &cmd, Handler h) {
     assert(cmd.length() < 32);
@@ -83,8 +88,8 @@ struct Server {
   }
 
   void think();
-  void parcess(Urbite *who);
-  void ask(Urbite *who, const std::string& req, std::vector<std::string> *out);
+
+  void main();
 };
 
 }

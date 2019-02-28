@@ -28,10 +28,13 @@ struct Parson {
   const static unsigned int nfrens = 16;
   const static unsigned int ntags = 8;
   const static unsigned int dim = 64;
-  const static unsigned int ncontrols = 1920;
-  const static unsigned int bufsize = 4096;
+  const static unsigned int ncontrols = 4096;
+  const static unsigned int bufsize = 2048;
+  const static unsigned int nbriefs = 8;
+  const static unsigned int briefsize = 256;
   typedef char Nom[32];
   typedef char Tag[32];
+  typedef char Brief[briefsize];
 
   Parson() {
     memset(this, 0, sizeof(Parson));
@@ -70,7 +73,16 @@ struct Parson {
   uint8_t control_lock;
   uint8_t _pad[2];
 
-  // 1920
+  // 8
+  uint64_t cents;
+
+  // 1
+  uint8_t briefptr;
+
+  // 1135
+  uint8_t _fill[1135];
+
+  // 2048
   uint8_t controls[ncontrols];
 
   // 64 * 64 * 3
@@ -79,17 +91,45 @@ struct Parson {
   // 64 * 64 * 3
   uint8_t partrait[dim * dim * 3];
 
-  // 4096
-  char buffer[bufsize];
+  // 2048
+  Brief briefs[nbriefs];
 
-  uint8_t _fill[1272];
+  char *popbrief() {
+    assert(briefptr < nbriefs);
 
-  char *popbuf(unsigned int *lenp = NULL);
-  void pushbuf(const char *cmd, unsigned int n);
-  void pushbuf(const char *cmd);
+    char *brief = briefs[briefptr];
+    if (!*brief)
+      return NULL;
 
-  void pushbuf(const std::string &cmdstr) {
-    pushbuf(cmdstr.c_str(), cmdstr.length() + 1);
+    brief[briefsize - 1] = 0;
+
+    briefptr = (briefptr + 1) % nbriefs;
+    return brief;
+  }
+
+  void pushbrief(const std::string &briefstr) {
+    assert(briefptr < nbriefs);
+    uint8_t newbriefptr = briefptr ? (briefptr - 1) : (nbriefs - 1);
+    char *brief = briefs[newbriefptr];
+
+    unsigned int briefstrlen = briefstr.length();
+    if (briefstrlen < briefsize) {
+      memcpy(brief, briefstr.c_str(), briefstrlen + 1);
+    } else {
+      unsigned int off = briefstrlen - Parson::briefsize + 4;
+      while (off < briefstrlen && briefstr[off] != ' ')
+        ++off;
+      while (off < briefstrlen && briefstr[off] == ' ')
+        ++off;
+
+      std::string truncstr = "... ";
+      truncstr += std::string(briefstr.c_str() + off);
+      assert(truncstr.length() < Parson::briefsize);
+
+      memcpy(brief, truncstr.c_str(), truncstr.length() + 1);
+    }
+
+    briefptr = newbriefptr;
   }
 
   bool exists() {

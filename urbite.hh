@@ -38,7 +38,7 @@ struct Urbite {
     _parson = urb->find(nom);
 
     if (!_parson) {
-      _parson = urb->import(nom.c_str());
+      _parson = urb->make(nom.c_str());
     }
     assert(_parson);
 
@@ -59,7 +59,7 @@ struct Urbite {
     if (p)
       return p;
 
-    _parson = urb->import(nom);
+    _parson = urb->make(nom);
     assert(_parson);
     assert(nom == _parson->nom);
     return _parson;

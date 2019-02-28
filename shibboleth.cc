@@ -37,31 +37,6 @@ static void delstars(vector<string> &words) {
   }
 }
 
-static void varsubst(vector<string> *words, multimap<string, string> *defines) {
-  char buf[32];
-
-  for (auto wi = words->begin(); wi != words->end(); ++wi) {
-    std::string wstr = *wi;
-
-    if (wstr == "*") {
-      sprintf(buf, "[%08X]", randuint());
-      *wi = buf;
-    } else if (defines) {
-      vector<string> vals;
-      std::string key(wstr);
-
-      auto r = defines->equal_range(wstr);
-      for (auto ri = r.first; ri != r.second; ++ri)
-        vals.push_back(ri->second);
-
-      if (vals.size()) {
-        string val = vals[randuint() % vals.size()];
-        *wi = val;
-      }
-    }
-  }
-}
-
 void Shibboleth::prepend(const Hashbag &bag) {
   unsigned int n = lround(size()); 
 

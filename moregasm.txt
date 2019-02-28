@@ -1,39 +1,40 @@
-branegasm is a low-level language used in text synthesis to direct recursive calls back
-into the generator without a full decoding of the generator output. It runs inside the
-GPU and operates directly on shibboleths.  There are about 1000 instructions, which
-take no arguments, and a branegasm program is simply a list of these instructions.
+Moregasm is a language for training a neural network with text.
 
-There are a fixed set of shibboleth registers:
+A moregasm script is a list of rules.  The simplest kind of rule
+is two lists of words separated by "->", for example
 
-	I (primary input)
-	J (primary output)
-	M (memory input)
-	N (memory output)
-	1 (register 1)
-	2 (register 2)
-	3 (register 3)
-	4 (register 4)
+	hello how are you -> hi i am fine
+	goodbye -> bye
 
-These registers can be manipulated with the following opcodes:
+A special word is "*" which is substituted with a random word
+during training, giving it the effect of a wildcard:
 
-	a (append)
-	c (copy)
-	p (prepend)
-	n (negate)
-	r (reverse)
-	e (evaluate)
+	* is for dinner -> yum
 
-A shibboleth has three parts (head, torso, rear) which can be independently addressed using
-a part specifier:
+The first clause of the rule can be a comma-separated list,
+representing the conversational thread:
 
-	^ (front)
-	% (torso)
-	$ (rear)
+	whats your name, * whats yours -> bob
+	* whats yours -> whats my what
 
-A branecode instruction is the concatenation of an opcode, an optional part specifier in
-some cases, and one or two argument registers.  A part specifier is permitted only in
-"a", "c"," "p"," and "n" instructions.  "n", "r", and "e" instructions require one argument
-(the register to be negated, reversed, or evaluated respectively), and "a", "c", and "p"
-instructions require two arguments (the source and destination).
+A rule can be prefixed by a list of tags and a ":".  Tags can
+be used to represent different actors or properties, for example:
 
-branegasm.tsv is a table of all the branecode instructions and their descriptions.
+	bob: whats your name, * whats yours -> bob
+	sam: whats your name, * whats yours -> sam
+	bob: whos your best friend -> sam
+	sam: whos your best friend -> bob
+
+A rule can be weighted by appending "x" and a number to the arrow.
+This causes it to be entered into the training bag that many times.
+Example:
+
+	* ->x4 i dont understand
+
+Comments are marked by "#".
+
+That's all there is to the language.  A moregasm script is a list of
+rules.  Each rule is compiled to shibboleths.  The positions of the
+wildcards within the clauses are also included, allowing substitutions
+to be performed.  The generator is then trained from the compiled
+moregasm code.

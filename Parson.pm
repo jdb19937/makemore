@@ -49,11 +49,25 @@ sub decode {
     last_activity generated target_lock control_lock
   }} = unpack('V6dVCCC2', _padto( substr($enc, 864, 40), 40) );
 
+  my $off = 864 + 40;
+  $$this{cents} = _padto(substr($enc, $off, 8), 8);
+  $off += 8;
 
-  $$this{control_data} = _padto(substr($enc, 864 + 40, 1920), 1920);
-  $$this{target_data} = _padto(substr($enc, 864 + 40 + 1920, 12288), 12288);
-  $$this{partrait_data} = _padto(substr($enc, 864 + 40 + 1920 + 12288, 12288), 12288);
-  $$this{buffer} = _padto(substr($enc, 864 + 40 + 1920 + 12288 + 12288, 4096), 4096);
+  $off += 1136;
+
+  $$this{control_data} = _padto(substr($enc, $off, 4096), 4096);
+  $off += 4096;
+
+  $$this{target_data} = _padto(substr($enc, $off, 12288), 12288);
+  $off += 12288;
+
+  $$this{partrait_data} = _padto(substr($enc, $off, 12288), 12288);
+  $off += 12288;
+
+  $$this{buffer} = _padto(substr($enc, $off, 2048), 2048);
+  $off += 2048;
+
+  $off == $Parson::size or die;
 
   $this
 }
@@ -71,11 +85,12 @@ sub encode {
       last_activity target_lock control_lock
     }}),
     "\0" x 6,
+    $$this{cents},
+    "\0" x 1136,
     $$this{control_data},
     $$this{target_data},
     $$this{partrait_data},
     $$this{buffer},
-    "\0" x 1272,
   )
 }
 

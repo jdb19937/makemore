@@ -8,7 +8,7 @@
 using namespace makemore;
 
 void usage() {
-  fprintf(stderr, "Usage: morecc [-o|--output script.more] [script.txt]\n");
+  fprintf(stderr, "Usage: moregas [-o|--output script.more] [script.txt]\n");
   exit(1);
 }
 
@@ -41,7 +41,7 @@ int main(int argc, char **argv) {
   } else {
     outfp = fopen(outfn, "w");
     if (!outfp) {
-      fprintf(stderr, "morecc: %s: %s\n", outfn, strerror(errno));
+      fprintf(stderr, "moregas: %s: %s\n", outfn, strerror(errno));
       exit(1);
     }
   }
@@ -52,7 +52,7 @@ int main(int argc, char **argv) {
   } else {
     infp = fopen(infn, "r");
     if (!infp) {
-      fprintf(stderr, "morecc: %s: %s\n", infn, strerror(errno));
+      fprintf(stderr, "moregas: %s: %s\n", infn, strerror(errno));
       exit(1);
     }
   }

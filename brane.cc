@@ -1,7 +1,8 @@
 #define __MAKEMORE_BRANE_CC__ 1
 
-#include <string>
 #include <netinet/in.h>
+
+#include <string>
 
 #include "cudamem.hh"
 #include "tron.hh"
@@ -510,15 +511,40 @@ std::string Brane::ask(const Parson *who, const std::string &reqstr) {
   Hashbag tags;
   who->bagtags(&tags);
 
-  Shibbomore rsp[2];
-  _ask(tags, req, rsp, 2);
+  Shibbomore rsp[3];
+  _ask(tags, req, rsp);
 
-  string rspstr = refsubst( rsp[0].decode(vocab), reqstr );
+  map<string, string> dict;
+  {
+    vector<string> reqwords;
+    if (const char *r = strrchr(reqstr.c_str(), ','))
+      splitwords(r + 1, &reqwords);
+    else
+      splitwords(reqstr, &reqwords);
+
+    char buf[64];
+    for (unsigned int i = 0; i < 9; ++i) {
+      sprintf(buf, "\\%u", i + 1);
+      dict[buf] = i < reqwords.size() ? reqwords[i] : "";
+    }
+
+    dict["$nom"] = who->nom;
+    dict["$me"] = who->nom;
+    dict["$self"] = who->nom;
+  }
+
+  string rspstr = varsubst( rsp[0].decode(vocab), dict );
   if (rspstr != "") {
-    string rsp1str = refsubst( rsp[1].decode(vocab), reqstr );
+    string rsp1str = varsubst( rsp[1].decode(vocab), dict );
     if (rsp1str != "") {
       rspstr += ", ";
       rspstr += rsp1str;
+
+      string rsp2str = varsubst( rsp[2].decode(vocab), dict );
+      if (rsp2str != "") {
+        rspstr += ", ";
+        rspstr += rsp2str;
+      }
     }
   }
 
@@ -526,25 +552,28 @@ std::string Brane::ask(const Parson *who, const std::string &reqstr) {
 }
   
 
-void Brane::_ask(const Hashbag &tags, const Convo &req, Shibbomore *rsp, unsigned int rspn) {
+void Brane::_ask(const Hashbag &tags, const Convo &convo, Shibbomore *shmores) {
   assert(mbn == 1);
-  assert(ctxlay->n * sizeof(double) == sizeof(Hashbag) + sizeof(Convo));
-  assert(tgtlay->n * sizeof(double) == sizeof(Shibbomore) * rspn);
+  assert(ctxlay->n * sizeof(double) == sizeof(Request));
+  assert(tgtlay->n * sizeof(double) == sizeof(Response));
   assert(tgtlay->n == outlay->n);
 
-  memcpy(ctxbuf, &tags, sizeof(Hashbag));
-  memcpy(ctxbuf + Hashbag::n, &req, sizeof(Convo));
+  Request req;
+  req.tags = tags;
+  req.convo = convo;
+
+  memcpy(ctxbuf, &req, sizeof(Request));
 
   scramble(0, 0);
   generate();
 
-  memcpy(rsp, outbuf, sizeof(Shibbomore) * rspn);
+  memcpy(shmores, outbuf, sizeof(Response));
 }
 
 
 void Brane::burn(double pi) {
-  assert(ctxlay->n * sizeof(double) == sizeof(Hashbag) + sizeof(Convo));
-  assert(tgtlay->n * sizeof(double) == sizeof(Shibbomore) * 2);
+  assert(ctxlay->n * sizeof(double) == sizeof(Request));
+  assert(tgtlay->n * sizeof(double) == sizeof(Response));
 
   for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
     const Rule *rulep = rules.pick();
@@ -555,30 +584,21 @@ void Brane::burn(double pi) {
     rule.prepare();
     assert(rule.prepared);
 
-    Convo req;
-    req.build(rule.req);
+    Request req;
+    req.tags = rule.tags;
+    req.convo.build(rule.req);
     
-    Shibbomore rsp[2];
-    switch (rule.rsp.size()) {
-    case 0:
-      rsp[0].clear();
-      rsp[1].clear();
-      break;
-    case 1:
-      rsp[0] = rule.rsp[0];
-      rsp[1].clear();
-      break;
-    default:
-      rsp[0] = rule.rsp[0];
-      rsp[1] = rule.rsp[1];
-      break;
-    }
+    unsigned int rspn = rule.rsp.size();
+    if (rspn > 3)
+      rspn = 3;
+    Response rsp;
+    memcpy(rsp.shmore, rule.rsp.data(), sizeof(Shibbomore) * rspn);
+    memset(rsp.shmore + rspn, 0, 3 - rspn);
 
 //fprintf(stderr, "rule: %s -> %s\n", rule.req[0].decode(vocab).c_str(), rule.rsp[0].decode(vocab).c_str());
 
-    memcpy(ctxbuf + mbi * ctxlay->n + 0, &rule.tags, sizeof(Hashbag));
-    memcpy(ctxbuf + mbi * ctxlay->n + Hashbag::n, &req, sizeof(Convo));
-    memcpy(tgtbuf + mbi * tgtlay->n, rsp, sizeof(Shibbomore) * 2);
+    memcpy(ctxbuf + mbi * ctxlay->n, &req, sizeof(Request));
+    memcpy(tgtbuf + mbi * tgtlay->n, &rsp, sizeof(Response));
   }
 
   scramble(0, 0);
