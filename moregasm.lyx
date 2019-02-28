@@ -104,12 +104,23 @@ Moregasm is a language for training a neural network with text.
 
 \begin_layout Standard
 A moregasm script is a list of rules separated by newlines.
- The simplest kind of rule is two lists of words separated by "->", for
- example:
+ The simplest kind of rule is two lists of words separated by 
+\begin_inset Quotes eld
+\end_inset
+
+->
+\begin_inset Quotes erd
+\end_inset
+
+, for example:
 \end_layout
 
 \begin_layout LyX-Code
-hello how are you -> hi i am fine goodbye -> bye
+hello how are you -> hi i am fine
+\end_layout
+
+\begin_layout LyX-Code
+goodbye -> bye
 \end_layout
 
 \begin_layout Standard
@@ -136,7 +147,7 @@ whats your name, * whats yours -> bob
 
 \begin_layout Standard
 The second clause of the rule can also be a comma-separated list, representing
- multiple output s:
+ multiple outputs:
 \end_layout
 
 \begin_layout LyX-Code
@@ -144,7 +155,15 @@ tell me a joke -> okay, what does the fox say
 \end_layout
 
 \begin_layout Standard
-A rule can be prefixed by a list of tags and a ":".
+A rule can be prefixed by a list of tags and a 
+\begin_inset Quotes eld
+\end_inset
+
+:
+\begin_inset Quotes erd
+\end_inset
+
+.
  Tags can be used to represent different actors or properties, for example:
 \end_layout
 
@@ -165,7 +184,15 @@ sam: whos your best friend -> bob
 \end_layout
 
 \begin_layout Standard
-A rule can be weighted by appending "x" and a number to the arrow.
+A rule can be weighted by appending 
+\begin_inset Quotes eld
+\end_inset
+
+x
+\begin_inset Quotes erd
+\end_inset
+
+ and a number to the arrow.
  This causes it to be entered into the training bag that many times.
  Example:
 \end_layout
@@ -175,7 +202,15 @@ A rule can be weighted by appending "x" and a number to the arrow.
 \end_layout
 
 \begin_layout Standard
-Comments are marked by "#":
+Comments are marked by 
+\begin_inset Quotes eld
+\end_inset
+
+#
+\begin_inset Quotes erd
+\end_inset
+
+:
 \end_layout
 
 \begin_layout LyX-Code
