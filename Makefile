@@ -30,6 +30,8 @@ LABTOOLS = \
 
 MORETOOLS = makemore makelay catlay wireup maketop makemap chatfab learnfab learnmore genicon servemore makezone sampler makeipdat errstats fillparsonsdat autolign dumpbranetxt moregas
 
+MANUAL = moregasm.pdf moretp.pdf
+
 .PHONY: all
 all: $(LIB) $(MORETOOLS)
 
@@ -46,8 +48,14 @@ labtools: $(LABTOOLS)
 .PHONY: moretools
 moretools: $(MORETOOLS)
 
+.PHONY: manual
+manual: $(MANUAL)
+
 
 $(LIBOBJ): $(LIBHDR)
+
+%.pdf: %.lyx
+	lyx --export pdf3 $^
 
 %.o: %.cu
 	$(NVCC) -o $@ $(NVCCFLAGS) -c $<
@@ -294,6 +302,8 @@ seerand: seerand.o $(LIB)
 seezoom.o: $(LIBHDR)
 seezoom: seezoom.o $(LIB)
 	$(CXX) -o $@ $(CXXFLAGS) $^ $(LDFLAGS) $(CULDFLAGS)
+
+
 
 
 celeba-dataset/unzipped: celeba-dataset.zip
