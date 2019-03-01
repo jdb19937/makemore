@@ -284,7 +284,7 @@ foo=bar&foo=baz
 
 \end_layout
 
-\begin_layout Verbatim
+\begin_layout Standard
 To handle binary or whitespace-containing request and response bodies, we
  can use the trick of adding an extra header to encapsulate the body in
  a single moretp packet.
