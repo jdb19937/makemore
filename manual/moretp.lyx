@@ -94,6 +94,10 @@ Dan Brumleve
 February 28, 2019
 \end_layout
 
+\begin_layout Section
+overview
+\end_layout
+
 \begin_layout Standard
 moretp is a simple text protocol that allows embedding of binary data.
 \begin_inset Newline newline
@@ -156,10 +160,12 @@ A moretp encoder in perl.
 \end_layout
 
 \begin_layout Verbatim
+
 sub moretpenc {
 \end_layout
 
 \begin_layout Verbatim
+
   join(' ', map /
 \backslash
 s/ ? "<" .
@@ -167,19 +173,212 @@ s/ ? "<" .
 \end_layout
 
 \begin_layout Verbatim
+
   "
 \backslash
 n" .
 \end_layout
 
 \begin_layout Verbatim
+
   join('', grep /
 \backslash
 s/, @_)
 \end_layout
 
 \begin_layout Verbatim
+
 } 
+\end_layout
+
+\begin_layout Section
+http over moretp
+\end_layout
+
+\begin_layout Standard
+As long as the HTTP request line and request headers are not sensitive to
+ multiple whitespace, and do not contain any '<' characters, each line can
+ be understood as a moretp packet.
+\end_layout
+
+\begin_layout Example
+This is both moretp and HTTP.
+\end_layout
+
+\begin_layout Verbatim
+
+GET / HTTP/1.1
+\end_layout
+
+\begin_layout Verbatim
+
+Host: localhost:9999
+\end_layout
+
+\begin_layout Verbatim
+
+Connection: keep-alive
+\end_layout
+
+\begin_layout Verbatim
+
+Upgrade-Insecure-Requests: 1
+\end_layout
+
+\begin_layout Verbatim
+
+User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like
+ Gecko) Chrome/72.0.3626.96 Safari/537.36
+\end_layout
+
+\begin_layout Verbatim
+
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/ap
+ng,*/*;q=0.8
+\end_layout
+
+\begin_layout Verbatim
+
+Accept-Encoding: gzip, deflate, br
+\end_layout
+
+\begin_layout Verbatim
+
+Accept-Language: en-US,en;q=0.9
+\end_layout
+
+\begin_layout Verbatim
+
+\end_layout
+
+\begin_layout Example
+And so is this, including the request body.
+\end_layout
+
+\begin_layout Verbatim
+
+POST /test HTTP/1.1
+\end_layout
+
+\begin_layout Verbatim
+
+Host: localhost:9999
+\end_layout
+
+\begin_layout Verbatim
+
+Connection: keep-alive
+\end_layout
+
+\begin_layout Verbatim
+
+Content-Length: 15
+\end_layout
+
+\begin_layout Verbatim
+
+Cache-Control: max-age=0
+\end_layout
+
+\begin_layout Verbatim
+
+Upgrade-Insecure-Requests: 1
+\end_layout
+
+\begin_layout Verbatim
+
+Origin: null
+\end_layout
+
+\begin_layout Verbatim
+
+Content-Type: application/x-www-form-urlencoded
+\end_layout
+
+\begin_layout Verbatim
+
+User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like
+ Gecko) Chrome/72.0.3626.96 Safari/537.36
+\end_layout
+
+\begin_layout Verbatim
+
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/ap
+ng,*/*;q=0.8
+\end_layout
+
+\begin_layout Verbatim
+
+Accept-Encoding: gzip, deflate, br
+\end_layout
+
+\begin_layout Verbatim
+
+Accept-Language: en-US,en;q=0.9
+\end_layout
+
+\begin_layout Verbatim
+
+\end_layout
+
+\begin_layout Verbatim
+
+foo=bar&foo=baz
+\end_layout
+
+\begin_layout Verbatim
+
+\end_layout
+
+\begin_layout Verbatim
+
+To handle binary or whitespace-containing request and response bodies, we
+ can use the trick of adding an extra header to encapsulate the body in
+ a single moretp packet.
+\end_layout
+
+\begin_layout Example
+This is also valid moretp.
+\end_layout
+
+\begin_layout Verbatim
+
+POST /test HTTP/1.1
+\end_layout
+
+\begin_layout Verbatim
+
+Host: localhost:9999
+\end_layout
+
+\begin_layout Verbatim
+
+Content-Length: 21
+\end_layout
+
+\begin_layout Verbatim
+
+Content-Type: text/plain
+\end_layout
+
+\begin_layout Verbatim
+
+X-Moretp-Length: <23
+\end_layout
+
+\begin_layout Verbatim
+
+\end_layout
+
+\begin_layout Verbatim
+
+extra  space  between
+\end_layout
+
+\begin_layout Standard
+
+In this way a moretp server can communicate with HTTP clients without any
+ special server-side support.
 \end_layout
 
 \end_body
