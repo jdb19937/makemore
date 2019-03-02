@@ -40,6 +40,8 @@ struct PPM {
   void write(FILE *fp);
 
   void vectorize(std::vector<double> *);
+  void vectorize(std::vector<uint8_t> *);
+  void vectorize(uint8_t *);
   void unvectorize(const std::vector<double> &, unsigned int, unsigned int);
   void unvectorize(const double *, unsigned int, unsigned int);
   void unvectorizegray(const double *, unsigned int, unsigned int);
@@ -58,6 +60,7 @@ struct PPM {
   void make(unsigned int _w, unsigned int _h, uint8_t v);
 
   void write_jpeg(FILE *);
+  bool read_jpeg(const std::string &);
   void write_jpeg(std::string *);
 
   double centerlight();

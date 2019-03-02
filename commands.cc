@@ -23,7 +23,7 @@ int _startup_count = 0;
 using namespace std;
 
 NEW_CMD(be) {
-  if (arg.size() != 1)
+  if (arg.size() != 1 && arg.size() != 2)
     return;
 
   std::string newnom = arg[0];
@@ -33,9 +33,105 @@ NEW_CMD(be) {
     return;
   }
 
+  string pass;
+  if (arg.size() == 2)
+    pass = arg[1];
+
+  if (!parson->check_pass(pass)) {
+    agent->write("bad pass\n");
+    return;
+  }
+
   agent->server->renom(agent, newnom);
   agent->write("ok\n");
 }
+
+NEW_CMD(target) {
+  if (arg.size() != 2)
+    return;
+  const std::string &jpeg = arg[1];
+  PPM ppm;
+
+  ppm.read_jpeg(jpeg);
+  if (ppm.w != Parson::dim || ppm.h != Parson::dim) {
+    agent->printf("wrong dims\n");
+    return;
+  }
+
+  const std::string &nom = arg[0];
+  Parson *parson = agent->server->urb->find(nom);
+  if (!parson) {
+    agent->write("not here\n");
+    return;
+  }
+
+  ppm.vectorize(parson->target);
+  agent->write("ok\n");
+}
+
+NEW_CMD(tag) {
+  if (arg.size() != 2)
+    return;
+
+  const std::string &nom = arg[0];
+  Parson *parson = agent->server->urb->find(nom);
+  if (!parson) {
+    agent->write("bad nom\n");
+    return;
+  }
+
+  const std::string &tag = arg[1];
+
+  if (!Parson::valid_tag(tag.c_str())) {
+    agent->write("bad tag\n");
+    return;
+  }
+
+  parson->add_tag(tag.c_str());
+  agent->write("ok\n");
+}
+
+NEW_CMD(tags) {
+  if (arg.size() != 1)
+    return;
+
+  const std::string &nom = arg[0];
+  if (!Parson::valid_nom(nom.c_str()))
+    return;
+
+  Parson *parson = agent->server->urb->find(nom);
+  if (!parson) {
+    agent->write("bad nom\n");
+    return;
+  }
+
+  for (unsigned int i = 0; i < Parson::ntags; ++i) {
+    if (*parson->tags[i]) {
+      agent->printf("tag %s %s\n", nom.c_str(), parson->tags[i]);
+    }
+  }
+}
+
+NEW_CMD(pass) {
+  if (arg.size() != 1 && arg.size() != 2)
+    return;
+
+  if (strchr(agent->who->nom.c_str(), '.')) {
+    agent->printf("nope\n");
+    return;
+  }
+
+  Parson *parson = agent->who->parson();
+  if (!parson)
+    return;
+
+  string pass; 
+  if (arg.size() == 2)
+    pass = arg[1];
+  parson->set_pass(pass);
+  agent->printf("ok\n");
+}
+
 
 NEW_CMD(make) {
   if (arg.size() != 1)

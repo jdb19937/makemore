@@ -37,6 +37,49 @@ double PPM::centerlight() {
   return s;
 }
 
+bool PPM::read_jpeg(const std::string &jpeg) {
+  struct jpeg_decompress_struct cinfo;
+  struct jpeg_error_mgr jerr;
+
+  cinfo.err = jpeg_std_error(&jerr);	
+  jpeg_create_decompress(&cinfo);
+
+  jpeg_mem_src(&cinfo, (uint8_t *)jpeg.data(), jpeg.length());
+  int rc = jpeg_read_header(&cinfo, TRUE);
+  if (rc != 1) {
+    jpeg_abort_decompress(&cinfo);
+    jpeg_destroy_decompress(&cinfo);
+    return false;
+  }
+
+  jpeg_start_decompress(&cinfo);
+	
+  w = cinfo.output_width;
+  h = cinfo.output_height;
+  if (cinfo.output_components != 3) {
+    jpeg_abort_decompress(&cinfo);
+    jpeg_destroy_decompress(&cinfo);
+    return false;
+  }
+
+  if (data)
+    delete[] data;
+  data = new uint8_t[w * h * 3];
+  unsigned long w3 = w * 3;
+
+  while (cinfo.output_scanline < cinfo.output_height) {
+    unsigned char *buffer_array[1];
+    buffer_array[0] = data + cinfo.output_scanline * w3;
+    jpeg_read_scanlines(&cinfo, buffer_array, 1);
+  }
+
+  jpeg_finish_decompress(&cinfo);
+  jpeg_destroy_decompress(&cinfo);
+
+  return true;
+}
+
+
 void PPM::write_jpeg(std::string *jpeg) {
   struct jpeg_compress_struct cinfo;
   struct jpeg_error_mgr jerr;
@@ -179,6 +222,23 @@ void PPM::vectorize(std::vector<double> *vecp) {
     (*vecp)[i+0] = l;
     (*vecp)[i+1] = a;
     (*vecp)[i+2] = b;
+  }
+}
+
+void PPM::vectorize(std::vector<uint8_t> *vecp) {
+  unsigned int n = w * h * 3;
+  vecp->resize(n);
+  vectorize(vecp->data());
+}
+
+void PPM::vectorize(uint8_t *vecp) {
+  unsigned int n = w * h * 3;
+  for (unsigned int i = 0; i < n; i += 3) {
+    double l, a, b;
+    rgbtolab(data[i+0], data[i+1], data[i+2], &l, &a, &b);
+    vecp[i+0] = (uint8_t)(l * 255.0 + 0.5);
+    vecp[i+1] = (uint8_t)(a * 255.0 + 0.5);
+    vecp[i+2] = (uint8_t)(b * 255.0 + 0.5);
   }
 }
 

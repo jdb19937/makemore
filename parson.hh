@@ -137,10 +137,7 @@ struct Parson {
     briefptr = newbriefptr;
   }
 
-  void set_pass(const std::string &password, const std::string &saltstr);
-  void set_pass(const std::string &password) {
-    set_pass(password, "");
-  }
+  void set_pass(const std::string &password);
   void clear_pass() {
     set_pass("");
   }

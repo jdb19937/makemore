@@ -72,20 +72,15 @@ bool Parson::valid_tag(const char *tag) {
   return valid_nom(tag);
 }
 
-void Parson::set_pass(const std::string &password, const std::string &saltstr) {
+void Parson::set_pass(const std::string &password) {
   if (password == "") {
     memset(pass, 0, sizeof(pass));
-    memset(salt, 0, sizeof(pass));
+    memset(salt, 0, sizeof(salt));
     return;
   }
 
-  if (saltstr.length() > sizeof(salt) - 1) {
-    memcpy(salt, saltstr.data(), sizeof(salt) - 1);
-    salt[sizeof(salt) - 1] = 0;
-  } else {
-    memset(salt, 0, sizeof(salt));
-    memcpy(salt, saltstr.data(), saltstr.length());
-  }
+  for (unsigned int i = 0; i < sizeof(salt); ++i)
+    salt[i] = randuint() & 0xFF;
 
   SHA256_CTX sha;
   sha256_init(&sha);
