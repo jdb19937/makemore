@@ -25,6 +25,7 @@ struct Agent {
   class Server *server;
   int s;
   uint32_t ip;
+  std::string ipstr;
 
   char *inbuf;
   unsigned int inbufm, inbufn;
@@ -40,11 +41,11 @@ struct Agent {
   void close();
 
   bool slurp();
-  void parse(std::vector<std::string> *lines);
+  void parse(std::vector< std::vector<std::string> > *lines);
   void write(const std::string &str);
   void printf(const char *fmt, ...);
   void flush();
-  void command(const std::string &line);
+  void command(const std::vector<std::string> &line);
 };
 
 }

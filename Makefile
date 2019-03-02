@@ -28,9 +28,9 @@ LABTOOLS = \
   labshrink labhifreq labtogray grayhifreq \
   reconlab recongray 
 
-MORETOOLS = makemore makelay catlay wireup maketop makemap chatfab learnfab learnmore genicon servemore makezone sampler makeipdat errstats fillparsonsdat autolign dumpbranetxt moregas
+MORETOOLS = makemore makelay catlay wireup maketop makemap chatfab learnfab learnmore genicon servemore makezone sampler makeipdat errstats fillparsonsdat autolign dumpbranetxt moretran
 
-MANUAL = moregasm.pdf moretp.pdf
+MANUAL = moretran.pdf moretp.pdf
 
 .PHONY: all
 all: $(LIB) $(MORETOOLS)
@@ -256,8 +256,8 @@ learnfab: learnfab.o $(LIB)
 dumpbranetxt.o: $(LIBHDR)
 dumpbranetxt: dumpbranetxt.o $(LIB)
 	$(CXX) -o $@ $(CXXFLAGS) $^ $(LDFLAGS) $(CULDFLAGS)
-moregas.o: $(LIBHDR)
-moregas: moregas.o $(LIB)
+moretran.o: $(LIBHDR)
+moretran: moretran.o $(LIB)
 	$(CXX) -o $@ $(CXXFLAGS) $^ $(LDFLAGS) $(CULDFLAGS)
 learnmore.o: $(LIBHDR)
 learnmore: learnmore.o $(LIB)

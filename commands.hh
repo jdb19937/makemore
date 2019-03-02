@@ -13,9 +13,9 @@ namespace makemore {
 
 #define CMD_ARGS \
   class Agent *agent, \
-  const std::vector<std::string> &thread, \
+  const std::vector<std::vector<std::string> > &ctx, \
   const std::string &cmd, \
-  const std::vector<std::string> &args
+  const std::vector<std::string> &arg
 
 struct _OnStartup {
   _OnStartup(bool x) { }

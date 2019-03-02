@@ -81,6 +81,7 @@ struct Brane : Project {
   void _ask(const Hashbag &tags, const Convo &req, Shibbomore *rsp);
 
   std::string ask(const Parson *who, const std::string &req);
+  void ask(const Parson *who, const std::vector<std::vector<std::string> > &reqthread, std::vector<std::vector<std::string> > *rspwords);
   void burn(double pi);
 };
 

@@ -14,7 +14,8 @@ int main() {
   string reqstr;
   while (read_line(stdin, &reqstr)) {
     string rspstr = brane.ask(&me, reqstr);
-    printf("%s\n", rspstr.c_str());
+    if (*rspstr.c_str())
+      printf("%s", rspstr.c_str());
   }
 
   return 0;

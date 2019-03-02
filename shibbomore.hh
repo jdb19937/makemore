@@ -88,6 +88,7 @@ struct Shibbomore {
   void encode(const std::vector<std::string>& vec);
 
   std::string decode(const class Vocab &vocab) const;
+  void decode(const class Vocab &, std::vector<std::string> *words) const;
 
   void save(FILE *fp) const;
   void load(FILE *fp);

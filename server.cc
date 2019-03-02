@@ -337,7 +337,7 @@ void Server::main() {
       }
     }
 
-    for (unsigned int i = 0; i < 1024; ++i) {
+    for (unsigned int i = 0; i < 64; ++i) {
       Parson *parson = urb->zones[0]->pick();
       if (!parson)
          continue;
@@ -348,24 +348,27 @@ void Server::main() {
       string req(reqstr);
       memset(reqstr, 0, Parson::briefsize);
 
-      Agent agent(this, parson->nom, -1, 0x7F000001);
-      agent.command(req);
-      notify(parson->nom, req);
+      vector<string> reqwords;
+      splitwords(req, &reqwords);
 
-      if (agent.outbufn)
+      Agent agent(this, parson->nom, -1, 0x0100007F);
+      agent.command(reqwords);
+
+      if (!agent.outbufn)
         continue;
       string rspstr = string(agent.outbuf, agent.outbufn);
+fprintf(stderr, "rspstr=%s\n", rspstr.c_str());
       vector<string> rsps;
       splitlines(rspstr, &rsps);
 
       for (auto rspi = rsps.rbegin(); rspi != rsps.rend(); ++rspi) {
-        parson->pushbrief(req + ", " + *rspi);
+        parson->pushbrief(*rspi + " | " + req);
       }
     }
 
 
     for (auto agent : agents) {
-      vector<string> lines;
+      vector<vector<string > > lines;
       agent->parse(&lines);
 
       for (auto line : lines) {

@@ -19,7 +19,7 @@ void Shibbomore::encode(const char *str) {
   clear();
 
   vector<string> vec;
-  split(str, ' ', &vec);
+  splitwords(str, &vec);
   encode(vec);
 }
 
@@ -43,29 +43,34 @@ void Shibbomore::encode(const vector<string>& vec) {
 }
 
 std::string Shibbomore::decode(const Vocab &vocab) const {
+  vector<string> words;
+  decode(vocab, &words);
+  return join(words, " ");
+}
+
+void Shibbomore::decode(const Vocab &vocab, vector<string> *words) const {
   if (front[0].empty())
-    return "";
-  string outstr = vocab.closest(front[0]);
+    return;
+  words->push_back(vocab.closest(front[0]));
 
   const char *w;
   if (!front[1].empty()) {
-    outstr += " ";
-    outstr += vocab.closest(front[1]);
+    words->push_back(vocab.closest(front[1]));
 
     if (!front[2].empty()) {
-      outstr += " ";
-      outstr += vocab.closest(front[2]);
+      words->push_back(vocab.closest(front[2]));
     }
   }
 
   std::string backstr = backleth.decode(vocab);
   if (backstr != "") {
-    outstr += " ";
-    outstr += backstr;
+    vector<string> backwords;
+    splitwords(backstr, &backwords);
+    for (auto word : backwords)
+      words->push_back(word);
   }
-
-  return outstr;
 }
+
 
 void Shibbomore::save(FILE *fp) const {
   front[0].save(fp);

@@ -45,6 +45,11 @@ bool read_line(FILE *, std::string *);
 
 extern std::string varsubst(const std::string &str, const std::map<std::string, std::string>& dict);
 
+extern std::string refsubst(const std::string &rsp, const std::string &req);
+
+extern void jointhread(const std::vector<std::vector<std::string> > &thread, std::vector<std::string> *wordsp, const std::string &sep);
+extern void splitthread(const std::vector<std::string> &words, std::vector<std::vector<std::string> > *threadp, const std::string &sep);
+
 }
 
 #endif

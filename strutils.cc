@@ -135,4 +135,61 @@ bool read_line(FILE *fp, std::string *line) {
   *line = buf;
 }
 
+std::string refsubst(const std::string &rsp, const std::string &req) {
+  const char *reqstr;
+  if ((reqstr = strrchr(req.c_str(), ',')))
+    ++reqstr;
+  else
+    reqstr = req.c_str();
+  vector<string> reqwords;
+  split(reqstr, ' ', &reqwords);
+
+  const char *rspstr = rsp.c_str();
+  vector<string> rspwords;
+  split(rspstr, ' ', &rspwords);
+
+  for (auto i = rspwords.begin(); i != rspwords.end(); ++i) { 
+    if (*i->c_str() == '\\') {
+      int which = atoi(i->c_str() + 1) - 1;
+      if (which >= 0 && which < reqwords.size()) {
+        *i = reqwords[which];
+      }
+    }
+  }
+
+  return join(rspwords, ' ');
+}
+
+void splitthread(const vector<string> &words, vector<vector<string> > *threadp, const std::string &sep) {
+  unsigned int tn = 0;
+  vector<vector<string> > &thread = *threadp;
+
+  thread.resize(1);
+  thread[0].clear();
+  ++tn;
+
+  for (unsigned int wi = 0, wn = words.size(); wi < wn; ++wi) {
+    if (words[wi] == sep) {
+      thread.resize(tn + 1);
+      thread[tn].clear();
+      ++tn;
+      continue;
+    }
+    thread[tn - 1].push_back(words[wi]);
+  }
+}
+
+void jointhread(const vector<vector<string> > &thread, vector<string> *wordsp, const std::string &sep) {
+  vector<string> &words = *wordsp;
+
+  for (auto twordsi = thread.begin(); twordsi != thread.end(); ++twordsi) {
+    const vector<string> &twords = *twordsi;
+
+    if (twordsi != thread.begin())
+      words.push_back(sep);
+    for (unsigned int wi = 0, wn = twords.size(); wi < wn; ++wi) 
+      words.push_back(twords[wi]);
+  }
+}
+
 }

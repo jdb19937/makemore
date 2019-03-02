@@ -37,10 +37,16 @@ static string norm(string x) {
 
 static void clauses(const string &x, vector<string> *cl) {
   cl->clear();
-  split(x.c_str(), ',', cl);
 
-  for (auto cli = cl->begin(); cli != cl->end(); ++cli)
-    *cli = norm(*cli);
+  vector<string> words;
+  splitwords(x, &words);
+
+  vector<vector<string >> thread;
+  splitthread(words, &thread, "|");
+
+  for (unsigned int i = 0, n = thread.size(); i < n; ++i) {
+    cl->push_back(join(thread[i], " "));
+  }
 }
 
 unsigned int Rule::parse(const char *line) {
@@ -67,6 +73,7 @@ unsigned int Rule::parse(const char *line) {
   reqstr = string(line, sep - line);
   vector<string> reqparts;
   clauses(reqstr, &reqparts);
+  std::reverse(reqparts.begin(), reqparts.end());
 
   int multiplicity = 1;
   if (sep[2] == 'x')

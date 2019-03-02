@@ -26,9 +26,9 @@ struct Server {
 
   typedef void (*Handler)(
     class Agent *,
-    const std::vector<std::string> &thread,
+    const std::vector<std::vector<std::string> > &ctx,
     const std::string &cmd,
-    const std::vector<std::string> &args
+    const std::vector<std::string> &arg
   );
 
   static std::map<std::string, Handler> default_cmdtab;

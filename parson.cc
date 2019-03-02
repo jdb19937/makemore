@@ -119,6 +119,28 @@ static void _make_gender_map() {
   }
 }
 
+std::string Parson::gen_nom(bool *gender) {
+  unsigned int prenomid;
+  prenomid = randuint() % ((sizeof(prenoms) / sizeof(*prenoms)) - 1);
+
+  if (gender)
+    *gender = prenom_gender[prenomid];
+
+  const char *prenom = prenoms[prenomid];
+
+  unsigned int surnomid;
+  surnomid = randuint() % ((sizeof(surnoms) / sizeof(*surnoms)) - 1);
+
+  const char *surnom = surnoms[surnomid];
+
+  std::string nomstr;
+  nomstr = prenom;
+  nomstr += "_";
+  nomstr += surnom;
+
+  return nomstr;
+}
+
 bool Parson::female_nom(const char *nom) {
   if (!valid_nom(nom))
     return false;

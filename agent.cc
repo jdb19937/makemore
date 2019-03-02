@@ -18,7 +18,7 @@ namespace makemore {
 
 using namespace std;
 
-static string ipstr(uint32_t ip) {
+static string _ipstr(uint32_t ip) {
   char buf[INET_ADDRSTRLEN];
   const char *retbuf = inet_ntop(AF_INET, &ip, buf, INET_ADDRSTRLEN);
   assert(retbuf == buf);
@@ -29,6 +29,7 @@ Agent::Agent(class Server *_server, const char *nom, int _s, uint32_t _ip) {
   server = _server;
   s = _s;
   ip = _ip;
+  ipstr = _ipstr(ip);
 
   inbufj = 0;
   inbufk = 0;
@@ -40,7 +41,7 @@ Agent::Agent(class Server *_server, const char *nom, int _s, uint32_t _ip) {
   outbufm = 65536;
   outbuf = NULL; // new char[outbufm];
 
-  who = new Urbite(nom ? nom : ipstr(ip), server->urb);
+  who = new Urbite(nom ? nom : ipstr, server->urb);
 }
 
 Agent::~Agent() {
@@ -79,7 +80,7 @@ bool Agent::slurp() {
   return true;
 }
 
-void Agent::parse(vector<string> *lines) {
+void Agent::parse(vector<vector<string> > *lines) {
   unsigned int inbufi = 0;
   lines->clear();
 
@@ -159,8 +160,7 @@ void Agent::parse(vector<string> *lines) {
     }
     assert(p + off == inbuf + inbufj);
 
-    string line = join(words, ' ');
-    lines->push_back(line);
+    lines->push_back(words);
 
 //fprintf(stderr, "inbufi=%u inbufj=%u inbufk=%u inbufn=%u line=[%s]\n",
 //inbufi,inbufj,inbufk,inbufn, line.c_str());
@@ -279,47 +279,79 @@ void Agent::flush() {
 }
 
 
+static void cleanwords(vector<string> *words)  {
+  char buf[64];
 
-void Agent::command(const string &line) {
+  for (auto i = words->begin(); i != words->end(); ++i) {
+    const std::string &word = *i;
 
-  fprintf(stderr, "[command %s]\n", line.c_str());
-  const char *linep = line.c_str();
+    if (word.length() < 64) {
+      const char *wordp = word.c_str();
+      bool has_nonword = false;
+      for (unsigned int i = 0; wordp[i]; ++i) {
+        if (isspace(wordp[i]) || !isprint(wordp[i])) {
+          has_nonword = true;
+          break;
+        }
+      }
+      if (!has_nonword)
+        continue;
+    }
 
-  std::vector<std::string> thread;
-  if (const char *comma = strrchr(linep, ',')) {
-    splitparts(std::string(linep, comma - linep), &thread);
-    linep = comma + 1;
+    sprintf(buf, "!<%lu", word.length());
+    *i = string(buf);
   }
+}
 
-  vector<string> words;
-  split(linep, ' ', &words);
+void Agent::command(const vector<string> &words) {
   if (!words.size())
     return;
-  string cmd = words[0];
-  if (cmd == "")
+
+  vector<vector<string> > thread;
+  splitthread(words, &thread, "|");
+  assert(thread.size());
+  if (!thread[0].size())
     return;
 
-  fprintf(stderr, "got cmd %s\n", cmd.c_str());
-
+  string cmd = thread[0][0];
   auto hi = server->cmdtab.find(cmd);
+
   if (hi == server->cmdtab.end()) {
-    fprintf(stderr, "unknown cmd %s, asking brane\n", cmd.c_str());
+    fprintf(stderr, "unknown cmd %s, asking brane [%s]\n", cmd.c_str(), joinwords(words).c_str());
 
-    string out = server->urb->brane1->ask(who->parson(), line);
+    vector<vector<string> > out;
+    server->urb->brane1->ask(who->parson(), thread, &out);
 
-    vector<string> parts;
-    splitparts(out, &parts);
-    for (auto i = parts.begin(); i != parts.end(); ++i) {
-      if (*i->c_str())
-        this->printf("%s\n", i->c_str());
+    for (auto outi = out.begin(); outi != out.end(); ++outi) {
+      this->write(joinwords(*outi) + "\n");
     }
   } else {
-    vector<string> args(&words.data()[1], &words.data()[words.size()]);
+    vector<string> cwords = thread[0];
+    cleanwords(&cwords);
+    {
+      string logstr;
+#if 0
+      logstr += "log ";
+      logstr += ipstr + " ";
+#endif
+      logstr += join(cwords, " ");
+      server->notify(who->nom, logstr, this);
+    }
+
+    vector<string> arg;
+    arg.resize(thread[0].size() - 1);
+    for (unsigned int argi = 0, argn = thread[0].size() - 1; argi < argn; ++argi)
+      arg[argi] = thread[0][argi + 1];
+
+    vector<vector<string> > ctx;
+    ctx.resize(thread.size() - 1);
+    for (unsigned int ctxi = 0, ctxn = thread.size() - 1; ctxi < ctxn; ++ctxi)
+      ctx[ctxi] = thread[ctxi + 1];
 
     Server::Handler h = hi->second;
     assert(h);
 
-    (void) h(this, thread, cmd, args);
+    (void) h(this, ctx, cmd, arg);
   }
 }
 

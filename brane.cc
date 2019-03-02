@@ -479,34 +479,26 @@ void Brane::encode_ctr() {
   }
 }
 
-static std::string refsubst(const std::string &rsp, const std::string &req) {
-  const char *reqstr;
-  if ((reqstr = strrchr(req.c_str(), ',')))
-    ++reqstr;
-  else
-    reqstr = req.c_str();
+std::string Brane::ask(const Parson *who, const std::string &reqstr) {
   vector<string> reqwords;
-  split(reqstr, ' ', &reqwords);
+  splitwords(reqstr, &reqwords);
 
-  const char *rspstr = rsp.c_str();
-  vector<string> rspwords;
-  split(rspstr, ' ', &rspwords);
+  vector<vector<string> > reqthread;
+  splitthread(reqwords, &reqthread, "|");
 
-  for (auto i = rspwords.begin(); i != rspwords.end(); ++i) { 
-    if (*i->c_str() == '\\') {
-      int which = atoi(i->c_str() + 1) - 1;
-      if (which >= 0 && which < reqwords.size()) {
-        *i = reqwords[which];
-      }
-    }
-  }
+  vector<vector<string> > rspwords;
+  ask(who, reqthread, &rspwords);
 
-  return join(rspwords, ' ');
+  string out;
+  for (auto words : rspwords)
+    out += join(words, " ") + "\n";
+  return out;
 }
 
-std::string Brane::ask(const Parson *who, const std::string &reqstr) {
+void Brane::ask(const Parson *who, const vector<vector<string> > &reqthread, vector<vector<string> > *rspwordsp) {
+  vector<vector<string> >&rspwords = *rspwordsp;
   Convo req;
-  req.build(reqstr);
+  req.build(reqthread);
 
   Hashbag tags;
   who->bagtags(&tags);
@@ -514,41 +506,49 @@ std::string Brane::ask(const Parson *who, const std::string &reqstr) {
   Shibbomore rsp[3];
   _ask(tags, req, rsp);
 
+  rspwords.clear();
+  rspwords.resize(3);
+  rsp[0].decode(vocab, &rspwords[0]);
+  if (rspwords[0].size()) {
+    rsp[1].decode(vocab, &rspwords[1]);
+    if (rspwords[1].size()) {
+      rsp[2].decode(vocab, &rspwords[2]);
+      if (!rspwords[2].size())
+        rspwords.resize(2);
+    } else {
+      rspwords.resize(1);
+    }
+  } else {
+    rspwords.resize(0);
+  }
+
+
   map<string, string> dict;
   {
-    vector<string> reqwords;
-    if (const char *r = strrchr(reqstr.c_str(), ','))
-      splitwords(r + 1, &reqwords);
-    else
-      splitwords(reqstr, &reqwords);
+    dict["$nom"] = who->nom;
+
+    vector<string> empty;
+    const vector<string> *reqwords = &empty;
+    if (reqthread.size() > 0)
+      reqwords = &reqthread[0];
 
     char buf[64];
     for (unsigned int i = 0; i < 9; ++i) {
       sprintf(buf, "\\%u", i + 1);
-      dict[buf] = i < reqwords.size() ? reqwords[i] : "";
+      dict[buf] = i < reqwords->size() ? (*reqwords)[i] : "";
     }
-
-    dict["$nom"] = who->nom;
-    dict["$me"] = who->nom;
-    dict["$self"] = who->nom;
   }
 
-  string rspstr = varsubst( rsp[0].decode(vocab), dict );
-  if (rspstr != "") {
-    string rsp1str = varsubst( rsp[1].decode(vocab), dict );
-    if (rsp1str != "") {
-      rspstr += ", ";
-      rspstr += rsp1str;
 
-      string rsp2str = varsubst( rsp[2].decode(vocab), dict );
-      if (rsp2str != "") {
-        rspstr += ", ";
-        rspstr += rsp2str;
+  for (auto rwi = rspwords.begin(); rwi != rspwords.end(); ++rwi) {
+    for (auto wi = rwi->begin(); wi != rwi->end(); ++wi) {
+      auto di = dict.find(*wi);
+      if (di != dict.end()) {
+fprintf(stderr, "subst %s -> %s\n", wi->c_str(), di->second.c_str());
+        *wi = di->second;
       }
     }
   }
-
-  return rspstr;
 }
   
 

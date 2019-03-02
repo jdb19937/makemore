@@ -24,6 +24,7 @@ struct Parson {
   static bool female_nom(const char *);
   static std::string bread_nom(const char *nom0, const char *nom1, uint8_t);
   static void paren_noms(const char *, char *, char *);
+  static std::string gen_nom(bool *gender = NULL);
 
   const static unsigned int nfrens = 16;
   const static unsigned int ntags = 8;

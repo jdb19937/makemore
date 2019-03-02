@@ -16,7 +16,8 @@ struct Convo {
   }
 
   void build(const std::string &str, double decay = DECAY);
-  void build(const std::vector<std::string> &strparts, double decay = DECAY);
+  void build(const std::vector<std::string> &words, double decay = DECAY);
+  void build(const std::vector<std::vector<std::string> > &thread, double decay = DECAY);
   void build(const std::vector<Shibbomore> &shmores, double decay = DECAY);
 
   void add(const std::string &str, double decay = DECAY);

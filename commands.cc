@@ -23,10 +23,10 @@ int _startup_count = 0;
 using namespace std;
 
 NEW_CMD(be) {
-  if (args.size() != 1)
+  if (arg.size() != 1)
     return;
 
-  std::string newnom = args[0];
+  std::string newnom = arg[0];
   Parson *parson = agent->server->urb->find(newnom);
   if (!parson) {
     agent->write("not here\n");
@@ -38,10 +38,10 @@ NEW_CMD(be) {
 }
 
 NEW_CMD(make) {
-  if (args.size() != 1)
+  if (arg.size() != 1)
     return;
 
-  std::string newnom = args[0];
+  std::string newnom = arg[0];
   if (agent->server->urb->find(newnom)) {
     agent->write("already here\n");
     return;
@@ -69,13 +69,13 @@ NEW_CMD(exit) {
 }
   
 NEW_CMD(echo) {
-  if (args.size() == 0)
+  if (arg.size() == 0)
     return;
 
-  std::string out = args[0];
-  for (unsigned int i = 1, n = args.size(); i < n; ++i) {
+  std::string out = arg[0];
+  for (unsigned int i = 1, n = arg.size(); i < n; ++i) {
     out += " ";
-    out += args[i];
+    out += arg[i];
   }
   out += "\n";
 
@@ -85,18 +85,18 @@ NEW_CMD(echo) {
 NEW_CMD(burn) {
   Urb *urb = agent->server->urb;
 
-  if (args.size() < 1)
+  if (arg.size() < 1)
     return;
-  unsigned int n = (unsigned int)atoi(args[0].c_str());
+  unsigned int n = (unsigned int)atoi(arg[0].c_str());
   if (n > 65535)
     n = 65535;
 
   double nu = 0.0001;
   double pi = 0.0001;
-  if (args.size() >= 2)
-    nu = strtod(args[1].c_str(), NULL);
-  if (args.size() >= 3)
-    pi = strtod(args[2].c_str(), NULL);
+  if (arg.size() >= 2)
+    nu = strtod(arg[1].c_str(), NULL);
+  if (arg.size() >= 3)
+    pi = strtod(arg[2].c_str(), NULL);
 
   std::vector<Parson*> parsons;
   parsons.resize(n);
@@ -113,32 +113,31 @@ NEW_CMD(to) {
   Server *server = agent->server;
   Urb *urb = server->urb;
 
-  if (args.size() < 2) {
+  if (arg.size() < 2) {
     agent->printf("who\n");
     return;
   }
 
-  string nom = args[0];
-  string cmd_from_nom = string("from ") + nom + string(" ");
-  string cmd_to_nom = string("to ") + nom + string(" ");
+  string nom = arg[0];
 
-  string msg = "";
-  for (unsigned int i = 0; i < thread.size(); ++i) {
-    string oldmsg = thread[i];
-    if (!strncmp(oldmsg.c_str(), cmd_from_nom.c_str(), cmd_from_nom.length())) {
-      msg += string(msg.length() ? ", " : "") + 
-        string("to ") + agent->who->nom + string(" ") +
-        string(oldmsg.c_str() + cmd_from_nom.length());
-    } if (!strncmp(oldmsg.c_str(), cmd_to_nom.c_str(), cmd_to_nom.length())) {
-      msg += string(msg.length() ? ", " : "") + 
-        string("from ") + agent->who->nom + string(" ") +
-        string(oldmsg.c_str() + cmd_to_nom.length());
+  string msg = string("from ") + agent->who->nom;
+  for (unsigned int i = 1, n = arg.size(); i < n; ++i)
+    msg += string(" ") + arg[i];
+  server->notify(nom, msg);
+
+  for (unsigned int i = 0; i < ctx.size(); ++i) {
+    const vector<string> &words = ctx[i];
+    if (words.size() < 3)
+      continue;
+
+    if (words[0] == "from" && words[1] == nom) {
+      vector<string> tailwords(words.begin() + 2, words.end());
+      msg += string(" | to ") + agent->who->nom + " " + join(tailwords, " ");
+    } if (words[0] == "to" && words[1] == nom) {
+      vector<string> tailwords(words.begin() + 2, words.end());
+      msg += string(" | from ") + agent->who->nom + " " + join(tailwords, " ");
     }
   }
-
-  msg += string(msg.length() ? ", " : "") + string("from ") + agent->who->nom;
-  for (unsigned int i = 1, n = args.size(); i < n; ++i)
-    msg += string(" ") + args[i];
 
   if (Parson *to = urb->find(nom)) {
     to->pushbrief(msg);
