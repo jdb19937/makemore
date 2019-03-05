@@ -45,6 +45,8 @@ struct Agent {
   unsigned int outbufm, outbufn;
 
   Urbite *who;
+  const static unsigned int maxpicks = 256;
+  std::vector<Urbite*> pickbuf;
 
   Agent(class Server *_server, const char *nom, int _s = -1, uint32_t _ip = 0x7F000001U, bool _secure = false);
   ~Agent();

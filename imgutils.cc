@@ -7,12 +7,16 @@
 #include <math.h>
 
 #include <map>
+#include <set>
 #include <vector>
 #include <string>
 
 #include <Magick++.h>
 
+#include <png.h>
+
 #include "strutils.hh"
+#include "parson.hh"
 
 namespace makemore {
 using namespace std;
@@ -183,11 +187,12 @@ bool imglab(
   return true;
 }
 
-bool labpng(
+bool labimg(
   const uint8_t *lab,
   unsigned int w,
   unsigned int h,
-  std::string *png,
+  const std::string &fmt,
+  std::string *img,
   const vector<string> *tags
 ) {
   _ensure_init_magick();
@@ -224,14 +229,223 @@ bool labpng(
     image.comment(comment);
   }
 
-  image.magick("png");
+  image.magick(fmt);
   Magick::Blob blobout;
   image.write(&blobout);
 
-  png->assign((const char *)blobout.data(), blobout.length());
+  img->assign((const char *)blobout.data(), blobout.length());
 
   return true;
 }
 
+bool pnglab(
+  const std::string &png,
+  unsigned int w,
+  unsigned int h,
+  uint8_t *lab,
+  vector<string> *tags
+) {
+  FILE *fp = fmemopen((void *)png.data(), png.length(), "r");
+  assert(fp);
+
+  uint8_t header[8];
+  size_t ret;
+  png_structp png_ptr;
+  png_infop info_ptr;
+  png_infop end_ptr;
+  png_textp text = NULL;
+  png_bytep *row_pointers = NULL;
+
+  ret = fread(header, 1, 8, fp);
+  if (ret != 8)
+    goto fail;
+  if (png_sig_cmp(header, 0, 8))
+    goto fail;
+
+  png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
+  if (!png_ptr)
+    goto fail;
+
+  info_ptr = png_create_info_struct(png_ptr);
+  if (!info_ptr)
+    goto fail;
+  end_ptr = png_create_info_struct(png_ptr);
+  if (!end_ptr)
+    goto fail;
+
+  if (setjmp(png_jmpbuf(png_ptr)))
+    goto fail;
+
+  png_init_io(png_ptr, fp);
+  png_set_sig_bytes(png_ptr, 8);
+
+  png_read_info(png_ptr, info_ptr);
+
+  if (w != png_get_image_width(png_ptr, info_ptr)) 
+    goto fail;
+  if (h != png_get_image_height(png_ptr, info_ptr))
+    goto fail;
+  if (PNG_COLOR_TYPE_RGB != png_get_color_type(png_ptr, info_ptr))
+    goto fail;
+  if (8 != png_get_bit_depth(png_ptr, info_ptr))
+    goto fail;
+
+  png_set_interlace_handling(png_ptr);
+  png_read_update_info(png_ptr, info_ptr);
+
+  /* read file */
+  assert(!setjmp(png_jmpbuf(png_ptr)));
+
+  row_pointers = new png_bytep[h];
+  for (unsigned int y = 0; y < h; y++)
+    row_pointers[y] = lab + y * w * 3;
+
+  png_read_image(png_ptr, row_pointers);
+
+  png_read_end(png_ptr, end_ptr);
+
+  if (tags) {
+    for (int j = 0; j < 2; ++j) {
+      int numtext = png_get_text(png_ptr, j ? info_ptr : end_ptr, &text, NULL);
+      set<string> seen_tag;
+
+      for (int i = 0; i < numtext; ++i) {
+        std::string comment(text[i].text, text[i].text_length);
+        vector<string> words;
+        splitwords(comment, &words);
+        for (auto word : words) {
+          if (*word.c_str() != '#')
+            continue;
+          std::string tag = word.c_str() + 1;
+          if (!tag.length())
+            continue;
+          tag = lowercase(tag);
+          if (!Parson::valid_tag(tag))
+            continue;
+          if (seen_tag.count(tag))
+            continue;
+          tags->push_back(tag);
+          seen_tag.insert(tag);
+        }
+      }
+    }
+  }
+
+  for (unsigned int i = 0, n = 3 * w * h; i < n; i += 3) {
+    rgbtolab(
+       lab[i + 0],  lab[i + 1],  lab[i + 2],
+      &lab[i + 0], &lab[i + 1], &lab[i + 2]
+    );
+  }
+
+  fclose(fp);
+  if (row_pointers)
+    delete[] row_pointers;
+
+  return true;
+
+fail:
+  fclose(fp);
+  if (row_pointers)
+    delete[] row_pointers;
+
+  return false;
+}
+
+bool labpng(
+  const uint8_t *lab,
+  unsigned int w,
+  unsigned int h,
+  std::string *png,
+  const vector<string> *tags
+) {
+  uint8_t *rgb = new uint8_t[w * h * 3];
+
+  for (unsigned int i = 0, n = 3 * w * h; i < n; i += 3) {
+    labtorgb(
+       lab[i + 0],  lab[i + 1],  lab[i + 2],
+      &rgb[i + 0], &rgb[i + 1], &rgb[i + 2]
+    );
+  }
+
+  uint8_t *pngbuf = new uint8_t[1 << 20];
+  FILE *fp = fmemopen(pngbuf, 1 << 20, "wb");
+  assert(fp);
+
+  uint8_t header[8];
+  size_t ret;
+  png_structp png_ptr;
+  png_infop info_ptr;
+  png_infop end_ptr;
+  png_textp text = NULL;
+  png_bytep *row_pointers = NULL;
+
+  png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
+  if (!png_ptr)
+    goto fail;
+  info_ptr = png_create_info_struct(png_ptr);
+  if (!info_ptr)
+    goto fail;
+  end_ptr = png_create_info_struct(png_ptr);
+  if (!end_ptr)
+    goto fail;
+
+  assert(!setjmp(png_jmpbuf(png_ptr)));
+
+  png_init_io(png_ptr, fp);
+
+  assert(!setjmp(png_jmpbuf(png_ptr)));
+
+  png_set_IHDR(
+    png_ptr, info_ptr, w, h,
+    8, PNG_COLOR_TYPE_RGB, PNG_INTERLACE_NONE,
+    PNG_COMPRESSION_TYPE_BASE, PNG_FILTER_TYPE_BASE
+  );
+
+  png_write_info(png_ptr, info_ptr);
+
+  assert(!setjmp(png_jmpbuf(png_ptr)));
+  row_pointers = new png_bytep[h];
+  for (unsigned int y = 0; y < h; y++)
+    row_pointers[y] = rgb + y * w * 3;
+  png_write_image(png_ptr, row_pointers);
+
+  if (tags) {
+    string comment;
+    for (auto tag : *tags)
+      comment += string(comment.length() ? " " : "") + "#" + tag;
+    png_text text;
+    text.compression = PNG_TEXT_COMPRESSION_NONE;
+    text.key = (char *)"comment";
+    text.text = (char *)comment.c_str();
+    text.text_length = comment.length();
+    png_set_text(png_ptr, end_ptr, &text, 1);
+  }
+
+  assert(!setjmp(png_jmpbuf(png_ptr)));
+  png_write_end(png_ptr, end_ptr);
+
+  {
+    unsigned long pngbufn = ftell(fp);
+    fclose(fp);
+    png->assign((char *)pngbuf, pngbufn);
+  }
+
+  delete[] pngbuf;
+  delete[] rgb;
+  delete[] row_pointers;
+
+  return true;
+
+fail:
+  fclose(fp);
+  if (rgb)
+    delete[] rgb;
+  if (row_pointers)
+    delete[] row_pointers;
+  if (pngbuf)
+    delete[] pngbuf;
+  return false;
+}
 
 }

@@ -58,6 +58,7 @@ Parson *Urb::make(unsigned int tier) {
   string png = slurp(imagefn);
 
   Parson parson;
+  memset(&parson, 0, sizeof(Parson));
 
   vector<string> tags;
   imglab("png", png, 64, 64, parson.target, &tags);
@@ -74,6 +75,13 @@ Parson *Urb::make(unsigned int tier) {
     nom = Parson::gen_nom(gender);
   } while (find(nom));
 
+  time_t now = time(NULL);
+  parson.creator = 0x7F000001;
+  parson.revisor = 0x7F000001;
+  parson.created = now;
+  parson.revised = now;
+  parson.visited = now;
+
   strcpy(parson.nom, nom.c_str());
   return this->make(parson, tier);
 }
@@ -83,7 +91,9 @@ Parson *Urb::make(unsigned int tier) {
 void Urb::restock(unsigned int n, vector<string> *noms) {
   for (unsigned int i = 0; i < n; ++i) {
     Parson *parson = make(0);
-    noms->push_back(parson->nom);
+    assert(parson);
+    if (noms)
+      noms->push_back(parson->nom);
   }
 }
 

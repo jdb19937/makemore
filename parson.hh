@@ -21,6 +21,7 @@ struct Parson {
   static bool valid_nom(const char *);
   static bool valid_nom(const std::string &s) { return valid_nom(s.c_str()); }
   static bool valid_tag(const char *);
+  static bool valid_tag(const std::string &s) { return valid_tag(s.c_str()); }
   static uint64_t hash_nom(const char *nom, unsigned int variant = 0);
   static bool female_nom(const char *);
   static std::string bread_nom(const char *nom0, const char *nom1, uint8_t);
