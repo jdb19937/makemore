@@ -11,11 +11,12 @@
 #include <sys/types.h>
 #include <fcntl.h>
 
+#include <openssl/sha.h>
+
 #include <map>
 #include <set>
 #include <string>
 
-#include "sha256.c"
 #include "prenoms.c"
 #include "surnoms.c"
 
@@ -31,16 +32,16 @@ namespace makemore {
 uint64_t Parson::hash_nom(const char *nom, unsigned int variant) {
   uint8_t hash[32];
   SHA256_CTX sha;
-  sha256_init(&sha);
-  sha256_update(&sha, (const uint8_t *)nom, strlen(nom));
+  SHA256_Init(&sha);
+  SHA256_Update(&sha, (const uint8_t *)nom, strlen(nom));
 
   if (variant) {
     char buf[32];
     sprintf(buf, "/%u", variant);
-    sha256_update(&sha, (const uint8_t *)buf, strlen(buf));
+    SHA256_Update(&sha, (const uint8_t *)buf, strlen(buf));
   }
 
-  sha256_final(&sha, hash);
+  SHA256_Final(hash, &sha);
 
   uint64_t h;
   memcpy(&h, hash, 8);
@@ -83,13 +84,13 @@ void Parson::set_pass(const std::string &password) {
     salt[i] = randuint() & 0xFF;
 
   SHA256_CTX sha;
-  sha256_init(&sha);
-  sha256_update(&sha, (const uint8_t *)password.c_str(), password.length() + 1);
-  sha256_update(&sha, (const uint8_t *)salt, sizeof(salt));
-  sha256_final(&sha, pass);
+  SHA256_Init(&sha);
+  SHA256_Update(&sha, (const uint8_t *)password.c_str(), password.length() + 1);
+  SHA256_Update(&sha, (const uint8_t *)salt, sizeof(salt));
+  SHA256_Final(pass, &sha);
 }
 
-bool Parson::check_pass(const std::string &password) {
+bool Parson::check_pass(const std::string &password) const {
   assert(sizeof(pass) == 32);
 
   uint8_t check_pass[32];
@@ -98,10 +99,10 @@ bool Parson::check_pass(const std::string &password) {
     return true;
 
   SHA256_CTX sha;
-  sha256_init(&sha);
-  sha256_update(&sha, (const uint8_t *)password.c_str(), password.length() + 1);
-  sha256_update(&sha, (const uint8_t *)salt, sizeof(salt));
-  sha256_final(&sha, check_pass);
+  SHA256_Init(&sha);
+  SHA256_Update(&sha, (const uint8_t *)password.c_str(), password.length() + 1);
+  SHA256_Update(&sha, (const uint8_t *)salt, sizeof(salt));
+  SHA256_Final(check_pass, &sha);
 
   return (0 == memcmp(check_pass, pass, 32));
 }
@@ -114,12 +115,37 @@ static void _make_gender_map() {
   }
 }
 
+std::string Parson::gen_nom() {
+  return gen_nom((bool *)NULL);
+}
+
 std::string Parson::gen_nom(bool *gender) {
   unsigned int prenomid;
   prenomid = randuint() % ((sizeof(prenoms) / sizeof(*prenoms)) - 1);
 
   if (gender)
     *gender = prenom_gender[prenomid];
+
+  const char *prenom = prenoms[prenomid];
+
+  unsigned int surnomid;
+  surnomid = randuint() % ((sizeof(surnoms) / sizeof(*surnoms)) - 1);
+
+  const char *surnom = surnoms[surnomid];
+
+  std::string nomstr;
+  nomstr = prenom;
+  nomstr += "_";
+  nomstr += surnom;
+
+  return nomstr;
+}
+
+std::string Parson::gen_nom(bool gender) {
+  unsigned int prenomid;
+  do {
+    prenomid = randuint() % ((sizeof(prenoms) / sizeof(*prenoms)) - 1);
+  } while (prenom_gender[prenomid] != gender);
 
   const char *prenom = prenoms[prenomid];
 

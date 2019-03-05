@@ -10,14 +10,14 @@
 #include <netinet/in.h>
 #include <string.h>
 
+#include <openssl/sha.h>
+
 #include <string>
 
 #include "cudamem.hh"
 #include "pipeline.hh"
 #include "parson.hh"
 #include "ppm.hh"
-
-#include "sha256.c"
 
 static void *shared;
 

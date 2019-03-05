@@ -5,6 +5,9 @@
 #include <string>
 #include <map>
 
+#include <assert.h>
+#include <ctype.h>
+
 namespace makemore {
 
 extern void split(const char *str, char sep, std::vector<std::string> *words);
@@ -41,6 +44,41 @@ inline std::string joinwords(const std::vector<std::string> &v) {
   return out;
 }
 
+
+inline void slurp(FILE *fp, std::string *str) {
+  char buf[1024];
+  size_t ret;
+
+  *str = "";
+
+  while (1) {
+    ret = fread(buf, 1, 1024, fp);
+    if (ret < 1)
+      return;
+    *str += std::string(buf, ret);
+  }
+}
+
+inline std::string slurp(FILE *fp) {
+  std::string ret;
+  slurp(fp, &ret);
+  return ret;
+}
+
+
+inline void slurp(const std::string &fn, std::string *str) {
+  FILE *fp;
+  assert(fp = fopen(fn.c_str(), "r"));
+  slurp(fp, str);
+  fclose(fp);
+}
+
+inline std::string slurp(const std::string &fn) {
+  std::string ret;
+  slurp(fn, &ret);
+  return ret;
+}
+
 bool read_line(FILE *, std::string *);
 
 extern std::string varsubst(const std::string &str, const std::map<std::string, std::string>& dict);
@@ -49,6 +87,28 @@ extern std::string refsubst(const std::string &rsp, const std::string &req);
 
 extern void jointhread(const std::vector<std::vector<std::string> > &thread, std::vector<std::string> *wordsp, const std::string &sep);
 extern void splitthread(const std::vector<std::string> &words, std::vector<std::vector<std::string> > *threadp, const std::string &sep);
+
+inline std::string to_hex(const std::string &binstr) {
+  unsigned int n = binstr.length();
+  const uint8_t *bin = (const uint8_t *)binstr.data();
+  const char *tab = "0123456789ABCDEF";
+  std::string hexstr;
+  hexstr.resize(n * 2);
+  for (unsigned int i = 0, j = 0; i < n; ++i, j += 2) {
+    hexstr[j + 0] = tab[bin[i] >> 4];
+    hexstr[j + 1] = tab[bin[i] & 0xF];
+  }
+  return hexstr;
+}
+
+inline std::string lowercase(std::string str) {
+  unsigned int n = str.length();
+  std::string lcstr;
+  lcstr.resize(n);
+  for (unsigned int i = 0; i < n; ++i)
+    lcstr[i] = tolower(str[i]);
+  return lcstr;
+}
 
 }
 

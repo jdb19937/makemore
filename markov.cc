@@ -1,8 +1,9 @@
-#define __MAKEMORE_BRANE_CC__ 1
+#define __MAKEMORE_MARKOV_CC__ 1
 
 #include <netinet/in.h>
 
 #include <string>
+#include <algorithm>
 
 #include "cudamem.hh"
 #include "tron.hh"
@@ -12,7 +13,7 @@
 #include "shibboleth.hh"
 #include "shibbomore.hh"
 #include "convo.hh"
-#include "brane.hh"
+#include "markov.hh"
 #include "parson.hh"
 #include "strutils.hh"
 
@@ -43,10 +44,12 @@ static string read_word(FILE *fp, char sep) {
   return word;
 }
 
-Brane::Brane(const char *_dir, unsigned int _mbn) : Project(_dir, _mbn) {
+Markov::Markov(const char *_dir, unsigned int _mbn) : Project(_dir, _mbn) {
+ decay = 0.5;
+
   assert(mbn > 0);
 
-  assert(config["type"] == "brane");
+  assert(config["type"] == "markov");
 
   char ctxlayfn[4096];
   sprintf(ctxlayfn, "%s/context.lay", _dir);
@@ -144,14 +147,39 @@ Brane::Brane(const char *_dir, unsigned int _mbn) : Project(_dir, _mbn) {
   sprintf(vocabfn, "%s/vocab.txt", dir.c_str());
   vocab.load(vocabfn);
 
-  char rulesfn[4096];
-  sprintf(rulesfn, "%s/rules.more", dir.c_str());
-  rules.load(rulesfn);
+  char txtfn[4096];
+  sprintf(txtfn, "%s/markov.txt", dir.c_str());
+  FILE *txtfp = fopen(txtfn, "r");
+  assert(txtfp);
+  std::string txtline;
+
+  double idecay = 1.0 / decay;
+
+  while (read_line(txtfp, &txtline)) {
+    Sample sample;
+    sample.clear();
+
+    vector<string> txtwords;
+    splitwords(txtline, &txtwords);
+
+    for (auto txtword : txtwords) {
+      sample.rsp.word.clear();
+      sample.rsp.word.add(txtword.c_str());
+
+      samples.push_back(sample);
+
+      sample.req.prev.mul(decay);
+      sample.req.prev.add(txtword.c_str());
+
+    }
+  }
+  fclose(txtfp);
+     
 
   rounds = 0;
 }
 
-Brane::~Brane() {
+Markov::~Markov() {
   delete encpass; 
   delete genpass;
   delete encgen;
@@ -190,7 +218,7 @@ Brane::~Brane() {
 }
 
 
-void Brane::load_ctxtgt(FILE *infp) {
+void Markov::load_ctxtgt(FILE *infp) {
   int ret;
 
   for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
@@ -206,7 +234,7 @@ void Brane::load_ctxtgt(FILE *infp) {
 }
 
 
-void Brane::load_ctx(FILE *infp) {
+void Markov::load_ctx(FILE *infp) {
   int ret;
 
   for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
@@ -219,7 +247,7 @@ void Brane::load_ctx(FILE *infp) {
 
 
 
-void Brane::generate() {
+void Markov::generate() {
   for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
     encude( ctxbuf + mbi * ctxlay->n, ctxlay->n, cugenin + mbi * geninlay->n + 0);
     encude( ctrbuf + mbi * ctrlay->n, ctrlay->n, cugenin + mbi * geninlay->n + ctxlay->n);
@@ -234,12 +262,12 @@ void Brane::generate() {
 }
 
 
-void Brane::passgenerate() {
+void Markov::passgenerate() {
   assert(outlay->n == tgtlay->n);
   memcpy(outbuf, tgtbuf, sizeof(double) * mbn * tgtlay->n);
 }
 
-void Brane::regenerate() {
+void Markov::regenerate() {
   for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
     encude(ctxbuf + mbi * ctxlay->n, ctxlay->n, cuencin + mbi * encinlay->n + 0);
     encude(tgtbuf + mbi * tgtlay->n, tgtlay->n, cuencin + mbi * encinlay->n + ctxlay->n);
@@ -253,7 +281,7 @@ void Brane::regenerate() {
   passgenerate();
 }
 
-void Brane::reencode() {
+void Markov::reencode() {
   const double *cuencout;
 
   for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
@@ -267,7 +295,7 @@ void Brane::reencode() {
 }
 
 #if 0
-void Brane::condition(double yo, double wu) {
+void Markov::condition(double yo, double wu) {
   assert(mbn % 2 == 0);
 
   for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
@@ -315,7 +343,7 @@ void Brane::condition(double yo, double wu) {
   genpass->train(wu);
 }
 #endif
-void Brane::condition(double yo, double wu) {
+void Markov::condition(double yo, double wu) {
   assert(mbn % 2 == 0);
 
   for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
@@ -367,8 +395,8 @@ void Brane::condition(double yo, double wu) {
   
 }
 
-void Brane::_burn(double nu, double pi) {
-#if 0
+void Markov::_burn(double nu, double pi) {
+#if 1
   assert(encinlay->n == ctxlay->n + tgtlay->n);
   for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
     encude(ctxbuf + mbi * ctxlay->n, ctxlay->n, cuencin + mbi * encinlay->n + 0);
@@ -385,7 +413,7 @@ void Brane::_burn(double nu, double pi) {
   encpass->train(nu);
 #endif
 
-#if 1
+#if 0
 
   for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
     encude(ctxbuf + mbi * ctxlay->n, ctxlay->n, cugenin + mbi * geninlay->n + 0);
@@ -401,7 +429,7 @@ void Brane::_burn(double nu, double pi) {
 }
 
 
-void Brane::report(const char *prog) {
+void Markov::report(const char *prog) {
   fprintf(
     stderr,
     "%s %s rounds=%u\n"
@@ -422,46 +450,46 @@ void Brane::report(const char *prog) {
   );
 }
 
-void Brane::save() {
+void Markov::save() {
   enc->sync(1);
   gen->sync(1);
   dis->sync(1);
 }
 
-void Brane::load() {
+void Markov::load() {
   enc->sync(0);
   gen->sync(0);
   dis->sync(0);
 }
 
-void Brane::scramble(double mean, double dev) {
+void Markov::scramble(double mean, double dev) {
   for (unsigned int j = 0, jn = mbn * ctrlay->n; j < jn; ++j) {
     ctrbuf[j] = sigmoid( mean + randgauss() * dev );
   }
 }
 
-void Brane::encode_ctx() {
+void Markov::encode_ctx() {
   for (unsigned int j = 0, jn = mbn * ctxlay->n; j < jn; ++j) {
     int v = (int)(ctxbuf[j] * 256.0);
     bctxbuf[j] = v < 0 ? 0 : v > 255 ? 255 : v;
   }
 }
 
-void Brane::encode_out() {
+void Markov::encode_out() {
   for (unsigned int j = 0, jn = mbn * outlay->n; j < jn; ++j) {
     int v = (int)(outbuf[j] * 256.0);
     boutbuf[j] = v < 0 ? 0 : v > 255 ? 255 : v;
   }
 }
 
-void Brane::encode_tgt() {
+void Markov::encode_tgt() {
   for (unsigned int j = 0, jn = mbn * tgtlay->n; j < jn; ++j) {
     int v = (int)(tgtbuf[j] * 256.0);
     btgtbuf[j] = v < 0 ? 0 : v > 255 ? 255 : v;
   }
 }
 
-void Brane::encode_adj() {
+void Markov::encode_adj() {
   for (unsigned int j = 0, jn = mbn * outlay->n; j < jn; ++j) {
     double v = adjbuf[j];
     v /= 2.0;
@@ -472,138 +500,43 @@ void Brane::encode_adj() {
   }
 }
 
-void Brane::encode_ctr() {
+void Markov::encode_ctr() {
   for (unsigned int j = 0, jn = mbn * ctrlay->n; j < jn; ++j) {
     int v = (int)(ctrbuf[j] * 256.0);
     bctrbuf[j] = v < 0 ? 0 : v > 255 ? 255 : v;
   }
 }
 
-std::string Brane::ask(const Parson *who, const std::string &reqstr) {
-  vector<string> reqwords;
-  splitwords(reqstr, &reqwords);
-
-  vector<vector<string> > reqthread;
-  splitthread(reqwords, &reqthread, "|");
-
-  vector<vector<string> > rspwords;
-  ask(who, reqthread, &rspwords);
-
-  string out;
-  for (auto words : rspwords)
-    out += join(words, " ") + "\n";
-  return out;
-}
-
-void Brane::ask(const Parson *who, const vector<vector<string> > &reqthread, vector<vector<string> > *rspwordsp) {
-  vector<vector<string> >&rspwords = *rspwordsp;
-  Convo req;
-  req.build(reqthread);
-
-  Hashbag tags;
-  who->bagtags(&tags);
-
-  Shibbomore rsp[3];
-  _ask(tags, req, rsp);
-
-  rspwords.clear();
-  rspwords.resize(3);
-  rsp[0].decode(vocab, &rspwords[0]);
-  if (rspwords[0].size()) {
-    rsp[1].decode(vocab, &rspwords[1]);
-    if (rspwords[1].size()) {
-      rsp[2].decode(vocab, &rspwords[2]);
-      if (!rspwords[2].size())
-        rspwords.resize(2);
-    } else {
-      rspwords.resize(1);
-    }
-  } else {
-    rspwords.resize(0);
-  }
-
-
-  map<string, string> dict;
-  {
-    dict["$nom"] = who->nom;
-
-    vector<string> empty;
-    const vector<string> *reqwords = &empty;
-    if (reqthread.size() > 0)
-      reqwords = &reqthread[0];
-
-    char buf[64];
-    for (unsigned int i = 0; i < 9; ++i) {
-      sprintf(buf, "\\%u", i + 1);
-      dict[buf] = i < reqwords->size() ? (*reqwords)[i] : "";
-    }
-  }
-
-
-  for (auto rwi = rspwords.begin(); rwi != rspwords.end(); ++rwi) {
-    for (auto wi = rwi->begin(); wi != rwi->end(); ++wi) {
-//fprintf(stderr, "word=[%s]\n", wi->c_str());
-      auto di = dict.find(*wi);
-      if (di != dict.end()) {
-fprintf(stderr, "subst %s -> %s\n", wi->c_str(), di->second.c_str());
-        *wi = di->second;
-      }
-    }
-  }
-}
-  
-
-void Brane::_ask(const Hashbag &tags, const Convo &convo, Shibbomore *shmores) {
+void Markov::ask(const Request &req, Response *rsp) {
   assert(mbn == 1);
   assert(ctxlay->n * sizeof(double) == sizeof(Request));
   assert(tgtlay->n * sizeof(double) == sizeof(Response));
   assert(tgtlay->n == outlay->n);
 
-  Request req;
-  req.tags = tags;
-  req.convo = convo;
-
   memcpy(ctxbuf, &req, sizeof(Request));
 
-  scramble(0, 0);
+  scramble(0, 5.5);
   generate();
 
-  memcpy(shmores, outbuf, sizeof(Response));
+  memcpy(rsp, outbuf, sizeof(Response));
 }
 
 
-void Brane::burn(double pi) {
+void Markov::burn(double pi) {
+  assert(samples.size());
+
   assert(ctxlay->n * sizeof(double) == sizeof(Request));
   assert(tgtlay->n * sizeof(double) == sizeof(Response));
 
   for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
-    const Rule *rulep = rules.pick();
-    assert(rulep);
-    assert(!rulep->prepared);
+    const Sample *sample = samples.data() + (randuint() % samples.size());
 
-    Rule rule = *rulep;
-    rule.prepare();
-    assert(rule.prepared);
-
-    Request req;
-    req.tags = rule.tags;
-    req.convo.build(rule.req);
-    
-    unsigned int rspn = rule.rsp.size();
-    if (rspn > 3)
-      rspn = 3;
-    Response rsp;
-    memcpy(rsp.shmore, rule.rsp.data(), sizeof(Shibbomore) * rspn);
-    memset(rsp.shmore + rspn, 0, 3 - rspn);
-
-//fprintf(stderr, "rule: %s -> %s\n", rule.req[0].decode(vocab).c_str(), rule.rsp[0].decode(vocab).c_str());
-
-    memcpy(ctxbuf + mbi * ctxlay->n, &req, sizeof(Request));
-    memcpy(tgtbuf + mbi * tgtlay->n, &rsp, sizeof(Response));
+    memcpy(ctxbuf + mbi * ctxlay->n, &sample->req, sizeof(Request));
+    memcpy(tgtbuf + mbi * tgtlay->n, &sample->rsp, sizeof(Response));
   }
 
   scramble(0, 0);
-  _burn(0, pi);
+  _burn(pi, pi);
 }
 
 }

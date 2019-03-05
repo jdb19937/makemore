@@ -9,7 +9,11 @@
 
 #include <math.h>
 
+#include "imgutils.hh"
+
+#if 0
 #include <jpeglib.h>
+#endif
 
 #include "ppm.hh"
 
@@ -37,6 +41,7 @@ double PPM::centerlight() {
   return s;
 }
 
+#if 0
 bool PPM::read_jpeg(const std::string &jpeg) {
   struct jpeg_decompress_struct cinfo;
   struct jpeg_error_mgr jerr;
@@ -147,6 +152,7 @@ void PPM::write_jpeg(FILE *outfile) {
   jpeg_finish_compress(&cinfo);
   jpeg_destroy_compress(&cinfo);
 }
+#endif
 
 bool PPM::read(FILE *fp) {
   int ret = getc(fp);
@@ -375,6 +381,23 @@ void PPM::cutlab(double *vec, unsigned int vw, unsigned int vh, unsigned int x0,
   }
 }
 
+void PPM::unvectorize(const uint8_t *vec, unsigned int _w, unsigned int _h) {
+  unsigned int n = _w * _h * 3;
+
+  w = _w;
+  h = _h;
+  if (data)
+    delete[] data;
+  data = new uint8_t[n];
+
+  for (unsigned int i = 0; i < n; i += 3) {
+    uint8_t r, g, b;
+    labtorgb((double)(vec[i+0] + 0.5) / 256.0, (double)(vec[i+1] + 0.5) / 256.0, (double)(vec[i+2] + 0.5) / 256.0, &r, &g, &b);
+    data[i+0] = r;
+    data[i+1] = g;
+    data[i+2] = b;
+  }
+}
 void PPM::unvectorize(const double *vec, unsigned int _w, unsigned int _h) {
   unsigned int n = _w * _h * 3;
 
@@ -655,111 +678,6 @@ int main() {
 }
 #endif
 
-
-static inline double f(double n) {
-   return (n > 0.04045 ? pow((n + 0.055) / 1.055, 2.4) : n / 12.92) * 100.0;
-}
-
-void rgbtoxyz(uint8_t r, uint8_t g, uint8_t b, double *xp, double *yp, double *zp) {
-  double dr = f((double)r / 255.0);
-  double dg = f((double)g / 255.0);
-  double db = f((double)b / 255.0);
-
-  *xp = dr * 0.4124 + dg * 0.3576 + db * 0.1805;
-  *yp = dr * 0.2126 + dg * 0.7152 + db * 0.0722;
-  *zp = dr * 0.0193 + dg * 0.1192 + db * 0.9505;
-}
-
-void xyztorgb(double x, double y, double z, uint8_t *rp, uint8_t *gp, uint8_t *bp) {
-  double dx = x / 100.0;
-  double dy = y / 100.0;
-  double dz = z / 100.0;
-
-  double pr = dx * 3.2404542 + dy * -1.5371385 + dz * -0.4985314;
-  double pg = dx * -0.9692660 + dy * 1.8760108 + dz * 0.0415560;
-  double pb = dx * 0.0556434 + dy * -0.2040259 + dz * 1.0572252;
-
-  double qr = (((pr > 0.0031308) ? (1.055*pow(pr, 1 / 2.4) - 0.055) : (12.92*pr)) * 255.0);
-  double qg = (((pg > 0.0031308) ? (1.055*pow(pg, 1 / 2.4) - 0.055) : (12.92*pg)) * 255.0);
-  double qb = (((pb > 0.0031308) ? (1.055*pow(pb, 1 / 2.4) - 0.055) : (12.92*pb)) * 255.0);
-
-  if (qr < 0) qr = 0; if (qr > 255.0) qr = 255.0;
-  if (qg < 0) qg = 0; if (qg > 255.0) qg = 255.0;
-  if (qb < 0) qb = 0; if (qb > 255.0) qb = 255.0;
-
-  *rp = qr;
-  *gp = qg;
-  *bp = qb;
-}
-
-		
-
-static inline double g(double n) {
-  const double EPS = 0.008856;
-  const double KAPPA = 903.3;
-  return n > EPS ? pow(n, 1.0/3.0) : (KAPPA * n + 16.0) / 116.0;
-}
-
-//double tl = 0.25;
-//double tab = 0.5;
-
-void xyztolab(double x, double y, double z, double *lp, double *ap, double *bp) {
-  double dx = g(x / 95.047);
-  double dy = g(y / 100.0);
-  double dz = g(z / 108.883);
-
-  *lp = 116.0 * dy - 16.0;
-  if (*lp < 0)
-    *lp = 0;
-  *ap = 500.0 * (dx - dy);
-  *bp = 200.0 * (dy - dz);
-
-  *lp -= 50.0;
-  *lp /= 100.0;
-  *ap /= 100.0;
-  *bp /= 100.0;
-
-//  *lp *= tl;
-//  *ap *= tab;
-//  *bp *= tab;
-
-  *lp += 0.5;
-  *ap += 0.5;
-  *bp += 0.5;
-}
-
-void labtoxyz(double l, double a, double b, double *xp, double *yp, double *zp) {
-  if (l <  0.0) l = 0.0;
-  if (l >= 1.0) l = 1.0;
-  l -= 0.5;
-//  l /= tl;
-  l *= 100.0;
-  l += 50.0;
-
-  if (a <  0.0) a = 0.0;
-  if (a >= 1.0) a = 1.0;
-  a -= 0.5;
-//  a /= tab;
-  a *= 100.0;
-
-  if (b <  0.0) b = 0.0;
-  if (b >= 1.0) b = 1.0;
-  b -= 0.5;
-//  b /= tab;
-  b *= 100.0;
-  
-  double py = (l + 16.0) / 116.0;
-  double px = a / 500.0 + py;
-  double pz = py - b / 200.0;
-
-  double x3 = px*px*px;
-  double y3 = py*py*py;
-  double z3 = pz*pz*pz;
-
-  *xp = ((x3 > 0.008856) ? x3 : ((px - 16.0 / 116.0) / 7.787)) * 95.047;
-  *yp = ((y3 > 0.008856) ? y3 : ((py - 16.0 / 116.0) / 7.787)) * 100.0;
-  *zp = ((z3 > 0.008856) ? z3 : ((pz - 16.0 / 116.0) / 7.787)) * 108.883;
-}
 
 } //namespace
 

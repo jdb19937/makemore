@@ -11,11 +11,11 @@
 #include <sys/types.h>
 #include <fcntl.h>
 
+#include <openssl/sha.h>
+
 #include <map>
 #include <set>
 #include <string>
-
-#include "sha256.c"
 
 #include "ipdb.hh"
 #include "random.hh"
@@ -73,10 +73,10 @@ IPDB::~IPDB() {
 IPDB::Entry *IPDB::find(uint32_t ip) {
   uint8_t hash[32];
   SHA256_CTX sha;
-  sha256_init(&sha);
-  sha256_update(&sha, (const uint8_t *)&ip, 4);
-  sha256_update(&sha, (const uint8_t *)"asdf", 4);
-  sha256_final(&sha, hash);
+  SHA256_Init(&sha);
+  SHA256_Update(&sha, (const uint8_t *)&ip, 4);
+  SHA256_Update(&sha, (const uint8_t *)"asdf", 4);
+  SHA256_Final(hash, &sha);
   uint64_t h;
   memcpy(&h, hash, 8);
 

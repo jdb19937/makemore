@@ -1,9 +1,13 @@
 #define __MAKEMORE_URB_CC__ 1
 #include <assert.h>
 #include <stdio.h>
+#include <dirent.h>
+#include <sys/types.h>
 
 #include "urb.hh"
 #include "pipeline.hh"
+#include "strutils.hh"
+#include "imgutils.hh"
 
 namespace makemore {
 
@@ -24,6 +28,18 @@ Urb::Urb(const char *_dir, unsigned int _mbn) {
   pipex = new Pipeline((dir + "/partrait.proj").c_str(), mbn);
 
   brane1 = new Brane((dir + "/brane.proj").c_str(), 1);
+
+  images.clear();
+  DIR *dp = opendir((dir + "/images").c_str());
+  assert(dp);
+  struct dirent *de;
+  while ((de = readdir(dp))) {
+    if (*de->d_name == '.')
+      continue;
+    images.push_back(dir + "/images/" + de->d_name);
+  }
+  closedir(dp);
+  assert(images.size());
 }
 
 Urb::~Urb() {
@@ -36,6 +52,42 @@ Urb::~Urb() {
 
   delete outgoing;
 }
+
+Parson *Urb::make(unsigned int tier) {
+  string imagefn = images[randuint() % images.size()];
+  string png = slurp(imagefn);
+
+  Parson parson;
+
+  vector<string> tags;
+  imglab("png", png, 64, 64, parson.target, &tags);
+
+  bool gender = 1;
+  for (auto tag : tags) {
+    if (tag == "female")
+      gender = 0;
+    parson.add_tag(tag.c_str());
+  }
+
+  string nom;
+  do {
+    nom = Parson::gen_nom(gender);
+  } while (find(nom));
+
+  strcpy(parson.nom, nom.c_str());
+  return this->make(parson, tier);
+}
+
+
+
+void Urb::restock(unsigned int n, vector<string> *noms) {
+  for (unsigned int i = 0; i < n; ++i) {
+    Parson *parson = make(0);
+    noms->push_back(parson->nom);
+  }
+}
+
+    
 
 void Urb::generate(Parson *p, long min_age) {
   p->generate(pipe1, min_age);

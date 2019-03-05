@@ -42,6 +42,7 @@ struct PPM {
   void vectorize(std::vector<double> *);
   void vectorize(std::vector<uint8_t> *);
   void vectorize(uint8_t *);
+  void unvectorize(const uint8_t *, unsigned int, unsigned int);
   void unvectorize(const std::vector<double> &, unsigned int, unsigned int);
   void unvectorize(const double *, unsigned int, unsigned int);
   void unvectorizegray(const double *, unsigned int, unsigned int);
@@ -59,31 +60,14 @@ struct PPM {
   void cutlab(double *vec, unsigned int vw, unsigned int vh, unsigned int x0, unsigned int y0);
   void make(unsigned int _w, unsigned int _h, uint8_t v);
 
+#if 0
   void write_jpeg(FILE *);
   bool read_jpeg(const std::string &);
   void write_jpeg(std::string *);
+#endif
 
   double centerlight();
 };
-
-void rgbtoxyz(uint8_t r, uint8_t g, uint8_t b, double *xp, double *yp, double *zp);
-void xyztolab(double x, double y, double z, double *lp, double *ap, double *bp);
-void xyztorgb(double x, double y, double z, uint8_t *r, uint8_t *g, uint8_t *b);
-void labtoxyz(double l, double a, double b, double *xp, double *yp, double *zp);
-
-inline void rgbtolab(uint8_t r, uint8_t g, uint8_t b, double *lp, double *ap, double *bp) {
-  double x, y, z;
-  rgbtoxyz(r, g, b, &x, &y, &z);
-  xyztolab(x, y, z, lp, ap, bp);
-}
-
-inline void labtorgb(double l, double a, double b, uint8_t *rp, uint8_t *gp, uint8_t *bp) {
-  double x, y, z;
-  labtoxyz(l, a, b, &x, &y, &z);
-  xyztorgb(x, y, z, rp, gp, bp);
-}
-
-
 
 }
 

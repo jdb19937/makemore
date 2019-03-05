@@ -1,4 +1,8 @@
 #define __MAKEMORE_SHIBBOMORE_CC__ 1
+#include <stdlib.h>
+
+#include <openssl/sha.h>
+
 #include <vector>
 #include <string>
 #include <algorithm>
@@ -8,8 +12,6 @@
 #include "strutils.hh"
 #include "closest.hh"
 #include "vocab.hh"
-
-#include "sha256.c"
 
 namespace makemore {
 

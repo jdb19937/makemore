@@ -10,6 +10,9 @@
 #include <arpa/inet.h>
 #include <netinet/in.h>
 
+#include <openssl/ssl.h>
+#include <openssl/err.h>
+
 #include <vector>
 #include <map>
 #include <set>
@@ -42,6 +45,11 @@ struct Server {
 
   int s;
   uint16_t port;
+
+  int ssl_s;
+  uint16_t ssl_port;
+  SSL_CTX *ssl_ctx;
+
   fd_set fdsets[3];
 
   std::set<class Agent*> agents;
@@ -52,13 +60,16 @@ struct Server {
   std::string urbdir;
   Urb *urb;
 
+  std::string session_key;
+  bool check_session(const std::string &nom, const std::string &session);
+  std::string make_session(const std::string &nom, unsigned long duration = 3600);
 
   Server(const std::string &urb);
   ~Server();
 
   void open();
   void close();
-  void bind(uint16_t _port);
+  void bind(uint16_t _port, uint16_t _ssl_port);
   void listen(int backlog = 256);
   void select();
 
@@ -76,6 +87,7 @@ struct Server {
 
   void start(unsigned int kids = 8);
   void accept();
+  void ssl_accept();
   void wait();
   void kill();
 

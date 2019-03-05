@@ -27,6 +27,16 @@ struct Agent {
   uint32_t ip;
   std::string ipstr;
 
+  bool secure;
+  SSL *ssl;
+  int ssl_status;
+
+  enum { UNKNOWN, HTTP, MORETP } proto;
+  std::vector<std::string> httpbuf;
+  bool httpkeep;
+  std::string httpua;
+  std::string httpvers;
+
   char *inbuf;
   unsigned int inbufm, inbufn;
   unsigned int inbufj, inbufk;
@@ -36,7 +46,7 @@ struct Agent {
 
   Urbite *who;
 
-  Agent(class Server *_server, const char *nom, int _s = -1, uint32_t _ip = 0x7F000001U);
+  Agent(class Server *_server, const char *nom, int _s = -1, uint32_t _ip = 0x7F000001U, bool _secure = false);
   ~Agent();
   void close();
 

@@ -1,23 +1,24 @@
 #define __MAKEMORE_RANDOM_CC__ 1
 #include <stdio.h>
+#include <string.h>
 #include <sys/types.h>
 #include <sys/time.h>
 #include <unistd.h>
 
+#include <openssl/sha.h>
+
 #include <random>
 
 #include "random.hh"
-
-#include "sha256.c"
 
 namespace makemore {
 
 uint64_t hash64(const uint8_t *data, unsigned int len) {
   uint8_t hash[32];
   SHA256_CTX sha;
-  sha256_init(&sha);
-  sha256_update(&sha, data, len);
-  sha256_final(&sha, hash);
+  SHA256_Init(&sha);
+  SHA256_Update(&sha, data, len);
+  SHA256_Final(hash, &sha);
 
   uint64_t h;
   memcpy(&h, hash, 8);

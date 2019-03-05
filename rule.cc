@@ -55,9 +55,9 @@ unsigned int Rule::parse(const char *line) {
   std::string tagstr;
   vector<string> tagwords;
   if (const char *tagsep = strchr(line, ':')) {
-    string tagstr(line, tagsep);
+    string tagstr(line, tagsep - line);
     line = tagsep + 1;
-    split(tagstr.c_str(), ' ', &tagwords);
+    splitwords(tagstr, &tagwords);
   }
 
   const char *sep = strstr(line, "->");
@@ -113,6 +113,8 @@ unsigned int Rule::parse(const char *line) {
 void Rule::save(FILE *fp) const {
   size_t ret;
 
+  tags.save(fp);
+
   unsigned int nreq = req.size();
   assert(nreq == wild.size());
   uint32_t bnreq = htonl(nreq);
@@ -136,6 +138,8 @@ void Rule::save(FILE *fp) const {
 
 void Rule::load(FILE *fp) {
   size_t ret;
+
+  tags.load(fp);
 
   uint32_t bnreq;
   ret = fread(&bnreq, 4, 1, fp);

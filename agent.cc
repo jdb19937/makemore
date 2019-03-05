@@ -10,6 +10,8 @@
 #include <arpa/inet.h>
 #include <netinet/in.h>
 
+#include <openssl/ssl.h>
+
 #include "agent.hh"
 #include "server.hh"
 #include "urbite.hh"
@@ -25,11 +27,12 @@ static string _ipstr(uint32_t ip) {
   return string(buf);
 }
 
-Agent::Agent(class Server *_server, const char *nom, int _s, uint32_t _ip) {
+Agent::Agent(class Server *_server, const char *nom, int _s, uint32_t _ip, bool _secure) {
   server = _server;
   s = _s;
   ip = _ip;
   ipstr = _ipstr(ip);
+  secure = _secure;
 
   inbufj = 0;
   inbufk = 0;
@@ -42,6 +45,18 @@ Agent::Agent(class Server *_server, const char *nom, int _s, uint32_t _ip) {
   outbuf = NULL; // new char[outbufm];
 
   who = new Urbite(nom ? nom : ipstr, server->urb);
+
+  if (secure) {
+    ssl = SSL_new(_server->ssl_ctx);
+    SSL_set_fd(ssl, s);
+    ssl_status = SSL_ERROR_WANT_READ;
+  } else {
+    ssl = NULL;
+    ssl_status = 0;
+  }
+
+  proto = UNKNOWN;
+  httpkeep = true;
 }
 
 Agent::~Agent() {
@@ -55,6 +70,8 @@ Agent::~Agent() {
 
   if (who)
     delete who;
+  if (ssl)
+    SSL_free(ssl);
 }
 
 void Agent::close() {
@@ -64,6 +81,11 @@ void Agent::close() {
 }
 
 bool Agent::slurp() {
+  if (ssl_status) {
+    ssl_status = SSL_get_error(ssl, SSL_accept(ssl));
+    return true;
+  }
+
   assert(inbufn <= inbufm);
   if (inbufn == inbufm)
     return false;
@@ -71,7 +93,12 @@ bool Agent::slurp() {
   if (!inbuf)
     inbuf = new char[inbufm];
 
-  ssize_t ret = ::read(s, inbuf + inbufn, inbufm - inbufn);
+  ssize_t ret;
+  if (secure) {
+    ret = ::SSL_read(ssl, inbuf + inbufn, inbufm - inbufn);
+  } else {
+    ret = ::read(s, inbuf + inbufn, inbufm - inbufn);
+  }
   if (ret < 1)
     return false;
 
@@ -226,7 +253,12 @@ void Agent::write(const string &str) {
     return;
   }
 
-  ssize_t ret = ::write(s, str.data(), str.length());
+  ssize_t ret;
+  if (secure) {
+    ret = ::SSL_write(ssl, str.data(), str.length());
+  } else {
+    ret = ::write(s, str.data(), str.length());
+  }
   if (ret == str.length())
     return;
   if (ret < 1) {
@@ -260,12 +292,21 @@ void Agent::write(const string &str) {
 
 void Agent::flush() {
   assert(s >= 0);
+  if (ssl_status) {
+    ssl_status = SSL_get_error(ssl, SSL_accept(ssl));
+    return;
+  }
 
   if (outbufn == 0)
     return;
   if (!outbuf)
     outbuf = new char[outbufm];
-  ssize_t ret = ::write(s, outbuf, outbufn);
+  ssize_t ret;
+  if (secure) {
+    ret = ::SSL_write(ssl, outbuf, outbufn);
+  } else {
+    ret = ::write(s, outbuf, outbufn);
+  }
   if (ret < 1)
     return;
   if (ret == outbufn) {
@@ -307,6 +348,22 @@ void Agent::command(const vector<string> &words) {
   if (!words.size())
     return;
 
+  bool multi = false;
+  for (auto word : words) {
+    if (word == ";") {
+      multi = true;
+      break;
+    }
+  }
+  if (multi) {
+    vector<vector<string> > states;
+    splitthread(words, &states, ";");
+    for (auto state : states) {
+      this->command(state);
+    }
+    return;
+  }
+
   vector<vector<string> > thread;
   splitthread(words, &thread, "|");
   assert(thread.size());
@@ -316,6 +373,7 @@ void Agent::command(const vector<string> &words) {
   string cmd = thread[0][0];
   auto hi = server->cmdtab.find(cmd);
 
+  fprintf(stderr, "got cmd %s [%s]\n", cmd.c_str(), joinwords(words).c_str());
   if (hi == server->cmdtab.end()) {
     fprintf(stderr, "unknown cmd %s, asking brane [%s]\n", cmd.c_str(), joinwords(words).c_str());
 

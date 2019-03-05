@@ -19,12 +19,15 @@ namespace makemore {
 
 struct Parson {
   static bool valid_nom(const char *);
+  static bool valid_nom(const std::string &s) { return valid_nom(s.c_str()); }
   static bool valid_tag(const char *);
   static uint64_t hash_nom(const char *nom, unsigned int variant = 0);
   static bool female_nom(const char *);
   static std::string bread_nom(const char *nom0, const char *nom1, uint8_t);
   static void paren_noms(const char *, char *, char *);
-  static std::string gen_nom(bool *gender = NULL);
+  static std::string gen_nom(bool *gender);
+  static std::string gen_nom(bool gender);
+  static std::string gen_nom();
 
   const static unsigned int nfrens = 16;
   const static unsigned int ntags = 8;
@@ -141,7 +144,14 @@ struct Parson {
   void clear_pass() {
     set_pass("");
   }
-  bool check_pass(const std::string &password);
+  bool check_pass(const std::string &password) const;
+
+  bool has_pass() const {
+    for (unsigned int i = 0; i < sizeof(pass); ++i)
+      if (pass[i])
+        return true;
+    return false;
+  }
 
   bool exists() {
     return (nom[0] != 0);

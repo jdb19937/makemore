@@ -1,5 +1,7 @@
 #define __MAKEMORE_HASHBAG_CC__ 1
 
+#include <openssl/sha.h>
+
 #include <vector>
 #include <string>
 #include <algorithm>
@@ -8,8 +10,6 @@
 #include "strutils.hh"
 #include "closest.hh"
 #include "vocab.hh"
-
-#include "sha256.c"
 
 namespace makemore {
 using namespace std;
@@ -89,14 +89,14 @@ void Hashbag::add(const char *tag, double w) {
   }
 
   SHA256_CTX sha;
-  sha256_init(&sha);
-  sha256_update(&sha, (const uint8_t *)"#", 1);
-  sha256_update(&sha, (const uint8_t *)tag, strlen(tag));
-  sha256_final(&sha, hash);
+  SHA256_Init(&sha);
+  SHA256_Update(&sha, (const uint8_t *)"#", 1);
+  SHA256_Update(&sha, (const uint8_t *)tag, strlen(tag));
+  SHA256_Final(hash, &sha);
 
-  sha256_init(&sha);
-  sha256_update(&sha, (const uint8_t *)hash, 32);
-  sha256_final(&sha, hash + 32);
+  SHA256_Init(&sha);
+  SHA256_Update(&sha, (const uint8_t *)hash, 32);
+  SHA256_Final(hash + 32, &sha);
 
 #if 0
   assert(n >= 256);

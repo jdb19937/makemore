@@ -18,6 +18,7 @@ struct Urb {
 
   std::vector<Zone*> zones;
   Bus *outgoing;
+  std::vector<std::string> images;
 
   Brane *brane1;
   Pipeline *pipe1, *pipex;
@@ -32,11 +33,13 @@ struct Urb {
   Zone *zone(const Parson *x) const;
   Parson *find(const std::string &nom, unsigned int *tierp = NULL) const;
   Parson *make(const Parson &x, unsigned int tier = 0);
+  Parson *make(unsigned int tier = 0);
 
   void _busout(const Parson &x);
 
   bool deport(const char *nom);
   void deport(Parson *p);
+  void restock(unsigned int n, std::vector<std::string> *noms = NULL);
 };
 
 }
