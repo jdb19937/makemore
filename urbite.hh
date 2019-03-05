@@ -18,10 +18,10 @@ struct Urbite {
   Parson *_parson;
   Urb *urb;
 
-  Urbite(const std::string &_nom, Urb *_urb) {
+  Urbite(const std::string &_nom, Urb *_urb, Parson *__parson = NULL) {
     nom = _nom;
     urb = _urb;
-    _parson = NULL;
+    _parson = __parson;
   }
 
   Parson *parson() {

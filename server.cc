@@ -545,7 +545,7 @@ void Server::main() {
       }
     }
 
-    for (unsigned int i = 0; i < 64; ++i) {
+    for (unsigned int i = 0; i < 256; ++i) {
       Parson *parson = urb->zones[0]->pick();
       if (!parson)
          continue;

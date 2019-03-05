@@ -2,7 +2,7 @@ CXX = g++
 NVCC = nvcc
 NVCCFLAGS = -O3
 CXXFLAGS = -O3 -g
-LDFLAGS = -lm -ljpeg -lMagick++ -lssl -lcrypto
+LDFLAGS = -lm -lpng -lMagick++ -lssl -lcrypto
 CULDFLAGS = -lcuda -lcudart
 
 LIBHDR = cudamem.hh random.hh tron.hh ppm.hh layout.hh megatron.hh wiring.hh persist.hh dataset.hh topology.hh multitron.hh project.hh twiddle.hh sampler.hh closest.hh pipeline.hh parson.hh ipdb.hh warp.hh vocab.hh script.hh strutils.hh hashbag.hh shibboleth.hh brane.hh rule.hh wildleth.hh stage.hh zone.hh bus.hh numutils.hh server.hh commands.hh urb.hh org.hh urbite.hh convo.hh shibbomore.hh wildmore.hh agent.hh markov.hh imgutils.hh

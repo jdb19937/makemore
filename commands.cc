@@ -24,6 +24,54 @@ int _startup_count = 0;
 
 using namespace std;
 
+NEW_CMD(pick) {
+  unsigned int npicks = 1;
+  if (arg.size() > 0)
+    npicks = (unsigned int)strtoul(arg[0].c_str(), NULL, 0);
+  if (npicks > 256)
+    npicks = 256;
+
+  unsigned int zid = 0;
+  if (arg.size() > 1)
+    zid = (unsigned int)strtoul(arg[1].c_str(), NULL, 0);
+
+  Urb *urb = agent->server->urb;
+  assert(urb);
+
+  if (zid >= urb->zones.size()) {
+    agent->printf("bad zone\n");
+    return;
+  }
+
+  Zone *zone = urb->zones[zid];
+  assert(zone);
+
+  vector<Urbite*> &pickbuf = agent->pickbuf;
+  unsigned int tpicks = pickbuf.size();
+  pickbuf.resize(tpicks + npicks);
+
+  for (unsigned int i = 0; i < npicks; ++i) {
+    Parson *pick = zone->pick();
+    if (!pick)
+      return;
+
+    Urbite *upick = new Urbite(pick->nom, urb, pick);
+    agent->printf("picked %s\n", upick->nom.c_str()); 
+    pickbuf[tpicks + i] = upick;
+  }
+  tpicks += npicks;
+
+  if (tpicks > Agent::maxpicks) {
+    unsigned int remove = tpicks - Agent::maxpicks;
+    for (unsigned int i = 0; i < Agent::maxpicks; ++i) {
+      if (i < remove)
+        delete pickbuf[i];
+      pickbuf[i] = pickbuf[i + remove];
+    }
+    pickbuf.resize(Agent::maxpicks);
+  }
+}
+
 NEW_CMD(http) {
   if (arg.size())
     return;
@@ -154,8 +202,7 @@ NEW_CMD(be) {
 NEW_CMD(target) {
   if (arg.size() != 2)
     return;
-  const std::string &fmt = arg[1];
-  const std::string &img = arg[2];
+  const std::string &img = arg[1];
 
   const std::string &nom = arg[0];
   Parson *parson = agent->server->urb->find(nom);
@@ -164,7 +211,7 @@ NEW_CMD(target) {
     return;
   }
 
-  bool ret = imglab(fmt, img, Parson::dim, Parson::dim, parson->target);
+  bool ret = imglab("png", img, Parson::dim, Parson::dim, parson->target);
   if (ret)
     agent->write("ok\n");
   else
@@ -179,7 +226,7 @@ NEW_CMD(show) {
     Parson *parson = agent->who->parson();
 
     string png;
-    labpng(parson->target, Parson::dim, Parson::dim, &png);
+    labimg(parson->target, Parson::dim, Parson::dim, "png", &png);
 
     char buf[64];
     sprintf(buf, "png <%lu\n", png.length());
@@ -194,7 +241,7 @@ NEW_CMD(show) {
     agent->server->urb->generate(parson, 0);
 
     string png;
-    labpng(parson->partrait, Parson::dim, Parson::dim, &png);
+    labimg(parson->partrait, Parson::dim, Parson::dim, "png", &png);
 
     char buf[64];
     sprintf(buf, "png <%lu\n", png.length());

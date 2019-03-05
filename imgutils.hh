@@ -51,6 +51,15 @@ extern bool imglab(
   std::vector<std::string> *tags = NULL
 );
 
+bool labimg(
+  const uint8_t *lab,
+  unsigned int w,
+  unsigned int h,
+  const std::string &fmt,
+  std::string *png,
+  const std::vector<std::string> *tags = NULL
+);
+
 bool labpng(
   const uint8_t *lab,
   unsigned int w,
@@ -58,6 +67,15 @@ bool labpng(
   std::string *png,
   const std::vector<std::string> *tags = NULL
 );
+
+bool pnglab(
+  const std::string &png,
+  unsigned int w,
+  unsigned int h,
+  uint8_t *lab,
+  std::vector<std::string> *tags = NULL
+);
+
 
 }
 
