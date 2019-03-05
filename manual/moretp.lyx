@@ -113,7 +113,7 @@ The TCP byte stream is divided into packets.
 n' followed by an optional binary part, representing a list of strings.
  When decoding a packet, lines are processed to remove leading and trailing
  whitespace and all other whitespace sequences are normalized to a single
- ' '.
+ space.
  After this processing, each line corresponds uniquely to a sequence of
  non-empty, non-whitespace-containing words.
 \begin_inset Newline newline
@@ -123,12 +123,26 @@ n' followed by an optional binary part, representing a list of strings.
 \end_layout
 
 \begin_layout Standard
-If any word in a line begins with '<', the rest of the word is passed to
- strtoul(3) to get a byte count.
- The total byte count of the words in the line is the length of the binary
- part of the packet.
- To complete decoding of the packet, each word beginning with '<' is replaced
- by the corresponding bytes in the packet's binary part.
+If any word in a line begins with 
+\begin_inset Quotes eld
+\end_inset
+
+<
+\begin_inset Quotes erd
+\end_inset
+
+, the rest of the word is passed to strtoul(3) to get a byte count.
+ The total of these byte counts is the length of the binary part of the
+ packet.
+ To complete decoding of the packet, each word beginning with 
+\begin_inset Quotes eld
+\end_inset
+
+<
+\begin_inset Quotes erd
+\end_inset
+
+ is replaced by the corresponding bytes in the packet's binary part.
  Then the resulting word list is the decoded packet.
 \begin_inset Newline newline
 \end_inset
@@ -138,16 +152,34 @@ If any word in a line begins with '<', the rest of the word is passed to
 
 \begin_layout Standard
 To encode a moretp packet, start with a list of a strings.
- An empty list corresponds to the packet "
-\backslash
-n".
- If none of the strings contain any whitespace, then the packet is the list
- joined by ' ' and terminated by '
-\backslash
-n'.
- If any string contains whitespace, replace it with '<' followed by its
- length prior to the joining, and append the original string to the final
- packet.
+ An empty list corresponds to the packet containing a single newline.
+ If none of the strings contain any whitespace or begin with 
+\begin_inset Quotes eld
+\end_inset
+
+<
+\begin_inset Quotes erd
+\end_inset
+
+, then the packet is the list joined by spaces and terminated by a newline.
+ If any string contains whitespace or begins with 
+\begin_inset Quotes eld
+\end_inset
+
+<
+\begin_inset Quotes erd
+\end_inset
+
+, replace it with 
+\begin_inset Quotes eld
+\end_inset
+
+<
+\begin_inset Quotes erd
+\end_inset
+
+ followed by its length prior to the joining, and append the original string
+ to the final packet.
  Or, do this for every string whether or not it contains whitespace.
 \begin_inset Newline newline
 \end_inset
@@ -166,7 +198,7 @@ sub moretpenc {
 \begin_layout Verbatim
   join(' ', map /
 \backslash
-s/ ? "<" .
+s/ || /^</ ? '<' .
  length : $_, @_) .
 \end_layout
 
@@ -179,152 +211,11 @@ n" .
 \begin_layout Verbatim
   join('', grep /
 \backslash
-s/, @_)
+s/ || /^</, @_)
 \end_layout
 
 \begin_layout Verbatim
-} 
-\end_layout
-
-\begin_layout Section
-http over moretp
-\end_layout
-
-\begin_layout Standard
-As long as the HTTP request line and request headers are not sensitive to
- multiple whitespace, and do not contain any '<' characters, each line can
- be understood as a moretp packet.
-\end_layout
-
-\begin_layout Example
-This is both moretp and HTTP.
-\end_layout
-
-\begin_layout Verbatim
-GET / HTTP/1.1
-\end_layout
-
-\begin_layout Verbatim
-Host: localhost:9999
-\end_layout
-
-\begin_layout Verbatim
-Connection: keep-alive
-\end_layout
-
-\begin_layout Verbatim
-Upgrade-Insecure-Requests: 1
-\end_layout
-
-\begin_layout Verbatim
-Accept-Encoding: gzip, deflate, br
-\end_layout
-
-\begin_layout Verbatim
-Accept-Language: en-US,en;q=0.9
-\end_layout
-
-\begin_layout Verbatim
-
-\end_layout
-
-\begin_layout Example
-And so is this, including the request body.
-\end_layout
-
-\begin_layout Verbatim
-POST /test HTTP/1.1
-\end_layout
-
-\begin_layout Verbatim
-Host: localhost:9999
-\end_layout
-
-\begin_layout Verbatim
-Connection: keep-alive
-\end_layout
-
-\begin_layout Verbatim
-Content-Length: 15
-\end_layout
-
-\begin_layout Verbatim
-Cache-Control: max-age=0
-\end_layout
-
-\begin_layout Verbatim
-Upgrade-Insecure-Requests: 1
-\end_layout
-
-\begin_layout Verbatim
-Origin: null
-\end_layout
-
-\begin_layout Verbatim
-Content-Type: application/x-www-form-urlencoded
-\end_layout
-
-\begin_layout Verbatim
-Accept-Encoding: gzip, deflate, br
-\end_layout
-
-\begin_layout Verbatim
-Accept-Language: en-US,en;q=0.9
-\end_layout
-
-\begin_layout Verbatim
-
-\end_layout
-
-\begin_layout Verbatim
-foo=bar&foo=baz
-\end_layout
-
-\begin_layout Verbatim
-
-\end_layout
-
-\begin_layout Standard
-To handle binary or whitespace-containing request and response bodies, we
- can use the trick of adding an extra header to encapsulate the body in
- a single moretp packet.
-\end_layout
-
-\begin_layout Example
-This is also valid moretp.
-\end_layout
-
-\begin_layout Verbatim
-POST /test HTTP/1.1
-\end_layout
-
-\begin_layout Verbatim
-Host: localhost:9999
-\end_layout
-
-\begin_layout Verbatim
-Content-Length: 21
-\end_layout
-
-\begin_layout Verbatim
-Content-Type: text/plain
-\end_layout
-
-\begin_layout Verbatim
-X-Moretp-Length: <23
-\end_layout
-
-\begin_layout Verbatim
-
-\end_layout
-
-\begin_layout Verbatim
-extra  space  between
-\end_layout
-
-\begin_layout Standard
-In this way a moretp server can communicate with HTTP clients without any
- special server-side support.
+}
 \end_layout
 
 \end_body

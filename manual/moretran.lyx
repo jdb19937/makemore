@@ -83,7 +83,7 @@ figs-within-sections
 \begin_body
 
 \begin_layout Title
-moregasm
+moretran
 \end_layout
 
 \begin_layout Author
@@ -99,7 +99,7 @@ overview
 \end_layout
 
 \begin_layout Standard
-Moregasm is a language for training a neural network with text.
+Moretran is a language for training a neural network with text.
 \begin_inset Newline newline
 \end_inset
 
@@ -107,7 +107,7 @@ Moregasm is a language for training a neural network with text.
 \end_layout
 
 \begin_layout Standard
-A moregasm script is a list of rules separated by newlines.
+A moretran script is a list of rules separated by newlines.
  The simplest kind of rule is two lists of words separated by 
 \begin_inset Quotes eld
 \end_inset
@@ -137,12 +137,12 @@ A special word is "*" which is substituted with a random word during training,
 \end_layout
 
 \begin_layout Standard
-The first clause of the rule can be a comma-separated list, representing
+The first clause of the rule can be a pipe-separated list, representing
  the history of a thread:
 \end_layout
 
 \begin_layout LyX-Code
-whats your name, * whats yours -> bob
+whats your name | * whats yours -> bob
 \end_layout
 
 \begin_layout LyX-Code
@@ -150,12 +150,12 @@ whats your name, * whats yours -> bob
 \end_layout
 
 \begin_layout Standard
-The second clause of the rule can also be a comma-separated list, representing
+The second clause of the rule can also be a pipe-separated list, representing
  multiple outputs:
 \end_layout
 
 \begin_layout LyX-Code
-tell me a joke -> okay, what does the fox say
+tell me a joke -> okay | what does the fox say
 \end_layout
 
 \begin_layout Standard
@@ -172,19 +172,19 @@ A rule can be prefixed by a list of tags and a
 \end_layout
 
 \begin_layout LyX-Code
-bob: whats your name, * whats yours -> bob
+bob : whats your name | * whats yours -> bob
 \end_layout
 
 \begin_layout LyX-Code
-sam: whats your name, * whats yours -> sam
+sam : whats your name | * whats yours -> sam
 \end_layout
 
 \begin_layout LyX-Code
-bob: whos your best friend -> sam
+bob : whos your best friend -> sam
 \end_layout
 
 \begin_layout LyX-Code
-sam: whos your best friend -> bob
+sam : whos your best friend -> bob
 \end_layout
 
 \begin_layout Standard
@@ -227,7 +227,7 @@ That's all there is to the language.
  Each rule is compiled to shibboleths.
  The positions of the wildcards within the clauses are also included, allowing
  substitutions to be performed.
- The neural network is then trained from the compiled moregasm code.
+ The neural network is then trained from the compiled moretran code.
 \end_layout
 
 \begin_layout Section
@@ -235,12 +235,12 @@ tools
 \end_layout
 
 \begin_layout Standard
-moregasm scripts can be compiled with the moregas utility.
+moretran scripts can be compiled with the moretran utility.
  Example:
 \end_layout
 
 \begin_layout LyX-Code
-$ moregas -o test.more test.txt
+$ moretran -o test.more test.txt
 \end_layout
 
 \end_body
