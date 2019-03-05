@@ -1,4 +1,4 @@
-PDF = collaborative_synthesis.pdf moretran.pdf moretp.pdf
+PDF = collaborative_synthesis.pdf moretran.pdf moretp.pdf peaple.pdf
 
 .PHONY: all
 all: $(PDF)
