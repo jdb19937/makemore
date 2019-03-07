@@ -83,7 +83,7 @@ figs-within-sections
 \begin_body
 
 \begin_layout Title
-makemore peaple
+moretf8
 \end_layout
 
 \begin_layout Author
@@ -91,88 +91,25 @@ Dan Brumleve
 \end_layout
 
 \begin_layout Date
-March 5, 2019
+March 7, 2019
 \end_layout
 
 \begin_layout Section
-introduction
-\end_layout
-
-\begin_layout Definition
-A 
-\emph on
-parson
-\emph default
- is a synthetic multimedia object.
-\end_layout
-
-\begin_layout Remark
-A parson metaphorically represents a person.
-\end_layout
-
-\begin_layout Definition
-Every parson has a 
-\emph on
-nom
-\emph default
- (a short string identifier), a 
-\emph on
-pic
-\emph default
- (a square color bitmap image), and a set of 
-\emph on
-tags 
-\emph default
-(words describing the pic).
- Additionally, a parson can have a list of 
-\emph on
-frens
-\emph default
- (noms of other peaple) and a list of 
-\emph on
-parens
-\emph default
- (noms of any other peaple used for recombinative synthesis of the pic).
+overview
 \end_layout
 
 \begin_layout Standard
-\begin_inset Separator plain
-\end_inset
-
-
-\end_layout
-
-\begin_layout Definition
-An 
-\emph on
-urb
-\emph default
- is a collection of peaple along with a generative neural network for creating
- the pics.
-\end_layout
-
-\begin_layout Remark
-An urb metaphorically represents a town.
+moretf8 an extension of utf8 that supports embedded binary data.
 \end_layout
 
 \begin_layout Standard
-\begin_inset Separator plain
-\end_inset
-
-
-\end_layout
-
-\begin_layout Remark
-An urb's neural network continuously learns from the pics and tags in the
- collection and exposes programming interfaces to make new peaple either
- from random parameters or by recombination of existing ones.
-\end_layout
-
-\begin_layout Standard
-\begin_inset Separator plain
-\end_inset
-
-
+The bytes 0xFF and 0xFE do not appear in any valid utf8 byte sequence.
+ An atomic utf8 byte sequence is the utf8 encoding of a single Unicode character
+, and a utf8 byte sequence can be considered as a sequence of atomic utf8
+ byte sequences.
+ An atomic moretf8 byte sequence is either an atomic utf8 byte sequence,
+ or it is 0xFF followed by some utf8 character followed by a byte sequence
+ whose length is that character's codepoint.
 \end_layout
 
 \end_body
