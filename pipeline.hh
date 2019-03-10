@@ -10,16 +10,18 @@
 #include "layout.hh"
 #include "stage.hh"
 #include "project.hh"
+#include "judge.hh"
 
 namespace makemore {
 
 struct Pipeline : Project {
   std::vector<Stage*> stages;
+  Judge *judge;
 
   Layout *ctrlay, *adjlay;
   const Layout *outlay, *ctxlay;
 
-  double *ctrbuf, *adjbuf, *outbuf, *ctxbuf;
+  double *ctrbuf, *adjbuf, *outbuf, *ctxbuf, *tmpbuf;
   uint32_t tgtlock, ctrlock;
 
   Pipeline(const char *_dir, unsigned int _mbn = 1);
@@ -33,7 +35,8 @@ struct Pipeline : Project {
   void fix(unsigned int iters, double blend);
   void reencode();
   void burn(uint32_t which, double nu, double pi);
-  void condition(uint32_t which, double yo, double wu);
+  void burngen(double pi);
+  void burnenc(double nu);
   void generate();
   void recombine();
   void uptarget();
@@ -60,7 +63,10 @@ struct Pipeline : Project {
   void generate(class Parson *parson, long min_age = 0);
   void generate(class Org *org, long min_age = 0);
 
-  void burn(Parson **parsons, unsigned int nparsons, double nu, double pi);
+  void burnenc(Parson **parsons, unsigned int nparsons, double nu);
+  void burngen(Parson **parsons, unsigned int nparsons, double wu);
+  void burnencgen(Parson **parsons, unsigned int nparsons, double nu, double pi);
+  void discrim(Parson **parsons, unsigned int nparsons, double yo);
 };
 
 }

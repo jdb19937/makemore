@@ -7,6 +7,7 @@
 #include <stdlib.h>
 
 #include <string>
+#include <vector>
 
 #include "random.hh"
 
@@ -168,6 +169,9 @@ struct Hashbag {
   }
 
   std::string guesstract(const class Vocab &v, double nfloor = 0.125);
+
+  std::string decode(const std::vector<std::string> &dict);
+  std::string pick(const std::vector<std::string> &dict, double phi = 0);
 };
 
 }

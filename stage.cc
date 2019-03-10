@@ -1,4 +1,4 @@
-#define __MAKEMORE_PROJECT_CC__ 1
+#define __MAKEMORE_STAGE_CC__ 1
 
 #include <string>
 #include <netinet/in.h>
@@ -593,65 +593,68 @@ fprintf(stderr, "err0=%lf err1=%lf\n", err0, err1);
   encode_ctr();
 }
 
+void Stage::burnenc(double nu) {
+  assert(encinlay->n == ctxlay->n + tgtlay->n);
+  for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
+    encude(ctxbuf + mbi * ctxlay->n, ctxlay->n, cuencin + mbi * encinlay->n + 0);
+    encude(tgtbuf + mbi * tgtlay->n, tgtlay->n, cuencin + mbi * encinlay->n + ctxlay->n);
+  }
+  assert(gen->outn == mbn * tgtlay->n);
+  encude(tgtbuf, gen->outn, cugentgt);
+
+  encgen->feed(cuencin, NULL);
+  encgen->target(cugentgt);
+
+  double *cugenfout = gen->foutput();
+  for (unsigned int mbi = 0; mbi < mbn; ++mbi)
+    cufocus(cugenfout + mbi * tgtlay->n, cutgtlayx, cutgtlayy, tgtlay->n);
+
+  gen->train(0);
+
+  encpass->update_stats();
+  encpass->train(nu);
+}
+
+void Stage::burngen(double pi) {
+  assert(geninlay->n == ctxlay->n + ctrlay->n);
+  for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
+    encude(ctxbuf + mbi * ctxlay->n, ctxlay->n, cugenin + mbi * geninlay->n + 0);
+    encude(ctrbuf + mbi * ctrlay->n, tgtlay->n, cugenin + mbi * geninlay->n + ctxlay->n);
+  }
+  assert(gen->outn == mbn * tgtlay->n);
+  encude(tgtbuf, gen->outn, cugentgt);
+
+  gen->feed(cugenin, NULL);
+  gen->target(cugentgt);
+
+  double *cugenfout = gen->foutput();
+  for (unsigned int mbi = 0; mbi < mbn; ++mbi)
+    cufocus(cugenfout + mbi * tgtlay->n, cutgtlayx, cutgtlayy, tgtlay->n);
+
+  gen->train(pi);
+}
+
+
 void Stage::burn(double nu, double pi) {
-#if 0
-  if (pi > 0) {
-    for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
-      encude(ctxbuf + mbi * ctxlay->n, ctxlay->n, cugenin + mbi * geninlay->n + 0);
-      encude(ctrbuf + mbi * ctrlay->n, ctrlay->n, cugenin + mbi * geninlay->n + ctxlay->n);
-    }
-    assert(gen->outn == mbn * tgtlay->n);
-    encude(tgtbuf, gen->outn, cugentgt);
-
-    gen->feed(cugenin, NULL);
-    gen->target(cugentgt);
-    gen->train(pi);
+  assert(encinlay->n == ctxlay->n + tgtlay->n);
+  for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
+    encude(ctxbuf + mbi * ctxlay->n, ctxlay->n, cuencin + mbi * encinlay->n + 0);
+    encude(tgtbuf + mbi * tgtlay->n, tgtlay->n, cuencin + mbi * encinlay->n + ctxlay->n);
   }
+  assert(gen->outn == mbn * tgtlay->n);
+  encude(tgtbuf, gen->outn, cugentgt);
 
+  encgen->feed(cuencin, NULL);
+  encgen->target(cugentgt);
 
-  if (nu > 0) {
-    assert(encinlay->n == ctxlay->n + tgtlay->n);
+  double *cugenfout = gen->foutput();
+  for (unsigned int mbi = 0; mbi < mbn; ++mbi)
+    cufocus(cugenfout + mbi * tgtlay->n, cutgtlayx, cutgtlayy, tgtlay->n);
 
-    for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
-      encude(ctxbuf + mbi * ctxlay->n, ctxlay->n, cuencin + mbi * encinlay->n + 0);
-      encude(tgtbuf + mbi * tgtlay->n, tgtlay->n, cuencin + mbi * encinlay->n + ctxlay->n);
-    }
-    assert(enc->outn == mbn * ctrlay->n);
-    encude(ctrbuf, enc->outn, cuenctgt);
+  gen->train(pi);
 
-    enc->feed(cuencin, NULL);
-    enc->target(cuenctgt);
-    enc->train(nu);
-  }
-#endif
-
-
-
-#if 1
-  if (nu > 0 || pi > 0) {
-    assert(encinlay->n == ctxlay->n + tgtlay->n);
-    for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
-      encude(ctxbuf + mbi * ctxlay->n, ctxlay->n, cuencin + mbi * encinlay->n + 0);
-      encude(tgtbuf + mbi * tgtlay->n, tgtlay->n, cuencin + mbi * encinlay->n + ctxlay->n);
-    }
-    assert(gen->outn == mbn * tgtlay->n);
-    encude(tgtbuf, gen->outn, cugentgt);
-
-    encgen->feed(cuencin, NULL);
-    gen->target(cugentgt);
-
-#if 1
-    double *cugenfout = gen->foutput();
-    for (unsigned int mbi = 0; mbi < mbn; ++mbi)
-      cufocus(cugenfout + mbi * tgtlay->n, cutgtlayx, cutgtlayy, tgtlay->n);
-#endif
-
-    gen->train(pi);
-
-    encpass->update_stats();
-    encpass->train(nu);
-  }
-#endif
+  encpass->update_stats();
+  encpass->train(nu);
 }
 
 void Stage::condition(double yo, double wu) {

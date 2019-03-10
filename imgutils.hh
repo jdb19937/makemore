@@ -56,7 +56,7 @@ bool labimg(
   unsigned int w,
   unsigned int h,
   const std::string &fmt,
-  std::string *png,
+  std::string *img,
   const std::vector<std::string> *tags = NULL
 );
 

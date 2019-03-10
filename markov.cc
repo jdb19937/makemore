@@ -396,7 +396,7 @@ void Markov::condition(double yo, double wu) {
 }
 
 void Markov::_burn(double nu, double pi) {
-#if 1
+#if 0
   assert(encinlay->n == ctxlay->n + tgtlay->n);
   for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
     encude(ctxbuf + mbi * ctxlay->n, ctxlay->n, cuencin + mbi * encinlay->n + 0);
@@ -413,7 +413,7 @@ void Markov::_burn(double nu, double pi) {
   encpass->train(nu);
 #endif
 
-#if 0
+#if 1
 
   for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
     encude(ctxbuf + mbi * ctxlay->n, ctxlay->n, cugenin + mbi * geninlay->n + 0);
@@ -529,7 +529,13 @@ void Markov::burn(double pi) {
   assert(tgtlay->n * sizeof(double) == sizeof(Response));
 
   for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
-    const Sample *sample = samples.data() + (randuint() % samples.size());
+    Sample s;
+    const Sample *sample = &s;
+    s.req.prev.clear();
+    for (unsigned int i = 0; i < vocab.n; ++i)
+      s.req.prev.add(vocab.bags[i] * randexp());
+    std::string w = vocab.closest(s.req.prev);
+    s.rsp.word = Hashbag(w.c_str());
 
     memcpy(ctxbuf + mbi * ctxlay->n, &sample->req, sizeof(Request));
     memcpy(tgtbuf + mbi * tgtlay->n, &sample->rsp, sizeof(Response));

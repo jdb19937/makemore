@@ -382,7 +382,7 @@ void Parson::_from_pipe(Pipeline *pipe, unsigned int mbi) {
   dtobv(pipe->outbuf + mbi * dd3, partrait, dd3);
 }
 
-void Parson::_to_pipe(Pipeline *pipe, unsigned int mbi) {
+void Parson::_to_pipe(Pipeline *pipe, unsigned int mbi, bool ex) {
   assert(mbi < pipe->mbn);
   unsigned long dd3 = dim * dim * 3;
   assert(pipe->outlay->n == dd3);
@@ -395,6 +395,10 @@ void Parson::_to_pipe(Pipeline *pipe, unsigned int mbi) {
 
   Hashbag ph;
   bagtags(&ph);
+  if (ex) {
+    ph.add(Hashbag::random());
+  }
+
   memcpy(pipe->ctxbuf + mbi * hashlen, &ph, hashlen * sizeof(double));
   btodv(target, pipe->outbuf + mbi * dd3, dd3);
 

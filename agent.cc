@@ -15,6 +15,8 @@
 #include "agent.hh"
 #include "server.hh"
 #include "urbite.hh"
+#include "strutils.hh"
+#include "process.hh"
 
 namespace makemore {
 
@@ -37,11 +39,11 @@ Agent::Agent(class Server *_server, const char *nom, int _s, uint32_t _ip, bool 
   inbufj = 0;
   inbufk = 0;
   inbufn = 0;
-  inbufm = 65536;
+  inbufm = (1 << 20);
   inbuf = NULL; // new char[inbufm];
 
   outbufn = 0;
-  outbufm = 65536;
+  outbufm = (1 << 20);
   outbuf = NULL; // new char[outbufm];
 
   who = new Urbite(nom ? nom : ipstr, server->urb);
@@ -72,6 +74,13 @@ Agent::~Agent() {
     delete who;
   if (ssl)
     SSL_free(ssl);
+
+  for (auto process : process_refs) {
+    assert(process->out_type == Process::OUTPUT_TO_AGENT);
+    assert(process->out.agent == this);
+    process->out_type = Process::OUTPUT_TO_NULL;
+    process->out.agent = NULL;
+  }
 }
 
 void Agent::close() {
@@ -237,6 +246,23 @@ void Agent::printf(const char *fmt, ...) {
   write(string(buf));
 }
 
+void Agent::write(const strvec &words) {
+  std::string extra = "";
+  strvec nwords = words;
+
+  for (auto wordi = nwords.begin(); wordi != nwords.end(); ++wordi) {
+    string &word = *wordi;
+    unsigned int wordn = word.length();
+    if (wordn > 255 || word[0] == '<' || hasspace(word)) {
+      extra += word;
+      char buf[64];
+      sprintf(buf, "<%u", wordn);
+      word = buf;
+    }
+  }
+
+  write(joinwords(nwords) + "\n" + extra);
+}
 
 void Agent::write(const string &str) {
   if (outbufn || s < 0) {
@@ -307,16 +333,22 @@ void Agent::flush() {
   } else {
     ret = ::write(s, outbuf, outbufn);
   }
+
   if (ret < 1)
     return;
-  if (ret == outbufn) {
-    outbufn = 0;
+  if (ret < outbufn) {
+    assert(ret < outbufn);
+    memmove(outbuf, outbuf + ret, outbufn - ret);
+    outbufn -= ret;
     return;
   }
 
-  assert(ret < outbufn);
-  memmove(outbuf, outbuf + ret, outbufn - ret);
-  outbufn -= ret;
+  assert(ret == outbufn);
+  outbufn = 0;
+
+//  for (auto process : process_refs) {
+//    process->wake();
+//  }
 }
 
 
@@ -344,6 +376,19 @@ static void cleanwords(vector<string> *words)  {
   }
 }
 
+void Agent::command(const strvec &cmd) {
+  if (cmd.empty())
+    return;
+
+  Command shfunc = find_command("sh");
+  assert(shfunc);
+
+  Process *process = server->add_process(who, shfunc, cmd, this);
+  strvec no_extra_args;
+  process->put_in(no_extra_args);
+}
+
+#if 0
 void Agent::command(const vector<string> &words) {
   if (!words.size())
     return;
@@ -412,5 +457,6 @@ void Agent::command(const vector<string> &words) {
     (void) h(this, ctx, cmd, arg);
   }
 }
+#endif
 
 }

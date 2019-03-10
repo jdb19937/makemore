@@ -56,7 +56,7 @@ NEW_CMD(pick) {
       return;
 
     Urbite *upick = new Urbite(pick->nom, urb, pick);
-    agent->printf("picked %s\n", upick->nom.c_str()); 
+    agent->printf("%s\n", upick->nom.c_str()); 
     pickbuf[tpicks + i] = upick;
   }
   tpicks += npicks;
@@ -72,11 +72,43 @@ NEW_CMD(pick) {
   }
 }
 
+static void http_partrait(Agent *agent, const std::string &nom) {
+  Parson *parson = agent->server->urb->find(nom);
+
+fprintf(stderr, "partrait nom=[%s] parson=[%lu]\n", nom.c_str(), (unsigned long)parson);
+
+  if (!parson) {
+    agent->printf("%s 404 Not Found\r\n", agent->httpvers.c_str());
+    agent->printf("Server: makemore\r\n");
+    if (agent->httpvers == "HTTP/1.1")
+      agent->printf("Connection: %s\r\n", agent->httpkeep ? "keep-alive" : "close");
+    agent->printf("Content-Length: 0\r\n");
+    agent->printf("\r\n");
+    return;
+  }
+  agent->server->urb->generate(parson, 0);
+
+  string png;
+  // labimg(parson->partrait, Parson::dim, Parson::dim, "png", &png);
+  labpng(parson->partrait, Parson::dim, Parson::dim, &png);
+
+  agent->printf("%s 200 OK\r\n", agent->httpvers.c_str());
+  agent->printf("Server: makemore\r\n");
+  if (agent->httpvers == "HTTP/1.1")
+    agent->printf("Connection: %s\r\n", agent->httpkeep ? "keep-alive" : "close");
+  agent->printf("Content-Type: image/png\r\n");
+  agent->printf("Content-Length: %lu\r\n", png.length());
+  agent->printf("\r\n");
+  agent->write(png);
+  return;
+}
+
 NEW_CMD(http) {
   if (arg.size())
     return;
 
   vector<string> &httpbuf = agent->httpbuf;
+
   for (unsigned int i = 0, n = httpbuf.size(); i < n; ++i) {
     vector<string> words;
     splitwords(httpbuf[i], &words);
@@ -91,6 +123,8 @@ NEW_CMD(http) {
         agent->close();
         return;
       }
+
+      agent->httppath = words[1];
 
       agent->httpvers = words[2];
       if (agent->httpvers == "HTTP/1.0") {
@@ -130,16 +164,21 @@ NEW_CMD(http) {
   }
 
 fprintf(stderr, "httpkeep=%d\nhttpua=%s\nhttpvers=%s\n", agent->httpkeep, agent->httpua.c_str(), agent->httpvers.c_str());
-   
 
-  std::string body = "hello there how are you?\n";
+  if (!strncmp(agent->httppath.c_str(), "/partrait/", strlen("/partrait/"))) {
+    std::string nom = agent->httppath.c_str() + strlen("/partrait/");
+    http_partrait(agent, nom);
+    return;
+  }
 
-  agent->printf("%s 200 OK\r\n", agent->httpvers.c_str());
+  std::string body = "not found\n";
+
+  agent->printf("%s 404 Not found\r\n", agent->httpvers.c_str());
   agent->printf("Server: makemore\r\n");
-  agent->printf("Content-Type: text/plain\r\n");
-  agent->printf("Content-Length: %lu\r\n", body.length());
   if (agent->httpvers == "HTTP/1.1")
     agent->printf("Connection: %s\r\n", agent->httpkeep ? "keep-alive" : "close");
+  agent->printf("Content-Type: text/plain\r\n");
+  agent->printf("Content-Length: %lu\r\n", body.length());
   agent->printf("\r\n");
   agent->write(body);
 
@@ -199,6 +238,7 @@ NEW_CMD(be) {
   agent->printf("session %s\n", session.c_str());
 }
 
+#if 0
 NEW_CMD(target) {
   if (arg.size() != 2)
     return;
@@ -211,46 +251,62 @@ NEW_CMD(target) {
     return;
   }
 
-  bool ret = imglab("png", img, Parson::dim, Parson::dim, parson->target);
+  // bool ret = imglab("png", img, Parson::dim, Parson::dim, parson->target);
+  bool ret = pnglab(img, Parson::dim, Parson::dim, parson->target);
   if (ret)
     agent->write("ok\n");
   else
     agent->write("not ok\n");
 }
+#endif
 
 NEW_CMD(show) {
-  if (arg.size() != 1)
+  if (arg.size() < 1)
     return;
 
-  if (arg[0] == "target") {
-    Parson *parson = agent->who->parson();
-
-    string png;
-    labimg(parson->target, Parson::dim, Parson::dim, "png", &png);
-
-    char buf[64];
-    sprintf(buf, "png <%lu\n", png.length());
-    agent->write(buf);
-    agent->write(png);
-
+  Parson *parson;
+  parson = agent->server->urb->find(arg[0]);
+  if (!parson) {
+    agent->printf("bad nom\n");
     return;
   }
+  agent->server->urb->generate(parson, 0);
 
-  if (arg[0] == "partrait") {
-    Parson *parson = agent->who->parson();
-    agent->server->urb->generate(parson, 0);
+  string png;
+  // labimg(parson->partrait, Parson::dim, Parson::dim, "png", &png);
+  labpng(parson->partrait, Parson::dim, Parson::dim, &png);
 
-    string png;
-    labimg(parson->partrait, Parson::dim, Parson::dim, "png", &png);
+  char buf[64];
+  sprintf(buf, "<%lu\n", png.length());
+  agent->write(buf);
+  agent->write(png);
 
-    char buf[64];
-    sprintf(buf, "png <%lu\n", png.length());
-    agent->write(buf);
-    agent->write(png);
-
-    return;
-  }
+  return;
 }
+
+
+NEW_CMD(target) {
+  if (arg.size() < 1)
+    return;
+
+  Parson *parson;
+  parson = agent->server->urb->find(arg[0]);
+  if (!parson) {
+    agent->printf("bad nom\n");
+    return;
+  }
+
+  string png;
+  labpng(parson->target, Parson::dim, Parson::dim, &png);
+
+  char buf[64];
+  sprintf(buf, "<%lu\n", png.length());
+  agent->write(buf);
+  agent->write(png);
+
+  return;
+}
+
 
 NEW_CMD(punch) {
   if (arg.size() != 1)
@@ -500,8 +556,7 @@ NEW_CMD(make) {
     return;
   }
 
-  Parson x(newnom.c_str());
-  Parson *nx = agent->server->urb->make(x);
+  Parson *nx = agent->server->urb->make(newnom);
   nx->created = time(NULL);
   nx->creator = agent->ip;
   nx->revised = time(NULL);
@@ -509,6 +564,25 @@ NEW_CMD(make) {
 
 
   agent->write("ok\n");
+}
+
+NEW_CMD(deport) {
+  if (arg.size() != 1)
+    return;
+
+  std::string nom = arg[0];
+
+  if (!Parson::valid_nom(nom)) {
+    agent->write("bad nom\n");
+    return;
+  }
+
+  if (!agent->server->urb->deport(nom.c_str())) {
+    agent->write("bad nom\n");
+    return;
+  }
+
+  agent->printf("deported %s\n", nom.c_str());
 }
 
 NEW_CMD(restock) {
@@ -529,17 +603,57 @@ NEW_CMD(echo) {
   if (arg.size() == 0)
     return;
 
-  std::string out = arg[0];
-  for (unsigned int i = 1, n = arg.size(); i < n; ++i) {
-    out += " ";
-    out += arg[i];
+  std::string extra;
+  for (unsigned int i = 0, n = arg.size(); i < n; ++i) {
+    if (i > 0)
+      agent->write(" ");
+    if (arg[i][0] == '<' || hasspace(arg[i]) || arg[i].length() > 255) {
+      extra += arg[i];
+      agent->printf("<%lu", arg[i].length());
+    } else {
+      agent->write(arg[i]);
+    }
   }
-  out += "\n";
 
-  agent->write(out);
+  agent->write("\n");
+  if (extra.length())
+    agent->write(extra);
 }
 
-NEW_CMD(burn) {
+NEW_CMD(burndis) {
+  Urb *urb = agent->server->urb;
+
+  if (arg.size() < 1)
+    return;
+  unsigned int n = (unsigned int)atoi(arg[0].c_str());
+  if (n > 65535)
+    n = 65535;
+
+  double yo = 0.0001;
+  if (arg.size() >= 2)
+    yo = strtod(arg[1].c_str(), NULL);
+
+  std::vector<Parson*> parsons;
+  parsons.resize(n);
+  Zone *zone = urb->zones[0];
+  for (unsigned int i = 0; i < n; ++i)
+    parsons[i] = zone->pick();
+
+  urb->pipex->discrim(parsons.data(), parsons.size(), yo);
+  urb->pipex->judge->save();
+  urb->pipe1->judge->load();
+
+  char buf[4096];
+  FILE *tmpfp = fmemopen(buf, 4096, "w");
+  urb->pipex->judge->report("discrim", tmpfp);
+  fflush(tmpfp);
+  std::string repstr(buf, ftell(tmpfp));
+  fclose(tmpfp);
+
+  agent->printf("%s", repstr.c_str());
+}
+
+NEW_CMD(burnenc) {
   Urb *urb = agent->server->urb;
 
   if (arg.size() < 1)
@@ -549,9 +663,75 @@ NEW_CMD(burn) {
     n = 65535;
 
   double nu = 0.0001;
-  double pi = 0.0001;
   if (arg.size() >= 2)
     nu = strtod(arg[1].c_str(), NULL);
+
+  std::vector<Parson*> parsons;
+  parsons.resize(n);
+  Zone *zone = urb->zones[0];
+  for (unsigned int i = 0; i < n; ++i)
+    parsons[i] = zone->pick();
+
+  urb->pipex->burnenc(parsons.data(), parsons.size(), nu);
+  urb->pipex->save();
+  urb->pipe1->load();
+
+  char buf[4096];
+  FILE *tmpfp = fmemopen(buf, 4096, "w");
+  urb->pipex->report("burnenc", tmpfp);
+  fflush(tmpfp);
+  std::string repstr(buf, ftell(tmpfp));
+  fclose(tmpfp);
+
+  agent->printf("%s", repstr.c_str());
+}
+
+NEW_CMD(burngen) {
+  Urb *urb = agent->server->urb;
+
+  if (arg.size() < 1)
+    return;
+  unsigned int n = (unsigned int)atoi(arg[0].c_str());
+  if (n > 65535)
+    n = 65535;
+
+  double wu = 0.0001;
+  if (arg.size() >= 2)
+    wu = strtod(arg[1].c_str(), NULL);
+
+  std::vector<Parson*> parsons;
+  parsons.resize(n);
+  Zone *zone = urb->zones[0];
+  for (unsigned int i = 0; i < n; ++i)
+    parsons[i] = zone->pick();
+
+  urb->pipex->burngen(parsons.data(), parsons.size(), wu);
+  urb->pipex->save();
+  urb->pipe1->load();
+
+  char buf[4096];
+  FILE *tmpfp = fmemopen(buf, 4096, "w");
+  urb->pipex->report("burngen", tmpfp);
+  fflush(tmpfp);
+  std::string repstr(buf, ftell(tmpfp));
+  fclose(tmpfp);
+
+  agent->printf("%s", repstr.c_str());
+}
+
+NEW_CMD(burnencgen) {
+  Urb *urb = agent->server->urb;
+
+  if (arg.size() < 1)
+    return;
+  unsigned int n = (unsigned int)atoi(arg[0].c_str());
+  if (n > 65535)
+    n = 65535;
+
+  double nu = 0.0001;
+  if (arg.size() >= 2)
+    nu = strtod(arg[1].c_str(), NULL);
+  double pi = 0.0001;
   if (arg.size() >= 3)
     pi = strtod(arg[2].c_str(), NULL);
 
@@ -561,9 +741,18 @@ NEW_CMD(burn) {
   for (unsigned int i = 0; i < n; ++i)
     parsons[i] = zone->pick();
 
-  urb->pipex->burn(parsons.data(), parsons.size(), nu, pi);
+  urb->pipex->burnencgen(parsons.data(), parsons.size(), nu, pi);
   urb->pipex->save();
-  // urb->pipex->report("burn", outfp);
+  urb->pipe1->load();
+
+  char buf[4096];
+  FILE *tmpfp = fmemopen(buf, 4096, "w");
+  urb->pipex->report("burnencgen", tmpfp);
+  fflush(tmpfp);
+  std::string repstr(buf, ftell(tmpfp));
+  fclose(tmpfp);
+
+  agent->printf("%s", repstr.c_str());
 }
 
 NEW_CMD(to) {

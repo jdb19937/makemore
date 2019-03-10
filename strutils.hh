@@ -10,14 +10,17 @@
 
 namespace makemore {
 
-extern void split(const char *str, char sep, std::vector<std::string> *words);
+typedef std::vector<std::string> strvec;
+typedef std::vector<strvec> strmat;
 
-extern void splitparts(const std::string &str, std::vector<std::string> *parts);
-extern void splitwords(const std::string &str, std::vector<std::string> *words);
-extern void splitlines(const std::string &str, std::vector<std::string> *lines);
+extern void split(const char *str, char sep, strvec *words);
+
+extern void splitparts(const std::string &str, strvec *parts);
+extern void splitwords(const std::string &str, strvec *words);
+extern void splitlines(const std::string &str, strvec *lines);
 
 
-inline std::string join(const std::vector<std::string> &v, const char *sep) {
+inline std::string join(const strvec &v, const char *sep) {
   std::string out;
   for (auto i = v.begin(); i != v.end(); ++i) {
     if (out.length())
@@ -27,12 +30,12 @@ inline std::string join(const std::vector<std::string> &v, const char *sep) {
   return out;
 }
 
-inline std::string join(const std::vector<std::string> &v, char sep) {
+inline std::string join(const strvec &v, char sep) {
   char buf[2] = {sep, 0};
   return join(v, buf);
 }
 
-inline std::string joinwords(const std::vector<std::string> &v) {
+inline std::string joinwords(const strvec &v) {
   std::string out;
   for (auto i = v.begin(); i != v.end(); ++i) {
     if (*i->c_str()) {
@@ -85,8 +88,8 @@ extern std::string varsubst(const std::string &str, const std::map<std::string, 
 
 extern std::string refsubst(const std::string &rsp, const std::string &req);
 
-extern void jointhread(const std::vector<std::vector<std::string> > &thread, std::vector<std::string> *wordsp, const std::string &sep);
-extern void splitthread(const std::vector<std::string> &words, std::vector<std::vector<std::string> > *threadp, const std::string &sep);
+extern void jointhread(const strmat &thread, strvec *wordsp, const std::string &sep);
+extern void splitthread(const strvec &words, strmat *threadp, const std::string &sep);
 
 inline std::string to_hex(const std::string &binstr) {
   unsigned int n = binstr.length();
@@ -108,6 +111,23 @@ inline std::string lowercase(std::string str) {
   for (unsigned int i = 0; i < n; ++i)
     lcstr[i] = tolower(str[i]);
   return lcstr;
+}
+
+inline bool hasspace(const std::string &s) {
+  for (const char *p = s.c_str(); *p; ++p) {
+    if (isspace(*p))
+      return true;
+  }
+  return false;
+}
+
+inline void catstrvec(strvec &a, const strvec &b) {
+  unsigned long as = a.size();
+  unsigned long bs = b.size();
+  unsigned long cs = as + bs;
+  a.resize(cs);
+  for (unsigned int i = as; i < cs; ++i)
+    a[i] = b[i - as];
 }
 
 }

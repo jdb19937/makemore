@@ -24,6 +24,21 @@ struct Urbite {
     _parson = __parson;
   }
 
+  void copy(const Urbite &urbite) {
+    nom = urbite.nom;
+    urb = urbite.urb;
+    _parson = urbite._parson;
+  }
+
+  Urbite &operator =(const Urbite &urbite) {
+    copy(urbite);
+    return *this;
+  }
+
+  Urbite(const Urbite &urbite) {
+    copy(urbite);
+  }
+
   Parson *parson() {
     assert(Parson::valid_nom(nom.c_str()));
 

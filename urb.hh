@@ -32,6 +32,10 @@ struct Urb {
   unsigned int tier(const Zone *zone) const;
   Zone *zone(const Parson *x) const;
   Parson *find(const std::string &nom, unsigned int *tierp = NULL) const;
+  Parson *make(const std::string &nom, unsigned int tier = 0);
+  Parson *make(const char *nom, unsigned int tier = 0) {
+    return make(std::string(nom), tier);
+  }
   Parson *make(const Parson &x, unsigned int tier = 0);
   Parson *make(unsigned int tier = 0);
 

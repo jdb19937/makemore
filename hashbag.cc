@@ -160,6 +160,46 @@ std::string Hashbag::guesstract(const Vocab &v, double nfloor) {
   return *wordp;
 }
 
-  
- 
+std::string Hashbag::decode(const vector<string> &words) {
+  int best_i;
+  double best_z;
+  assert(words.size());
+
+  for (int i = 0, n = words.size(); i < n; ++i) {
+    Hashbag h;
+    h.add(words[i].c_str());
+    double z = (*this * h).sum();
+
+    if (i == 0 || z > best_z) {
+      best_i = i;
+      best_z = z;
+    }
+  }
+
+  return words[best_i];
+}
+
+std::string Hashbag::pick(const vector<string> &words, double phi) {
+  Hashbag s;
+  for (int i = 0, n = words.size(); i < n; ++i) {
+    Hashbag h;
+    h.add(words[i].c_str());
+
+    double p = (*this * h).sum();
+    p /= (double)Hashbag::n;
+
+    p -= phi;
+    if (p < 0.0)
+      continue;
+fprintf(stderr, "w=%s p=%lf\n", words[i].c_str(), p);
+
+    h *= p;
+    h *= randexp();
+    s += h;
+  }
+fprintf(stderr, "\n");
+
+  return s.decode(words);
+}
+
 }

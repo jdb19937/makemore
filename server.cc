@@ -263,7 +263,7 @@ void Server::listen(int backlog) {
 
 void Server::setup() {
   fprintf(stderr, "opening urb %s\n", urbdir.c_str());
-  urb = new Urb(urbdir.c_str(), 2);
+  urb = new Urb(urbdir.c_str(), 4);
   fprintf(stderr, "opened urb %s\n", urbdir.c_str());
 
   seedrand();
@@ -374,7 +374,8 @@ void Server::notify(const std::string &nom, const std::string &msg, const Agent 
     Agent *agent = nai->second;
 
     if (agent != exclude)
-      agent->write(msg + "\n");
+      if (agent->proto == Agent::MORETP)
+        agent->write(msg + "\n");
   }
 }
 
@@ -478,9 +479,9 @@ void Server::select() {
   timeout.tv_sec = 0;
   timeout.tv_usec = 50000;
 
-  fprintf(stderr, "calling select\n");
+//  fprintf(stderr, "calling select\n");
   int ret = ::select(nfds, fdsets + 0, fdsets + 1, fdsets + 2, &timeout);
-  fprintf(stderr, "select ret=%d\n", ret);
+//  fprintf(stderr, "select ret=%d\n", ret);
 }
 
 void Server::main() {
@@ -545,7 +546,7 @@ void Server::main() {
       }
     }
 
-    for (unsigned int i = 0; i < 256; ++i) {
+    for (unsigned int i = 0; i < 2048; ++i) {
       Parson *parson = urb->zones[0]->pick();
       if (!parson)
          continue;
@@ -622,6 +623,21 @@ fprintf(stderr, "rspstr=%s\n", rspstr.c_str());
         break;
       default:
         assert(0);
+      }
+    }
+
+
+    {
+      auto pi = processes.begin();
+      while (pi != processes.end()) {
+        Process *process = *pi;
+
+        if (process->run()) {
+          delete process;
+          processes.erase(pi++);
+        } else {
+          ++pi;
+        }
       }
     }
   }

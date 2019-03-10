@@ -33,7 +33,7 @@ struct Parson {
   const static unsigned int nfrens = 16;
   const static unsigned int ntags = 8;
   const static unsigned int dim = 64;
-  const static unsigned int ncontrols = 4096;
+  const static unsigned int ncontrols = 1920;
   const static unsigned int bufsize = 2048;
   const static unsigned int nbriefs = 8;
   const static unsigned int briefsize = 256;
@@ -91,8 +91,9 @@ struct Parson {
   // 1071
   uint8_t _fill[1071];
 
-  // 2048
+  // 1920
   uint8_t controls[ncontrols];
+  uint8_t _ctrpad[2176];
 
   // 64 * 64 * 3
   uint8_t target[dim * dim * 3];
@@ -211,7 +212,7 @@ struct Parson {
         h->add(tags[i]);
   }
 
-  void _to_pipe(class Pipeline *pipe, unsigned int mbi);
+  void _to_pipe(class Pipeline *pipe, unsigned int mbi, bool ex = false);
   void _from_pipe(class Pipeline *pipe, unsigned int mbi);
 
   void paste_partrait(class PPM *ppm, unsigned int x0 = 0, unsigned int y0 = 0);

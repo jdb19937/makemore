@@ -59,6 +59,8 @@ struct Stage : Project {
   void passgenerate();
 
 
+  void burngen(double pi);
+  void burnenc(double nu);
   void burn(double nu, double pi);
   void condition(double yo, double wu);
   void reencode(bool force);

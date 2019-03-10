@@ -11,7 +11,9 @@
 #include <vector>
 #include <string>
 
+#if MAKEMORE_MAGICK
 #include <Magick++.h>
+#endif
 
 #include <png.h>
 
@@ -21,6 +23,7 @@
 namespace makemore {
 using namespace std;
 
+#if MAKEMORE_MAGICK
 static bool _magick_initialized = false;
 
 static void _ensure_init_magick() {
@@ -30,6 +33,7 @@ static void _ensure_init_magick() {
     _magick_initialized = true;
   }
 }
+#endif
 
 static inline double f(double n) {
    return (n > 0.04045 ? pow((n + 0.055) / 1.055, 2.4) : n / 12.92) * 100.0;
@@ -137,6 +141,7 @@ void labtoxyz(double l, double a, double b, double *xp, double *yp, double *zp) 
 }
 
 
+#if MAKEMORE_MAGICK
 bool imglab(
   const std::string &fmt, 
   const std::string &data,
@@ -173,6 +178,7 @@ bool imglab(
         tags->push_back(word.c_str() + 1);
   }
 
+  image.depth(8);
   image.magick("rgb");
   Magick::Blob blobout(lab, w * h * 3);
   image.write(&blobout);
@@ -197,9 +203,7 @@ bool labimg(
 ) {
   _ensure_init_magick();
 
-  std::string rgbstr;
-  rgbstr.resize(w * h * 3);
-  uint8_t *rgb = (uint8_t *)rgbstr.data();
+  uint8_t *rgb = new uint8_t[w * h * 3];
 
   for (unsigned int i = 0, n = 3 * w * h; i < n; i += 3) {
     labtorgb(
@@ -210,13 +214,14 @@ bool labimg(
 
 
   Magick::Image image;
+  Magick::Blob blobin(rgb, w * h * 3);
 
-  image.magick("rgb");
   char sizebuf[64];
   sprintf(sizebuf, "%ux%u", w, h);
-  image.size(sizebuf);
 
-  Magick::Blob blobin(rgb, w * h * 3);
+  image.depth(8);
+  image.size(sizebuf);
+  image.magick("rgb");
   image.read(blobin);
 
   assert(image.size().width() == w);
@@ -229,14 +234,16 @@ bool labimg(
     image.comment(comment);
   }
 
-  image.magick(fmt);
+  image.magick(fmt.c_str());
   Magick::Blob blobout;
   image.write(&blobout);
 
   img->assign((const char *)blobout.data(), blobout.length());
 
+  delete[] rgb;
   return true;
 }
+#endif
 
 bool pnglab(
   const std::string &png,

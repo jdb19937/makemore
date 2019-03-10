@@ -42,6 +42,9 @@ Pipeline::Pipeline(const char *_dir, unsigned int _mbn) : Project(_dir, _mbn) {
 
   tgtlock = 0;
   ctrlock = (unsigned)-1;
+
+  judge = new Judge((dir + "/judge.proj").c_str(), mbn);
+  tmpbuf = new double[judge->ctxlay->n * mbn];
 }
 
 void Pipeline::_setup() {
@@ -88,6 +91,7 @@ Pipeline::~Pipeline() {
     delete *i;
   }
   stages.clear();
+  delete judge;
 }
   
 
@@ -672,6 +676,107 @@ void Pipeline::autolign(unsigned int iters, int dzoom) {
   delete[] srcbuf;
 }
 
+void Pipeline::burnenc(double nu) {
+  assert(stages.size());
+  Stage *proj = final();
+  memcpy(proj->adjbuf, outbuf, mbn * sizeof(double) * outlay->n);
+
+  for (int i = stages.size() - 2; i >= 0; --i) {
+    Stage *lastproj = proj;
+    proj = stages[i];
+    unsigned int dim = lround(sqrt(lastproj->outlay->n / 3));
+    assert(dim * dim * 3 == lastproj->outlay->n);
+    assert(dim * dim * 3 == proj->outlay->n * 4);
+    assert(lastproj->tgtlay->n == 3 * proj->outlay->n);
+    assert(lastproj->ctxlay->n == proj->outlay->n + ctxlay->n);
+
+    for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
+      twiddle3(
+        lastproj->adjbuf + mbi * lastproj->outlay->n,
+        dim, dim,
+        lastproj->ctxbuf + mbi * lastproj->ctxlay->n + ctxlay->n,
+        lastproj->tgtbuf + mbi * lastproj->tgtlay->n
+      );
+      memcpy(
+        proj->adjbuf + mbi * proj->outlay->n,
+        lastproj->ctxbuf + mbi * lastproj->ctxlay->n + ctxlay->n,
+        sizeof(double) * proj->outlay->n
+      );
+    }
+  }
+
+  proj = initial();
+  assert(proj->ctxlay->n == ctxlay->n);
+  assert(proj->tgtlay->n == proj->outlay->n);
+  memcpy(proj->tgtbuf, proj->adjbuf, sizeof(double) * mbn * proj->outlay->n);
+
+  for (unsigned int i = 0; i < stages.size(); ++i) {
+    Stage *proj = stages[i];
+
+    for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
+      memcpy(
+        proj->ctxbuf + mbi * proj->ctxlay->n + 0,
+        ctxbuf + mbi * ctxlay->n,
+        sizeof(double) * ctxlay->n
+      );
+    }
+
+    proj->burnenc(nu);
+  }
+}
+
+
+void Pipeline::burngen(double pi) {
+  assert(stages.size());
+  Stage *proj = final();
+  memcpy(proj->adjbuf, outbuf, mbn * sizeof(double) * outlay->n);
+
+  for (int i = stages.size() - 2; i >= 0; --i) {
+    Stage *lastproj = proj;
+    proj = stages[i];
+    unsigned int dim = lround(sqrt(lastproj->outlay->n / 3));
+    assert(dim * dim * 3 == lastproj->outlay->n);
+    assert(dim * dim * 3 == proj->outlay->n * 4);
+    assert(lastproj->tgtlay->n == 3 * proj->outlay->n);
+    assert(lastproj->ctxlay->n == proj->outlay->n + ctxlay->n);
+
+    for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
+      twiddle3(
+        lastproj->adjbuf + mbi * lastproj->outlay->n,
+        dim, dim,
+        lastproj->ctxbuf + mbi * lastproj->ctxlay->n + ctxlay->n,
+        lastproj->tgtbuf + mbi * lastproj->tgtlay->n
+      );
+      memcpy(
+        proj->adjbuf + mbi * proj->outlay->n,
+        lastproj->ctxbuf + mbi * lastproj->ctxlay->n + ctxlay->n,
+        sizeof(double) * proj->outlay->n
+      );
+    }
+  }
+
+  proj = initial();
+  assert(proj->ctxlay->n == ctxlay->n);
+  assert(proj->tgtlay->n == proj->outlay->n);
+  memcpy(proj->tgtbuf, proj->adjbuf, sizeof(double) * mbn * proj->outlay->n);
+
+  for (unsigned int i = 0; i < stages.size(); ++i) {
+    Stage *proj = stages[i];
+
+    for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
+      memcpy(
+        proj->ctxbuf + mbi * proj->ctxlay->n + 0,
+        ctxbuf + mbi * ctxlay->n,
+        sizeof(double) * ctxlay->n
+      );
+    }
+
+    proj->burngen(pi);
+  }
+}
+
+
+
 void Pipeline::burn(uint32_t which, double nu, double pi) {
   assert(stages.size());
   Stage *proj = final();
@@ -784,57 +889,6 @@ void Pipeline::recombine() {
 
 
 
-void Pipeline::condition(uint32_t which, double yo, double wu) {
-  assert(stages.size());
-  Stage *proj = final();
-  memcpy(proj->adjbuf, outbuf, mbn * sizeof(double) * outlay->n);
-
-  for (int i = stages.size() - 2; i >= 0; --i) {
-    Stage *lastproj = proj;
-    proj = stages[i];
-    unsigned int dim = lround(sqrt(lastproj->outlay->n / 3));
-    assert(dim * dim * 3 == lastproj->outlay->n);
-    assert(dim * dim * 3 == proj->outlay->n * 4);
-    assert(lastproj->tgtlay->n == 3 * proj->outlay->n);
-    assert(lastproj->ctxlay->n == proj->outlay->n + ctxlay->n);
-
-    for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
-      twiddle3(
-        lastproj->adjbuf + mbi * lastproj->outlay->n,
-        dim, dim,
-        lastproj->ctxbuf + mbi * lastproj->ctxlay->n + ctxlay->n,
-        lastproj->tgtbuf + mbi * lastproj->tgtlay->n
-      );
-      memcpy(
-        proj->adjbuf + mbi * proj->outlay->n,
-        lastproj->ctxbuf + mbi * lastproj->ctxlay->n + ctxlay->n,
-        sizeof(double) * proj->outlay->n
-      );
-    }
-  }
-
-  proj = initial();
-  assert(proj->ctxlay->n == ctxlay->n);
-  assert(proj->tgtlay->n == proj->outlay->n);
-  memcpy(proj->tgtbuf, proj->adjbuf, sizeof(double) * mbn * proj->outlay->n);
-
-  for (unsigned int i = 0; i < stages.size(); ++i) {
-    Stage *proj = stages[i];
-
-    for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
-      memcpy(
-        proj->ctxbuf + mbi * proj->ctxlay->n + 0,
-        ctxbuf + mbi * ctxlay->n,
-        sizeof(double) * ctxlay->n
-      );
-    }
-
-    if (which & (1 << i)) {
-      // fprintf(stderr, "burning stage %u nu=%lf\n", i, nu);
-      proj->condition(yo, wu);
-    }
-  }
-}
 
 
 
@@ -1004,6 +1058,7 @@ void Pipeline::generate(Parson **parsons, unsigned int nparsons, long min_age) {
     ctrlock = 0;
     tgtlock = -1;
     this->reencode();
+    this->generate();
 
     for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
       if (j + mbi < todo.size()) {
@@ -1023,7 +1078,7 @@ void Pipeline::generate(class Org *org, long min_age) {
   generate(org->member.data(), org->n, min_age);
 }
 
-void Pipeline::burn(Parson **parsons, unsigned int nparsons, double nu, double pi) {
+void Pipeline::burnenc(Parson **parsons, unsigned int nparsons, double nu) {
   assert(nparsons % mbn == 0);
 
   unsigned int mbi = 0;
@@ -1038,10 +1093,124 @@ void Pipeline::burn(Parson **parsons, unsigned int nparsons, double nu, double p
   for (unsigned int j = 0; j < nparsons; j += mbn) {
     for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
       Parson *p = parsons[j + mbi];
-      p->_to_pipe(this, mbi);
+      p->_to_pipe(this, mbi, true);
+    }
+
+    this->burnenc(nu);
+  }
+}
+
+void Pipeline::burnencgen(Parson **parsons, unsigned int nparsons, double nu, double pi) {
+  assert(nparsons % mbn == 0);
+
+  unsigned int mbi = 0;
+  unsigned long dd3 = Parson::dim * Parson::dim * 3;
+  assert(dd3 == sizeof(Parson::target));
+
+  unsigned long hashlen = ctxlay->n;
+  assert(hashlen == ctxlay->n);
+  assert(hashlen <= Hashbag::n);
+  assert(outlay->n == dd3);
+
+  for (unsigned int j = 0; j < nparsons; j += mbn) {
+    for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
+      Parson *p = parsons[j + mbi];
+      p->_to_pipe(this, mbi, true);
     }
 
     this->burn(-1, nu, pi);
+  }
+}
+
+
+void Pipeline::discrim(Parson **parsons, unsigned int nparsons, double yo) {
+  assert(nparsons % (mbn * 2) == 0);
+  assert(judge->mbn == mbn);
+
+  unsigned int mbi = 0;
+  unsigned long dd3 = Parson::dim * Parson::dim * 3;
+  assert(dd3 == sizeof(Parson::target));
+
+  unsigned long hashlen = ctxlay->n;
+  assert(hashlen == ctxlay->n);
+  assert(hashlen <= Hashbag::n);
+  assert(outlay->n == dd3);
+
+  assert(judge);
+  assert(judge->ctxlay->n == ctxlay->n + outlay->n);
+
+  for (unsigned int j = 0, batch = 0; j < nparsons; j += mbn, ++batch) {
+    for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
+      Parson *p = parsons[j + mbi];
+      p->_to_pipe(this, mbi, true);
+    }
+
+    if (batch % 2 == 0) {
+      scramble(0, 1);
+      generate();
+
+      for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
+        memcpy(tmpbuf + mbi * judge->ctxlay->n, ctxbuf + mbi * ctxlay->n, sizeof(double) * ctxlay->n);
+        memcpy(tmpbuf + mbi * judge->ctxlay->n + ctxlay->n, outbuf + mbi * outlay->n, sizeof(double) * outlay->n);
+      }
+    } else {
+      for (unsigned int k = 0; k < 2; ++k) {
+        for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
+          if (mbi % 2 == k) {
+            memcpy(judge->ctxbuf + mbi * judge->ctxlay->n, tmpbuf + mbi * judge->ctxlay->n, sizeof(double) * judge->ctxlay->n);
+            judge->tgtbuf[mbi] = 0.0;
+          } else {
+            memcpy(judge->ctxbuf + mbi * judge->ctxlay->n, ctxbuf + mbi * ctxlay->n, sizeof(double) * ctxlay->n);
+            memcpy(judge->ctxbuf + mbi * judge->ctxlay->n + ctxlay->n, outbuf + mbi * outlay->n, sizeof(double) * outlay->n);
+            judge->tgtbuf[mbi] = 1.0;
+          }
+        }
+
+        judge->burn(yo);
+      }
+    }
+  }
+}
+
+
+void Pipeline::burngen(Parson **parsons, unsigned int nparsons, double wu) {
+  assert(nparsons % mbn == 0);
+  assert(judge->mbn == mbn);
+
+  unsigned int mbi = 0;
+  unsigned long dd3 = Parson::dim * Parson::dim * 3;
+  assert(dd3 == sizeof(Parson::target));
+
+  unsigned long hashlen = ctxlay->n;
+  assert(hashlen == ctxlay->n);
+  assert(hashlen <= Hashbag::n);
+  assert(outlay->n == dd3);
+
+  assert(judge);
+  assert(judge->ctxlay->n == ctxlay->n + outlay->n);
+
+  for (unsigned int j = 0; j < nparsons; j += mbn) {
+    for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
+      Parson *p = parsons[j + mbi];
+      p->_to_pipe(this, mbi, true);
+    }
+
+#if 1
+    scramble(0, 1);
+    generate();
+
+    for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
+      memcpy(judge->ctxbuf + mbi * judge->ctxlay->n, ctxbuf + mbi * ctxlay->n, sizeof(double) * ctxlay->n);
+      memcpy(judge->ctxbuf + mbi * judge->ctxlay->n + ctxlay->n, outbuf + mbi * outlay->n, sizeof(double) * outlay->n);
+      judge->tgtbuf[mbi] = 1.0;
+    }
+
+    judge->burn(0, this->outbuf, false);
+    this->burngen(wu);
+#else
+    scramble(0, 0);
+    this->burngen(wu);
+#endif
   }
 }
 
