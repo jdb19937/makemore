@@ -130,6 +130,8 @@ inline void catstrvec(strvec &a, const strvec &b) {
     a[i] = b[i - as];
 }
 
+bool match(const std::string &regex, const std::string &str);
+
 }
 
 #endif

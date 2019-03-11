@@ -8,6 +8,7 @@
 #include <sys/socket.h>
 #include <sys/wait.h>
 #include <sys/types.h>
+#include <sys/signal.h>
 #include <sys/mman.h>
 #include <netinet/in.h>
 #include <string.h>
@@ -95,10 +96,14 @@ Server::Server(const std::string &_urbdir) {
       SSL_FILETYPE_PEM
     ) > 0
   );
+
+  system = new System;
 }
 
 
 Server::~Server() {
+  delete system;
+
   kill();
   close();
 
@@ -261,7 +266,13 @@ void Server::listen(int backlog) {
   assert(ret == 0);
 }
 
+static void sigpipe(int) {
+  fprintf(stderr, "SIGPIPE\n");
+}
+
 void Server::setup() {
+  signal(SIGPIPE, sigpipe);
+
   fprintf(stderr, "opening urb %s\n", urbdir.c_str());
   urb = new Urb(urbdir.c_str(), 4);
   fprintf(stderr, "opened urb %s\n", urbdir.c_str());
@@ -627,19 +638,8 @@ fprintf(stderr, "rspstr=%s\n", rspstr.c_str());
     }
 
 
-    {
-      auto pi = processes.begin();
-      while (pi != processes.end()) {
-        Process *process = *pi;
-
-        if (process->run()) {
-          delete process;
-          processes.erase(pi++);
-        } else {
-          ++pi;
-        }
-      }
-    }
+    assert(system);
+    system->run();
   }
 
 }

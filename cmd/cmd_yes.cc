@@ -10,10 +10,17 @@ extern "C" void mainmore(Process *);
 void mainmore(
   Process *process
 ) {
-fprintf(stderr, "here echo args=%s\n", joinwords(process->args).c_str());
+  strvec yes;
+  if (process->args.size()) {
+    yes = process->args;
+  } else {
+    yes.resize(1);
+    yes[0] = "y";
+  }
 
-  (void)process->write(process->args);
+  while (process->write(yes))
+    ;
 
-fprintf(stderr, "finishing echo\n");
+fprintf(stderr, "finishing yes\n");
   process->coro->finish();
 }

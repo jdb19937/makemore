@@ -59,6 +59,21 @@ Agent::Agent(class Server *_server, const char *nom, int _s, uint32_t _ip, bool 
 
   proto = UNKNOWN;
   httpkeep = true;
+
+  Command shfunc = find_command("sh");
+  assert(shfunc);
+  strvec no_args;
+
+  shell = new Process(
+    server->system,
+    who,
+    shfunc,
+    no_args,
+    NULL,
+    NULL,
+    this,
+    this
+  );
 }
 
 Agent::~Agent() {
@@ -75,11 +90,15 @@ Agent::~Agent() {
   if (ssl)
     SSL_free(ssl);
 
-  for (auto process : process_refs) {
-    assert(process->out_type == Process::OUTPUT_TO_AGENT);
-    assert(process->out.agent == this);
-    process->out_type = Process::OUTPUT_TO_NULL;
-    process->out.agent = NULL;
+  for (auto writer : writers) {
+    assert(writer->outagent == this);
+    writer->outagent = NULL;
+  }
+
+  if (shell) {
+    assert(shell->inagent == this);
+    shell->inagent = NULL;
+    assert(shell->outagent == NULL); // was a writer
   }
 }
 
@@ -116,12 +135,12 @@ bool Agent::slurp() {
   return true;
 }
 
-void Agent::parse(vector<vector<string> > *lines) {
+void Agent::parse(vector<strvec> *lines) {
   unsigned int inbufi = 0;
   lines->clear();
 
   while (1) {
-    vector<string> words;
+    strvec words;
     bool got_words = false;
 
     if (inbufk == 0) {
@@ -206,7 +225,7 @@ void Agent::parse(vector<vector<string> > *lines) {
 }
 
 #if 0
-void Agent::parse(vector<string> *lines) {
+void Agent::parse(strvec *lines) {
   lines->clear();
   if (inbufn == 0)
     return;
@@ -346,13 +365,12 @@ void Agent::flush() {
   assert(ret == outbufn);
   outbufn = 0;
 
-//  for (auto process : process_refs) {
-//    process->wake();
-//  }
+  if (shell && shell->mode == Process::MODE_WRITING)
+    shell->wake();
 }
 
 
-static void cleanwords(vector<string> *words)  {
+static void cleanwords(strvec *words)  {
   char buf[64];
 
   for (auto i = words->begin(); i != words->end(); ++i) {
@@ -380,16 +398,12 @@ void Agent::command(const strvec &cmd) {
   if (cmd.empty())
     return;
 
-  Command shfunc = find_command("sh");
-  assert(shfunc);
-
-  Process *process = server->add_process(who, shfunc, cmd, this);
-  strvec no_extra_args;
-  process->put_in(no_extra_args);
+  assert(shell->can_put());
+  shell->put(cmd);
 }
 
 #if 0
-void Agent::command(const vector<string> &words) {
+void Agent::command(const strvec &words) {
   if (!words.size())
     return;
 
@@ -401,7 +415,7 @@ void Agent::command(const vector<string> &words) {
     }
   }
   if (multi) {
-    vector<vector<string> > states;
+    vector<strvec> states;
     splitthread(words, &states, ";");
     for (auto state : states) {
       this->command(state);
@@ -409,7 +423,7 @@ void Agent::command(const vector<string> &words) {
     return;
   }
 
-  vector<vector<string> > thread;
+  vector<strvec> thread;
   splitthread(words, &thread, "|");
   assert(thread.size());
   if (!thread[0].size())
@@ -422,14 +436,14 @@ void Agent::command(const vector<string> &words) {
   if (hi == server->cmdtab.end()) {
     fprintf(stderr, "unknown cmd %s, asking brane [%s]\n", cmd.c_str(), joinwords(words).c_str());
 
-    vector<vector<string> > out;
+    vector<strvec> out;
     server->urb->brane1->ask(who->parson(), thread, &out);
 
     for (auto outi = out.begin(); outi != out.end(); ++outi) {
       this->write(joinwords(*outi) + "\n");
     }
   } else {
-    vector<string> cwords = thread[0];
+    strvec cwords = thread[0];
     cleanwords(&cwords);
     {
       string logstr;
@@ -441,12 +455,12 @@ void Agent::command(const vector<string> &words) {
       server->notify(who->nom, logstr, this);
     }
 
-    vector<string> arg;
+    strvec arg;
     arg.resize(thread[0].size() - 1);
     for (unsigned int argi = 0, argn = thread[0].size() - 1; argi < argn; ++argi)
       arg[argi] = thread[0][argi + 1];
 
-    vector<vector<string> > ctx;
+    vector<strvec> ctx;
     ctx.resize(thread.size() - 1);
     for (unsigned int ctxi = 0, ctxn = thread.size() - 1; ctxi < ctxn; ++ctxi)
       ctx[ctxi] = thread[ctxi + 1];

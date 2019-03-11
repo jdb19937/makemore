@@ -1,4 +1,4 @@
-#include <server.hh>
+#include <system.hh>
 #include <urbite.hh>
 #include <process.hh>
 #include <strutils.hh>
@@ -6,29 +6,32 @@
 using namespace makemore;
 using namespace std;
 
-extern "C" bool mainmore(
-  Server *, Urbite *, Process *, CommandState state, const strvec &
+extern "C" void mainmore(
+  Process *process
 );
 
-bool mainmore(
-  Server *server,
-  Urbite *who,
-  Process *process,
-  CommandState state,
-  const strvec &args
+void mainmore(
+  Process *process
 ) {
-  if (state == COMMAND_STATE_RUNNING) {
-    string colspec = process->pre[0];
+  if (process->args.size() == 0)
+    process->coro->finish();
 
-    unsigned int col = strtoul(colspec.c_str(), NULL, 0);
+  string colspec = process->args[0];
+  unsigned int col = strtoul(colspec.c_str(), NULL, 0);
 
+fprintf(stderr, "cut here (procin=%lu)\n", (unsigned long)process->inproc);
+
+  while (strvec *inp = process->read()) {
+fprintf(stderr, "cut got inp\n");
     strvec outvec;
     outvec.resize(1);
-    outvec[0] = col < args.size() ? args[col] : "";
-    
-    if (!process->put_out(outvec))
-      return false;
-  }
+    outvec[0] = col < inp->size() ? (*inp)[col] : "";
 
-  return true;
+    if (!process->write(outvec))
+      break;
+  }
+fprintf(stderr, "cut there\n");
+
+  process->coro->finish();
 }
+

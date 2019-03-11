@@ -6,9 +6,21 @@
 #include <map>
 #include <vector>
 #include <string>
+#include <regex>
 
 namespace makemore {
 using namespace std;
+
+bool match(const std::string &regexstr, const std::string &str) {
+  bool ret = 0;
+
+  try {
+    const std::regex rx(regexstr);
+    ret = std::regex_match(str, rx);
+  } catch (std::regex_error) { }
+
+  return ret;
+}
 
 void split(const char *str, char sep, vector<string> *words) {
   words->clear();

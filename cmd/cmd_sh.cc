@@ -1,31 +1,26 @@
-#include <server.hh>
+#include <system.hh>
 #include <urbite.hh>
 #include <process.hh>
 #include <strutils.hh>
 
 using namespace makemore;
 
-extern "C" bool mainmore(Server *, Urbite *, Process *, CommandState state, const strvec &);
+extern "C" void mainmore(Process *);
 
-bool mainmore(
-  Server *server,
-  Urbite *who,
-  Process *process,
-  CommandState state,
+
+
+Process *do_shell(
+  Process *shell,
+  Process *inproc, Agent *inagent, Process *outproc, Agent *outagent,
   const strvec &_args
 ) {
-  static strvec no_args;
 
-  assert (state == COMMAND_STATE_INITIALIZE);
-  strvec &args = process->pre;
-
-fprintf(stderr, "sh args=[%s]\n", joinwords(args).c_str());
-
+  strvec args = _args;
 again:
   unsigned int argsi;
   unsigned int argsn = args.size();
-
   unsigned int parens = 0;
+
   for (argsi = 0; argsi < argsn; ++argsi) {
     if (args[argsi] == "(") {
       ++parens;
@@ -38,6 +33,9 @@ again:
     }
   }
 
+  if (parens != 0)
+    goto fail;
+
   if (argsi < argsn) {
     assert(parens == 0);
     assert(args[argsi] == ";");
@@ -47,24 +45,24 @@ again:
     assert(cargs.size() == argsi);
     assert(dargs.size() + argsi + 1 == argsn);
 
-    strvec eargs;
-    eargs.resize(1);
-    eargs[0] = "then";
-    catstrvec(eargs, dargs);
-    unsigned int eargsn = eargs.size();
-    assert(eargsn == dargs.size() + 1);
+    Command then = find_command("then");
+    assert(then);
 
-    Process *child = server->add_process(
-      who, mainmore, eargs, process->out_type, process->out
+    Process *child = new Process(
+      shell->system, shell->who, then, dargs,
+      NULL, outproc,
+      NULL, outagent
     );
+
+    if (outproc) {
+      assert(outproc->inproc == NULL);
+      outproc->inproc = child;
+    }
+    outproc = child;
+    outagent = NULL;
 
     args = cargs;
     argsn = args.size();
-
-    process->deref();
-    process->out_type = Process::OUTPUT_TO_PROCESS;
-    process->out.process = child;
-    child->add_process_ref(process);
   }
 
   for (argsi = 0; argsi < argsn; ++argsi) {
@@ -79,8 +77,9 @@ again:
     }
   }
 
+  assert(parens == 0);
+
   if (argsi < argsn) {
-    assert(parens == 0);
     assert(args[argsi] == "|");
     strvec cargs(args.begin(), args.begin() + argsi);
     strvec dargs(args.begin() + argsi + 1, args.end());
@@ -88,17 +87,21 @@ again:
     assert(cargs.size() == argsi);
     assert(dargs.size() + argsi + 1 == argsn);
 
-    Process *child = server->add_process(
-      who, mainmore, dargs, process->out_type, process->out
+    Process *child = new Process(
+      shell->system, shell->who, mainmore, dargs,
+      NULL, outproc,
+      NULL, outagent
     );
+
+    if (outproc) {
+      assert(outproc->inproc == NULL);
+      outproc->inproc = child;
+    }
+    outproc = child;
+    outagent = NULL;
 
     args = cargs;
     argsn = args.size();
-
-    process->deref();
-    process->out_type = Process::OUTPUT_TO_PROCESS;
-    process->out.process = child;
-    child->add_process_ref(process);
   }
 
   while (argsn > 0 && args[0] == "(") {
@@ -113,25 +116,14 @@ again:
   }
 
   for (unsigned int i = 0; i < argsn; ++i) {
-    if (args[i] == ";" || args[i] == "|")
+    if (args[i] == ";" || args[i] == "|") {
       goto again;
-  }
-
-  parens = 0;
-  for (unsigned int i = 0; i < argsn; ++i) {
-    if (args[i] == "(")
-      ++parens;
-    else if (args[i] == ")") {
-      if (parens == 0)
-        goto fail;
-      --parens;
     }
-
+  }
+  for (unsigned int i = 0; i < argsn; ++i) {
     assert(args[i] != ";");
     assert(args[i] != "|");
   }
-  if (parens != 0)
-    goto fail;
 
   if (argsn == 0)
     goto fail;
@@ -140,19 +132,41 @@ again:
     Command command = find_command(args[0]);
     if (!command)
       goto fail;
-    process->cmd = command;
 
-    strvec rest(args.begin() + 1, args.end());
-    args = rest;
-fprintf(stderr, "cmd=%s args=%s\n", args[0].c_str(), joinwords(rest).c_str());
+    {
+      strvec rest(args.begin() + 1, args.end());
+      args = rest;
+    }
 
-    return command(server, who, process, state, no_args);
+fprintf(stderr, "made main[%s] outproc=%lu inproc=%lu\n", joinwords(args).c_str(), (unsigned long)outproc, (unsigned long)inproc);
+    Process *main = new Process(
+      shell->system, shell->who, command, args,
+      inproc, outproc, NULL, outagent
+    );
+
+    if (inproc) {
+      assert(inproc->outproc == NULL);
+      inproc->outproc = main;
+    }
+
+    if (outproc) {
+      assert(outproc->inproc == NULL);
+      outproc->inproc = main;
+    }
+
+    if (inproc) {
+      while (shell->inqn) {
+        strvec *buffered = shell->read();
+        assert(buffered);
+        main->put(*buffered);
+      }
+    }
   }
+  return NULL;
 
 fail:
-  Command command = find_command("echo");
-  assert(command);
-  process->cmd = command;
+  Command echo = find_command("echo");
+  assert(echo);
 
   {
     strvec failargs;
@@ -161,6 +175,41 @@ fail:
     catstrvec(failargs, args);
     args = failargs;
   }
+  
+  new Process(
+    shell->system, shell->who, echo, args,
+    NULL, NULL, NULL, outagent
+  );
 
-  return command(server, who, process, state, no_args);
+  return NULL;
+}
+
+void mainmore(
+  Process *process
+) {
+fprintf(stderr, "sh reading done=%d (pre=%s)\n", process->coro->done, joinwords(process->args).c_str());
+
+  if (process->args.size() == 0) {
+    while (const strvec *argsp = process->read()) {
+      do_shell(process, NULL, NULL, process->outproc, process->outagent, *argsp);
+    }
+  } else {
+    Process *outproc = process->outproc;
+    if (outproc) {
+      assert(outproc->inproc == process);
+      outproc->inproc = NULL;
+      process->outproc = NULL;
+    }
+
+    Process *inproc = process->inproc;
+    if (inproc) {
+      assert(inproc->outproc == process);
+      inproc->outproc = NULL;
+      process->inproc = NULL;
+    }
+     
+    do_shell(process, inproc, process->inagent, outproc, process->outagent, process->args);
+  }
+
+  process->coro->finish();
 }

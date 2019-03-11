@@ -53,21 +53,21 @@ struct Agent {
   const static unsigned int maxpicks = 256;
   std::vector<Urbite*> pickbuf;
 
-  std::list<Process*> process_refs;
-
-  void add_process_ref(Process *process) {
-    process_refs.push_back(process);
+  Process *shell;
+  std::list<Process*> writers;
+  void add_writer(Process *p) {
+    writers.push_back(p);
   }
-  bool remove_process_ref(Process *process) {
-    auto i = process_refs.begin(); 
-    while (i != process_refs.end()) {
-      if (*i == process) {
-        process_refs.erase(i);
-        return true;
+  void remove_writer(Process *p) {
+    auto i = writers.begin();
+    while (i != writers.end()) {
+      if (*i == p) {
+        writers.erase(i);
+        return;
       }
       ++i;
     }
-    return false;
+    assert(0);
   }
 
   Agent(class Server *_server, const char *nom, int _s = -1, uint32_t _ip = 0x7F000001U, bool _secure = false);

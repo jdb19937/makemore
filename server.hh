@@ -21,7 +21,7 @@
 #include "urb.hh"
 #include "urbite.hh"
 #include "strutils.hh"
-#include "process.hh"
+#include "system.hh"
 
 namespace makemore {
 
@@ -60,35 +60,12 @@ struct Server {
 
   std::string urbdir;
   Urb *urb;
-  std::list<Process*> processes;
 
   std::string session_key;
   bool check_session(const std::string &nom, const std::string &session);
   std::string make_session(const std::string &nom, unsigned long duration = 3600);
 
-  Process *add_process(Process *p) {
-    assert(p);
-    processes.push_back(p);
-    return p;
-  }
-
-  Process *add_process(Urbite *who, Command cmdfunc, const strvec &args, Process::OutputType out_type, Process::OutputHandle out) {
-    Process *process = new Process(this, who, cmdfunc, args, out_type, out);
-    return add_process(process);
-}
-    
-
-  Process *add_process(Urbite *who, Command cmdfunc, const strvec &args, Agent *agent) {
-    Process::OutputHandle oh;
-    oh.agent = agent;
-    return add_process(who, cmdfunc, args, Process::OUTPUT_TO_AGENT, oh);
-  }
-
-  Process *add_process(Urbite *who, Command cmdfunc, const strvec &args, Process *outproc) {
-    Process::OutputHandle oh;
-    oh.process = outproc;
-    return add_process(who, cmdfunc, args, Process::OUTPUT_TO_PROCESS, oh);
-  }
+  System *system;
 
   Server(const std::string &urb);
   ~Server();

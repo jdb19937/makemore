@@ -9,98 +9,65 @@
 
 #include "strutils.hh"
 #include "command.hh"
+#include "coro.hh"
 
 namespace makemore {
 
 struct Process {
-  class Server *server;
+  class System *system;
   class Urbite *who;
 
-  bool done;
+  typedef enum {
+    MODE_THINKING,
+    MODE_READING,
+    MODE_WRITING,
+    MODE_DONE
+  } Mode;
+
+  Mode mode;
+  Coro<Mode> *coro;
+
   std::list<strvec> inq;
   unsigned int inqn, inqm;
+  strvec inx;
 
-  void *state;
-
-  typedef enum {
-    OUTPUT_TO_NULL,
-    OUTPUT_TO_PROCESS,
-    OUTPUT_TO_AGENT
-  } OutputType;
-
-  OutputType out_type;
-    
-  union OutputHandle {
-    Process *process;
-    class Agent *agent;
-  };
-
-  OutputHandle out;
-
-  std::list<Process*> process_refs;
-
-  void add_process_ref(Process *ref) {
-    process_refs.push_back(ref);
-  }
-  bool remove_process_ref(Process *process) {
-    auto i = process_refs.begin(); 
-    while (i != process_refs.end()) {
-      if (*i == process) {
-        process_refs.erase(i);
-        return true;
-      }
-      ++i;
-    }
-    return false;
-  }
+  Process *inproc, *outproc;
+  class Agent *inagent, *outagent;
 
   Command cmd;
-  strvec pre;
+  strvec args;
+
+  bool woke;
+  struct Process *prev_proc, *next_proc;
+  struct Process *prev_woke, *next_woke;
+  struct Process *prev_done, *next_done;
+  void wake();
+  void sleep();
+  void finish();
 
   Process(
-    Server *_server,
+    System *_system,
     const Urbite *_who,
     Command _cmd,
     const strvec &_pre,
-    OutputType,
-    OutputHandle
+    Process *inproc,
+    Process *outproc,
+    Agent *inagent,
+    Agent *outagent
   );
 
   ~Process();
-  void deref();
 
-  bool run();
-
-  const strvec &peek_in() const {
-    return *inq.begin();
-  }
-
-  bool in_empty() const {
-    return (inq.begin() == inq.end());
-  }
-
-  bool in_ready() const {
+  bool can_put() const {
     return (inqn < inqm);
   }
 
-  bool out_ready() const;
+  void put(const strvec &in);
 
-  void pop_in() {
-    assert(inqn > 0);
-    inq.erase(inq.begin());
-    --inqn;
-  }
+  strvec *read();
+  bool write(const strvec &outvec);
 
-  bool put_in(const strvec &invec, bool force = false) {
-    if (!force && !in_ready())
-      return false;
-
-    ++inqn;
-    inq.push_back(invec);
-    return true;
-  }
-
-  bool put_out(const strvec &outvec, bool force = false);
+  bool run();
 };
 
 }
