@@ -2,6 +2,7 @@
 #include <urbite.hh>
 #include <process.hh>
 #include <strutils.hh>
+#include <session.hh>
 
 using namespace makemore;
 
@@ -10,12 +11,15 @@ extern "C" void mainmore(Process *);
 
 
 Process *do_shell(
-  Process *shell,
-  Process *inproc, Agent *inagent, Process *outproc, Agent *outagent,
-  const strvec &_args
+  Process *shell, bool use_input, const strvec *argsp
 ) {
+  IO *out = shell->out;
+  const strvec &args0 = *argsp;
+  strvec args;
 
-  strvec args = _args;
+  args = args0;
+
+
 again:
   unsigned int argsi;
   unsigned int argsn = args.size();
@@ -49,17 +53,10 @@ again:
     assert(then);
 
     Process *child = new Process(
-      shell->system, shell->who, then, dargs,
-      NULL, outproc,
-      NULL, outagent
+      shell->system, shell->session, then, dargs,
+      NULL, out
     );
-
-    if (outproc) {
-      assert(outproc->inproc == NULL);
-      outproc->inproc = child;
-    }
-    outproc = child;
-    outagent = NULL;
+    out = child->in;
 
     args = cargs;
     argsn = args.size();
@@ -88,17 +85,10 @@ again:
     assert(dargs.size() + argsi + 1 == argsn);
 
     Process *child = new Process(
-      shell->system, shell->who, mainmore, dargs,
-      NULL, outproc,
-      NULL, outagent
+      shell->system, shell->session, mainmore, dargs,
+      NULL, out
     );
-
-    if (outproc) {
-      assert(outproc->inproc == NULL);
-      outproc->inproc = child;
-    }
-    outproc = child;
-    outagent = NULL;
+    out = child->in;
 
     args = cargs;
     argsn = args.size();
@@ -130,36 +120,92 @@ again:
 
   {
     Command command = find_command(args[0]);
+    strvec args1;
+
     if (!command)
       goto fail;
 
-    {
-      strvec rest(args.begin() + 1, args.end());
-      args = rest;
-    }
+    args1 = strvec(args.begin() + 1, args.end());
 
-fprintf(stderr, "made main[%s] outproc=%lu inproc=%lu\n", joinwords(args).c_str(), (unsigned long)outproc, (unsigned long)inproc);
-    Process *main = new Process(
-      shell->system, shell->who, command, args,
-      inproc, outproc, NULL, outagent
-    );
-
-    if (inproc) {
-      assert(inproc->outproc == NULL);
-      inproc->outproc = main;
-    }
-
-    if (outproc) {
-      assert(outproc->inproc == NULL);
-      outproc->inproc = main;
-    }
-
-    if (inproc) {
-      while (shell->inqn) {
-        strvec *buffered = shell->read();
-        assert(buffered);
-        main->put(*buffered);
+    args.resize(args1.size());
+    for (unsigned int i = 0, j = 0, n = args1.size(); i < n; ++i) {
+      if (!args1[i].length())
+        continue;
+      switch (args1[i][0]) {
+      case '\\':
+        args[j++] = args1[i].c_str() + 1;
+        break;
+      case '$':
+        args[j++] = shell->session->wordvar[args1[i].c_str() + 1];
+        break;
+      case '@':
+        {
+          strvec tmp;
+          tmp = shell->session->linevar[args1[i].c_str() + 1];
+          assert(args.size() + tmp.size() > 0);
+          args.resize(args.size() + tmp.size() - 1);
+          for (auto word : tmp)
+            args[j++] = word;
+          break;
+        }
+      default:
+        args[j++] = args1[i];
+        break;
       }
+    }
+
+    Process *main;
+    if (use_input) {
+fprintf(stderr, "hi args=[%s]\n", joinwords(args).c_str());
+
+      if (out == shell->out) {
+        strvec bak_args = args;
+        shell->args = args;
+        shell->cmd = command;
+
+        command(shell);
+
+        shell->args = bak_args;
+        shell->cmd = mainmore;
+      } else {
+        strvec bak_args = args;
+        IO *bak_out = shell->out;
+
+        assert(bak_out->nwriters >= 2);
+        bak_out->unlink_writer(shell);
+        out->link_writer(shell);
+        assert(out->nwriters == 1);
+        shell->out = out;
+        shell->cmd = command;
+        shell->args = args;
+
+        command(shell);
+
+        shell->out = bak_out;
+        shell->args = bak_args;
+        shell->cmd = mainmore;
+        out->unlink_writer(shell);
+        bak_out->link_writer(shell);
+      }
+
+#if 0
+      main = new Process(
+        shell->system, shell->session, command, args,
+        shell->in, out
+      );
+
+      assert(shell->in->nreaders >= 2);
+
+      shell->in->unlink_reader(shell);
+      IO *nullio = new IO;
+      shell->in = nullio;
+      nullio->link_reader(shell);
+#endif
+    } else {
+      main = new Process(
+        shell->system, shell->session, command, args,
+        NULL, out
+      );
     }
   }
   return NULL;
@@ -177,8 +223,8 @@ fail:
   }
   
   new Process(
-    shell->system, shell->who, echo, args,
-    NULL, NULL, NULL, outagent
+    shell->system, shell->session, echo, args,
+    NULL, shell->out
   );
 
   return NULL;
@@ -187,29 +233,13 @@ fail:
 void mainmore(
   Process *process
 ) {
-fprintf(stderr, "sh reading done=%d (pre=%s)\n", process->coro->done, joinwords(process->args).c_str());
+fprintf(stderr, "sh args=[%s]\n", joinwords(process->args).c_str());
 
   if (process->args.size() == 0) {
     while (const strvec *argsp = process->read()) {
-      do_shell(process, NULL, NULL, process->outproc, process->outagent, *argsp);
+      do_shell(process, false, argsp);
     }
   } else {
-    Process *outproc = process->outproc;
-    if (outproc) {
-      assert(outproc->inproc == process);
-      outproc->inproc = NULL;
-      process->outproc = NULL;
-    }
-
-    Process *inproc = process->inproc;
-    if (inproc) {
-      assert(inproc->outproc == process);
-      inproc->outproc = NULL;
-      process->inproc = NULL;
-    }
-     
-    do_shell(process, inproc, process->inagent, outproc, process->outagent, process->args);
+    do_shell(process, true, &process->args);
   }
-
-  process->coro->finish();
 }

@@ -24,6 +24,4 @@ void mainmore(
 
     (void)process->write(psvec);
   }
-
-  process->coro->finish();
 }

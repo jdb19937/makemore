@@ -114,8 +114,16 @@ inline std::string lowercase(std::string str) {
 }
 
 inline bool hasspace(const std::string &s) {
-  for (const char *p = s.c_str(); *p; ++p) {
-    if (isspace(*p))
+  for (unsigned int i = 0, n = s.length(); i < n; ++i) {
+    if (isspace(s[i]))
+      return true;
+  }
+  return false;
+}
+
+inline bool hasnull(const std::string &s) {
+  for (unsigned int i = 0, n = s.length(); i < n; ++i) {
+    if (!s[i])
       return true;
   }
   return false;

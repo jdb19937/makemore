@@ -57,11 +57,11 @@ Parson *Urb::make(const std::string &nom, unsigned int tier) {
   if (!Parson::valid_nom(nom))
     return NULL;
 
-  string imagefn = images[randuint() % images.size()];
-  string png = slurp(imagefn);
-
   Parson parson;
   memset(&parson, 0, sizeof(Parson));
+
+  string imagefn = images[randuint() % images.size()];
+  string png = slurp(imagefn);
 
   vector<string> tags;
   // imglab("png", png, 64, 64, parson.target, &tags);

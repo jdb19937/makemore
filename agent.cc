@@ -29,7 +29,7 @@ static string _ipstr(uint32_t ip) {
   return string(buf);
 }
 
-Agent::Agent(class Server *_server, const char *nom, int _s, uint32_t _ip, bool _secure) {
+Agent::Agent(class Server *_server, int _s, uint32_t _ip, bool _secure) {
   server = _server;
   s = _s;
   ip = _ip;
@@ -46,8 +46,6 @@ Agent::Agent(class Server *_server, const char *nom, int _s, uint32_t _ip, bool 
   outbufm = (1 << 20);
   outbuf = NULL; // new char[outbufm];
 
-  who = new Urbite(nom ? nom : ipstr, server->urb);
-
   if (secure) {
     ssl = SSL_new(_server->ssl_ctx);
     SSL_set_fd(ssl, s);
@@ -60,20 +58,7 @@ Agent::Agent(class Server *_server, const char *nom, int _s, uint32_t _ip, bool 
   proto = UNKNOWN;
   httpkeep = true;
 
-  Command shfunc = find_command("sh");
-  assert(shfunc);
-  strvec no_args;
-
-  shell = new Process(
-    server->system,
-    who,
-    shfunc,
-    no_args,
-    NULL,
-    NULL,
-    this,
-    this
-  );
+  session = new Session(this);
 }
 
 Agent::~Agent() {
@@ -82,24 +67,12 @@ Agent::~Agent() {
   if (outbuf)
     delete[] outbuf;
 
-  if (s >= 0)
-    ::close(s);
+  this->close();
 
-  if (who)
-    delete who;
   if (ssl)
     SSL_free(ssl);
 
-  for (auto writer : writers) {
-    assert(writer->outagent == this);
-    writer->outagent = NULL;
-  }
-
-  if (shell) {
-    assert(shell->inagent == this);
-    shell->inagent = NULL;
-    assert(shell->outagent == NULL); // was a writer
-  }
+  delete session;
 }
 
 void Agent::close() {
@@ -135,9 +108,8 @@ bool Agent::slurp() {
   return true;
 }
 
-void Agent::parse(vector<strvec> *lines) {
+void Agent::parse() {
   unsigned int inbufi = 0;
-  lines->clear();
 
   while (1) {
     strvec words;
@@ -174,6 +146,7 @@ void Agent::parse(vector<strvec> *lines) {
 
     assert(inbufj <= inbufn);
     long remaining = inbufn - inbufj;
+
     if (remaining < inbufk) {
       inbufj = inbufn;
       inbufk -= remaining;
@@ -215,7 +188,7 @@ void Agent::parse(vector<strvec> *lines) {
     }
     assert(p + off == inbuf + inbufj);
 
-    lines->push_back(words);
+    linebuf.push_back(words);
 
 //fprintf(stderr, "inbufi=%u inbufj=%u inbufk=%u inbufn=%u line=[%s]\n",
 //inbufi,inbufj,inbufk,inbufn, line.c_str());
@@ -265,14 +238,15 @@ void Agent::printf(const char *fmt, ...) {
   write(string(buf));
 }
 
-void Agent::write(const strvec &words) {
+bool Agent::write(const strvec &words) {
   std::string extra = "";
   strvec nwords = words;
 
   for (auto wordi = nwords.begin(); wordi != nwords.end(); ++wordi) {
     string &word = *wordi;
     unsigned int wordn = word.length();
-    if (wordn > 255 || word[0] == '<' || hasspace(word)) {
+//fprintf(stderr, "wordn=%u\n", wordn);
+    if (wordn == 0 || wordn > 255 || word[0] == '<' || hasspace(word) || hasnull(word)) {
       extra += word;
       char buf[64];
       sprintf(buf, "<%u", wordn);
@@ -280,22 +254,26 @@ void Agent::write(const strvec &words) {
     }
   }
 
-  write(joinwords(nwords) + "\n" + extra);
+  return write(joinwords(nwords) + "\n" + extra);
 }
 
-void Agent::write(const string &str) {
-  if (outbufn || s < 0) {
-    assert(outbufn < outbufm);
+bool Agent::write(const string &str) {
+  if (s < 0)
+    return false;
+  if (str.length() + outbufn > outbufm)
+    return false;
+
+  if (outbufn) {
+    assert(outbufn <= outbufm);
     unsigned int l = outbufm - outbufn;
     unsigned int k = str.length();
-    if (k > l)
-      k = l;
+    assert(k <= l);
     
     if (!outbuf)
       outbuf = new char[outbufm];
     memcpy(outbuf + outbufn, str.data(), k);
     outbufn += k;
-    return;
+    return true;
   }
 
   ssize_t ret;
@@ -305,34 +283,30 @@ void Agent::write(const string &str) {
     ret = ::write(s, str.data(), str.length());
   }
   if (ret == str.length())
-    return;
+    return true;
   if (ret < 1) {
-    unsigned int l = outbufm;
     unsigned int k = str.length();
-    if (k > l)
-      k = l;
+    assert(k <= outbufm);
 
-    if (ret < 1) {
-      if (!outbuf)
-        outbuf = new char[outbufm];
-      memcpy(outbuf, str.data(), k);
-      outbufn = k;
-      return;
-    }
+    if (!outbuf)
+      outbuf = new char[outbufm];
+    memcpy(outbuf, str.data(), k);
+    outbufn = k;
+    return true;
   }
 
+  assert(ret > 0);
   assert(ret < str.length());
   {
-    unsigned int l = outbufm;
     unsigned int k = str.length() - ret;
-    if (k > l)
-      k = l;
+    assert(k <= outbufm);
 
     if (!outbuf)
       outbuf = new char[outbufm];
     memcpy(outbuf, str.data() + ret, k);
     outbufn = k;
   }
+  return true;
 }
 
 void Agent::flush() {
@@ -342,10 +316,27 @@ void Agent::flush() {
     return;
   }
 
-  if (outbufn == 0)
+  if (outbufn == 0) {
+    IO *shell_out = session->shell->out;
+
+    while (shell_out->can_get()) {
+      strvec *vec = shell_out->peek();
+      assert(vec);
+
+      if (!this->write(*vec)) {
+        break;
+      }
+
+      strvec *ret = shell_out->get();
+      assert(ret);
+    }
+
     return;
-  if (!outbuf)
-    outbuf = new char[outbufm];
+  }
+
+  assert(outbufn > 0);
+  assert(outbuf);
+
   ssize_t ret;
   if (secure) {
     ret = ::SSL_write(ssl, outbuf, outbufn);
@@ -356,7 +347,6 @@ void Agent::flush() {
   if (ret < 1)
     return;
   if (ret < outbufn) {
-    assert(ret < outbufn);
     memmove(outbuf, outbuf + ret, outbufn - ret);
     outbufn -= ret;
     return;
@@ -365,8 +355,19 @@ void Agent::flush() {
   assert(ret == outbufn);
   outbufn = 0;
 
-  if (shell && shell->mode == Process::MODE_WRITING)
-    shell->wake();
+
+  IO *shell_out = session->shell->out;
+  while (shell_out->can_get()) {
+    strvec *vec = shell_out->peek();
+    assert(vec);
+
+    if (!this->write(*vec)) {
+      break;
+    }
+
+    strvec *ret = shell_out->get();
+    assert(ret);
+  }
 }
 
 
@@ -398,8 +399,10 @@ void Agent::command(const strvec &cmd) {
   if (cmd.empty())
     return;
 
-  assert(shell->can_put());
-  shell->put(cmd);
+  Process *shell = session->shell;
+  assert(shell);
+  assert(shell->in->can_put());
+  shell->in->put(cmd);
 }
 
 #if 0

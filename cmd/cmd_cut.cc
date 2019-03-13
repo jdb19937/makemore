@@ -14,12 +14,10 @@ void mainmore(
   Process *process
 ) {
   if (process->args.size() == 0)
-    process->coro->finish();
+    return;
 
   string colspec = process->args[0];
   unsigned int col = strtoul(colspec.c_str(), NULL, 0);
-
-fprintf(stderr, "cut here (procin=%lu)\n", (unsigned long)process->inproc);
 
   while (strvec *inp = process->read()) {
 fprintf(stderr, "cut got inp\n");
@@ -32,6 +30,6 @@ fprintf(stderr, "cut got inp\n");
   }
 fprintf(stderr, "cut there\n");
 
-  process->coro->finish();
+  return;
 }
 

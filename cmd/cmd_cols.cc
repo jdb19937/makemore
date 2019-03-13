@@ -14,11 +14,11 @@ void mainmore(
   Process *process
 ) {
   if (process->args.size() == 0)
-    process->coro->finish();
+    return;
 
   unsigned int outbufn = strtoul(process->args[0].c_str(), NULL, 0);
   if (outbufn == 0)
-    process->coro->finish();
+    return;
 
   strvec outbuf;
   outbuf.resize(outbufn);
@@ -43,6 +43,6 @@ void mainmore(
   }
 
 done:
-  process->coro->finish();
+  return;
 }
 

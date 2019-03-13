@@ -3,10 +3,7 @@
 #include <process.hh>
 #include <strutils.hh>
 
-#include <list>
-#include <algorithm>
-#include <vector>
-#include <string>
+#include <regex>
 
 using namespace makemore;
 using namespace std;
@@ -18,16 +15,11 @@ extern "C" void mainmore(
 void mainmore(
   Process *process
 ) {
-  std::list<strvec> sortbuf;
-
   while (strvec *inp = process->read()) {
-    sortbuf.push_back(*inp);
-  }
+    strvec in = process->args;
+    catstrvec(in, *inp);
 
-  sortbuf.sort();
-
-  for (auto outvec : sortbuf) {
-    if (!process->write(outvec))
+    if (!process->write(in))
       break;
   }
 }

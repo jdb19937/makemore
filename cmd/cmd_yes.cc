@@ -22,5 +22,4 @@ void mainmore(
     ;
 
 fprintf(stderr, "finishing yes\n");
-  process->coro->finish();
 }

@@ -18,6 +18,12 @@ struct Urbite {
   Parson *_parson;
   Urb *urb;
 
+  Urbite(Urb *_urb) {
+    urb = _urb;
+    nom = Parson::gen_nom();
+    _parson = NULL;
+  }
+
   Urbite(const std::string &_nom, Urb *_urb, Parson *__parson = NULL) {
     nom = _nom;
     urb = _urb;

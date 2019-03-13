@@ -16,7 +16,7 @@ void mainmore(
   Process *process
 ) {
   if (process->args.size() == 0)
-    process->coro->finish();
+    return;
 
   try {
     string rxstr = joinwords(process->args);
@@ -34,6 +34,5 @@ void mainmore(
   } catch (std::regex_error) {
   }
 
-  process->coro->finish();
 }
 

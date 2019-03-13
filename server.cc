@@ -21,7 +21,6 @@
 #include "parson.hh"
 #include "server.hh"
 #include "ppm.hh"
-#include "commands.hh"
 #include "agent.hh"
 
 namespace makemore {
@@ -98,6 +97,7 @@ Server::Server(const std::string &_urbdir) {
   );
 
   system = new System;
+  system->server = this;
 }
 
 
@@ -327,10 +327,11 @@ void Server::accept() {
     memcpy(&agent_ip, &cin.sin_addr, 4);
     fprintf(stderr, "accepted %s\n", ipstr(agent_ip).c_str());
 
-    Agent *agent = new Agent(this, NULL, c, agent_ip);
-    assert(agent->who);
+    Agent *agent = new Agent(this, c, agent_ip);
+    Urbite *who = agent->session->who;
+    assert(who);
 
-    nom_agent.insert(make_pair(agent->who->nom, agent));
+    nom_agent.insert(make_pair(who->nom, agent));
     agents.insert(agent);
   }
 }
@@ -351,30 +352,35 @@ void Server::ssl_accept() {
     memcpy(&agent_ip, &cin.sin_addr, 4);
     fprintf(stderr, "accepted %s (ssl)\n", ipstr(agent_ip).c_str());
 
-    Agent *agent = new Agent(this, NULL, c, agent_ip, true);
-    assert(agent->who);
+    Agent *agent = new Agent(this, c, agent_ip, true);
+    Urbite *who = agent->session->who;
+    assert(who);
 
-    nom_agent.insert(make_pair(agent->who->nom, agent));
+    nom_agent.insert(make_pair(who->nom, agent));
     agents.insert(agent);
   }
 }
 
 void Server::renom(Agent *agent, const std::string &newnom) {
-  assert(agent->who);
-  if (agent->who->nom == newnom)
+  Urbite *who = agent->session->who;
+
+  assert(who);
+  if (who->nom == newnom)
     return;
 
-  auto naip = nom_agent.equal_range(agent->who->nom);
+  bool found = false;
+  auto naip = nom_agent.equal_range(who->nom);
   for (auto nai = naip.first; nai != naip.second; ++nai) {
     if (nai->second == agent) {
       nom_agent.erase(nai);
+      found = true;
       break;
     }
   }
+  assert(found);
 
-  agent->who->become(newnom);
-
-  nom_agent.insert(make_pair(agent->who->nom, agent));
+  who->become(newnom);
+  nom_agent.insert(make_pair(who->nom, agent));
 }
 
 void Server::notify(const std::string &nom, const std::string &msg, const Agent *exclude) {
@@ -474,9 +480,9 @@ void Server::select() {
       FD_SET(agent->s, fdsets + 1);
       break;
     case SSL_ERROR_NONE:
-      if (agent->outbufn)
+      if (agent->need_flush())
         FD_SET(agent->s, fdsets + 1);
-      if (agent->inbufn < agent->inbufm)
+      if (agent->need_slurp())
         FD_SET(agent->s, fdsets + 0);
       break;
     default:
@@ -503,7 +509,7 @@ void Server::main() {
       if (agent->s < 0) {
         fprintf(stderr, "closing %s\n", ipstr(agent->ip).c_str());
 
-        auto naip = nom_agent.equal_range(agent->who->nom);
+        auto naip = nom_agent.equal_range(agent->session->who->nom);
         for (auto nai = naip.first; nai != naip.second; ++nai) {
           if (nai->second == agent) {
             nom_agent.erase(nai);
@@ -534,7 +540,7 @@ void Server::main() {
         if (!agent->slurp()) {
           fprintf(stderr, "closing %s\n", ipstr(agent->ip).c_str());
 
-          auto naip = nom_agent.equal_range(agent->who->nom);
+          auto naip = nom_agent.equal_range(agent->session->who->nom);
           for (auto nai = naip.first; nai != naip.second; ++nai) {
             if (nai->second == agent) {
               nom_agent.erase(nai);
@@ -557,6 +563,7 @@ void Server::main() {
       }
     }
 
+#if 0
     for (unsigned int i = 0; i < 2048; ++i) {
       Parson *parson = urb->zones[0]->pick();
       if (!parson)
@@ -571,7 +578,7 @@ void Server::main() {
       vector<string> reqwords;
       splitwords(req, &reqwords);
 
-      Agent agent(this, parson->nom, -1, 0x0100007F);
+      Agent agent(this, -1, 0x0100007F);
       agent.command(reqwords);
 
       if (!agent.outbufn)
@@ -585,19 +592,19 @@ fprintf(stderr, "rspstr=%s\n", rspstr.c_str());
         parson->pushbrief(*rspi + " | " + req);
       }
     }
+#endif
 
 
     for (auto agent : agents) {
       if (agent->ssl_status)
         continue;
 
-      vector<vector<string > > lines;
-      agent->parse(&lines);
-      if (lines.size() == 0)
+      agent->parse();
+      if (agent->linebuf.size() == 0)
         continue;
 
       if (agent->proto == Agent::UNKNOWN) {
-        const vector<string> &words = lines[0];
+        const strvec &words = agent->linebuf[0];
         if (words.size()) {
           const string &word = words[0];
           if (word == "GET") {
@@ -612,10 +619,18 @@ fprintf(stderr, "rspstr=%s\n", rspstr.c_str());
 
       switch (agent->proto) {
       case Agent::MORETP:
-        for (auto line : lines) {
-          agent->command(line);
+        {
+          unsigned int i, n;
+          for (i = 0, n = agent->linebuf.size(); i < n; ++i) {
+            if (!agent->session->shell->in->can_put())
+              break;
+            bool ret = agent->session->shell->in->put(agent->linebuf[i]);
+            assert(ret);
+          }
+          agent->linebuf = strmat(agent->linebuf.begin() + i, agent->linebuf.end());
         }
         break;
+#if 0
       case Agent::HTTP:
         for (auto line : lines) {
           if (line.size() == 0) {
@@ -632,6 +647,7 @@ fprintf(stderr, "rspstr=%s\n", rspstr.c_str());
           }
         }
         break;
+#endif
       default:
         assert(0);
       }

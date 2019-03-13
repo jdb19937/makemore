@@ -19,6 +19,7 @@
 #include "urbite.hh"
 #include "process.hh"
 #include "strutils.hh"
+#include "session.hh"
 
 struct ssl_st;
 typedef struct ssl_st SSL;
@@ -45,39 +46,34 @@ struct Agent {
   char *inbuf;
   unsigned int inbufm, inbufn;
   unsigned int inbufj, inbufk;
+  std::vector<strvec> linebuf;
+  bool need_slurp() {
+    return (inbufn < inbufm && linebuf.empty());
+  }
 
   char *outbuf;
   unsigned int outbufm, outbufn;
-
-  Urbite *who;
-  const static unsigned int maxpicks = 256;
-  std::vector<Urbite*> pickbuf;
-
-  Process *shell;
-  std::list<Process*> writers;
-  void add_writer(Process *p) {
-    writers.push_back(p);
-  }
-  void remove_writer(Process *p) {
-    auto i = writers.begin();
-    while (i != writers.end()) {
-      if (*i == p) {
-        writers.erase(i);
-        return;
-      }
-      ++i;
-    }
-    assert(0);
+  bool need_flush() {
+    return (
+      outbufn > 0 ||
+      (session->shell && session->shell->out->can_get())
+    );
   }
 
-  Agent(class Server *_server, const char *nom, int _s = -1, uint32_t _ip = 0x7F000001U, bool _secure = false);
+  Session *session;
+  Urbite *who() {
+    assert(session);
+    return session->who;
+  }
+
+  Agent(class Server *_server, int _s = -1, uint32_t _ip = 0x7F000001U, bool _secure = false);
   ~Agent();
   void close();
 
   bool slurp();
-  void parse(std::vector< std::vector<std::string> > *lines);
-  void write(const std::string &str);
-  void write(const strvec &vec);
+  void parse();
+  bool write(const std::string &str);
+  bool write(const strvec &vec);
   void printf(const char *fmt, ...);
   void flush();
   void command(const std::vector<std::string> &line);

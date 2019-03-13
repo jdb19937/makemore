@@ -15,11 +15,11 @@ void mainmore(
 ) {
   strvec *inp = process->read();
   if (!inp)
-    process->coro->finish();
+    return;
 
   strvec prev = *inp;
   if (!process->write(prev))
-    process->coro->finish();
+    return;
 
   while (inp = process->read()) {
     const strvec &in = *inp;
@@ -31,7 +31,5 @@ fprintf(stderr, "here [%s]\n", joinwords(in).c_str());
     if (!process->write(prev))
       break;
   }
-
-  process->coro->finish();
 }
 

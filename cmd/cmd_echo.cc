@@ -15,5 +15,4 @@ fprintf(stderr, "here echo args=%s\n", joinwords(process->args).c_str());
   (void)process->write(process->args);
 
 fprintf(stderr, "finishing echo\n");
-  process->coro->finish();
 }

@@ -14,7 +14,7 @@ void mainmore(
   Process *process
 ) {
   if (process->args.size() == 0)
-    process->coro->finish();
+    return;
 
   unsigned long nrows = strtoul(process->args[0].c_str(), NULL, 0);
   unsigned long row = 0;
@@ -27,7 +27,5 @@ void mainmore(
       break;
     ++row;
   }
-
-  process->coro->finish();
 }
 

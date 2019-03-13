@@ -2,6 +2,8 @@
 #define __MAKEMORE_PROCESS_HH__ 1
 
 #include <assert.h>
+#include <stdlib.h>
+#include <ucontext.h>
 
 #include <string>
 #include <vector>
@@ -9,65 +11,88 @@
 
 #include "strutils.hh"
 #include "command.hh"
-#include "coro.hh"
+#include "io.hh"
 
 namespace makemore {
 
 struct Process {
+  const static unsigned long stack_size = (1 << 20);
+
   class System *system;
-  class Urbite *who;
+  class Session *session;
 
   typedef enum {
+    MODE_BEGIN,
+    MODE_RESUME,
     MODE_THINKING,
     MODE_READING,
     MODE_WRITING,
     MODE_DONE
   } Mode;
 
-  Mode mode;
-  Coro<Mode> *coro;
+  volatile Mode mode;
 
-  std::list<strvec> inq;
-  unsigned int inqn, inqm;
-  strvec inx;
+  typedef enum { 
+    FLAG_CUDA_IN = 0x01,
+    FLAG_CUDA_OUT = 0x02,
+    FLAG_CUDA = 0x03
+  } Flags;
 
-  Process *inproc, *outproc;
-  class Agent *inagent, *outagent;
+  Flags flags;
+
+  uint8_t stack[stack_size];
+  ucontext_t me;
+  ucontext_t uc;
+  volatile bool inuc;
 
   Command cmd;
   strvec args;
 
+  IO *in;
+  IO *out;
+
+  struct Process *prev_reader, *next_reader;
+  struct Process *prev_writer, *next_writer;
+
+
   bool woke;
+  struct Process *prev_sproc, *next_sproc;
   struct Process *prev_proc, *next_proc;
   struct Process *prev_woke, *next_woke;
   struct Process *prev_done, *next_done;
   void wake();
   void sleep();
-  void finish();
 
   Process(
     System *_system,
-    const Urbite *_who,
+    Session *_session,
     Command _cmd,
-    const strvec &_pre,
-    Process *inproc,
-    Process *outproc,
-    Agent *inagent,
-    Agent *outagent
+    const strvec &_args,
+    IO *_in, IO *_out
   );
 
   ~Process();
 
-  bool can_put() const {
-    return (inqn < inqm);
-  }
-
-  void put(const strvec &in);
-
   strvec *read();
+  strvec *peek();
   bool write(const strvec &outvec);
 
-  bool run();
+  void run();
+
+  void yield(Mode newmode = MODE_THINKING) {
+    assert(newmode != MODE_BEGIN);
+    assert(mode != MODE_DONE);
+    assert(inuc);
+    mode = newmode;
+    inuc = false;
+    ::swapcontext(&uc, &me);
+    assert(mode != MODE_DONE);
+    assert(inuc);
+  }
+
+  void finish() {
+    this->yield(MODE_DONE);
+  }
 };
 
 }
