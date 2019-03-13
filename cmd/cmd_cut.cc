@@ -17,18 +17,24 @@ void mainmore(
     return;
 
   string colspec = process->args[0];
-  unsigned int col = strtoul(colspec.c_str(), NULL, 0);
+  vector<int> cols;
+  parsecolspec(colspec, &cols);
+  unsigned int ncols = cols.size();
 
-  while (strvec *inp = process->read()) {
-fprintf(stderr, "cut got inp\n");
+  while (strvec *invecp = process->read()) {
+    const strvec &invec = *invecp;
+    unsigned int kcols = invec.size();
+
     strvec outvec;
-    outvec.resize(1);
-    outvec[0] = col < inp->size() ? (*inp)[col] : "";
+    outvec.resize(ncols);
+    for (unsigned int i = 0; i < ncols; ++i) {
+      unsigned int col = cols[i];
+      outvec[i] = col < kcols ? invec[col] : "";
+    }
 
     if (!process->write(outvec))
       break;
   }
-fprintf(stderr, "cut there\n");
 
   return;
 }

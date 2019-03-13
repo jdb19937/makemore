@@ -204,4 +204,33 @@ void jointhread(const vector<vector<string> > &thread, vector<string> *wordsp, c
   }
 }
 
+bool parsecolspec(const std::string &colspec, std::vector<int> *offp) {
+  offp->clear();
+
+  strvec parts;
+  split(colspec.c_str(), ',', &parts);
+
+  for (auto part : parts) {
+    strvec range;
+    split(part.c_str(), '-', &range);
+
+    assert(range.size());
+    int x = strtoul(range[0].c_str(), NULL, 0);
+    if (range.size() == 1) {
+      offp->push_back(x);
+    } else {
+      int y = strtoul(range[1].c_str(), NULL, 0);
+      if (x <= y) {
+        for (int z = x; z <= y; ++z) {
+          offp->push_back(z);
+        }
+      } else {
+        for (int z = y; z >= x; --z) {
+          offp->push_back(z);
+        }
+      }
+    }
+  }
+}
+
 }

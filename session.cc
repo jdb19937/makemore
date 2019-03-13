@@ -3,6 +3,7 @@
 #include "process.hh"
 #include "agent.hh"
 #include "server.hh"
+#include "cudamem.hh"
 
 namespace makemore {
 
@@ -51,6 +52,12 @@ Session::~Session() {
     delete head_sproc;
   assert(shell == NULL);
   delete who;
+
+  for (auto ptrlen : cudavar) {
+    void *ptr = ptrlen.first;
+    cufree(ptr);
+  }
+  cudavar.clear();
 }
 
 void Session::link_sproc(Process *p) {
@@ -75,6 +82,13 @@ void Session::unlink_sproc(Process *p) {
 
   if (p == shell)
     shell = NULL;
+}
+
+void *Session::cumakevar(unsigned int len) {
+  uint8_t *p;
+  cumake(&p, len);
+  cudavar.push_back(std::make_pair(p, len));
+  return ((void *)p);
 }
 
 }

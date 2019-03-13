@@ -139,6 +139,7 @@ inline void catstrvec(strvec &a, const strvec &b) {
 }
 
 bool match(const std::string &regex, const std::string &str);
+bool parsecolspec(const std::string &colspec, std::vector<int> *offp);
 
 }
 

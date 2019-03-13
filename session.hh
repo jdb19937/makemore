@@ -5,6 +5,7 @@
 
 #include <map>
 #include <string>
+#include <list>
 
 #include "strutils.hh"
 
@@ -25,6 +26,7 @@ struct Session {
   std::map<std::string, std::string> wordvar;
   std::map<std::string, strvec> linevar;
   std::map<std::string, strmat> gridvar;
+  std::list<std::pair<void *, unsigned int> > cudavar;
 
 
   Session(Agent *_agent);
@@ -32,6 +34,7 @@ struct Session {
 
   void link_sproc(Process *p);
   void unlink_sproc(Process *p);
+  void *cumakevar(unsigned int len);
 };
 
 }
