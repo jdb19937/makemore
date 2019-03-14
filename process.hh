@@ -45,7 +45,8 @@ struct Process {
   ucontext_t uc;
   volatile bool inuc;
 
-  Command cmd;
+  Command func;
+  std::string cmd;
   strvec args;
 
   IO *in;
@@ -66,7 +67,7 @@ struct Process {
   Process(
     System *_system,
     Session *_session,
-    Command _cmd,
+    const std::string &cmd,
     const strvec &_args,
     IO *_in, IO *_out
   );

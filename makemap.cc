@@ -6,6 +6,8 @@
 using namespace makemore;
 
 int main(int argc, char **argv) {
+  seedrand();
+
   if (argc < 3) {
     fprintf(stderr, "Usage: makemap file.top file.map [dispa [dispb]]\n");
     exit(1);

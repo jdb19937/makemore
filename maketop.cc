@@ -3,6 +3,7 @@
 using namespace makemore;
 
 int main(int argc, char **argv) {
+  seedrand();
   Topology top;
 
   assert(argc >= 2);

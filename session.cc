@@ -28,8 +28,6 @@ Session::Session(Agent *_agent) {
   next_writer = NULL;
   head_sproc = NULL;
 
-  Command shfunc = find_command("sh");
-  assert(shfunc);
   strvec no_args;
 
   IO *shell_in = new IO;
@@ -41,7 +39,7 @@ Session::Session(Agent *_agent) {
   shell = new Process(
     server->system,
     this,
-    shfunc,
+    "sh",
     no_args,
     shell_in,
     shell_out

@@ -13,11 +13,7 @@ extern "C" void mainmore(Process *);
 void mainmore(
   Process *process
 ) {
-#if 0
-  if (Agent *agent = process->outagent) {
-    agent->close();
-  }
-#endif
+  process->session->agent->close();
 }
 
 }

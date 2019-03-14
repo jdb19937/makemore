@@ -11,10 +11,9 @@ extern "C" void mainmore(Process *);
 void mainmore(
   Process *process
 ) {
-  System *system = process->system;
-  Process *head_proc = system->head_proc;
+  Process *head_sproc = process->session->head_sproc;
 
-  for (Process *proc = head_proc; proc; proc = proc->next_proc) {
+  for (Process *proc = head_sproc; proc; proc = proc->next_sproc) {
     char buf[256];
 
     strvec psvec;

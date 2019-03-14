@@ -22,7 +22,9 @@ fprintf(stderr, "then got line\n");
 fprintf(stderr, "out then\n");
 
   Command shellmore = find_command("sh");
-  process->cmd = shellmore;
+  process->cmd = "sh";
+  process->func = shellmore;
   shellmore(process);
-  process->cmd = mainmore;
+  process->cmd = "then";
+  process->func = mainmore;
 }

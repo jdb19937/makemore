@@ -18,6 +18,7 @@ void usage() {
 }
 
 int main(int argc, char **argv) {
+  seedrand();
   if (argc < 2)
     usage();
 

@@ -8,6 +8,7 @@
 using namespace makemore;
 
 int main(int argc, char **argv) {
+  seedrand();
   assert(argc >= 3);
   const char *ifn = argv[1];
   const char *ofn = argv[2];

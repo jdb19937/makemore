@@ -1,3 +1,5 @@
+#include <string>
+
 #include <system.hh>
 #include <urbite.hh>
 #include <process.hh>
@@ -5,6 +7,7 @@
 #include <session.hh>
 
 using namespace makemore;
+using namespace std;
 
 extern "C" void mainmore(Process *);
 
@@ -21,6 +24,9 @@ Process *do_shell(
 
 
 again:
+  string cmd;
+  Command func;
+
   unsigned int argsi;
   unsigned int argsn = args.size();
   unsigned int parens = 0;
@@ -49,11 +55,8 @@ again:
     assert(cargs.size() == argsi);
     assert(dargs.size() + argsi + 1 == argsn);
 
-    Command then = find_command("then");
-    assert(then);
-
     Process *child = new Process(
-      shell->system, shell->session, then, dargs,
+      shell->system, shell->session, "then", dargs,
       NULL, out
     );
     out = child->in;
@@ -85,7 +88,7 @@ again:
     assert(dargs.size() + argsi + 1 == argsn);
 
     Process *child = new Process(
-      shell->system, shell->session, mainmore, dargs,
+      shell->system, shell->session, "sh", dargs,
       NULL, out
     );
     out = child->in;
@@ -118,14 +121,13 @@ again:
   if (argsn == 0)
     goto fail;
 
+  cmd = args[0];
+  func = find_command(cmd);
+  if (!func)
+    goto fail;
+
   {
-    Command command = find_command(args[0]);
-    strvec args1;
-
-    if (!command)
-      goto fail;
-
-    args1 = strvec(args.begin() + 1, args.end());
+    strvec args1 = strvec(args.begin() + 1, args.end());
 
     args.resize(args1.size());
     for (unsigned int i = 0, j = 0, n = args1.size(); i < n; ++i) {
@@ -160,16 +162,15 @@ again:
     Process *main;
     if (use_input) {
 fprintf(stderr, "hi args=[%s]\n", joinwords(args).c_str());
-
       if (out == shell->out) {
         strvec bak_args = args;
         shell->args = args;
-        shell->cmd = command;
+        shell->cmd = cmd;
 
-        command(shell);
+        func(shell);
 
         shell->args = bak_args;
-        shell->cmd = mainmore;
+        shell->cmd = "sh";
       } else {
         strvec bak_args = args;
         IO *bak_out = shell->out;
@@ -179,21 +180,21 @@ fprintf(stderr, "hi args=[%s]\n", joinwords(args).c_str());
         out->link_writer(shell);
         assert(out->nwriters == 1);
         shell->out = out;
-        shell->cmd = command;
+        shell->cmd = cmd;
         shell->args = args;
 
-        command(shell);
+        func(shell);
 
         shell->out = bak_out;
         shell->args = bak_args;
-        shell->cmd = mainmore;
+        shell->cmd = "sh";
         out->unlink_writer(shell);
         bak_out->link_writer(shell);
       }
 
 #if 0
       main = new Process(
-        shell->system, shell->session, command, args,
+        shell->system, shell->session, cmd, args,
         shell->in, out
       );
 
@@ -206,7 +207,7 @@ fprintf(stderr, "hi args=[%s]\n", joinwords(args).c_str());
 #endif
     } else {
       main = new Process(
-        shell->system, shell->session, command, args,
+        shell->system, shell->session, cmd, args,
         NULL, out
       );
     }
@@ -214,9 +215,6 @@ fprintf(stderr, "hi args=[%s]\n", joinwords(args).c_str());
   return NULL;
 
 fail:
-  Command echo = find_command("echo");
-  assert(echo);
-
   {
     strvec failargs;
     failargs.resize(1);
@@ -226,7 +224,7 @@ fail:
   }
   
   new Process(
-    shell->system, shell->session, echo, args,
+    shell->system, shell->session, "echo", args,
     NULL, shell->out
   );
 
