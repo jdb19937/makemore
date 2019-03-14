@@ -21,6 +21,7 @@ Session::Session(Agent *_agent) {
   assert(server->urb);
 
   who = new Urbite(server->urb);
+  who->parson();
 
   prev_reader = NULL;
   next_reader = NULL;
