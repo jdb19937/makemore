@@ -4,6 +4,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <errno.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 
 #include <vector>
 #include <string>
@@ -72,7 +75,15 @@ struct Urbite {
     nom = _nom;
     _parson = NULL;
   }
-    
+
+  std::string home_dir() const {
+    return (urb->dir + "/home/" + nom);
+  }
+
+  void make_home_dir() const {
+    int ret = ::mkdir(home_dir().c_str(), 0700);
+    assert(ret == 0 || ret == -1 && errno == EEXIST);
+  }
 
 #if 0
   Parson *resurrect() {

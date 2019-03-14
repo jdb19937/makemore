@@ -35,6 +35,16 @@ struct Session {
   void link_sproc(Process *p);
   void unlink_sproc(Process *p);
   void *cumakevar(unsigned int len);
+
+  bool save_grid(const std::string &var);
+  bool save_line(const std::string &var);
+  bool save_word(const std::string &var);
+
+  bool load_grid(const std::string &var);
+  bool load_line(const std::string &var);
+  bool load_word(const std::string &var);
+
+  void loadvars();
 };
 
 }

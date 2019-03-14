@@ -142,6 +142,8 @@ void Agent::parse() {
         if (*word.c_str() == '<')
           extra += strtoul(word.c_str() + 1, NULL, 0);
       inbufk = extra;
+
+      ++inbufj;
     }
 
     assert(inbufj <= inbufn);
@@ -169,24 +171,27 @@ void Agent::parse() {
       ++p;
     assert(*p == '\n');
     assert(p < q);
-    assert(p <= inbuf + inbufj);
+    assert(p < inbuf + inbufj);
 
     if (!got_words)
       splitwords(string(x, p - x), &words);
 
-    ++inbufj;
     ++p;
 
     unsigned int off = 0;
     for (unsigned int wi = 0, wn = words.size(); wi < wn; ++wi) {
       const std::string &word = words[wi];
+fprintf(stderr, "wordlen=%u wi=%u\n", word.length(), wi);
       if (*word.c_str() == '<') {
         unsigned int len = strtoul(word.c_str() + 1, NULL, 0);
+fprintf(stderr, "len=%u\n", len);
         words[wi] = string(p + off, len);
         off += len;
       }
     }
     assert(p + off == inbuf + inbufj);
+
+for (auto w : words ) { fprintf(stderr, "word=[%u]%s\n", w.length(), w.c_str()); }
 
     linebuf.push_back(words);
 
@@ -194,6 +199,7 @@ void Agent::parse() {
 //inbufi,inbufj,inbufk,inbufn, line.c_str());
 
     inbufi = inbufj;
+    got_words = false;
   }
 }
 

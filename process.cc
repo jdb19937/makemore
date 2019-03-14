@@ -16,6 +16,8 @@ using namespace std;
 
 static void _call_cmd(Process *p, ...) {
 fprintf(stderr, "calling cmd args=[%s]\n", joinwords(p->args).c_str());
+if (p->args.size()>  2)
+fprintf(stderr, "calling cmd args=[%s] [%d %d %d]\n", joinwords(p->args).c_str(), p->args[0].length(), p->args[1].length(), p->args[2].length());
   assert(p->inuc);
   Command cmd = p->cmd;
   cmd(p);

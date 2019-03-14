@@ -233,4 +233,24 @@ bool parsecolspec(const std::string &colspec, std::vector<int> *offp) {
   }
 }
 
+std::string moretpenc(const strvec &words, char sep) {
+  strvec nwords = words;
+  string extra;
+
+  assert(isspace(sep) && sep != '\n');
+
+  for (auto wordi = nwords.begin(); wordi != nwords.end(); ++wordi) {
+    string &word = *wordi;
+    unsigned int wordn = word.length();
+    if (wordn == 0 || wordn > 255 || word[0] == '<' || hasspace(word) || hasnull(word)) {
+      extra += word;
+      char buf[64];
+      sprintf(buf, "<%u", wordn);
+      word = buf;
+    }
+  }
+
+  return join(nwords, sep) + "\n" + extra;
+}
+
 }

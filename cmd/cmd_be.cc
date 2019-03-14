@@ -102,6 +102,8 @@ void mainmore(
 
   process->system->server->renom(process->session->agent, newnom);
 
+  process->session->loadvars();
+
   return;
 }
 

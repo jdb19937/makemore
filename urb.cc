@@ -1,8 +1,11 @@
 #define __MAKEMORE_URB_CC__ 1
 #include <assert.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <errno.h>
 #include <dirent.h>
 #include <sys/types.h>
+#include <sys/stat.h>
 
 #include "urb.hh"
 #include "pipeline.hh"
@@ -40,6 +43,12 @@ Urb::Urb(const char *_dir, unsigned int _mbn) {
   }
   closedir(dp);
   assert(images.size());
+
+  {
+    std::string home = dir + "/home";
+    int ret = ::mkdir(home.c_str(), 0700);
+    assert(ret == 0 || ret == -1 && errno == EEXIST);
+  }
 }
 
 Urb::~Urb() {

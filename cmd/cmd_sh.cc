@@ -129,8 +129,11 @@ again:
 
     args.resize(args1.size());
     for (unsigned int i = 0, j = 0, n = args1.size(); i < n; ++i) {
-      if (!args1[i].length())
+      if (!args1[i].length()) {
+        args[j++] = "";
         continue;
+      }
+
       switch (args1[i][0]) {
       case '\\':
         args[j++] = args1[i].c_str() + 1;
