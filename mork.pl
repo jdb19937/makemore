@@ -379,9 +379,9 @@ $x{'%'} = [
   @black, @black,
 ];
 $x{'&'} = [
-  @darkblue, @darkblue,
-  @black, @black,
-  @black, @black,
+  @blue, @black,
+  @blue, @black,
+  @blue, @black,
 ];
 
 $x{'_'} = [

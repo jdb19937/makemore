@@ -4,6 +4,7 @@
 
 #include "system.hh"
 #include "process.hh"
+#include "tmutils.hh"
 
 namespace makemore {
 
@@ -28,7 +29,7 @@ System::~System() {
 void System::run() {
   const unsigned int iters = 16;
 
-  for (unsigned int i = 0; (head_woke || head_done) && i < iters; ++i) {
+  for (unsigned int i = 0; (head_woke || head_done || schedule.begin() != schedule.end()) && i < iters; ++i) {
     for (Process *nextp, *p = head_woke; p; p = nextp) {
       assert(p->system == this);
       assert(p->woke);
@@ -42,6 +43,22 @@ void System::run() {
       // fprintf(stderr, "deleting process [%s]\n", joinwords(p->args).c_str());
       assert(p->mode == Process::MODE_DONE);
       delete p;
+    }
+
+    double t = now();
+    while (schedule.begin() != schedule.end()) {
+      auto s = schedule.begin();
+
+      double when = s->first;
+fprintf(stderr, "when=%lf t=%lf\n", when, t);
+      if (when > t)
+        break;
+      Process *p = s->second;
+      assert(p->mode == Process::MODE_WAITING);
+fprintf(stderr, "running when=%lf t=%lf\n", when, t);
+      p->run();
+
+      schedule.erase(s);
     }
   }
 }

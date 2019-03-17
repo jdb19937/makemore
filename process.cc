@@ -56,6 +56,7 @@ Process::Process(System *_system, Session *_session, const string &_cmd, const s
 
   this->flags = (Flags)0;
 
+  scheduled = 0.0;
   woke = false;
   wake();
 }
@@ -79,6 +80,11 @@ Process::~Process() {
 
   system->unlink_proc(this);
 
+  if (mode == MODE_WAITING) {
+    auto i = system->schedule.find(std::make_pair(scheduled, this));
+    assert(i != system->schedule.end());
+    system->schedule.erase(i);
+  }
 }
 
 bool Process::write(const strvec &sv, int ofd) {
@@ -109,7 +115,7 @@ bool Process::write(Line *vec, int ofd) {
 
 
 void Process::run() {
-  assert(woke);
+  assert(woke || mode == MODE_WAITING);
   assert(mode != MODE_DONE);
   assert(!inuc);
   inuc = true;
@@ -119,6 +125,15 @@ void Process::run() {
   switch (mode) {
   default:
     assert(0);
+
+  case MODE_WAITING:
+    if (woke) {
+      woke = false;
+      system->unlink_woke(this);
+    }
+    system->schedule.insert(std::make_pair(scheduled, this));
+    break;
+
   case MODE_DONE:
     system->link_done(this);
     // fall
@@ -196,13 +211,10 @@ void Process::wake() {
 }
 
 
-void Process::sleep() {
-  if (!woke)
-    return;
-
-  system->unlink_woke(this);
-
-  woke = false;
+void Process::sleep(double dt) {
+  assert(inuc);
+  scheduled = now() + dt;
+  yield(MODE_WAITING);
 }
 
 }

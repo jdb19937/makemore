@@ -1,6 +1,8 @@
 #ifndef __MAKEMORE_SYSTEM_HH__
 #define __MAKEMORE_SYSTEM_HH__ 1
 
+#include <set>
+
 #include "process.hh"
 
 namespace makemore {
@@ -13,6 +15,8 @@ struct System {
   Process *head_proc;
   Process *head_woke;
   Process *head_done;
+
+  std::set< std::pair<double, Process *> > schedule;
 
   System();
   ~System();

@@ -10,6 +10,7 @@
 #include <list>
 
 #include "strutils.hh"
+#include "tmutils.hh"
 #include "command.hh"
 #include "io.hh"
 #include "word.hh"
@@ -28,6 +29,7 @@ struct Process {
     MODE_THINKING,
     MODE_READING,
     MODE_WRITING,
+    MODE_WAITING,
     MODE_DONE
   } Mode;
 
@@ -55,13 +57,13 @@ struct Process {
   int waitfd;
 
   bool woke;
+  double scheduled;
 
   struct Process *prev_sproc, *next_sproc;
   struct Process *prev_proc, *next_proc;
   struct Process *prev_woke, *next_woke;
   struct Process *prev_done, *next_done;
   void wake();
-  void sleep();
 
   Process(
     System *_system,
@@ -80,6 +82,8 @@ struct Process {
   bool write(const strvec &s, int ofd = 0);
 
   void run();
+
+  void sleep(double dt);
 
   void yield(Mode newmode = MODE_THINKING, int _waitfd = -1) {
     assert(newmode != MODE_BEGIN);

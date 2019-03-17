@@ -22,6 +22,13 @@ function chop(x) {
 }
 
 function load() {
+  window.markpos = { };
+  window.markbeg = { };
+
+  var asyncprompt = '#';
+  var syncprompt = '|';
+  var userprompt = '$';
+
   var img = document.getElementById('fontimg');
   var termcanvas = document.getElementById('terminal');
   var termctx = termcanvas.getContext('2d');
@@ -48,15 +55,19 @@ function load() {
     }
   }
 
-  termcanvas.scrollup = function() {
-    termctx.drawImage(termcanvas, 0, 3 * 8, 80 * 2 * 8, 3 * 24 * 8, 0, 0, 80 * 2 * 8, 3 * 24 * 8);
+  termcanvas.scrollout = function(y) {
+    for (var i in window.markpos) {
+      if (window.markbeg[i] <= y) {
+        window.markbeg[i]--;
+      }
+      if (window.markpos[i] < y) {
+        window.markpos[i]--;
+      }
+    }
+
+    termctx.drawImage(termcanvas, 0, 3 * 8, 80 * 2 * 8, 3 * y * 8, 0, 0, 80 * 2 * 8, 3 * y * 8);
     termctx.fillStyle='black';
-    termctx.fillRect(0, 3 * 24 * 8, 80 * 2 * 8, 3 * 8);
-  }
-  termcanvas.scrollout = function() {
-    termctx.drawImage(termcanvas, 0, 3 * 8, 80 * 2 * 8, 3 * 23 * 8, 0, 0, 80 * 2 * 8, 3 * 23 * 8);
-    termctx.fillStyle='black';
-    termctx.fillRect(0, 3 * 23 * 8, 80 * 2 * 8, 3 * 8);
+    termctx.fillRect(0, 3 * y * 8, 80 * 2 * 8, 3 * 8);
   }
 
   termcanvas.puttext = function(txt, x0, y0) {
@@ -131,17 +142,28 @@ var c = 32;
 
       if (ch == 13) {
         clearcurs();
-        termcanvas.scrollup();
-        termcanvas.puttext('$ ', 0, 24);
+        termcanvas.scrollout(24);
+        termcanvas.puttext(userprompt + ' ', 0, 24);
         window.curx = 2;
         setcurs();
 
         var mwords = window.linebuf.split(/\s+/);
-        window.cli.moretpreq(mwords, [ ], function(x) {
-            for (var li = 0; li < x.length; ++li) {
-              termcanvas.scrollout();
-              termcanvas.puttext(x[li].join(' '), 0, 23);
-            }
+var m = window.cli.mark;
+window.markbeg[m] = 23;
+window.markpos[m] = 23;
+
+        window.cli.moretpreq(mwords, [ ], function(x, mark) {
+          var y1 = window.markpos[mark];
+if (x === null) {
+  var y0 = window.markbeg[mark];
+  for (var y = y0 + 1; y <= y1; ++y) {
+    termcanvas.putcat(0x26, 0, y);
+  }
+return;
+}
+            termcanvas.scrollout(y1);
+            termcanvas.puttext(syncprompt + " " + x.join(' '), 0, y1);
+
         });
         window.linebuf = '';
 
@@ -177,14 +199,14 @@ var c = 32;
       setcurs();
     }, 256);
 
-    termcanvas.puttext('$ ', 0, 24);
+    termcanvas.puttext(userprompt + ' ', 0, 24);
     window.curx = 2;
     setcurs()
   })
 
   window.cli.asynccb = function(x) {
-              termcanvas.scrollout();
-              termcanvas.puttext(x.join(' '), 0, 23);
+              termcanvas.scrollout(23);
+              termcanvas.puttext(asyncprompt + " " + x.join(' '), 0, 23);
   };
 }
 
