@@ -16,7 +16,8 @@ void mainmore(
   unsigned int i = 0;
   char buf[64];
 
-  while (strvec *inp = process->read()) {
+  while (Line *w = process->read()) {
+    delete w;
     ++i;
   }
 

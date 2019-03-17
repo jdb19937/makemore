@@ -13,21 +13,20 @@ extern "C" void mainmore(
 void mainmore(
   Process *process
 ) {
-  strvec *inp = process->read();
-  if (!inp)
+  
+  strvec invec;
+  if (!process->read(&invec))
     return;
 
-  strvec prev = *inp;
+  strvec prev = invec;
   if (!process->write(prev))
     return;
 
-  while (inp = process->read()) {
-    const strvec &in = *inp;
-fprintf(stderr, "here [%s]\n", joinwords(in).c_str());
-    if (in == prev)
+  while (process->read(&invec)) {
+    if (invec == prev)
       continue;
 
-    prev = in;
+    prev = invec;
     if (!process->write(prev))
       break;
   }

@@ -46,7 +46,7 @@ struct Agent {
   char *inbuf;
   unsigned int inbufm, inbufn;
   unsigned int inbufj, inbufk;
-  std::vector<strvec> linebuf;
+  strmat linebuf;
   bool need_slurp() {
     return (inbufn < inbufm && linebuf.empty());
   }
@@ -56,7 +56,7 @@ struct Agent {
   bool need_flush() {
     return (
       outbufn > 0 ||
-      (session->shell && session->shell->out->can_get())
+      (session->shell && session->shell->otab.size() && session->shell->otab[0] && session->shell->otab[0]->can_get())
     );
   }
 
@@ -74,6 +74,7 @@ struct Agent {
   void parse();
   bool write(const std::string &str);
   bool write(const strvec &vec);
+  bool write(const Line &wvec);
   void printf(const char *fmt, ...);
   void flush();
   void command(const std::vector<std::string> &line);

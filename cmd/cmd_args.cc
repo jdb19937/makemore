@@ -14,25 +14,22 @@ void mainmore(
   if (itabn < 2)
     return;
 
-  while (Line *inw = process->read(itabn - 1)) {
-fprintf(stderr, "then got line\n");
-    if (!process->write(inw)) {
-      delete inw;
-      break;
-    }
-  }
-fprintf(stderr, "out then\n");
+  strvec argext;
+  if (!process->read(&argext, itabn - 1))
+    return;
 
   process->itab[itabn - 1]->unlink_reader(process);
   process->itab.resize(itabn - 1);
-fprintf(stderr, "out then2\n");
 
   Command shellmore = find_command("sh");
   process->cmd = "sh";
   process->func = shellmore;
+  strvec bak_args = process->args;
+  catstrvec(process->args, argext);
 
   shellmore(process);
 
-  process->cmd = "then";
+  process->cmd = "args";
   process->func = mainmore;
+  process->args = bak_args;
 }

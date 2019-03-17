@@ -3,6 +3,8 @@
 
 namespace makemore {
 
+typedef double cudouble;
+
 extern void decudev(const void *da, unsigned int n, void *a);
 template <class T> inline void decude(const T *da, unsigned int n, T *a)
   { decudev(da, n * sizeof(T), a); }

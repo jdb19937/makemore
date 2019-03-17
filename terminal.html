@@ -1,0 +1,203 @@
+<html>
+<head>
+<title>test</title>
+
+<style type="text/css">
+canvas, img {
+    image-rendering: optimizeSpeed;
+    image-rendering: -moz-crisp-edges;
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: optimize-contrast;
+    image-rendering: pixelated;
+    -ms-interpolation-mode: nearest-neighbor;
+    border: 5px solid #ddd;
+}
+</style>
+
+<script src="moretp.js"></script>
+
+<script>
+function chop(x) {
+  return x.substring(0, x.length - 1)
+}
+
+function load() {
+  var img = document.getElementById('fontimg');
+  var termcanvas = document.getElementById('terminal');
+  var termctx = termcanvas.getContext('2d');
+  termctx.imageSmoothingEnabled = false;
+
+  termctx.globalCompositeOperation='source-over'
+  termctx.fillStyle='black';
+  termctx.fillRect(0,0, 80* 2 * 8, 25 * 3 * 8);
+
+  termcanvas.putcat = function(c, hx, hy, anti) {
+    var x0 = 8 * hx * 2;
+    var y0 = 8 * hy * 3;
+
+    var cx = (c % 16) * 2;
+    var cy = Math.floor(c / 16) * 3;
+
+    termctx.drawImage(img, cx, cy, 2, 3, x0, y0, 2 * 8, 3 * 8);
+
+    if (anti) {
+      termctx.globalCompositeOperation='difference';
+      termctx.fillStyle='white';
+      termctx.fillRect(x0,y0,2 * 8, 3 * 8);
+      termctx.globalCompositeOperation='source-over';
+    }
+  }
+
+  termcanvas.scrollup = function() {
+    termctx.drawImage(termcanvas, 0, 3 * 8, 80 * 2 * 8, 3 * 24 * 8, 0, 0, 80 * 2 * 8, 3 * 24 * 8);
+    termctx.fillStyle='black';
+    termctx.fillRect(0, 3 * 24 * 8, 80 * 2 * 8, 3 * 8);
+  }
+  termcanvas.scrollout = function() {
+    termctx.drawImage(termcanvas, 0, 3 * 8, 80 * 2 * 8, 3 * 23 * 8, 0, 0, 80 * 2 * 8, 3 * 23 * 8);
+    termctx.fillStyle='black';
+    termctx.fillRect(0, 3 * 23 * 8, 80 * 2 * 8, 3 * 8);
+  }
+
+  termcanvas.puttext = function(txt, x0, y0) {
+    var x = x0;
+    var y = y0;
+    for (var i = 0; i < txt.length; ++i) {
+      var c = txt.charCodeAt(i);
+      if (c > 255) { c = 255; }
+      if (c == 10) {
+        y++;
+        x = x0;
+      } else {
+        termcanvas.putcat(c, x, y)
+        ++x;
+      }
+    }
+  }
+
+  termcanvas.puttext(
+    "Connecting...",
+    0, 16
+  );
+
+  termcanvas.puttext(
+    "   Makemore Peaple v0.8\n\n" + 
+    "created by Dan Brumleve\n",
+    55, 1
+  );
+
+  window.curstate = 0;
+  window.curx = 2;
+  window.cury = 24;
+  window.mode = 1;
+  window.linebuf = new Array();
+
+  function clearcurs() {
+//    var c = window.linebuf[window.curx];
+//    if (c == 0) { c = 32; }
+var c = 32;
+    termcanvas.putcat(c, window.curx, window.cury, 0)
+  }
+  function setcurs() {
+//    var c = window.linebuf[window.curx];
+//    if (c == 0) { c = 32; }
+var c = 32;
+    termcanvas.putcat(32, window.curx, window.cury, window.curstate)
+  }
+
+  window.linebuf = '';
+
+  window.addEventListener("keydown", event => {
+    var ch = event.keyCode;
+    if (ch == 8) {
+      if (window.curx > 2) {
+        clearcurs();
+        --window.curx;
+         window.linebuf = chop(window.linebuf);
+      }
+      return;
+    }
+
+    if (ch == 27) {
+      mode = 0;
+      return;
+    }
+  });
+
+  window.addEventListener("keypress", event => {
+      var ch = event.which;
+      if (ch > 255)
+        ch = 255;
+
+      if (ch == 13) {
+        clearcurs();
+        termcanvas.scrollup();
+        termcanvas.puttext('$ ', 0, 24);
+        window.curx = 2;
+        setcurs();
+
+        var mwords = window.linebuf.split(/\s+/);
+        window.cli.moretpreq(mwords, [ ], function(x) {
+            for (var li = 0; li < x.length; ++li) {
+              termcanvas.scrollout();
+              termcanvas.puttext(x[li].join(' '), 0, 23);
+            }
+        });
+        window.linebuf = '';
+
+        return;
+      }
+
+      if (ch == 105 && window.mode == 0) {
+        window.mode = 1;
+        return;
+      }
+
+      if (window.mode == 1) {
+        window.linebuf += String.fromCharCode(ch);
+        termcanvas.putcat(ch, window.curx, window.cury);
+        ++window.curx;
+        setcurs();
+        return;
+      } 
+  });
+
+  window.cli = new moretpclient(function() {
+    termcanvas.puttext(
+      "Connected.",
+      0, 18
+    );
+    termcanvas.puttext(
+      "Welcome to Peaple.IO!\n\nType \"help\" for help.",
+      0, 20
+    );
+
+    window.setInterval(function() {
+      window.curstate = 1 - window.curstate;
+      setcurs();
+    }, 256);
+
+    termcanvas.puttext('$ ', 0, 24);
+    window.curx = 2;
+    setcurs()
+  })
+
+  window.cli.asynccb = function(x) {
+              termcanvas.scrollout();
+              termcanvas.puttext(x.join(' '), 0, 23);
+  };
+}
+
+
+</script>
+
+</head>
+
+<body onLoad="load()">
+
+<img id="fontimg" style="display: none" src="mork.png" width=256 height=384>
+<canvas style="image-rendering: pixelated" id="terminal" width=1280 height=600></canvas>
+
+<br/>
+</body>
+</html>

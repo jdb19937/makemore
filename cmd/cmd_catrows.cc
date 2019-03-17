@@ -17,10 +17,14 @@ void mainmore(
       outvec[0] += arg;
     (void)process->write(outvec);
   } else {
-    while (strvec *invec = process->read()) {
+    while (Line *inwvecp = process->read()) {
+      strvec invec;
+      line_to_strvec(*inwvecp, &invec);
+      delete inwvecp;
+
       strvec outvec;
       outvec.resize(1);
-      for (auto arg : *invec)
+      for (auto arg : invec)
         outvec[0] += arg;
 
       if (!process->write(outvec))

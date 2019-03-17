@@ -4,6 +4,7 @@
 #include <vector>
 #include <string>
 #include <map>
+#include <list>
 
 #include <assert.h>
 #include <ctype.h>
@@ -11,7 +12,7 @@
 namespace makemore {
 
 typedef std::vector<std::string> strvec;
-typedef std::vector<strvec> strmat;
+typedef std::list<strvec> strmat;
 
 extern void split(const char *str, char sep, strvec *words);
 
@@ -88,8 +89,8 @@ extern std::string varsubst(const std::string &str, const std::map<std::string, 
 
 extern std::string refsubst(const std::string &rsp, const std::string &req);
 
-extern void jointhread(const strmat &thread, strvec *wordsp, const std::string &sep);
-extern void splitthread(const strvec &words, strmat *threadp, const std::string &sep);
+extern void jointhread(const std::vector<strvec> &thread, strvec *wordsp, const std::string &sep);
+extern void splitthread(const strvec &words, std::vector<strvec> *threadp, const std::string &sep);
 
 inline std::string to_hex(const std::string &binstr) {
   unsigned int n = binstr.length();
@@ -142,6 +143,18 @@ bool match(const std::string &regex, const std::string &str);
 bool parsecolspec(const std::string &colspec, std::vector<int> *offp);
 
 std::string moretpenc(const strvec &, char sep = ' ');
+
+template <class T> unsigned int listerase(std::list<T> &xl, const T &x) {
+  unsigned int erased = 0;
+  for (auto xi = xl.begin(); xi != xl.end(); ) {
+    if (*xi == x) {
+      xl.erase(xi++);
+      ++erased;
+    } else
+      ++xi;
+  }
+  return erased;
+}
 
 }
 

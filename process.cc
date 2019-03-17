@@ -26,14 +26,18 @@ fprintf(stderr, "calling cmd args=[%s]\n", joinwords(p->args).c_str());
 Process::Process(System *_system, Session *_session, const string &_cmd, const strvec &_args, IO *_in, IO *_out) {
 
   system = _system;
+  system->link_proc(this);
 
   session = _session;
   session->link_sproc(this);
 
-  in = _in ? _in : new IO;
-  in->link_reader(this);
-  out = _out ? _out : new IO;
-  out->link_writer(this);
+  itab.resize(1);
+  itab[0] = _in ? _in : new IO;
+  itab[0]->link_reader(this);
+
+  otab.resize(1);
+  otab[0] = _out ? _out : new IO;
+  otab[0]->link_writer(this);
 
   cmd = _cmd;
   func = find_command(cmd);
@@ -48,8 +52,7 @@ Process::Process(System *_system, Session *_session, const string &_cmd, const s
   inuc = false;
 
   this->mode = MODE_BEGIN;
-
-  system->link_proc(this);
+  this->waitfd = -1;
 
   this->flags = (Flags)0;
 
@@ -58,14 +61,16 @@ Process::Process(System *_system, Session *_session, const string &_cmd, const s
 }
 
 Process::~Process() {
-  in->unlink_reader(this);
-  in = NULL;
-
-  out->unlink_writer(this);
-  out = NULL;
+  for (auto in : itab) {
+    if (in)
+      in->unlink_reader(this);
+  }
+  for (auto out : otab) {
+    if (out)
+      out->unlink_writer(this);
+  }
 
   session->unlink_sproc(this);
-  session = NULL;
 
   if (woke)
     system->unlink_woke(this);
@@ -76,13 +81,25 @@ Process::~Process() {
 
 }
 
-bool Process::write(const strvec &vec) {
+bool Process::write(const strvec &sv, int ofd) {
+  Line *wp = new Line;
+  strvec_to_line(sv, wp);
+  return this->write(wp, ofd);
+}
+
+bool Process::write(Line *vec, int ofd) {
   assert(inuc);
+
+  IO *out = NULL;
+  if (ofd >= 0 && ofd < otab.size())
+    out = otab[ofd];
+  if (!out)
+    return false;
 
   while (!out->can_put()) {
     if (out->done_put())
       return false;
-    this->yield(MODE_WRITING);
+    this->yield(MODE_WRITING, ofd);
   }
 
   bool ret = out->put(vec);
@@ -115,31 +132,56 @@ void Process::run() {
   }
 }
 
+bool Process::read(strvec *xp, int ifd, bool ignore_eof) {
+  Line *w = this->read(ifd);
+  if (!w)
+    return false;
+  line_to_strvec(*w, xp);
+  return true;
+}
 
-strvec *Process::read() {
+Line *Process::read(int ifd, bool ignore_eof) {
   assert(inuc);
 
-  while (!in->can_get()) {
-    if (in->done_get())
-      return NULL;
-    this->yield(MODE_READING);
+  IO *in = NULL;
+  if (ifd >= 0 && ifd < itab.size())
+    in = itab[ifd];
+  if (!in)
+    return NULL;
+
+  if (ignore_eof) {
+    while (!in->can_get()) {
+      this->yield(MODE_READING, ifd);
+    }
+  } else {
+    while (!in->can_get()) {
+      if (in->done_get())
+        return NULL;
+      this->yield(MODE_READING, ifd);
+    }
   }
 
-  strvec *ret = in->get();
+  Line *ret = in->get();
   assert(ret);
   return ret;
 }
 
-strvec *Process::peek() {
+Line *Process::peek(int ifd) {
   assert(inuc);
+
+  IO *in = NULL;
+  if (ifd >= 0 && ifd < itab.size())
+    in = itab[ifd];
+  if (!in)
+    return NULL;
 
   while (!in->can_get()) {
     if (in->done_get())
       return NULL;
-    this->yield(MODE_READING);
+    this->yield(MODE_READING, ifd);
   }
 
-  strvec *ret = in->peek();
+  Line *ret = in->peek();
   assert(ret);
   return ret;
 }

@@ -15,8 +15,8 @@ extern "C" void mainmore(
 void mainmore(
   Process *process
 ) {
-  while (strvec *inp = process->read()) {
-    strvec in = *inp;
+  strvec in;
+  while (process->read(&in)) {
     catstrvec(in, process->args);
 
     if (!process->write(in))

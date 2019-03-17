@@ -8,6 +8,7 @@
 #include <list>
 
 #include "strutils.hh"
+#include "word.hh"
 
 namespace makemore {
 
@@ -23,18 +24,15 @@ struct Session {
   struct Process *head_sproc;
 
 
-  std::map<std::string, std::string> wordvar;
-  std::map<std::string, strvec> linevar;
-  std::map<std::string, strmat> gridvar;
-  std::list<std::pair<void *, unsigned int> > cudavar;
-
+  std::map<std::string, Word> wordvar;
+  std::map<std::string, Line> linevar;
+  std::map<std::string, Grid> gridvar;
 
   Session(Agent *_agent);
   ~Session();
 
   void link_sproc(Process *p);
   void unlink_sproc(Process *p);
-  void *cumakevar(unsigned int len);
 
   bool save_grid(const std::string &var);
   bool save_line(const std::string &var);

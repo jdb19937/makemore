@@ -181,17 +181,13 @@ void Agent::parse() {
     unsigned int off = 0;
     for (unsigned int wi = 0, wn = words.size(); wi < wn; ++wi) {
       const std::string &word = words[wi];
-fprintf(stderr, "wordlen=%u wi=%u\n", word.length(), wi);
       if (*word.c_str() == '<') {
         unsigned int len = strtoul(word.c_str() + 1, NULL, 0);
-fprintf(stderr, "len=%u\n", len);
         words[wi] = string(p + off, len);
         off += len;
       }
     }
     assert(p + off == inbuf + inbufj);
-
-for (auto w : words ) { fprintf(stderr, "word=[%u]%s\n", w.length(), w.c_str()); }
 
     linebuf.push_back(words);
 
@@ -242,6 +238,12 @@ void Agent::printf(const char *fmt, ...) {
   (void) vsnprintf(buf, sizeof(buf) - 1, fmt, ap);
 
   write(string(buf));
+}
+
+bool Agent::write(const Line &wv) {
+  strvec sv;
+  line_to_strvec(wv, &sv);
+  return write(sv);
 }
 
 bool Agent::write(const strvec &words) {
@@ -323,18 +325,21 @@ void Agent::flush() {
   }
 
   if (outbufn == 0) {
-    IO *shell_out = session->shell->out;
+    assert(session->shell->otab.size() >= 1);
+    IO *shell_out = session->shell->otab[0];
+    assert(shell_out);
 
     while (shell_out->can_get()) {
-      strvec *vec = shell_out->peek();
+      Line *vec = shell_out->peek();
       assert(vec);
 
       if (!this->write(*vec)) {
         break;
       }
 
-      strvec *ret = shell_out->get();
-      assert(ret);
+      Line *ret = shell_out->get();
+      assert(ret == vec);
+      delete vec;
     }
 
     return;
@@ -362,16 +367,16 @@ void Agent::flush() {
   outbufn = 0;
 
 
-  IO *shell_out = session->shell->out;
+  IO *shell_out = session->shell->otab[0];
   while (shell_out->can_get()) {
-    strvec *vec = shell_out->peek();
+    Line *vec = shell_out->peek();
     assert(vec);
 
     if (!this->write(*vec)) {
       break;
     }
 
-    strvec *ret = shell_out->get();
+    Line *ret = shell_out->get();
     assert(ret);
   }
 }
@@ -407,8 +412,14 @@ void Agent::command(const strvec &cmd) {
 
   Process *shell = session->shell;
   assert(shell);
-  assert(shell->in->can_put());
-  shell->in->put(cmd);
+  assert(shell->itab[0]->can_put());
+
+  unsigned int wn = cmd.size();
+  Line *wp = new Line(wn);
+  Line &wr = *wp;
+  for (unsigned int wi = 0; wi < wn; ++wi)
+    wr[wi] = cmd[wi];
+  shell->itab[0]->put(wp);
 }
 
 #if 0

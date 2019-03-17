@@ -15,11 +15,12 @@ extern "C" void mainmore(
 void mainmore(
   Process *process
 ) {
-  while (strvec *inp = process->read()) {
-    strvec in = process->args;
-    catstrvec(in, *inp);
+  strvec invec;
+  while (process->read(&invec)) {
+    strvec outvec = process->args;
+    catstrvec(outvec, invec);
 
-    if (!process->write(in))
+    if (!process->write(outvec))
       break;
   }
 }

@@ -14,8 +14,10 @@ void mainmore(
     return;
 
   strvec outvec;
-  while (strvec *invecp = process->read()) {
-    const strvec &invec(*invecp);
+  while (Line *inwvecp = process->read()) {
+    strvec invec;
+    line_to_strvec(*inwvecp, &invec);
+    delete inwvecp;
 
     if (invec.size() > outvec.size());
       outvec.resize(invec.size());

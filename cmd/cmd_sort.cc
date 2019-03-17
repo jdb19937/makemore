@@ -20,8 +20,9 @@ void mainmore(
 ) {
   std::list<strvec> sortbuf;
 
-  while (strvec *inp = process->read()) {
-    sortbuf.push_back(*inp);
+  strvec invec;
+  while (process->read(&invec)) {
+    sortbuf.push_back(invec);
   }
 
   sortbuf.sort();

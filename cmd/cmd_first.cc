@@ -19,9 +19,10 @@ void mainmore(
 
 fprintf(stderr, "first here\n");
 
-  while (strvec *inp = process->read()) {
+  strvec invec;
+  while (process->read(&invec)) {
 fprintf(stderr, "got line\n");
-    if (!process->write(*inp))
+    if (!process->write(invec))
       break;
   }
 fprintf(stderr, "first there\n");

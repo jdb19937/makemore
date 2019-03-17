@@ -10,6 +10,7 @@
 
 #include "strutils.hh"
 #include "command.hh"
+#include "word.hh"
 
 namespace makemore {
 
@@ -17,14 +18,12 @@ class Session;
 class Process;
 
 struct IO {
-  std::list<strvec> q;
+  std::list<Line*> q;
   unsigned int n, l, m;
-  strvec x;
 
-  Session *head_session_reader;
-  Session *head_session_writer;
-  Process *head_process_reader;
-  Process *head_process_writer;
+  std::list<Session*> session_readers, session_writers;
+  std::list<Process*> process_readers, process_writers;
+
   unsigned int nreaders;
   unsigned int nwriters;
 
@@ -35,20 +34,21 @@ struct IO {
 
     nreaders = 0;
     nwriters = 0;
-
-    head_session_reader = NULL;
-    head_session_writer = NULL;
-    head_process_reader = NULL;
-    head_process_writer = NULL;
+fprintf(stderr, "new io %ld\n", (long)this);
   }
 
   ~IO() {
-    assert(!head_session_reader);
-    assert(!head_session_writer);
-    assert(!head_process_reader);
-    assert(!head_process_writer);
+fprintf(stderr, "del io %ld\n", (long)this);
+    assert(session_readers.begin() == session_readers.end());
+    assert(session_writers.begin() == session_writers.end());
+    assert(process_readers.begin() == process_readers.end());
+    assert(process_writers.begin() == process_writers.end());
     assert(nreaders == 0);
     assert(nwriters == 0);
+
+    for (auto wv : q) {
+      delete wv;
+    }
   }
 
   void autodestruct() {
@@ -65,6 +65,7 @@ struct IO {
   bool done_put() const {
     return (nreaders == 0);
   }
+  bool put(Line *);
   bool put(const strvec &);
 
   bool can_get() const {
@@ -73,8 +74,8 @@ struct IO {
   bool done_get() const {
     return (n == 0 && nwriters == 0);
   }
-  strvec *get();
-  strvec *peek();
+  Line *get();
+  Line *peek();
 
   void wake_readers();
   void wake_writers();

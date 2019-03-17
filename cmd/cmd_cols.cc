@@ -24,9 +24,12 @@ void mainmore(
   outbuf.resize(outbufn);
   unsigned int outbufi = 0;
   
-  while (strvec *inp = process->read()) {
-    const strvec &in = *inp;
-    for (auto ini = in.begin(); ini != in.end(); ++ini) {
+  while (Line *inwvecp = process->read()) {
+    strvec invec;
+    line_to_strvec(*inwvecp, &invec);
+    delete inwvecp;
+
+    for (auto ini = invec.begin(); ini != invec.end(); ++ini) {
       if (outbufi == outbufn) {
         if (!process->write(outbuf))
           goto done;

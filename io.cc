@@ -2,11 +2,19 @@
 #include "io.hh"
 #include "process.hh"
 #include "session.hh"
+#include "word.hh"
 
 namespace makemore {
 
-bool IO::put(const strvec &vec) {
-//fprintf(stderr, "got put [%s] n=%u m=%u\n", joinwords(vec).c_str(), n, m);
+using namespace std;
+
+bool IO::put(const strvec &sv) {
+  Line *wp = new Line;
+  strvec_to_line(sv, wp);
+  return this->put(wp);
+}
+
+bool IO::put(Line *vec) {
   if (n >= m)
     return false;
 
@@ -19,7 +27,7 @@ bool IO::put(const strvec &vec) {
   return true;
 }
 
-strvec *IO::get() {
+Line *IO::get() {
 //fprintf(stderr, "got get [%s] n=%u m=%u\n", "", n, m);
   if (n == 0) {
     return NULL;
@@ -31,74 +39,67 @@ strvec *IO::get() {
 
   auto i = q.begin();
   assert(i != q.end());
-  x = *i;
+  Line *x = *i;
   q.erase(i);
+  assert(n);
   --n;
-  assert(n < m);
 
-  return &x;
+  return x;
 }
 
-strvec *IO::peek() {
+Line *IO::peek() {
   if (n == 0)
     return NULL;
 
   auto i = q.begin();
   assert(i != q.end());
-  strvec &y = *i;
+  vector<Word> *y = *i;
 
-  return &y;
+  return y;
 }
 
 void IO::wake_readers() {
-  for (Process *reader = head_process_reader; reader; reader = reader->next_reader)
-    if (reader->mode == Process::MODE_READING)
-      reader->wake();
+  for (auto reader : process_readers) {
+    if (reader->mode == Process::MODE_READING) {
+      assert(reader->waitfd >= 0);
+      assert(reader->waitfd < reader->itab.size());
+
+      if (reader->itab[reader->waitfd] == this) {
+        reader->wake();
+      }
+    }
+  }
 }
 
 void IO::wake_writers() {
-  for (Process *writer = head_process_writer; writer; writer = writer->next_writer)
-    if (writer->mode == Process::MODE_WRITING)
-      writer->wake();
+  for (auto writer : process_writers) {
+    if (writer->mode == Process::MODE_WRITING) {
+      assert(writer->waitfd >= 0);
+      assert(writer->waitfd < writer->otab.size());
+
+      if (writer->otab[writer->waitfd] == this) {
+        writer->wake();
+      }
+    }
+  }
 }
 
 void IO::link_reader(Session *reader) {
-  assert(reader);
-
-  reader->next_reader = head_session_reader;
-  reader->prev_reader = NULL;
-  if (head_session_reader)
-    head_session_reader->prev_reader = reader;
-  head_session_reader = reader;
-
+  session_readers.push_back(reader);
   ++nreaders;
 }
 
 void IO::link_reader(Process *reader) {
-  assert(reader);
-
-  reader->next_reader = head_process_reader;
-  reader->prev_reader = NULL;
-  if (head_process_reader)
-    head_process_reader->prev_reader = reader;
-  head_process_reader = reader;
-
+  process_readers.push_back(reader);
   ++nreaders;
 }
 
 
 void IO::unlink_reader(Session *reader) {
-  assert(reader);
-
-  if (reader->next_reader)
-    reader->next_reader->prev_reader = reader->prev_reader;
-  if (reader->prev_reader)
-    reader->prev_reader->next_reader = reader->next_reader;
-  if (reader == head_session_reader)
-    head_session_reader = reader->next_reader;
-
+  assert(1 == listerase(session_readers, reader));
   assert(nreaders);
   --nreaders;
+
   if (nreaders == 0) {
     wake_writers();
   }
@@ -107,18 +108,11 @@ void IO::unlink_reader(Session *reader) {
 }
 
 void IO::unlink_reader(Process *reader) {
-  assert(reader);
-
-  if (reader->next_reader)
-    reader->next_reader->prev_reader = reader->prev_reader;
-  if (reader->prev_reader)
-    reader->prev_reader->next_reader = reader->next_reader;
-  if (reader == head_process_reader)
-    head_process_reader = reader->next_reader;
-    wake_writers();
+  assert(1 == listerase(process_readers, reader));
 
   assert(nreaders);
   --nreaders;
+
   if (nreaders == 0) {
     wake_writers();
   }
@@ -128,39 +122,18 @@ void IO::unlink_reader(Process *reader) {
 
 
 void IO::link_writer(Session *writer) {
-  assert(writer);
-
-  writer->next_writer = head_session_writer;
-  writer->prev_writer = NULL;
-  if (head_session_writer)
-    head_session_writer->prev_writer = writer;
-  head_session_writer = writer;
-
+  session_writers.push_back(writer);
   ++nwriters;
 }
 
 void IO::link_writer(Process *writer) {
-  assert(writer);
-
-  writer->next_writer = head_process_writer;
-  writer->prev_writer = NULL;
-  if (head_process_writer)
-    head_process_writer->prev_writer = writer;
-  head_process_writer = writer;
-
+  process_writers.push_back(writer);
   ++nwriters;
 }
 
 
 void IO::unlink_writer(Session *writer) {
-  assert(writer);
-
-  if (writer->next_writer)
-    writer->next_writer->prev_writer = writer->prev_writer;
-  if (writer->prev_writer)
-    writer->prev_writer->next_writer = writer->next_writer;
-  if (writer == head_session_writer)
-    head_session_writer = writer->next_writer;
+  assert(1 == listerase(session_writers, writer));
 
   assert(nwriters);
   --nwriters;
@@ -173,14 +146,7 @@ void IO::unlink_writer(Session *writer) {
 }
 
 void IO::unlink_writer(Process *writer) {
-  assert(writer);
-
-  if (writer->next_writer)
-    writer->next_writer->prev_writer = writer->prev_writer;
-  if (writer->prev_writer)
-    writer->prev_writer->next_writer = writer->next_writer;
-  if (writer == head_process_writer)
-    head_process_writer = writer->next_writer;
+  assert(1 == listerase(process_writers, writer));
 
   assert(nwriters);
   --nwriters;

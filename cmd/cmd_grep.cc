@@ -22,8 +22,8 @@ void mainmore(
     string rxstr = joinwords(process->args);
     const std::regex rx(rxstr);
 
-    while (strvec *inp = process->read()) {
-      const strvec &in(*inp);
+    strvec in;
+    while (process->read(&in)) {
       const string instr = joinwords(in);
 
       if (std::regex_search(instr, rx)) {

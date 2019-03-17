@@ -600,11 +600,12 @@ fprintf(stderr, "rspstr=%s\n", rspstr.c_str());
         continue;
 
       agent->parse();
-      if (agent->linebuf.size() == 0)
+      strmat &linebuf = agent->linebuf;
+      if (linebuf.begin() == linebuf.end())
         continue;
 
       if (agent->proto == Agent::UNKNOWN) {
-        const strvec &words = agent->linebuf[0];
+        const strvec &words = *linebuf.begin();
         if (words.size()) {
           const string &word = words[0];
           if (word == "GET") {
@@ -621,13 +622,12 @@ fprintf(stderr, "rspstr=%s\n", rspstr.c_str());
       case Agent::MORETP:
         {
           unsigned int i, n;
-          for (i = 0, n = agent->linebuf.size(); i < n; ++i) {
-            if (!agent->session->shell->in->can_put())
+          while (linebuf.begin() != linebuf.end()) {
+            auto line = *linebuf.begin();
+            if (!agent->session->shell->itab[0]->put(line))
               break;
-            bool ret = agent->session->shell->in->put(agent->linebuf[i]);
-            assert(ret);
+            linebuf.pop_front();
           }
-          agent->linebuf = strmat(agent->linebuf.begin() + i, agent->linebuf.end());
         }
         break;
 #if 0

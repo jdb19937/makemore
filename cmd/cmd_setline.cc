@@ -16,7 +16,10 @@ void mainmore(
     return;
 
   strvec val(process->args.begin() + 1, process->args.end());
-  process->session->linevar[ process->args[0] ] = val;
+
+  Line lineval;
+  strvec_to_line(val, &lineval);
+  process->session->linevar[ process->args[0] ] = lineval;
 
   strvec outvec;
   outvec.resize(1);

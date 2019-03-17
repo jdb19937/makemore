@@ -15,10 +15,13 @@ void mainmore(
   if (process->args.size() != 1)
     return;
 
-  strmat &grid = process->session->gridvar[ process->args[0] ];
+  const Grid &grid = process->session->gridvar[ process->args[0] ];
 
   for (auto line : grid) {
-    if (!process->write(line))
+    Line *nline = new Line(line);
+    if (!process->write(nline)) {
+      delete nline;
       break;
+    }
   }
 }

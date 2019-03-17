@@ -13,8 +13,8 @@ extern "C" void mainmore(
 void mainmore(
   Process *process
 ) {
-  while (const strvec *invecp = process->read()) {
-    const strvec &invec = *invecp;
+  strvec invec;
+  while (process->read(&invec)) {
     unsigned int invecn = invec.size();
 
     strvec outvec;

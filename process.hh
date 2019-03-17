@@ -12,6 +12,7 @@
 #include "strutils.hh"
 #include "command.hh"
 #include "io.hh"
+#include "word.hh"
 
 namespace makemore {
 
@@ -49,14 +50,12 @@ struct Process {
   std::string cmd;
   strvec args;
 
-  IO *in;
-  IO *out;
-
-  struct Process *prev_reader, *next_reader;
-  struct Process *prev_writer, *next_writer;
-
+  std::vector<IO*> itab;
+  std::vector<IO*> otab;
+  int waitfd;
 
   bool woke;
+
   struct Process *prev_sproc, *next_sproc;
   struct Process *prev_proc, *next_proc;
   struct Process *prev_woke, *next_woke;
@@ -74,17 +73,20 @@ struct Process {
 
   ~Process();
 
-  strvec *read();
-  strvec *peek();
-  bool write(const strvec &outvec);
+  bool read(strvec *x, int ifd = 0, bool ignore_eof = false);
+  Line *read(int ifd = 0, bool ignore_eof = false);
+  Line *peek(int ifd = 0);
+  bool write(Line *, int ofd = 0);
+  bool write(const strvec &s, int ofd = 0);
 
   void run();
 
-  void yield(Mode newmode = MODE_THINKING) {
+  void yield(Mode newmode = MODE_THINKING, int _waitfd = -1) {
     assert(newmode != MODE_BEGIN);
     assert(mode != MODE_DONE);
     assert(inuc);
     mode = newmode;
+    waitfd = _waitfd;
     inuc = false;
     ::swapcontext(&uc, &me);
     assert(mode != MODE_DONE);

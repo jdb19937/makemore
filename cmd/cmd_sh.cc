@@ -16,7 +16,7 @@ extern "C" void mainmore(Process *);
 Process *do_shell(
   Process *shell, bool use_input, const strvec *argsp
 ) {
-  IO *out = shell->out;
+  IO *out = shell->otab[0];
   const strvec &args0 = *argsp;
   strvec args;
 
@@ -57,9 +57,14 @@ again:
 
     Process *child = new Process(
       shell->system, shell->session, "then", dargs,
-      NULL, out
+      shell->itab[0], out
     );
-    out = child->in;
+
+    child->itab.resize(2);
+    child->itab[1] = new IO;
+    child->itab[1]->link_reader(child);
+fprintf(stderr, "it1=%ld\n", (long)child->itab[1]);
+    out = child->itab[1];
 
     args = cargs;
     argsn = args.size();
@@ -91,7 +96,7 @@ again:
       shell->system, shell->session, "sh", dargs,
       NULL, out
     );
-    out = child->in;
+    out = child->itab[0];
 
     args = cargs;
     argsn = args.size();
@@ -145,8 +150,11 @@ again:
         break;
       case '@':
         {
+          Line tmpline;
+          tmpline = shell->session->linevar[args1[i].c_str() + 1];
           strvec tmp;
-          tmp = shell->session->linevar[args1[i].c_str() + 1];
+          line_to_strvec(tmpline, &tmp);
+
           assert(args.size() + tmp.size() > 0);
           args.resize(args.size() + tmp.size() - 1);
           for (auto word : tmp)
@@ -162,7 +170,8 @@ again:
     Process *main;
     if (use_input) {
 fprintf(stderr, "hi args=[%s]\n", joinwords(args).c_str());
-      if (out == shell->out) {
+      if (out == shell->otab[0]) {
+fprintf(stderr, "here1\n");
         strvec bak_args = args;
         shell->args = args;
         shell->cmd = cmd;
@@ -172,24 +181,30 @@ fprintf(stderr, "hi args=[%s]\n", joinwords(args).c_str());
         shell->args = bak_args;
         shell->cmd = "sh";
       } else {
-        strvec bak_args = args;
-        IO *bak_out = shell->out;
+fprintf(stderr, "here2\n");
+        unsigned int otabn = shell->otab.size();
+        assert(otabn);
 
-        assert(bak_out->nwriters >= 2);
-        bak_out->unlink_writer(shell);
-        out->link_writer(shell);
-        assert(out->nwriters == 1);
-        shell->out = out;
+        shell->otab.resize(otabn + 1);
+        shell->otab[otabn] = shell->otab[0];
+        shell->otab[0] = out;
+        shell->otab[0]->link_writer(shell);
+
+        strvec bak_args = args;
         shell->cmd = cmd;
         shell->args = args;
 
+fprintf(stderr, "calling func\n");
         func(shell);
+fprintf(stderr, "back from calling func\n");
 
-        shell->out = bak_out;
         shell->args = bak_args;
         shell->cmd = "sh";
-        out->unlink_writer(shell);
-        bak_out->link_writer(shell);
+
+        shell->otab[0]->unlink_writer(shell);
+        shell->otab[0] = shell->otab[otabn];
+        shell->otab.resize(otabn);
+fprintf(stderr, "back from calling func %u\n", otabn);
       }
 
 #if 0
@@ -225,7 +240,7 @@ fail:
   
   new Process(
     shell->system, shell->session, "echo", args,
-    NULL, shell->out
+    NULL, shell->otab[0]
   );
 
   return NULL;
@@ -237,8 +252,9 @@ void mainmore(
 fprintf(stderr, "sh args=[%s]\n", joinwords(process->args).c_str());
 
   if (process->args.size() == 0) {
-    while (const strvec *argsp = process->read()) {
-      do_shell(process, false, argsp);
+    strvec args;
+    while (process->read(&args)) {
+      do_shell(process, false, &args);
     }
   } else {
     do_shell(process, true, &process->args);

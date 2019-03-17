@@ -21,8 +21,8 @@ void mainmore(
   parsecolspec(colspec, &cols);
   unsigned int ncols = cols.size();
 
-  while (strvec *invecp = process->read()) {
-    const strvec &invec = *invecp;
+  strvec invec;
+  while (process->read(&invec)) {
     unsigned int kcols = invec.size();
 
     strvec outvec;

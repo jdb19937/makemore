@@ -15,9 +15,8 @@ void mainmore(
 ) {
   char buf[64];
 
-  while (const strvec *invecp = process->read()) {
-    const strvec &invec = *invecp;
-
+  strvec invec;
+  while (process->read(&invec)) {
     if (invec.size() == 0) {
       continue;
     }

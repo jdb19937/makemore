@@ -85,20 +85,14 @@ void Session::loadvars() {
 
 Session::~Session() {
   if (shell) {
-    shell->in->unlink_writer(this);
-    shell->out->unlink_reader(this);
+    shell->itab[0]->unlink_writer(this);
+    shell->otab[0]->unlink_reader(this);
   }
 
   while (head_sproc)
     delete head_sproc;
   assert(shell == NULL);
   delete who;
-
-  for (auto ptrlen : cudavar) {
-    void *ptr = ptrlen.first;
-    cufree(ptr);
-  }
-  cudavar.clear();
 }
 
 void Session::link_sproc(Process *p) {
@@ -125,13 +119,6 @@ void Session::unlink_sproc(Process *p) {
     shell = NULL;
 }
 
-void *Session::cumakevar(unsigned int len) {
-  uint8_t *p;
-  cumake(&p, len);
-  cudavar.push_back(std::make_pair(p, len));
-  return ((void *)p);
-}
-
 bool Session::save_grid(const string &var) {
   if (!Parson::valid_tag(var))
     return false;
@@ -144,7 +131,10 @@ bool Session::save_grid(const string &var) {
   if (!fp)
     return false;
 
-  for (auto linevec : vari->second) {
+  for (auto line : vari->second) {
+    strvec linevec;
+    line_to_strvec(line, &linevec);
+
     std::string linestr = moretpenc(linevec, '\t');
     size_t written = fwrite(linestr.data(), 1, linestr.length(), fp);
     if (written != linestr.length()) {
@@ -178,7 +168,10 @@ bool Session::save_line(const string &var) {
   if (!fp)
     return false;
 
-  const strvec &linevec = vari->second;
+  const Line &line = vari->second;
+  strvec linevec;
+  line_to_strvec(line, &linevec);
+
   std::string linestr = moretpenc(linevec, '\t');
   size_t written = fwrite(linestr.data(), 1, linestr.length(), fp);
   if (written != linestr.length()) {
@@ -212,7 +205,7 @@ bool Session::save_word(const string &var) {
   if (!fp)
     return false;
 
-  const string &wordstr = vari->second;
+  string wordstr = (string)vari->second;
   size_t written = fwrite(wordstr.data(), 1, wordstr.length(), fp);
   if (written != wordstr.length()) {
     fclose(fp);

@@ -17,10 +17,11 @@ void mainmore(
   char buf[64];
 
   if (process->args.size() == 0) {
-    while (strvec *inp = process->read()) {
+    strvec invec;
+    while (process->read(&invec)) {
       sprintf(buf, "%u", i);
       out[0] = buf;
-      catstrvec(out, *inp);
+      catstrvec(out, invec);
 
       if (!process->write(out))
         break;

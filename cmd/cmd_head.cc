@@ -20,11 +20,14 @@ void mainmore(
   unsigned long row = 0;
 
   while (row < nrows) {
-    strvec *inp = process->read();
-    if (!inp)
+    Line *w;
+    if (!(w = process->read()))
       break;
-    if (!process->write(*inp))
+    if (!process->write(w)) {
+      delete w;
       break;
+    }
+
     ++row;
   }
 }
