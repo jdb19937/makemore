@@ -73,18 +73,20 @@ function moretpdec(inbuf) {
     return null;
 
   for (var i = 0; i < cmdwords.length; ++i) {
-if (0) {
     if (cmdwords[i][0] == '<') {
       var b = parseInt(cmdwords[i].substr(1), 0);
-      cmdwords[i] = inbuf.slice(off, off + b)
+      cmdwords[i] = inbuf.slice(off, off + b);
+
       if (ispng(cmdwords[i])) {
         var blob = new Blob([cmdwords[i]], {'type': 'image/png'});
         var url = URL.createObjectURL(blob); 
-        cmdwords[i] = url
+        cmdwords[i] = [url]
+      } else {
+        cmdwords[i] = dec.decode(cmdwords[i]);
       }
+
       off += b;
     }
-}
   }
 
   return [cmdwords, off];

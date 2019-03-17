@@ -21,6 +21,14 @@ function chop(x) {
   return x.substring(0, x.length - 1)
 }
 
+function hasobj(ar) {
+  for (var i in ar) {
+    var x = ar[i];
+    if (typeof(x) == 'object') { return true; }
+  }
+  return false;
+}
+
 function load() {
   window.markpos = { };
   window.markbeg = { };
@@ -55,12 +63,14 @@ function load() {
     }
   }
 
-  termcanvas.scrollout = function(y) {
+  var loading = 0;
+
+  termcanvas.scrollout = function(y, isasync) {
     for (var i in window.markpos) {
       if (window.markbeg[i] <= y) {
         window.markbeg[i]--;
       }
-      if (window.markpos[i] < y) {
+      if (window.markpos[i] < y || isasync && window.markpos[i] <= y) {
         window.markpos[i]--;
       }
     }
@@ -71,8 +81,44 @@ function load() {
   }
 
   termcanvas.puttext = function(txt, x0, y0) {
+if (typeof(txt) == 'object') {
+  for (var i in txt) {
+    if (i > 0) {
+      termcanvas.puttext(' ', x0, y0);
+      ++x0;
+    }
+
+    var word = txt[i];
+    if (typeof(word) == 'object') {
+      var url = word[0];
+      var im = new Image;
+      im.src = url;
+
+      var g = function(im) {
+        var xhere = x0 * 8 * 2;
+        var yhere = y0 * 8 * 3 - 44;
+
+        ++loading;
+        var f= function() {
+          termctx.drawImage(im, 0, 0, im.width, im.height, xhere, yhere, 64, 64);
+          --loading;
+        };
+        im.addEventListener('load', f);
+      };
+      g(im);
+
+      x0 += 4;
+    } else {
+      termcanvas.puttext(word, x0, y0);
+      x0 += word.length
+    }
+  }
+  return;
+}
+
     var x = x0;
     var y = y0;
+
     for (var i = 0; i < txt.length; ++i) {
       var c = txt.charCodeAt(i);
       if (c > 255) { c = 255; }
@@ -143,6 +189,7 @@ var c = 32;
       if (ch == 13) {
         clearcurs();
         termcanvas.scrollout(24);
+        termcanvas.puttext("~" + ' ', 0, 23);
         termcanvas.puttext(userprompt + ' ', 0, 24);
         window.curx = 2;
         setcurs();
@@ -152,19 +199,36 @@ var m = window.cli.mark;
 window.markbeg[m] = 23;
 window.markpos[m] = 23;
 
-        window.cli.moretpreq(mwords, [ ], function(x, mark) {
+var onreq = function(x, mark) {
+
+if (loading) {
+window.setTimeout(function() { onreq(x, mark); }, 1);
+return;
+}
+
           var y1 = window.markpos[mark];
 if (x === null) {
   var y0 = window.markbeg[mark];
+  termcanvas.putcat(0x24, 0, y0);
   for (var y = y0 + 1; y <= y1; ++y) {
     termcanvas.putcat(0x26, 0, y);
   }
 return;
 }
-            termcanvas.scrollout(y1);
-            termcanvas.puttext(syncprompt + " " + x.join(' '), 0, y1);
 
-        });
+            termcanvas.scrollout(y1);
+            if (hasobj(x)) {
+              termcanvas.scrollout(y1);
+              termcanvas.scrollout(y1);
+            }
+
+//            termcanvas.puttext(syncprompt + " " + x.join(' '), 0, y1);
+            termcanvas.puttext(syncprompt, 0, y1);
+            termcanvas.puttext(x, 2, y1);
+
+        };
+
+        window.cli.moretpreq(mwords, [ ], onreq);
         window.linebuf = '';
 
         return;
@@ -205,8 +269,17 @@ return;
   })
 
   window.cli.asynccb = function(x) {
-              termcanvas.scrollout(23);
-              termcanvas.puttext(asyncprompt + " " + x.join(' '), 0, 23);
+if (loading) {
+window.setTimeout(function() { window.cli.asyncbb(x); }, 1);
+} else {
+              termcanvas.scrollout(23, true);
+            if (hasobj(x)) {
+              termcanvas.scrollout(23, true);
+              termcanvas.scrollout(23, true);
+            }
+              termcanvas.puttext(asyncprompt, 0, 23);
+              termcanvas.puttext(x, 2, 23);
+}
   };
 }
 
@@ -215,10 +288,12 @@ return;
 
 </head>
 
-<body onLoad="load()">
+<body style="background-color: #7f7f7f" onLoad="load()">
 
 <img id="fontimg" style="display: none" src="mork.png" width=256 height=384>
+<center>
 <canvas style="image-rendering: pixelated" id="terminal" width=1280 height=600></canvas>
+</center>
 
 <br/>
 </body>
