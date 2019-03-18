@@ -1,0 +1,215 @@
+#LyX 2.3 created this file. For more info see http://www.lyx.org/
+\lyxformat 544
+\begin_document
+\begin_header
+\save_transient_properties true
+\origin unavailable
+\textclass amsart
+\use_default_options true
+\begin_modules
+theorems-ams
+eqs-within-sections
+figs-within-sections
+\end_modules
+\maintain_unincluded_children false
+\language english
+\language_package default
+\inputencoding auto
+\fontencoding global
+\font_roman "default" "default"
+\font_sans "default" "default"
+\font_typewriter "default" "default"
+\font_math "auto" "auto"
+\font_default_family default
+\use_non_tex_fonts false
+\font_sc false
+\font_osf false
+\font_sf_scale 100 100
+\font_tt_scale 100 100
+\use_microtype false
+\use_dash_ligatures true
+\graphics default
+\default_output_format default
+\output_sync 0
+\bibtex_command default
+\index_command default
+\paperfontsize default
+\spacing single
+\use_hyperref false
+\papersize default
+\use_geometry false
+\use_package amsmath 1
+\use_package amssymb 1
+\use_package cancel 1
+\use_package esint 1
+\use_package mathdots 1
+\use_package mathtools 1
+\use_package mhchem 1
+\use_package stackrel 1
+\use_package stmaryrd 1
+\use_package undertilde 1
+\cite_engine basic
+\cite_engine_type default
+\biblio_style plain
+\use_bibtopic false
+\use_indices false
+\paperorientation portrait
+\suppress_date false
+\justification true
+\use_refstyle 1
+\use_minted 0
+\index Index
+\shortcut idx
+\color #008000
+\end_index
+\secnumdepth 3
+\tocdepth 3
+\paragraph_separation indent
+\paragraph_indentation default
+\is_math_indent 0
+\math_numbering_side default
+\quotes_style english
+\dynamic_quotes 0
+\papercolumns 1
+\papersides 1
+\paperpagestyle default
+\tracking_changes false
+\output_changes false
+\html_math_output 0
+\html_css_as_file 0
+\html_be_strict false
+\end_header
+
+\begin_body
+
+\begin_layout Title
+moredos
+\end_layout
+
+\begin_layout Author
+Dan Brumleve
+\end_layout
+
+\begin_layout Date
+March 17, 2019
+\end_layout
+
+\begin_layout Section
+Overview
+\end_layout
+
+\begin_layout Standard
+moredos is a simplified Unix-like operating system and command library I
+ made to run peaple.io.
+ A moredos instance consists of some commands and processes and I/O queues.
+ Processes read from I/O queues and write to them, like Unix pipes, facilitating
+ shell-like scripting of command pipelines and sequences.
+ The shmore shell used in peaple.io is implemented as a command itself, the
+ built-in moredos 
+\begin_inset Quotes eld
+\end_inset
+
+sh
+\begin_inset Quotes erd
+\end_inset
+
+ command.
+\end_layout
+
+\begin_layout Standard
+In Unix, pipes carry bytes, but in moredos entire 
+\emph on
+lines
+\emph default
+ are passed atomically and by reference.
+ A line is a vector of 
+\emph on
+words
+\emph default
+, and a word is a counted reference to a byte string which may reside in
+ either GPU or main memory.
+ This hidden device identifier is accessed through the moredos API which
+ also allows a process to relocate words between devices.
+ Thus it is possible to pipe data between processes without it ever leaving
+ the GPU.
+\end_layout
+
+\begin_layout Standard
+Unix commands like 
+\begin_inset Quotes eld
+\end_inset
+
+cut
+\begin_inset Quotes erd
+\end_inset
+
+, 
+\begin_inset Quotes eld
+\end_inset
+
+sort
+\begin_inset Quotes erd
+\end_inset
+
+, 
+\begin_inset Quotes eld
+\end_inset
+
+join
+\begin_inset Quotes erd
+\end_inset
+
+, 
+\begin_inset Quotes eld
+\end_inset
+
+paste
+\begin_inset Quotes erd
+\end_inset
+
+, 
+\begin_inset Quotes eld
+\end_inset
+
+xargs
+\begin_inset Quotes erd
+\end_inset
+
+ specify a delimiter string and then interpret the input byte stream as
+ a table.
+ All of these commands and more have equivalents in the built-in library
+ (without the need for the delimiter).
+ Passing of entire lines and words by reference can have benefits over the
+ Unix way way of buffering the underlying bytes, for example the moredos
+ 
+\begin_inset Quotes eld
+\end_inset
+
+cat
+\begin_inset Quotes erd
+\end_inset
+
+ command copies the line reference only, doing the same work no matter how
+ many words the line contains; the moredos 
+\begin_inset Quotes eld
+\end_inset
+
+cut
+\begin_inset Quotes erd
+\end_inset
+
+ command creates a new output line containing references to the specified
+ input words, doing the same work no matter the size of those words and
+ preserving their device locations.
+\end_layout
+
+\begin_layout Standard
+The moredos API wraps some of the host OS API, like file and socket operations
+ that operate on byte strings.
+ Lines that are imported or exported in this way are encoded to bytes using
+ the moretp packet format, facilitating programmatic interaction as well
+ as direct human interaction over telnet.
+\end_layout
+
+\end_body
+\end_document
