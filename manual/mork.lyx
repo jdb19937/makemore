@@ -112,7 +112,7 @@ The colors are red, green, blue, yellow, magenta, cyan, white, darker versions
 \begin_layout Standard
 Lower-case letters have a black top row.
  The upper-case letter is created by replacing the top row of the lower-case
- letter with its middle row.
+ letter with a copy of its middle row.
 \end_layout
 
 \begin_layout Standard
