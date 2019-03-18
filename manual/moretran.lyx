@@ -222,6 +222,30 @@ Comments are marked by
 \end_layout
 
 \begin_layout Standard
+A trailing 
+\begin_inset Quotes eld
+\end_inset
+
+
+\backslash
+
+\begin_inset Quotes erd
+\end_inset
+
+ denotes a line continuation:
+\end_layout
+
+\begin_layout LyX-Code
+* -> all i have to say about the matter is blah 
+\backslash
+
+\end_layout
+
+\begin_layout LyX-Code
+     blah blah and i completely agree
+\end_layout
+
+\begin_layout Standard
 That's all there is to the language.
  A moretran script is a list of rules.
  Each rule is compiled to shibboleths.
@@ -289,9 +313,27 @@ $nom
 \end_layout
 
 \begin_layout LyX-Code
-bully : from * * -> tag $nom bullying ; to 
+bully : from * * -> 
 \backslash
-2 gimme money or get a black eye ; count 
+
+\end_layout
+
+\begin_layout LyX-Code
+  tag $nom bullying ; 
+\backslash
+
+\end_layout
+
+\begin_layout LyX-Code
+  to 
+\backslash
+2 gimme money or get a black eye ; 
+\backslash
+
+\end_layout
+
+\begin_layout LyX-Code
+  count 
 \backslash
 2 0
 \end_layout
@@ -305,9 +347,21 @@ bully : from * * -> tag $nom bullying ; to
 \end_layout
 
 \begin_layout LyX-Code
-bully bullying : count * 0 -> to 
+bully bullying : count * 0 -> 
 \backslash
-2 imma count to three ; count 
+
+\end_layout
+
+\begin_layout LyX-Code
+  to 
+\backslash
+2 imma count to three ; 
+\backslash
+
+\end_layout
+
+\begin_layout LyX-Code
+  count 
 \backslash
 2 1
 \end_layout
@@ -321,9 +375,21 @@ bully : count * 0 ->
 \end_layout
 
 \begin_layout LyX-Code
-bully bullying : count * 1 -> to 
+bully bullying : count * 1 -> 
 \backslash
-2 one pay me ; count 
+
+\end_layout
+
+\begin_layout LyX-Code
+  to 
+\backslash
+2 one pay me ; 
+\backslash
+
+\end_layout
+
+\begin_layout LyX-Code
+  count 
 \backslash
 2 2
 \end_layout
@@ -337,9 +403,21 @@ bully : count * 1 ->
 \end_layout
 
 \begin_layout LyX-Code
-bully bullying : count * 2 -> to 
+bully bullying : count * 2 -> 
 \backslash
-2 two else imma hit you ; count 
+
+\end_layout
+
+\begin_layout LyX-Code
+  to 
+\backslash
+2 two else imma hit you ; 
+\backslash
+
+\end_layout
+
+\begin_layout LyX-Code
+  count 
 \backslash
 2 3
 \end_layout
@@ -353,9 +431,25 @@ bully : count * 2 ->
 \end_layout
 
 \begin_layout LyX-Code
-bully bullying : count * 3 -> to 
+# vandalize
+\end_layout
+
+\begin_layout LyX-Code
+bully bullying : count * 3 -> 
 \backslash
-2 three thats it buddy ; punch 
+
+\end_layout
+
+\begin_layout LyX-Code
+  to 
+\backslash
+2 three thats it buddy ; 
+\backslash
+
+\end_layout
+
+\begin_layout LyX-Code
+  punch 
 \backslash
 2 ; untag $nom bullying
 \end_layout
@@ -373,13 +467,19 @@ bully : count * 3 ->
 \end_layout
 
 \begin_layout LyX-Code
-bully bullying : paid by * * -> untag $nom bullying ; to 
+bully bullying : paid by * * -> 
 \backslash
-3 thanks buddy
+
 \end_layout
 
 \begin_layout LyX-Code
-bully : paid by * * -> untag $nom bullying ; to 
+  untag $nom bullying ; 
+\backslash
+
+\end_layout
+
+\begin_layout LyX-Code
+  to 
 \backslash
 3 thanks buddy
 \end_layout
