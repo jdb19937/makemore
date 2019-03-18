@@ -137,12 +137,12 @@ A special word is "*" which is substituted with a random word during training,
 \end_layout
 
 \begin_layout Standard
-The first clause of the rule can be a pipe-separated list, representing
+The first clause of the rule can be a semicolon-separated list, representing
  the history of a thread:
 \end_layout
 
 \begin_layout LyX-Code
-whats your name | * whats yours -> bob
+whats your name ; * whats yours -> bob
 \end_layout
 
 \begin_layout LyX-Code
@@ -150,12 +150,12 @@ whats your name | * whats yours -> bob
 \end_layout
 
 \begin_layout Standard
-The second clause of the rule can also be a pipe-separated list, representing
- multiple outputs:
+The second clause of the rule can also be a semicolon-separated list, representi
+ng multiple outputs:
 \end_layout
 
 \begin_layout LyX-Code
-tell me a joke -> okay | what does the fox say
+tell me a joke -> okay ; what does the fox say
 \end_layout
 
 \begin_layout Standard
@@ -172,11 +172,11 @@ A rule can be prefixed by a list of tags and a
 \end_layout
 
 \begin_layout LyX-Code
-bob : whats your name | * whats yours -> bob
+bob : whats your name ; * whats yours -> bob
 \end_layout
 
 \begin_layout LyX-Code
-sam : whats your name | * whats yours -> sam
+sam : whats your name ; * whats yours -> sam
 \end_layout
 
 \begin_layout LyX-Code
@@ -223,7 +223,7 @@ Comments are marked by
 
 \begin_layout Standard
 That's all there is to the language.
- A moregasm script is a list of rules.
+ A moretran script is a list of rules.
  Each rule is compiled to shibboleths.
  The positions of the wildcards within the clauses are also included, allowing
  substitutions to be performed.
@@ -241,6 +241,151 @@ moretran scripts can be compiled with the moretran utility.
 
 \begin_layout LyX-Code
 $ moretran -o test.more test.txt
+\end_layout
+
+\begin_layout Section
+Example
+\end_layout
+
+\begin_layout Example
+This moretran script defines the behavior of a bully.
+ If you send him a message, he responds with a threat, and initiates a countdown.
+ The countdown is interrupted if you pay him, otherwise he vandalizes your
+ profile image.
+ The substitution variables 
+\begin_inset Quotes eld
+\end_inset
+
+$nom
+\begin_inset Quotes erd
+\end_inset
+
+, 
+\begin_inset Quotes eld
+\end_inset
+
+
+\backslash
+1
+\begin_inset Quotes erd
+\end_inset
+
+, 
+\begin_inset Quotes eld
+\end_inset
+
+
+\backslash
+2
+\begin_inset Quotes erd
+\end_inset
+
+, etc.
+ are interpreted by the application, not moretran itself.
+\end_layout
+
+\begin_layout LyX-Code
+# threaten
+\end_layout
+
+\begin_layout LyX-Code
+bully : from * * -> tag $nom bullying ; to 
+\backslash
+2 gimme money or get a black eye ; count 
+\backslash
+2 0
+\end_layout
+
+\begin_layout LyX-Code
+
+\end_layout
+
+\begin_layout LyX-Code
+# count
+\end_layout
+
+\begin_layout LyX-Code
+bully bullying : count * 0 -> to 
+\backslash
+2 imma count to three ; count 
+\backslash
+2 1
+\end_layout
+
+\begin_layout LyX-Code
+bully : count * 0 ->
+\end_layout
+
+\begin_layout LyX-Code
+
+\end_layout
+
+\begin_layout LyX-Code
+bully bullying : count * 1 -> to 
+\backslash
+2 one pay me ; count 
+\backslash
+2 2
+\end_layout
+
+\begin_layout LyX-Code
+bully : count * 1 ->
+\end_layout
+
+\begin_layout LyX-Code
+
+\end_layout
+
+\begin_layout LyX-Code
+bully bullying : count * 2 -> to 
+\backslash
+2 two else imma hit you ; count 
+\backslash
+2 3
+\end_layout
+
+\begin_layout LyX-Code
+bully : count * 2 ->
+\end_layout
+
+\begin_layout LyX-Code
+
+\end_layout
+
+\begin_layout LyX-Code
+bully bullying : count * 3 -> to 
+\backslash
+2 three thats it buddy ; punch 
+\backslash
+2 ; untag $nom bullying
+\end_layout
+
+\begin_layout LyX-Code
+bully : count * 3 ->
+\end_layout
+
+\begin_layout LyX-Code
+
+\end_layout
+
+\begin_layout LyX-Code
+# paid
+\end_layout
+
+\begin_layout LyX-Code
+bully bullying : paid by * * -> untag $nom bullying ; to 
+\backslash
+3 thanks buddy
+\end_layout
+
+\begin_layout LyX-Code
+bully : paid by * * -> untag $nom bullying ; to 
+\backslash
+3 thanks buddy
+\end_layout
+
+\begin_layout LyX-Code
+
 \end_layout
 
 \end_body
