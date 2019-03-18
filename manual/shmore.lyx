@@ -1,0 +1,489 @@
+#LyX 2.3 created this file. For more info see http://www.lyx.org/
+\lyxformat 544
+\begin_document
+\begin_header
+\save_transient_properties true
+\origin unavailable
+\textclass amsart
+\use_default_options true
+\begin_modules
+theorems-ams
+eqs-within-sections
+figs-within-sections
+\end_modules
+\maintain_unincluded_children false
+\language english
+\language_package default
+\inputencoding auto
+\fontencoding global
+\font_roman "default" "default"
+\font_sans "default" "default"
+\font_typewriter "default" "default"
+\font_math "auto" "auto"
+\font_default_family default
+\use_non_tex_fonts false
+\font_sc false
+\font_osf false
+\font_sf_scale 100 100
+\font_tt_scale 100 100
+\use_microtype false
+\use_dash_ligatures true
+\graphics default
+\default_output_format default
+\output_sync 0
+\bibtex_command default
+\index_command default
+\paperfontsize default
+\spacing single
+\use_hyperref false
+\papersize default
+\use_geometry false
+\use_package amsmath 1
+\use_package amssymb 1
+\use_package cancel 1
+\use_package esint 1
+\use_package mathdots 1
+\use_package mathtools 1
+\use_package mhchem 1
+\use_package stackrel 1
+\use_package stmaryrd 1
+\use_package undertilde 1
+\cite_engine basic
+\cite_engine_type default
+\biblio_style plain
+\use_bibtopic false
+\use_indices false
+\paperorientation portrait
+\suppress_date false
+\justification true
+\use_refstyle 1
+\use_minted 0
+\index Index
+\shortcut idx
+\color #008000
+\end_index
+\secnumdepth 3
+\tocdepth 3
+\paragraph_separation indent
+\paragraph_indentation default
+\is_math_indent 0
+\math_numbering_side default
+\quotes_style english
+\dynamic_quotes 0
+\papercolumns 1
+\papersides 1
+\paperpagestyle default
+\tracking_changes false
+\output_changes false
+\html_math_output 0
+\html_css_as_file 0
+\html_be_strict false
+\end_header
+
+\begin_body
+
+\begin_layout Title
+shmore
+\end_layout
+
+\begin_layout Author
+Dan Brumleve
+\end_layout
+
+\begin_layout Date
+March 17, 2019
+\end_layout
+
+\begin_layout Section
+Overview
+\end_layout
+
+\begin_layout Standard
+shmore is moredos's built-in command shell.
+\end_layout
+
+\begin_layout Standard
+moredos has a library of built-in commands which includes shmore as well
+ as equivalents to some Unix text-processing tools.
+ Each moredos process has an associated 
+\emph on
+built-in command
+\emph default
+ (identified by its name) and argument list (a line).
+ shmore parses its argument list into a sequence or pipeline of built-in
+ commands, spawning processes to execute them through the moredos API.
+\end_layout
+
+\begin_layout Standard
+An 
+\emph on
+atomic command line
+\emph default
+ is a command name followed by its argument words.
+ When given an atomic command line, shmore spawns a process to execute it.
+ For example, the atomic command line 
+\begin_inset Quotes eld
+\end_inset
+
+echo hi
+\begin_inset Quotes erd
+\end_inset
+
+ runs the built-in command 
+\begin_inset Quotes eld
+\end_inset
+
+echo
+\begin_inset Quotes erd
+\end_inset
+
+ with argument 
+\begin_inset Quotes eld
+\end_inset
+
+hi
+\begin_inset Quotes erd
+\end_inset
+
+; the command line 
+\begin_inset Quotes eld
+\end_inset
+
+sh echo hi
+\begin_inset Quotes erd
+\end_inset
+
+ runs 
+\begin_inset Quotes eld
+\end_inset
+
+sh
+\begin_inset Quotes erd
+\end_inset
+
+ with argument 
+\begin_inset Quotes eld
+\end_inset
+
+echo hi
+\begin_inset Quotes erd
+\end_inset
+
+, which then runs 
+\begin_inset Quotes eld
+\end_inset
+
+echo
+\begin_inset Quotes erd
+\end_inset
+
+ with argument 
+\begin_inset Quotes eld
+\end_inset
+
+hi
+\begin_inset Quotes erd
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+A 
+\emph on
+command line
+\emph default
+ (the argument list given to shmore) is built out of atomic command lines
+ joined by 
+\begin_inset Quotes eld
+\end_inset
+
+|
+\begin_inset Quotes erd
+\end_inset
+
+, 
+\begin_inset Quotes eld
+\end_inset
+
+;
+\begin_inset Quotes erd
+\end_inset
+
+, 
+\begin_inset Quotes eld
+\end_inset
+
+(
+\begin_inset Quotes eld
+\end_inset
+
+, and 
+\begin_inset Quotes eld
+\end_inset
+
+)
+\begin_inset Quotes erd
+\end_inset
+
+.
+ shmore spawns a process for each atomic command line, connecting their
+ inputs and outputs according to the syntax.
+\end_layout
+
+\begin_layout Standard
+The special word 
+\begin_inset Quotes eld
+\end_inset
+
+|
+\begin_inset Quotes erd
+\end_inset
+
+ is used for pipeline-building.
+ For example, the command line 
+\begin_inset Quotes eld
+\end_inset
+
+echo hello there | cut 0
+\begin_inset Quotes erd
+\end_inset
+
+ outputs the line 
+\begin_inset Quotes eld
+\end_inset
+
+hello
+\begin_inset Quotes erd
+\end_inset
+
+, then finishes.
+\end_layout
+
+\begin_layout Standard
+The special word 
+\begin_inset Quotes eld
+\end_inset
+
+;
+\begin_inset Quotes erd
+\end_inset
+
+ is used for sequence-building.
+ For example, the command line 
+\begin_inset Quotes eld
+\end_inset
+
+echo hi ; echo bye
+\begin_inset Quotes erd
+\end_inset
+
+ outputs the line 
+\begin_inset Quotes eld
+\end_inset
+
+hi
+\begin_inset Quotes erd
+\end_inset
+
+, then the line 
+\begin_inset Quotes eld
+\end_inset
+
+bye
+\begin_inset Quotes erd
+\end_inset
+
+.
+ then finishes.
+ 
+\begin_inset Quotes eld
+\end_inset
+
+;
+\begin_inset Quotes erd
+\end_inset
+
+ has lower precedence than 
+\begin_inset Quotes eld
+\end_inset
+
+|
+\begin_inset Quotes erd
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+The special word-prefix 
+\begin_inset Quotes eld
+\end_inset
+
+
+\backslash
+
+\begin_inset Quotes erd
+\end_inset
+
+ is used for escaping.
+ If a command name or argument word begins with 
+\begin_inset Quotes eld
+\end_inset
+
+
+\backslash
+
+\begin_inset Quotes erd
+\end_inset
+
+, that 
+\begin_inset Quotes eld
+\end_inset
+
+
+\backslash
+
+\begin_inset Quotes erd
+\end_inset
+
+ is stripped immediately before spawning the built-in command process.
+ For example, the shell command 
+\begin_inset Quotes eld
+\end_inset
+
+echo hi 
+\backslash
+| cut 0
+\begin_inset Quotes erd
+\end_inset
+
+ outputs 
+\begin_inset Quotes eld
+\end_inset
+
+hi | cut 0
+\begin_inset Quotes erd
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+The special words 
+\begin_inset Quotes eld
+\end_inset
+
+(
+\begin_inset Quotes eld
+\end_inset
+
+ and 
+\begin_inset Quotes eld
+\end_inset
+
+)
+\begin_inset Quotes erd
+\end_inset
+
+ are used for grouping.
+ For example, 
+\begin_inset Quotes eld
+\end_inset
+
+( echo hi there ; echo hello there ) | cut 1
+\begin_inset Quotes erd
+\end_inset
+
+ outputs the line 
+\begin_inset Quotes eld
+\end_inset
+
+there
+\begin_inset Quotes erd
+\end_inset
+
+ twice, then finishes.
+ Parentheses must be balanced.
+\end_layout
+
+\begin_layout Standard
+The special word-prefixes 
+\begin_inset Quotes eld
+\end_inset
+
+$
+\begin_inset Quotes erd
+\end_inset
+
+, 
+\begin_inset Quotes eld
+\end_inset
+
+@
+\begin_inset Quotes erd
+\end_inset
+
+, and 
+\begin_inset Quotes eld
+\end_inset
+
+%
+\begin_inset Quotes erd
+\end_inset
+
+ are used for word, line, and grid variables respectively.
+ Word and line variables are replaced with references to their values, and
+ grid variables can be invoked as commands.
+ They are assigned with the commands 
+\begin_inset Quotes eld
+\end_inset
+
+setword
+\begin_inset Quotes erd
+\end_inset
+
+, 
+\begin_inset Quotes eld
+\end_inset
+
+setline
+\begin_inset Quotes erd
+\end_inset
+
+, and 
+\begin_inset Quotes eld
+\end_inset
+
+setgrid
+\begin_inset Quotes erd
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+The word-prefix 
+\begin_inset Quotes eld
+\end_inset
+
+<
+\begin_inset Quotes erd
+\end_inset
+
+ is used by moretp to indicate a binary word.
+ It can also be effectively escaped with 
+\begin_inset Quotes eld
+\end_inset
+
+
+\backslash
+
+\begin_inset Quotes erd
+\end_inset
+
+.
+\end_layout
+
+\end_body
+\end_document
