@@ -32,6 +32,7 @@ function hasobj(ar) {
 function load() {
   window.markpos = { };
   window.markbeg = { };
+  window.ymap = { };
 
   var asyncprompt = '#';
   var syncprompt = '|';
@@ -75,6 +76,12 @@ function load() {
       }
     }
 
+for (var i in window.ymap) {
+  if (window.ymap[i] <= y) {
+    window.ymap[i]--;
+  }
+}
+
     termctx.drawImage(termcanvas, 0, 3 * 8, 80 * 2 * 8, 3 * y * 8, 0, 0, 80 * 2 * 8, 3 * y * 8);
     termctx.fillStyle='black';
     termctx.fillRect(0, 3 * y * 8, 80 * 2 * 8, 3 * 8);
@@ -84,7 +91,7 @@ function load() {
 if (typeof(txt) == 'object') {
   for (var i in txt) {
     if (i > 0) {
-      termcanvas.puttext(' ', x0, y0);
+      // termcanvas.puttext(' ', x0, y0);
       ++x0;
     }
 
@@ -96,12 +103,12 @@ if (typeof(txt) == 'object') {
 
       var g = function(im) {
         var xhere = x0 * 8 * 2;
-        var yhere = y0 * 8 * 3 - 44;
 
-        ++loading;
+        window.ymap[im.src] = y0;
         var f= function() {
+          var y0 = window.ymap[im.src];
+          var yhere = y0 * 8 * 3 - 44;
           termctx.drawImage(im, 0, 0, im.width, im.height, xhere, yhere, 64, 64);
-          --loading;
         };
         im.addEventListener('load', f);
       };
@@ -201,7 +208,7 @@ window.markpos[m] = 23;
 
 var onreq = function(x, mark) {
 
-if (loading) {
+if (0 && loading) {
 window.setTimeout(function() { onreq(x, mark); }, 1);
 return;
 }
@@ -269,7 +276,7 @@ return;
   })
 
   window.cli.asynccb = function(x) {
-if (loading) {
+if (0 && loading) {
 window.setTimeout(function() { window.cli.asyncbb(x); }, 1);
 } else {
               termcanvas.scrollout(23, true);
