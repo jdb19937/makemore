@@ -69,6 +69,7 @@ Server::Server(const std::string &_urbdir) {
   ssl_ctx = SSL_CTX_new(SSLv23_server_method());
   assert(ssl_ctx);
 
+  SSL_CTX_set_mode(ssl_ctx, SSL_MODE_ENABLE_PARTIAL_WRITE);
   SSL_CTX_set_ecdh_auto(ctx, 1);
 
   std::string certdir = urbdir + "/certs";
@@ -471,6 +472,7 @@ void Server::select() {
       continue;
     if (agent->s >= nfds)
       nfds = agent->s + 1;
+//fprintf(stderr, "nfds=%d\n", nfds);
 
     switch (agent->ssl_status) {
     case SSL_ERROR_WANT_READ:
@@ -488,6 +490,7 @@ void Server::select() {
     default:
       fprintf(stderr, "got ssl status %d\n", agent->ssl_status);
       agent->close();
+      fprintf(stderr, "closed agent\n");
       break;
     }
   }
@@ -506,6 +509,9 @@ void Server::main() {
     auto ai = agents.begin();
     while (ai != agents.end()) {
       Agent *agent = *ai;
+      if (agent->idle() > 30)
+        agent->close();
+
       if (agent->s < 0) {
         fprintf(stderr, "closing %s\n", ipstr(agent->ip).c_str());
 
@@ -517,8 +523,11 @@ void Server::main() {
           }
         }
 
+fprintf(stderr, "erasing agent\n");
         agents.erase(ai++);
+fprintf(stderr, "deleting agent\n");
         delete agent;
+fprintf(stderr, "deleted agent\n");
         continue;
       }
       ++ai;
@@ -527,30 +536,24 @@ void Server::main() {
 
     this->select();
 
-    if (FD_ISSET(s, fdsets + 0))
+    if (FD_ISSET(s, fdsets + 0)) {
+fprintf(stderr, "accepting main\n");
       this->accept();
-    if (FD_ISSET(ssl_s, fdsets + 0))
+    }
+    if (FD_ISSET(ssl_s, fdsets + 0)) {
+fprintf(stderr, "accepting ssl\n");
       this->ssl_accept();
+    }
 
     ai = agents.begin();
     while (ai != agents.end()) {
       Agent *agent = *ai;
 
-      if (FD_ISSET(agent->s, fdsets + 0)) {
+      if (agent->s >= 0 && FD_ISSET(agent->s, fdsets + 0)) {
+        agent->active = time(NULL);
+fprintf(stderr, "slurping %d\n", agent->s);
         if (!agent->slurp()) {
-          fprintf(stderr, "closing %s\n", ipstr(agent->ip).c_str());
-
-          auto naip = nom_agent.equal_range(agent->session->who->nom);
-          for (auto nai = naip.first; nai != naip.second; ++nai) {
-            if (nai->second == agent) {
-              nom_agent.erase(nai);
-              break;
-            }
-          }
-
-          agents.erase(ai++);
-          delete agent;
-          continue;
+          agent->close();
         }
       }
 
@@ -558,7 +561,9 @@ void Server::main() {
     }
 
     for (auto agent : agents) {
-      if (FD_ISSET(agent->s, fdsets + 1)) {
+      if (agent->s >= 0 && FD_ISSET(agent->s, fdsets + 1)) {
+fprintf(stderr, "flushing %d\n", agent->s);
+        agent->active = time(NULL);
         agent->flush();
       }
     }
@@ -596,7 +601,7 @@ fprintf(stderr, "rspstr=%s\n", rspstr.c_str());
 
 
     for (auto agent : agents) {
-      if (agent->ssl_status)
+      if (agent->s < 0 || agent->ssl_status)
         continue;
 
       agent->parse();
@@ -605,9 +610,11 @@ fprintf(stderr, "rspstr=%s\n", rspstr.c_str());
         continue;
 
       if (agent->proto == Agent::UNKNOWN) {
+fprintf(stderr, "got linebuf \n");
         const strvec &words = *linebuf.begin();
         if (words.size()) {
           const string &word = words[0];
+fprintf(stderr, "got linebuf word=%s\n", word.c_str());
           if (word == "GET") {
             agent->proto = Agent::HTTP;
           } else {
@@ -619,6 +626,7 @@ fprintf(stderr, "rspstr=%s\n", rspstr.c_str());
       }
 
       switch (agent->proto) {
+#if 0
       case Agent::MORETP:
         {
           unsigned int i, n;
@@ -630,13 +638,11 @@ fprintf(stderr, "rspstr=%s\n", rspstr.c_str());
           }
         }
         break;
-#if 0
+#endif
       case Agent::HTTP:
-        for (auto line : lines) {
+        for (auto line : linebuf) {
           if (line.size() == 0) {
-            vector<string> words;
-            words.push_back("http");
-            agent->command(words);
+            agent->handle_http();
             agent->httpbuf.clear();
           } else {
             if (agent->httpbuf.size() >= 64) {
@@ -646,13 +652,14 @@ fprintf(stderr, "rspstr=%s\n", rspstr.c_str());
             }
           }
         }
+        linebuf.clear();
         break;
-#endif
       default:
-        assert(0);
+        linebuf.clear();
+        agent->close();
+        break;
       }
     }
-
 
     assert(system);
     system->run();

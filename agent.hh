@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <unistd.h>
+#include <time.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
@@ -31,6 +32,8 @@ struct Agent {
   int s;
   uint32_t ip;
   std::string ipstr;
+  time_t active;
+  time_t idle() { return time(NULL) - active; }
 
   bool secure;
   SSL *ssl;
@@ -78,6 +81,8 @@ struct Agent {
   void printf(const char *fmt, ...);
   void flush();
   void command(const std::vector<std::string> &line);
+
+  void handle_http();
 };
 
 }

@@ -9,8 +9,15 @@
 
 #include "cudamem.hh"
 #include "megatron.hh"
+#include "mapfile.hh"
 
 namespace makemore {
+
+double adam_b1 = 0.9;
+double adam_b2 = 0.999;
+double adam_b3 = 0.5;
+double adam_eps = 1e-8;
+
 
 __global__ void gpu_megatron_feed(
   const double *in,
@@ -134,7 +141,10 @@ __global__ void gpu_megatron_train2(
   unsigned int **iomap, unsigned int **oimap,
   unsigned int *wimap, unsigned int *womap,
   double *weight,
-  double eta, double nu, bool activated,
+
+  double *m, double *v,  double a, double b1, double b2, double b3, double eps,
+
+  bool activated,
 
   unsigned int inrn, unsigned int outrn, unsigned int mbn
 ) {
@@ -142,7 +152,9 @@ __global__ void gpu_megatron_train2(
   if (wi >= wn)
     return;
 
-  double dw = 0;
+if (!(a > 0))
+  return;
+
 
   unsigned int outri = womap[wi];
   --outri;
@@ -151,7 +163,11 @@ __global__ void gpu_megatron_train2(
   if (inri == 0) {
     for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
       unsigned int outi = mbi * outrn + outri;
-      dw += fout[outi];
+      double dw = fout[outi];
+  m[wi] = b1 * m[wi] + (1 - b1) * dw;
+  v[wi] = b2 * v[wi] + (1 - b2) * dw * dw;
+  weight[wi] += a * m[wi] / (pow(v[wi], b3) + eps);
+//weight[wi] += a * dw;
     }
   } else {
     --inri;
@@ -159,11 +175,14 @@ __global__ void gpu_megatron_train2(
     for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
       unsigned int outi = mbi * outrn + outri;
       unsigned int ini = mbi * inrn + inri;
-      dw += fout[outi] * in[ini];
+      double dw = fout[outi] * in[ini];
+  m[wi] = b1 * m[wi] + (1 - b1) * dw;
+  v[wi] = b2 * v[wi] + (1 - b2) * dw * dw;
+  weight[wi] += a * m[wi] / (pow(v[wi], b3) + eps);
+//weight[wi] += a * dw;
     }
   }
 
-  weight[wi] += dw * eta * nu;
 }
 
 const double *Megatron::feed(const double *_in, double *_fin) {
@@ -212,12 +231,14 @@ void Megatron::train(double nu) {
   gpu_megatron_train2<<<gs2, bs2>>>(
     in, fin, out, fout, inn, outn,
     wn, iwmap, owmap, iomap, oimap, wimap, womap,
-    weight, eta, nu, activated,
+    weight,
+m,v, eta*nu, adam_b1, adam_b2, adam_b3, adam_eps,
+    activated,
     inrn, outrn, mbn
   );
 }
 
-Megatron::Megatron(const Wiring *_wire, double *_cweight, unsigned int _mbn, double _eta, bool _activated)
+Megatron::Megatron(const Wiring *_wire, Mapfile *_mapfile, unsigned int _mbn, double _eta, bool _activated)
   : Tron(_wire->inn * _mbn, _wire->outn * _mbn)
 {
   mbn = _mbn;
@@ -228,6 +249,7 @@ Megatron::Megatron(const Wiring *_wire, double *_cweight, unsigned int _mbn, dou
   outrn = outn / mbn;
 
   wire = _wire;
+  mapfile = _mapfile;
 
   cumake(&out, outn);
   cumake(&fout, outn);
@@ -243,8 +265,16 @@ Megatron::Megatron(const Wiring *_wire, double *_cweight, unsigned int _mbn, dou
   _makemaps();
 
   cumake(&weight, wn);
-  cweight = _cweight;
-  sync(0);
+  mapfile->map(weight, wn);
+  mapfile->load(weight);
+
+  cumake(&m, wn);
+  mapfile->map(m, wn);
+  mapfile->load(m);
+
+  cumake(&v, wn);
+  mapfile->map(v, wn);
+  mapfile->load(v);
 }
 
 Megatron::~Megatron() {
@@ -385,6 +415,8 @@ void Megatron::_makemaps() {
 void Megatron::randomize(double disp) {
   using namespace std;
 
+  double *cweight = new double[wn];
+
   for (unsigned int outri = 0; outri < outrn; ++outri) {
     const vector<unsigned int>& w = _mow[outri];
     assert(w.size());
@@ -399,24 +431,19 @@ void Megatron::randomize(double disp) {
       sw += ww;
     }
     assert(w[w.size() - 1] < wn);
-    cweight[w[w.size() - 1]] = 0; //-sw/2.0;
-  }
-  sync(0);
-}
-
-void Megatron::sync(double t) {
-  if (t == 1) {
-    decude(weight, wn, cweight);
-    return;
+//    cweight[w[w.size() - 1]] = 0;
+    cweight[w[w.size() - 1]] = -sw/2.0;
   }
 
-  if (t == 0) {
-    encude(cweight, wn, weight);
-    return;
-  }
+  encude(cweight, wn, weight);
+  delete[] cweight;
 
-  assert(0);
-  // cusync(wn, weight, cweight, t);
+  cuzero(m, wn);
+  double *one = new double[wn];
+  for (unsigned int wi = 0; wi < wn; ++wi)
+    one[wi] = 1.0;
+  encude(one, wn, v);
+  delete[] one;
 }
 
 }

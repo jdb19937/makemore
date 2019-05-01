@@ -32,16 +32,17 @@ static string read_word(FILE *fp, char sep) {
   return word;
 }
 
-Project::Project(const char *_dir, unsigned int _mbn) {
+Project::Project(const std::string &_dir, unsigned int _mbn) {
   mbn = _mbn;
   assert(mbn > 0);
 
   dir = _dir;
-  assert(strlen(_dir) < 4000);
+  assert(strlen(dir.c_str()) < 4000);
 
   char configfn[4096];
-  sprintf(configfn, "%s/config.tsv", _dir);
+  sprintf(configfn, "%s/config.tsv", dir.c_str());
   FILE *configfp = fopen(configfn, "r");
+fprintf(stderr, "%s\n", configfn);
   assert(configfp);
 
   while (1) {

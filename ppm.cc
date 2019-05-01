@@ -241,10 +241,7 @@ void PPM::vectorize(uint8_t *vecp) {
   unsigned int n = w * h * 3;
   for (unsigned int i = 0; i < n; i += 3) {
     double l, a, b;
-    rgbtolab(data[i+0], data[i+1], data[i+2], &l, &a, &b);
-    vecp[i+0] = (uint8_t)(l * 255.0 + 0.5);
-    vecp[i+1] = (uint8_t)(a * 255.0 + 0.5);
-    vecp[i+2] = (uint8_t)(b * 255.0 + 0.5);
+    rgbtolab(data[i+0], data[i+1], data[i+2], &vecp[i+0], &vecp[i+1], &vecp[i+2]);
   }
 }
 
@@ -349,7 +346,7 @@ void PPM::pastelab(const uint8_t *vec, unsigned int vw, unsigned int vh, unsigne
       unsigned int x3 = x * 3;
 
       labtorgb(
-        (double)vec[i+0] / 256.0, (double)vec[i+1] / 256.0, (double)vec[i+2] / 256.0,
+       (double)(vec[i+0] * 100.0) / 255.0, (double)(vec[i+1] - 128.0), (double)(vec[i+2] - 128.0),
         data+yw3+x3+0, data+yw3+x3+1, data+yw3+x3+2
       );
 
@@ -392,7 +389,7 @@ void PPM::unvectorize(const uint8_t *vec, unsigned int _w, unsigned int _h) {
 
   for (unsigned int i = 0; i < n; i += 3) {
     uint8_t r, g, b;
-    labtorgb((double)(vec[i+0] + 0.5) / 256.0, (double)(vec[i+1] + 0.5) / 256.0, (double)(vec[i+2] + 0.5) / 256.0, &r, &g, &b);
+    labtorgb((double)(vec[i+0] * 100.0) / 255.0, (double)(vec[i+1] - 128.0), (double)(vec[i+2] - 128.0), &r, &g, &b);
     data[i+0] = r;
     data[i+1] = g;
     data[i+2] = b;

@@ -17,6 +17,7 @@
 
 namespace makemore {
 
+
 struct Parson {
   static bool valid_nom(const char *);
   static bool valid_nom(const std::string &s) { return valid_nom(s.c_str()); }
@@ -33,7 +34,8 @@ struct Parson {
   const static unsigned int nfrens = 16;
   const static unsigned int ntags = 8;
   const static unsigned int dim = 64;
-  const static unsigned int ncontrols = 1920;
+  const static unsigned int ncontrols = 512;
+  const static unsigned int nknobs = 128;
   const static unsigned int bufsize = 2048;
   const static unsigned int nbriefs = 8;
   const static unsigned int briefsize = 256;
@@ -93,7 +95,13 @@ struct Parson {
 
   // 1920
   uint8_t controls[ncontrols];
-  uint8_t _ctrpad[2176];
+  uint8_t ____paddy[1408];
+
+  // 1024
+  double knobs[nknobs];
+
+  // 1920
+  uint8_t ___pad[1152];
 
   // 64 * 64 * 3
   uint8_t target[dim * dim * 3];
@@ -159,8 +167,6 @@ struct Parson {
     return (nom[0] != 0);
   }
 
-  void initialize(const char *_nom, double mean, double dev);
-
   void set_parens(const char *anom, const char *bnom);
 
   bool has_fren(const char *nom);
@@ -203,8 +209,6 @@ struct Parson {
     visits += count;
   }
 
-  void generate(class Pipeline *pipe, long min_age = 0);
-
   void bagtags(Hashbag *h) const {
     h->clear();
     for (unsigned int i = 0; i < ntags; ++i)
@@ -212,8 +216,11 @@ struct Parson {
         h->add(tags[i]);
   }
 
+#if 0
+  void generate(class Pipeline *pipe, long min_age = 0);
   void _to_pipe(class Pipeline *pipe, unsigned int mbi, bool ex = false);
   void _from_pipe(class Pipeline *pipe, unsigned int mbi);
+#endif
 
   void paste_partrait(class PPM *ppm, unsigned int x0 = 0, unsigned int y0 = 0);
   void paste_target(class PPM *ppm, unsigned int x0 = 0, unsigned int y0 = 0);
@@ -225,6 +232,28 @@ struct Parson {
   double centers() const;
   double centerv() const;
   double error2() const;
+};
+
+
+struct CompareParsonTarget {
+  Parson *center;
+  CompareParsonTarget(Parson *_center) : center(_center) { }
+
+  bool operator()(Parson *a, Parson *b) {
+    double da2 = 0, db2 = 0, e;
+    for (unsigned i = 0; i < Parson::dim * Parson::dim * 3; ++i) {
+      e = ((double)a->target[i] - (double)center->target[i]);
+      if (i % 3 == 0)
+        e *= (100.0 / 256.0);
+      da2 += e * e;
+
+      e = ((double)b->target[i] - (double)center->target[i]);
+      if (i % 3 == 0)
+        e *= (100.0 / 256.0);
+      db2 += e * e;
+    }
+    return da2 < db2;
+  }
 };
 
 }

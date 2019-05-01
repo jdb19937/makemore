@@ -93,39 +93,33 @@ void xyztolab(double x, double y, double z, double *lp, double *ap, double *bp) 
   *ap = 500.0 * (dx - dy);
   *bp = 200.0 * (dy - dz);
 
-  *lp -= 50.0;
-  *lp /= 100.0;
-  *ap /= 100.0;
-  *bp /= 100.0;
+//  *lp /= 100.0;
+//  *ap /= 100.0;
+//  *bp /= 100.0;
 
-//  *lp *= tl;
-//  *ap *= tab;
-//  *bp *= tab;
-
-  *lp += 0.5;
-  *ap += 0.5;
-  *bp += 0.5;
+//  if (*ap < 0) { *ap = 0; } if (*ap > 1) { *ap = 1; }
+//  if (*bp < 0) { *bp = 0; } if (*bp > 1) { *bp = 1; }
+//  if (*lp < 0) { *lp = 0; } if (*lp > 1) { *lp = 1; }
 }
 
 void labtoxyz(double l, double a, double b, double *xp, double *yp, double *zp) {
+#if 0
   if (l <  0.0) l = 0.0;
   if (l >= 1.0) l = 1.0;
-  l -= 0.5;
-//  l /= tl;
   l *= 100.0;
-  l += 50.0;
 
   if (a <  0.0) a = 0.0;
   if (a >= 1.0) a = 1.0;
   a -= 0.5;
-//  a /= tab;
+  a *= 2.0;
   a *= 100.0;
 
   if (b <  0.0) b = 0.0;
   if (b >= 1.0) b = 1.0;
   b -= 0.5;
-//  b /= tab;
+  b *= 2.0;
   b *= 100.0;
+#endif
   
   double py = (l + 16.0) / 116.0;
   double px = a / 500.0 + py;
@@ -252,14 +246,35 @@ bool pnglab(
   uint8_t *lab,
   vector<string> *tags
 ) {
+  if (!pngrgb(png, w, h, lab, tags))
+    return false;
+
+  for (unsigned int i = 0, n = 3 * w * h; i < n; i += 3) {
+    rgbtolab(
+       lab[i + 0],  lab[i + 1],  lab[i + 2],
+      &lab[i + 0], &lab[i + 1], &lab[i + 2]
+    );
+  }
+
+  return true;
+}
+
+
+bool pngrgb(
+  const std::string &png,
+  unsigned int w,
+  unsigned int h,
+  uint8_t *lab,
+  vector<string> *tags
+) {
   FILE *fp = fmemopen((void *)png.data(), png.length(), "r");
   assert(fp);
 
   uint8_t header[8];
   size_t ret;
-  png_structp png_ptr;
-  png_infop info_ptr;
-  png_infop end_ptr;
+  png_structp png_ptr = NULL;
+  png_infop info_ptr = NULL;
+  png_infop end_ptr = NULL;
   png_textp text = NULL;
   png_bytep *row_pointers = NULL;
 
@@ -338,16 +353,11 @@ bool pnglab(
     }
   }
 
-  for (unsigned int i = 0, n = 3 * w * h; i < n; i += 3) {
-    rgbtolab(
-       lab[i + 0],  lab[i + 1],  lab[i + 2],
-      &lab[i + 0], &lab[i + 1], &lab[i + 2]
-    );
-  }
-
   fclose(fp);
   if (row_pointers)
     delete[] row_pointers;
+  if (png_ptr)
+    png_destroy_read_struct(&png_ptr, &info_ptr, &end_ptr);
 
   return true;
 
@@ -355,6 +365,8 @@ fail:
   fclose(fp);
   if (row_pointers)
     delete[] row_pointers;
+  if (png_ptr)
+    png_destroy_read_struct(&png_ptr, &info_ptr, &end_ptr);
 
   return false;
 }
@@ -370,11 +382,24 @@ bool labpng(
 
   for (unsigned int i = 0, n = 3 * w * h; i < n; i += 3) {
     labtorgb(
-       lab[i + 0],  lab[i + 1],  lab[i + 2],
+      (double)(lab[i+0] * 100.0) / 255.0, (double)(lab[i+1] - 128.0), (double)(lab[i+2] - 128.0),
       &rgb[i + 0], &rgb[i + 1], &rgb[i + 2]
     );
   }
 
+  bool ret = rgbpng(rgb, w, h, png, tags);
+
+  delete[] rgb;
+  return ret;
+}
+
+bool rgbpng(
+  const uint8_t *rgb,
+  unsigned int w,
+  unsigned int h,
+  std::string *png,
+  const vector<string> *tags
+) {
   uint8_t *pngbuf = new uint8_t[1 << 20];
   FILE *fp = fmemopen(pngbuf, 1 << 20, "wb");
   assert(fp);
@@ -414,7 +439,7 @@ bool labpng(
   assert(!setjmp(png_jmpbuf(png_ptr)));
   row_pointers = new png_bytep[h];
   for (unsigned int y = 0; y < h; y++)
-    row_pointers[y] = rgb + y * w * 3;
+    row_pointers[y] = (png_bytep)rgb + y * w * 3;
   png_write_image(png_ptr, row_pointers);
 
   if (tags) {
@@ -439,15 +464,12 @@ bool labpng(
   }
 
   delete[] pngbuf;
-  delete[] rgb;
   delete[] row_pointers;
 
   return true;
 
 fail:
   fclose(fp);
-  if (rgb)
-    delete[] rgb;
   if (row_pointers)
     delete[] row_pointers;
   if (pngbuf)

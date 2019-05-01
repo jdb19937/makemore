@@ -27,10 +27,23 @@ Urb::Urb(const char *_dir, unsigned int _mbn) {
 
   outgoing = new Bus(dir + "/outgoing.bus");
 
-  pipe1 = new Pipeline((dir + "/partrait.proj").c_str(), 1);
-  pipex = new Pipeline((dir + "/partrait.proj").c_str(), mbn);
+  egd = new Encgendis(dir + "/egd.proj", 1);
 
-  brane1 = new Brane((dir + "/brane.proj").c_str(), 1);
+#if 1
+  {
+    std::string knobfn = dir + "/knobs.dat";
+    FILE *knobfp = fopen(knobfn.c_str(), "r");
+    assert(knobfp);
+    knobs = new double[egd->knblay->n * 10000];
+    int ret = fread(knobs, egd->knblay->n * sizeof(double), 10000, knobfp);
+    assert(ret == 10000);
+    fclose(knobfp);
+  }
+#endif
+
+  cholo = new Cholo(egd->knblay->n);
+  cholo->load(dir + "/cholo.dat");
+
 
   images.clear();
   DIR *dp = opendir((dir + "/images").c_str());
@@ -42,7 +55,20 @@ Urb::Urb(const char *_dir, unsigned int _mbn) {
     images.push_back(dir + "/images/" + de->d_name);
   }
   closedir(dp);
+  sort(images.begin(), images.end());
   assert(images.size());
+
+  srcimages.clear();
+  dp = opendir((dir + "/srcimages").c_str());
+  assert(dp);
+  while ((de = readdir(dp))) {
+    if (*de->d_name == '.')
+      continue;
+    srcimages.push_back(dir + "/srcimages/" + de->d_name);
+  }
+  closedir(dp);
+  sort(srcimages.begin(), srcimages.end());
+  assert(srcimages.size());
 
   {
     std::string home = dir + "/home";
@@ -52,8 +78,7 @@ Urb::Urb(const char *_dir, unsigned int _mbn) {
 }
 
 Urb::~Urb() {
-  delete pipex;
-  delete pipe1;
+  delete egd;
 
   for (Zone *zone : zones) {
     delete zone;
@@ -62,13 +87,84 @@ Urb::~Urb() {
   delete outgoing;
 }
 
-Parson *Urb::make(const std::string &nom, unsigned int tier) {
+Parson *Urb::make(const std::string &nom, unsigned int tier, unsigned int gens, Parson *child, unsigned int which) {
+
   if (!Parson::valid_nom(nom))
     return NULL;
 
+  if (Parson *x = find(nom)) {
+fprintf(stderr, "found %s\n", nom.c_str());
+    if (!*x->parens[0] || !*x->parens[1]) {
+      seedrand(Parson::hash_nom(nom.c_str()));
+      x->paren_noms(nom.c_str(), x->parens[0], x->parens[1]);
+    }
+
+    if (gens) {
+      (void) make(x->parens[0], tier, gens - 1, x, 0);
+      (void) make(x->parens[1], tier, gens - 1, x, 1);
+    }
+    return x;
+  }
+
   Parson parson;
   memset(&parson, 0, sizeof(Parson));
+  strcpy(parson.nom, nom.c_str());
 
+  seedrand(Parson::hash_nom(nom.c_str()));
+  parson.paren_noms(nom.c_str(), parson.parens[0], parson.parens[1]);
+
+  if (nom.length() >= 5 && !strncmp(nom.c_str(), "anti", 4)) {
+    Parson *x = this->make(nom.c_str() + 4, tier);
+    for (unsigned int j = 0; j < egd->knblay->n; ++j) {
+      parson.knobs[j] = -x->knobs[j];
+    }
+  } else {
+    for (unsigned int j = 0; j < egd->knblay->n; ++j) {
+      unsigned int k = randuint() % 10000;
+      parson.knobs[j] = knobs[k * egd->knblay->n + j] * 1.0;
+    }
+  }
+
+  if (child) {
+    seedrand(Parson::hash_nom(child->nom, 93));
+    for (unsigned int j = 0; j < egd->knblay->n; ++j) {
+      if (randuint() % 2 == which) {
+        parson.knobs[j] = child->knobs[j];
+      }
+    }
+  }
+
+  if (gens) {
+    (void) make(parson.parens[0], tier, gens - 1, &parson, 0);
+    (void) make(parson.parens[1], tier, gens - 1, &parson, 1);
+  }
+
+fprintf(stderr, "%s -> %s, %s\n", nom.c_str(), parson.parens[0], parson.parens[1]);
+
+  cholo->generate(parson.knobs, egd->knbbuf);
+
+  for (unsigned int j = 0; j < egd->knblay->n; ++j)
+    egd->knbbuf[j] = sigmoid(egd->knbbuf[j]);
+
+
+  egd->ingenerate();
+
+//egd->inencode();
+//egd->ingenerate();
+
+  //assert(egd->ctrlay->n == Parson::ncontrols);
+  //memcpy(parson.controls, egd->ctrbuf, Parson::ncontrols * sizeof(double));
+
+
+  egd->generate();
+
+//egd->encode();
+//egd->generate();
+
+  assert(egd->tgtlay->n == Parson::dim * Parson::dim * 3);
+  labquant(egd->tgtbuf, Parson::dim * Parson::dim * 3, parson.target);
+
+#if 0
   string imagefn = images[randuint() % images.size()];
   string png = slurp(imagefn);
 
@@ -78,6 +174,7 @@ Parson *Urb::make(const std::string &nom, unsigned int tier) {
   for (auto tag : tags) {
     parson.add_tag(tag.c_str());
   }
+#endif
 
   time_t now = time(NULL);
   parson.creator = 0x7F000001;
@@ -86,8 +183,9 @@ Parson *Urb::make(const std::string &nom, unsigned int tier) {
   parson.revised = now;
   parson.visited = now;
 
-  strcpy(parson.nom, nom.c_str());
-  return this->make(parson, tier);
+  Parson *x = this->make(parson, tier);
+
+  return x;
 }
 
 
@@ -139,7 +237,7 @@ void Urb::restock(unsigned int n, vector<string> *noms) {
     
 
 void Urb::generate(Parson *p, long min_age) {
-  p->generate(pipe1, min_age);
+//  p->generate(pipe1, min_age);
 }
 
 Parson *Urb::find(const std::string &nom, unsigned int *tierp) const {

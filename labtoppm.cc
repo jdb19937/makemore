@@ -11,13 +11,13 @@ int main(int argc, char **argv) {
   unsigned int w = atoi(argv[1]);
   unsigned int h = atoi(argv[2]);
 
-  std::vector<double> v;
+  std::vector<uint8_t> v;
   v.resize(w * h * 3);
-  int ret = fread(v.data(), sizeof(double), w * h * 3, stdin);
+  int ret = fread(v.data(), sizeof(uint8_t), w * h * 3, stdin);
   assert(ret == w * h * 3);
 
   PPM p;
-  p.unvectorize(v, w, h);
+  p.unvectorize(v.data(), w, h);
   p.write(stdout);
   return 0;
 }

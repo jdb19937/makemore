@@ -1051,7 +1051,9 @@ void Pipeline::generate(Parson **parsons, unsigned int nparsons, long min_age) {
     for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
       if (j + mbi < todo.size()) {
         Parson *p = parsons[todo[j + mbi]];
+#if 0
         p->_to_pipe(this, mbi);
+#endif
       }
     }
 
@@ -1063,7 +1065,9 @@ void Pipeline::generate(Parson **parsons, unsigned int nparsons, long min_age) {
     for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
       if (j + mbi < todo.size()) {
         Parson *p = parsons[todo[j + mbi]];
+#if 0
         p->_from_pipe(this, mbi);
+#endif
         p->generated = now;
       }
     }
@@ -1093,7 +1097,9 @@ void Pipeline::burnenc(Parson **parsons, unsigned int nparsons, double nu) {
   for (unsigned int j = 0; j < nparsons; j += mbn) {
     for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
       Parson *p = parsons[j + mbi];
+#if 0
       p->_to_pipe(this, mbi, true);
+#endif
     }
 
     this->burnenc(nu);
@@ -1115,7 +1121,9 @@ void Pipeline::burnencgen(Parson **parsons, unsigned int nparsons, double nu, do
   for (unsigned int j = 0; j < nparsons; j += mbn) {
     for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
       Parson *p = parsons[j + mbi];
+#if 0
       p->_to_pipe(this, mbi, true);
+#endif
     }
 
     this->burn(-1, nu, pi);
@@ -1142,7 +1150,9 @@ void Pipeline::discrim(Parson **parsons, unsigned int nparsons, double yo) {
   for (unsigned int j = 0, batch = 0; j < nparsons; j += mbn, ++batch) {
     for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
       Parson *p = parsons[j + mbi];
+#if 0
       p->_to_pipe(this, mbi, true);
+#endif
     }
 
     if (batch % 2 == 0) {
@@ -1192,7 +1202,9 @@ void Pipeline::burngen(Parson **parsons, unsigned int nparsons, double wu) {
   for (unsigned int j = 0; j < nparsons; j += mbn) {
     for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
       Parson *p = parsons[j + mbi];
+#if 0
       p->_to_pipe(this, mbi, true);
+#endif
     }
 
 #if 1

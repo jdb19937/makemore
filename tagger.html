@@ -1,0 +1,298 @@
+<html>
+<head>
+<script>
+var which;
+var curset = { };
+var tags = { };
+var curtag = '';
+var got_tags = 0;
+
+  var keytab = {
+    'm': 'male',
+    'f': 'female',
+
+    'w': 'white',
+    'b': 'black',
+    'a': 'asian',
+    'h': 'hispanic',
+
+    'a': 'afro',
+    'z': 'dreads',
+
+    'g': 'glasses',
+    'l': 'blonde',
+    'r': 'beard',
+    'u': 'mustache',
+
+    'o': 'old',
+    'y': 'young',
+
+    'e': 'diseased',
+    'i': 'injured',
+    'd': 'dirty',
+
+    'v': 'smiling',
+    'n': 'frowning',
+    't': 'teeth',
+    'q': 'unique',
+  };
+
+function seltag() {
+  var tagbuf = document.getElementById('tagbuf')
+  var val = tagbuf.value;
+  var off = tagbuf.selectionStart;
+  while (off > 0 && val[off - 1] != '\n') {
+    off--;
+  }
+  var end = off;
+  while (end < val.length && val[end] != '\n' && val[end] != ':') {
+    end++;
+  }
+  if (val[off] != '#') {
+    return;
+  }
+
+  // tagbuf.selectionStart = off;
+  // tagbuf.selectionEnd = end;
+
+  curtag = val.substring(off + 1, end);
+  document.getElementById('curtag').innerHTML = curtag
+}
+
+function parsetags() {
+  var tagbuf = document.getElementById('tagbuf');
+  var txt = tagbuf.value;
+  tags = { }
+
+  var tagstrs = txt.split('\n');
+  for (var i in tagstrs) {
+    var tagstr = tagstrs[i];
+    var kv = tagstrs[i].split(':', 2);
+    if (kv.length < 1) {
+      continue;
+    }
+
+    var k = kv[0];
+    if (k[0] != '#') {
+      continue;
+    }
+    k = k.substring(1);
+
+    var v = kv.length < 2 ? "1" : kv[1];
+    tags[k] = v;
+  }
+}
+
+function uptags() {
+  var can = document.getElementById('overlaycan');
+  var ctx = can.getContext('2d');
+  ctx.clearRect(0, 0, can.width, can.height);
+
+  var bufstr = '';
+  for (var tagname in tags) {
+    var tagval = tags[tagname];
+    if (tagval == "1") {
+      bufstr += "#" + tagname + "\n";
+    } else {
+      bufstr += "#" + tagname + ":" + tagval + "\n";
+
+      var xy = tagval.split(',');
+      var x = xy[0] * 2
+      var y = xy[1] * 2
+
+      ctx.strokeStyle = 'blue';
+
+      ctx.beginPath();
+      ctx.moveTo(x - 20, y)
+      ctx.lineTo(x + 20, y)
+      ctx.stroke()
+
+      ctx.beginPath();
+      ctx.moveTo(x, y - 20)
+      ctx.lineTo(x, y + 20)
+      ctx.stroke()
+    }
+  }
+
+  var tagbuf = document.getElementById('tagbuf');
+  tagbuf.value = bufstr;
+}
+
+function reqtags() {
+  var i = new XMLHttpRequest;
+  i.open('GET', '/get_tags.txt?' + which);
+  i.overrideMimeType("text/plain");
+  i.onload = function(e) {
+    if (!(this.readyState == 4 && this.status == 200)) {
+      return;
+    }
+    var txt = this.responseText;
+    txt = txt.substring(0, txt.length - 1);
+    tagbuf.value = txt
+    parsetags()
+    uptags()
+    got_tags = 1;
+    modstatus.innerHTML = 'UNCHANGED';
+  };
+  i.send();
+}
+
+function savetags() {
+  if (!got_tags) {
+    alert("still waiting for tag request");
+    return;
+  }
+
+  var parts = ["i=" + which];
+  for (var tag in tags) {
+    var tagval = tags[tag];
+    parts.push(escape("#" + tag) + "=" + escape(tagval));
+  }
+  var qs = parts.join('&');
+
+  tags = { }
+  var can = document.getElementById('overlaycan');
+  var ctx = can.getContext('2d');
+  ctx.clearRect(0, 0, can.width, can.height);
+  var tagbuf = document.getElementById('tagbuf');
+  tagbuf.value = '';
+  modstatus.value = "<font color=gray>UNLOADED</font>";
+  got_tags = 0;
+
+  var i = new XMLHttpRequest;
+  i.open('GET', '/set_tags.txt?' + qs);
+  i.overrideMimeType("text/plain");
+  i.onload = function(e) {
+    if (!(this.readyState == 4 && this.status == 200)) {
+      return;
+    }
+    var txt = this.responseText;
+    tagbuf.value = txt
+    parsetags()
+    uptags()
+    got_tags = 1;
+    modstatus.innerHTML = '<font color=green>SAVED</font>'
+
+    if (autonext.checked) {
+      ++which;
+      fresh();
+    }
+  };
+  i.send()
+}
+
+function fresh() {
+  var can = document.getElementById('overlaycan');
+  var ctx = can.getContext('2d');
+  ctx.clearRect(0, 0, can.width, can.height);
+  tags = { };
+  var tagbuf = document.getElementById('tagbuf');
+  tagbuf.value = '';
+  got_tags = 0;
+  modstatus.value = "<font color=gray>UNLOADED</font>";
+
+  document.getElementById('pic').src = '/pic.png?' + which;
+  var obj = { Title: which, Url: "/tagger.html?" + which };
+  history.pushState(obj, obj.Title, obj.Url);
+  reqtags()
+}
+
+function onl() {
+//  document.body.style.cursor = 'crosshair';
+  which = window.location.search;
+  which = which.substr(1)
+  fresh();
+
+  var str = '<table border=1 cellpadding=4>'
+  var ftab = {
+    's': 'save',
+    '4': 'prev',
+    '6': 'next',
+  };
+  for (var k in ftab) {
+    var t = ftab[k];
+    str += '<tr><td>' + k + '</td><td>' + t + '</td></tr>\n';
+  }
+  for (var k in keytab) {
+    var t = keytab[k];
+    str += '<tr><td>' + k + '</td><td>#' + t + '</td></tr>\n';
+  }
+
+  str += "</table>\n";
+  legend.innerHTML = str
+}
+
+function tog(k) {
+  if (tags[k]) {
+    delete tags[k];
+  } else {
+    tags[k] = "1";
+  }
+}
+
+function onk(e) {
+  if (document.activeElement == document.getElementById('tagbuf')) {
+    return;
+  }
+
+  var k = e.key;
+  if (k == 's') { savetags(); }
+  if (k == '6') { ++which; fresh(); return; }
+  if (k == '4') { --which; fresh(); return; }
+
+
+  var n = 0;
+  if (keytab[k]) {
+    tog(keytab[k]);
+    ++n;
+  }
+
+  if (n) {
+    uptags();
+    chtags();
+  }
+}
+
+function chtags() {
+  modstatus.innerHTML = '<font color=red>MODIFIED</font>'
+  if (autosave.checked) {
+    savetags();
+  }
+}
+
+function onc(event) {
+  var x = Math.floor(event.offsetX / 2);
+  var y = Math.floor(event.offsetY / 2);
+  // var s = event.shiftKey ? 1 : 0;
+
+  if (curtag == '') {
+    return;
+  }
+
+  tags[curtag] = x + "," + y;
+  uptags()
+}
+
+</script>
+</head>
+
+<body onload="onl()" onkeypress="onk(event)">
+<table><tr valign=top><td>
+<div border=0 id="overlay" style="position: absolute; width: 800; height: 800; z-index: 100" onclick="onc(event); chtags()">
+<canvas border=0 id=overlaycan width=800 height=800></canvas>
+</div><img border=0 id=pic width=800 height=800>
+
+</td><td>
+<textarea style='font-size: x-large' onfocus="modstatus.innerHTML='<font color=blue>EDITING</font>'" onchange="parsetags(); seltag(); chtags()" oninput="parsetags(); seltag()" onclick='seltag()' id=tagbuf rows=24 cols=60></textarea>
+<br/>
+<span style='font-size: xx-large' id=modstatus><font color="gray">UNLOADED</font></span>
+<br/><span style='font-size: xx-large' id="curtag"></span>
+</td></tr></table>
+<hr/>
+<input type=button value=save onclick="savetags()"><br/>
+<input type=checkbox id=autosave> autosave<br/>
+<input type=checkbox id=autonext> autonext<br/>
+<br/><br/><br/>
+<span id="legend"></span>
+</body>
+</html>

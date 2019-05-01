@@ -35,6 +35,7 @@ struct Layout : Persist {
   ~Layout();
 
   static Layout *new_square_grid(unsigned int dim, double s = 1.0, unsigned int chan = 1);
+  static Layout *new_rect(unsigned int w, unsigned int h, unsigned int c);
   static Layout *new_square_random(unsigned int n, double s = 1.0);
   static Layout *new_square_center(unsigned int n, double s = 1.0);
   static Layout *new_text(unsigned int chan = 4);

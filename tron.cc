@@ -21,6 +21,18 @@ void Tron::target(const double *tgt, bool do_update_stats, int errsignif) {
     update_stats(errsignif);
 }
 
+void Tron::target_bce(const double *tgt, bool do_update_stats, int errsignif) {
+  const double *out = output();
+  double *fout = foutput();
+
+  if (do_update_stats) {
+    cusubvec(tgt, out, outn, fout);
+    update_stats(errsignif);
+  }
+
+  cubcevec(tgt, out, outn, fout);
+}
+
 void Tron::reset_stats() {
   rounds = 0;
   err2 = 0;

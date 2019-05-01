@@ -27,7 +27,8 @@ struct Wiring {
     const Layout *_inl,
     const Layout *_outl,
     unsigned int minv = 0,
-    unsigned int maxv = 65536
+    unsigned int maxv = 65536,
+    bool reflect = false
   );
  
   void load(FILE *fp);

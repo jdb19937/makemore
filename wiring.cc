@@ -23,7 +23,7 @@ Wiring::~Wiring() {
 
 }
 
-void Wiring::wireup(const Layout *inl, const Layout *outl, unsigned int minv, unsigned int maxv) {
+void Wiring::wireup(const Layout *inl, const Layout *outl, unsigned int minv, unsigned int maxv, bool reflect) {
   inn = inl->n;
   outn = outl->n;
 
@@ -37,6 +37,7 @@ void Wiring::wireup(const Layout *inl, const Layout *outl, unsigned int minv, un
   wn = 0;
 
   for (unsigned int outi = 0; outi < outn; ++outi) {
+//fprintf(stderr, "wireup %u/%u\n", outi, outn);
     multimap<double, unsigned int> dini;
     for (unsigned int ini = 0; ini < inn; ++ini) {
       double dx = outx[outi] - inx[ini];
@@ -48,7 +49,21 @@ void Wiring::wireup(const Layout *inl, const Layout *outl, unsigned int minv, un
       if (inr)
         d -= outr[outi];
 
+if (d < 0)
       dini.insert(make_pair(d, ini));
+
+
+      if (reflect) {
+        dx = outx[outi] - (0.5 - inx[ini]);
+        d = sqrt(dx * dx + dy * dy);
+
+        if (inr)
+          d -= inr[ini];
+        if (inr)
+          d -= outr[outi];
+if (d < 0)
+        dini.insert(make_pair(d, ini));
+      }
     }
 
      auto q = dini.begin();
@@ -59,10 +74,12 @@ void Wiring::wireup(const Layout *inl, const Layout *outl, unsigned int minv, un
        connected.push_back(make_pair(ini, outi));
        ++wn;
        ++q;
+       ++j;
      }
   }
 
   sort(connected.begin(),connected.end());
+  unique(connected.begin(), connected.end());
 
   std::vector<unsigned int> fanout, fanin;
   fanout.resize(inn);

@@ -14,7 +14,7 @@ namespace makemore {
 typedef std::vector<std::string> strvec;
 typedef std::list<strvec> strmat;
 
-extern void split(const char *str, char sep, strvec *words);
+extern void split(const std::string &str, char sep, strvec *words);
 
 extern void splitparts(const std::string &str, strvec *parts);
 extern void splitwords(const std::string &str, strvec *words);
@@ -56,11 +56,26 @@ inline void slurp(FILE *fp, std::string *str) {
   *str = "";
 
   while (1) {
-    ret = fread(buf, 1, 1024, fp);
+    ret = ::fread(buf, 1, 1024, fp);
     if (ret < 1)
       return;
     *str += std::string(buf, ret);
   }
+}
+
+inline void spit(const std::string &str, FILE *fp) {
+  size_t ret;
+  ret = ::fwrite(str.data(), 1, str.length(), fp);
+  assert(ret == str.length());
+}
+
+inline void spit(const std::string &str, const std::string &fn) {
+  FILE *fp;
+  assert(fp = ::fopen((fn + ".tmp").c_str(), "w"));
+  spit(str, fp);
+  ::fclose(fp);
+  int ret = ::rename((fn + ".tmp").c_str(), fn.c_str());
+  assert(ret == 0);
 }
 
 inline std::string slurp(FILE *fp) {
@@ -155,6 +170,12 @@ template <class T> unsigned int listerase(std::list<T> &xl, const T &x) {
   }
   return erased;
 }
+
+std::string base64_encode(const uint8_t * , unsigned int len);
+std::string base64_decode(const std::string &s);
+
+void cgiparse(const std::string &cgistr, std::map<std::string, std::string> *cgimap);
+std::string urldeode(const std::string &str);
 
 }
 

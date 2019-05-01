@@ -37,7 +37,7 @@ Judge::Judge(const char *_dir, unsigned int _mbn) : Project(_dir, _mbn) {
   sprintf(dismapfn, "%s/dis.map", _dir);
   distop = new Topology;
   distop->load_file(distopfn);
-  dis = new Multitron(*distop, mbn, dismapfn);
+//  dis = new Multitron(*distop, mbn, dismapfn);
 
   cumake(&cudistgt, dis->outn);
   cumake(&cudisin, dis->inn);
@@ -92,11 +92,11 @@ void Judge::burn(double yo, double *modtgtbuf, bool update_stats) {
 }
 
 void Judge::save() {
-  dis->sync(1);
+//  dis->sync(1);
 }
 
 void Judge::load() {
-  dis->sync(0);
+//  dis->sync(0);
 }
 
 void Judge::report(const char *prog, FILE *outfp) {

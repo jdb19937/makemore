@@ -16,6 +16,7 @@
 #include "server.hh"
 #include "urbite.hh"
 #include "strutils.hh"
+#include "imgutils.hh"
 #include "process.hh"
 
 namespace makemore {
@@ -35,6 +36,7 @@ Agent::Agent(class Server *_server, int _s, uint32_t _ip, bool _secure) {
   ip = _ip;
   ipstr = _ipstr(ip);
   secure = _secure;
+  active = time(NULL);
 
   inbufj = 0;
   inbufk = 0;
@@ -290,6 +292,7 @@ bool Agent::write(const string &str) {
   } else {
     ret = ::write(s, str.data(), str.length());
   }
+fprintf(stderr, "here ret=%ld len=%ld\n", ret, str.length());
   if (ret == str.length())
     return true;
   if (ret < 1) {
@@ -492,5 +495,434 @@ void Agent::command(const strvec &words) {
   }
 }
 #endif
+
+static std::string htmlp(const std::string &nom, unsigned int dim) {
+  char buf[4096];
+  sprintf(buf, 
+    "<a href='/%s'><img width='%u' height='%u' style='image-rendering: pixelated' src='%s.png'/></a>",
+    nom.c_str(), dim, dim, nom.c_str()
+  );
+  return buf;
+}
+
+void Agent::handle_http() {
+  std::string req = httpbuf[0];
+  strvec reqwords;
+  splitwords(req, &reqwords);
+
+fprintf(stderr, "req=[%s]\n", req.c_str());
+  if (reqwords[0] != "GET") {
+    this->close();
+    return;
+  }
+
+  std::string path = reqwords[1];
+  if (path[0] != '/') {
+    this->close();
+    return;
+  }
+
+  std::string query;
+  if (const char *p = strchr(path.c_str(), '?')) {
+    query = p + 1;
+    path = std::string(path.c_str(), p - path.c_str());
+  }
+
+#if 0
+  if (path == "/") {
+    std::string fn = server->urb->dir + "/index.html";
+    std::string html = makemore::slurp(fn);
+    
+    this->printf("HTTP/1.1 200 OK\r\n");
+    this->printf("Connection: keep-alive\r\n");
+    this->printf("Content-Type: text/html\r\n");
+    this->printf("Content-Length: %lu\r\n", html.length());
+    this->printf("\r\n");
+    this->write(html);
+    return;
+  }
+#endif
+
+  if (path == "/test.png") {
+    std::string png = makemore::slurp("test.png");
+
+    this->printf("HTTP/1.1 200 OK\r\n");
+    this->printf("Connection: keep-alive\r\n");
+    this->printf("Content-Type: image/png\r\n");
+    this->printf("Content-Length: %lu\r\n", png.length());
+    this->printf("\r\n");
+    this->write(png);
+    return;
+  }
+
+  if (path == "/pic.png") {
+    int which = atoi(query.c_str());
+
+    if (which < 0) {
+      this->printf("HTTP/1.1 404 Not Found\r\n");
+      this->printf("Connection: keep-alive\r\n");
+      this->printf("Content-Type: text/plain\r\n");
+      this->printf("Content-Length: 0\r\n");
+      this->printf("\r\n");
+      return;
+    }
+
+    which %= server->urb->srcimages.size();
+    string imagefn = server->urb->srcimages[which];
+    string png = makemore::slurp(imagefn);
+
+    this->printf("HTTP/1.1 200 OK\r\n");
+    this->printf("Connection: keep-alive\r\n");
+    this->printf("Content-Type: image/png\r\n");
+    this->printf("Content-Length: %lu\r\n", png.length());
+    this->printf("\r\n");
+    this->write(png);
+    return;
+  }
+
+  if (path == "/set_tags.txt") {
+    map<string, string> cgi;
+    cgiparse(query, &cgi);
+
+    int which = -1;
+    set<string> seen;
+    strvec new_tags;
+    for (auto kv : cgi) {
+      const std::string &k = kv.first;
+      if (seen.count(k))
+        continue;
+      seen.insert(k);
+
+      const string &v = kv.second;
+      if (k == "i") {
+        which = atoi(v.c_str());
+        continue;
+      }
+
+      if (k[0] == '#') {
+        string nk = k.c_str() + 1;
+        if (v == "1") {
+          new_tags.push_back(nk);
+        } else {
+          new_tags.push_back(nk + ":" + v);
+        }
+      }
+    }
+
+    if (which < 0) {
+      this->printf("HTTP/1.1 404 Not Found\r\n");
+      this->printf("Connection: keep-alive\r\n");
+      this->printf("Content-Type: text/plain\r\n");
+      this->printf("Content-Length: 0\r\n");
+      this->printf("\r\n");
+      return;
+    }
+
+    which %= server->urb->srcimages.size();
+    string imagefn = server->urb->srcimages[which];
+    string png = makemore::slurp(imagefn);
+
+    unsigned int w = 400, h = 400;
+    uint8_t *tmp = new uint8_t[w * h * 3];
+    pngrgb(png, w, h, tmp);
+    png = "";
+    rgbpng(tmp, w, h, &png, &new_tags);
+    new_tags.clear();
+    pngrgb(png, w, h, tmp, &new_tags);
+    delete[] tmp;
+
+    std::string txt;
+    for (auto tag : new_tags) {
+      txt += std::string("#") + tag + "\n";
+    }
+    makemore::spit(png, imagefn);
+
+    this->printf("HTTP/1.1 200 OK\r\n");
+    this->printf("Connection: keep-alive\r\n");
+    this->printf("Content-Type: text/plain\r\n");
+    this->printf("Content-Length: %lu\r\n", txt.length());
+    this->printf("\r\n");
+    this->write(txt);
+    return;
+  }
+
+  if (path == "/get_tags.txt") {
+    int which = atoi(query.c_str());
+    if (which < 0) {
+      this->printf("HTTP/1.1 404 Not Found\r\n");
+      this->printf("Connection: keep-alive\r\n");
+      this->printf("Content-Type: text/plain\r\n");
+      this->printf("Content-Length: 0\r\n");
+      this->printf("\r\n");
+      return;
+    }
+
+    which %= server->urb->srcimages.size();
+    string imagefn = server->urb->srcimages[which];
+    string png = makemore::slurp(imagefn);
+
+    vector<string> tags;
+
+    unsigned int w = 400, h = 400;
+    uint8_t *tmp = new uint8_t[w * h * 3];
+    pngrgb(png, w, h, tmp, &tags);
+    delete[] tmp;
+
+    std::string txt;
+    for (auto tag : tags) {
+      txt += std::string("#") + tag + "\n";
+    }
+
+    this->printf("HTTP/1.1 200 OK\r\n");
+    this->printf("Connection: keep-alive\r\n");
+    this->printf("Content-Type: text/plain\r\n");
+    this->printf("Content-Length: %lu\r\n", txt.length());
+    this->printf("\r\n");
+    this->write(txt);
+    return;
+  }
+
+
+  if (path == "/tagseg.png") {
+static FILE *tagfp = fopen("tags.tsv", "a");
+    unsigned int which = atoi(query.c_str()) % server->urb->srcimages.size();
+    string imagefn = server->urb->srcimages[which];
+    string png0 = makemore::slurp(imagefn);
+    unsigned int w = 400, h = 400;
+    uint8_t *tmp = new uint8_t[w * h * 3];
+    static double *tmpd = new double[w * h * 3];
+    vector<string> tags;
+
+if (1) {
+static std::vector<int*> samp;
+    if (const char *p = strchr(query.c_str(), '&')) {
+
+      int x = -1, y = -1, s = -1, r;
+      sscanf(p, "&%d&%d&%d&%d", &x, &y, &s, &r);
+      if (x >= 0 && y >= 0 && s >= 0 && x < w && y < h) {
+        int *sam = new int[3];
+        sam[0] = which;
+        sam[1] = x; sam[2] = y;
+        samp.push_back(sam);
+assert(tagfp);
+fprintf(tagfp, "%s\t%d\t%d\n", server->urb->srcimages[which].c_str(), x, y);
+fflush(tagfp);
+      }
+
+      for (unsigned int j = 0; j < 0; ++j) {
+        unsigned int k = randuint() % samp.size();
+        int *sam = samp[k];
+assert(sam[0] < server->urb->srcimages.size());
+        string imagefn = server->urb->srcimages[sam[0]];
+        string png0 = makemore::slurp(imagefn);
+        pnglab(png0, w, h, tmp, &tags);
+        labdequant(tmp, w * h * 3, tmpd);
+        encude(tmpd, w * h * 3, server->urb->egd->cusegin);
+assert(server->urb->egd->seg->inn == w * h * 3);
+assert(server->urb->egd->seginlay->n == w * h * 3);
+ 
+        server->urb->egd->segment();
+        server->urb->egd->segbuf[0] = (double)sam[1] / (double)w;
+        server->urb->egd->segbuf[1] = (double)sam[2] / (double)h;
+
+assert(server->urb->egd->segoutlay->n == 2);
+assert(server->urb->egd->seg->outn == 2);
+
+        encude(server->urb->egd->segbuf, 2, server->urb->egd->cusegtgt);
+        server->urb->egd->seg->target(server->urb->egd->cusegtgt);
+        server->urb->egd->seg->train(0.01);
+      }
+    }
+}
+
+server->urb->egd->segmap->load();
+    pnglab(png0, w, h, tmp, &tags);
+    labdequant(tmp, w * h * 3, tmpd);
+    encude(tmpd, w * h * 3, server->urb->egd->cusegin);
+    server->urb->egd->segment();
+    
+    int px = (int)((double)w * server->urb->egd->segbuf[0]);
+    int py = (int)((double)h * server->urb->egd->segbuf[1]);
+    if (px < 0) px = 0; if (px >= w) px = w - 1;
+    if (py < 0) py = 0; if (py >= h) py = h - 1;
+fprintf(stderr, "px=%d py=%d\n", px, py);
+    tmpd[1 + 3 * w * py + 3 * px] = 1.0;
+    tmpd[2 + 3 * w * py + 3 * px] = 1.0;
+
+    string png;
+    labquant(tmpd, w * h * 3, tmp);
+    labpng(tmp, w, h, &png);
+
+    this->printf("HTTP/1.1 200 OK\r\n");
+    this->printf("Connection: keep-alive\r\n");
+    this->printf("Content-Type: image/png\r\n");
+    this->printf("Content-Length: %lu\r\n", png.length());
+    this->printf("\r\n");
+    this->write(png);
+    return;
+  }
+
+
+  if (path == "/tagenc.png") {
+    unsigned int which = atoi(query.c_str());
+    string imagefn = server->urb->images[which % server->urb->images.size()];
+    string png0 = makemore::slurp(imagefn);
+    uint8_t tmp[64 * 64 * 3];
+
+    vector<string> tags;
+    pnglab(png0, 64, 64, tmp, &tags);
+    labdequant(tmp, 64 * 64 * 3, server->urb->egd->tgtbuf);
+
+    server->urb->egd->encode();
+    server->urb->egd->generate();
+
+    std::string png;
+    labquant(server->urb->egd->tgtbuf, 64 * 64 * 3, tmp);
+    labpng(tmp, Parson::dim, Parson::dim, &png);
+
+    this->printf("HTTP/1.1 200 OK\r\n");
+    this->printf("Connection: keep-alive\r\n");
+    this->printf("Content-Type: image/png\r\n");
+    this->printf("Content-Length: %lu\r\n", png.length());
+    this->printf("\r\n");
+    this->write(png);
+    return;
+  }
+
+  if (path == "/tagraw.png") {
+    unsigned int which = atoi(query.c_str());
+    string imagefn = server->urb->images[which % server->urb->images.size()];
+    string png = makemore::slurp(imagefn);
+
+    // pnglab(png, 64, 64, parson.target, &tags);
+    // for (auto tag : tags) {
+    //   parson.add_tag(tag.c_str());
+    // }
+
+    this->printf("HTTP/1.1 200 OK\r\n");
+    this->printf("Connection: keep-alive\r\n");
+    this->printf("Content-Type: image/png\r\n");
+    this->printf("Content-Length: %lu\r\n", png.length());
+    this->printf("\r\n");
+    this->write(png);
+    return;
+  }
+
+  if (path == "/tagger.html" || path == "/cam.html") {
+    std::string html = makemore::slurp(path.c_str() + 1);
+
+    this->printf("HTTP/1.1 200 OK\r\n");
+    this->printf("Connection: keep-alive\r\n");
+    this->printf("Content-Type: text/html\r\n");
+    this->printf("Content-Length: %lu\r\n", html.length());
+    this->printf("\r\n");
+    this->write(html);
+    return;
+  }
+
+  if (path == "/favicon.ico") {
+    std::string fn = server->urb->dir + "/favicon.ico";
+    std::string favicon = makemore::slurp(fn);
+    
+    this->printf("HTTP/1.1 200 OK\r\n");
+    this->printf("Connection: keep-alive\r\n");
+    this->printf("Content-Type: image/x-icon\r\n");
+    this->printf("Content-Length: %lu\r\n", favicon.length());
+    this->printf("\r\n");
+    this->write(favicon);
+    return;
+  }
+
+  std::string nom;
+  if (path == "/") {
+    nom = Parson::gen_nom();
+    this->printf("HTTP/1.1 302 Redirect\r\n");
+    this->printf("Connection: keep-alive\r\n");
+    this->printf("Content-Type: text/plain\r\n");
+    this->printf("Content-Length: 0\r\n");
+    this->printf("Location: /%s\r\n", nom.c_str());
+    this->printf("\r\n", nom.c_str());
+    return;
+  }
+
+  nom = path.c_str() + 1;
+  bool is_png = false;
+  if (nom.length() > 4 && !strcmp(nom.c_str() + nom.length() - 4, ".png")) {
+    nom = std::string(nom.c_str(), nom.length() - 4);
+    is_png = true;
+  }
+
+//fprintf(stderr, "nom=[%s] is_png=%d\n", 
+
+  if (!Parson::valid_nom(nom)) {
+    this->printf("HTTP/1.1 404 Not Found\r\n");
+    this->printf("Connection: keep-alive\r\n");
+    this->printf("Content-Type: text/plain\r\n");
+    this->printf("Content-Length: 0\r\n");
+    this->printf("\r\n");
+    return;
+  }
+
+  if (is_png) {
+    Parson *parson = server->urb->make(nom, 0);
+
+    std::string png;
+    labpng(parson->target, Parson::dim, Parson::dim, &png);
+    
+    this->printf("HTTP/1.1 200 OK\r\n");
+    this->printf("Connection: keep-alive\r\n");
+    this->printf("Content-Type: image/png\r\n");
+    this->printf("Content-Length: %lu\r\n", png.length());
+    this->printf("\r\n");
+    this->write(png);
+    return;
+  }
+
+  {
+    Parson *parson = server->urb->make(nom, 0, 2);
+    assert(parson);
+
+    Parson *paren0 = server->urb->make(parson->parens[0], 0);
+fprintf(stderr, "paren0=%s\n", parson->parens[0]);
+    assert(paren0);
+    Parson *paren1 = server->urb->make(parson->parens[1], 0);
+    assert(paren1);
+
+    std::string htmlbuf;
+    htmlbuf += std::string("<html><head>");
+    htmlbuf += std::string("<title>") + nom + "</title>";
+
+    htmlbuf += "<meta property='og:title' content='" + nom + "'>";
+    htmlbuf += "<meta property='og:description' content='" + nom + "'>";
+    htmlbuf += "<meta property='og:image' content='https://peaple.io/" + nom + ".png'>";
+    htmlbuf += "<meta property='og:image:type' content='image/png'>";
+    htmlbuf += "<meta property='og:image:width' content='64'>";
+    htmlbuf += "<meta property='og:image:height' content='64'>";
+    htmlbuf += "<meta property='og:url' content='https://peaple.io/" + nom + "'>";
+    htmlbuf += "<meta property='og:type' content='article'>";
+
+    htmlbuf += "</head><body bgcolor='#000000'><center>";
+
+    htmlbuf += htmlp(paren0->parens[0], 128);
+    htmlbuf += htmlp(paren0->parens[1], 128);
+    htmlbuf += htmlp(paren1->parens[0], 128);
+    htmlbuf += htmlp(paren1->parens[1], 128);
+    htmlbuf += "<br>";
+    htmlbuf += htmlp(paren0->nom, 256);
+    htmlbuf += htmlp(paren1->nom, 256);
+    htmlbuf += "<br>";
+    htmlbuf += htmlp(parson->nom, 512);
+    htmlbuf += "</center></body></html>\n";
+
+    this->printf("HTTP/1.1 200 OK\r\n");
+    this->printf("Connection: keep-alive\r\n");
+    this->printf("Content-Type: text/html\r\n");
+    this->printf("Content-Length: %u\r\n", htmlbuf.length());
+    this->printf("\r\n");
+    this->write(htmlbuf);
+
+    return;
+  }
+}
 
 }

@@ -23,14 +23,14 @@ struct Tron {
     outn = 0;
     err2 = 0;
     errm = 0;
-    errdecay = 0.001;
+    errdecay = 0.01;
     rounds = 0;
   }
 
   Tron(unsigned int _inn, unsigned int _outn) : inn(_inn), outn(_outn) {
     err2 = 0;
     errm = 0;
-    errdecay = 0.001;
+    errdecay = 0.01;
     rounds = 0;
   }
 
@@ -47,6 +47,7 @@ struct Tron {
   }
 
   virtual void target(const double *tgt, bool do_update_stats = true, int errsignif = -1);
+  virtual void target_bce(const double *tgt, bool do_update_stats = true, int errsignif = -1);
   virtual void update_stats(int errsignif = -1);
   virtual void reset_stats();
 
@@ -54,7 +55,7 @@ struct Tron {
   virtual const double *output() = 0;
   virtual double *foutput() = 0;
 
-  virtual void sync(double t) { }
+  virtual void randomize(double disp) { assert(0); }
 };
 
 struct Compositron : Tron {
@@ -80,11 +81,6 @@ struct Compositron : Tron {
   virtual const double *output() { return b->output(); }
   virtual const double *input() { return a->input(); }
   virtual double *foutput() { return b->foutput(); }
-
-  virtual void sync(double t) {
-    a->sync(t);
-    b->sync(t);
-  }
 };
 
 inline Compositron *compositron(Tron *f, Tron *g) {

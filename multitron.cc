@@ -9,56 +9,44 @@
 #include <sys/types.h>
 #include <fcntl.h>
 
+#include <vector>
+
 #include "topology.hh"
 #include "multitron.hh"
-#include <vector>
+#include "mapfile.hh"
+#include "normatron.hh"
 
 namespace makemore {
 
-Multitron::Multitron(const Topology &top, unsigned int _mbn, const char *mapfn) : Tron(0, 0) {
-  unsigned int twn = top.nweights;
-  map_size = ((twn * sizeof(double)) + 4095) & ~4095;
-  fd = -1;
+Multitron::Multitron(const Topology &top, Mapfile *_mapfile, unsigned int _mbn, bool activated, bool normalized) : Tron(0, 0) {
+  mapfile = _mapfile;
+  assert(mapfile);
 
-  if (mapfn) {
-    fd = ::open(mapfn, O_RDWR | O_CREAT, 0777);
-    if (fd < 0) {
-      fprintf(stderr, "%s: %s\n", mapfn, strerror(errno));
-      assert(!(fd < 0));
-    }
-
-    int ret = ::ftruncate(fd, twn * sizeof(double));
-    assert(ret == 0);
-
-    map = (double *)::mmap(NULL, map_size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
-  } else {
-    map = (double *)::mmap(NULL, map_size, PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0);
-  }
-
-  assert(map != MAP_FAILED);
-  assert(map);
+  mbn = _mbn;
 
   const std::vector<Wiring*>& wirings = top.wirings;
   assert(wirings.begin() != wirings.end());
 
-  mbn = _mbn;
-
-  megatrons.clear();
-  double *wb = map;
+  trons.clear();
   Megatron *prev = NULL;
   for (auto wi = wirings.begin(); wi != wirings.end(); ++wi) {
-    Megatron *mt = new Megatron(*wi, wb, mbn);
-    megatrons.push_back(mt);
-    wb += mt->wn;
+    Megatron *mt = new Megatron(*wi, mapfile, mbn);
+    trons.push_back(mt);
 
     if (prev)
       assert(mt->inn == prev->outn);
     prev = mt;
   }
-  assert(map + twn == wb);
 
-  mt0 = megatrons[0];
-  mt1 = megatrons[megatrons.size() - 1];
+  prev->activated = activated;
+  if (normalized) {
+    Normatron *t = new Normatron(mapfile, prev->outrn, mbn);
+    assert(t->inn == prev->outn);
+    trons.push_back(t);
+  }
+
+  mt0 = trons[0];
+  mt1 = trons[trons.size() - 1];
 
   inrn = (*wirings.begin())->inn;
   outrn = (*wirings.rbegin())->outn;
@@ -70,34 +58,28 @@ Multitron::Multitron(const Topology &top, unsigned int _mbn, const char *mapfn) 
   assert(mt1->outn == outn);
 }
 
-void Multitron::randomize(double dispa, double dispb) {
-  assert(megatrons.size() > 0);
-  double disp = dispa;
-  double ddisp = (dispb - dispa) / megatrons.size();
+void Multitron::randomize(double dispersion) {
+  assert(trons.size() > 0);
 
-  for (auto ti = megatrons.begin(); ti != megatrons.end(); ++ti) {
-    (*ti)->randomize(disp);
-    disp += ddisp;
+  for (auto ti = trons.begin(); ti != trons.end(); ++ti) {
+    (*ti)->randomize(dispersion);
   }
 }
 
 Multitron::~Multitron() {
-  for (auto ti = megatrons.begin(); ti != megatrons.end(); ++ti)
+  for (auto ti = trons.begin(); ti != trons.end(); ++ti)
     delete *ti;
-  ::munmap(map, map_size);
-  if (fd >= 0)
-    ::close(fd);
 }
 
 
 const double *Multitron::feed(const double *in, double *fin) {
-  auto mi = megatrons.begin();
-  assert(mi != megatrons.end());
+  auto mi = trons.begin();
+  assert(mi != trons.end());
   const double *out = (*mi)->feed(in, fin);
   double *fout = (*mi)->foutput();
 
   ++mi;
-  while (mi != megatrons.end()) {
+  while (mi != trons.end()) {
     out = (*mi)->feed(out, fout);
     fout = (*mi)->foutput();
     ++mi;
@@ -107,14 +89,8 @@ const double *Multitron::feed(const double *in, double *fin) {
 }
 
 void Multitron::train(double nu) {
-  for (int i = megatrons.size() - 1; i >= 0; --i) {
-    megatrons[i]->train(nu);
-  }
-}
-
-void Multitron::sync(double t) {
-  for (int i = 0; i < megatrons.size(); ++i) {
-    megatrons[i]->sync(t);
+  for (int i = trons.size() - 1; i >= 0; --i) {
+    trons[i]->train(nu);
   }
 }
 

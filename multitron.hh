@@ -15,15 +15,12 @@ struct Multitron : Tron {
   unsigned int mbn;
   unsigned int inrn, outrn;
 
-  std::vector<Megatron*> megatrons;
-  Megatron *mt0, *mt1;
+  std::vector<Tron*> trons;
+  Tron *mt0, *mt1;
 
-  int fd;
-  const char *fn;
-  size_t map_size;
-  double *map;
+  class Mapfile *mapfile;
 
-  Multitron(const Topology &top, unsigned int _mbn = 1, const char *fn = NULL);
+  Multitron(const Topology &top, class Mapfile *_mapfile, unsigned int _mbn = 1, bool activated = false, bool normalized = false);
   virtual ~Multitron();
 
   virtual const double *feed(const double *_in, double *_fin);
@@ -36,11 +33,8 @@ struct Multitron : Tron {
   virtual double *foutput()
     { return mt1->foutput(); }
 
-  virtual void sync(double t);
-
-
   void _makemaps();
-  void randomize(double dispa, double dispb);
+  virtual void randomize(double dispersion);
 };
 
 }

@@ -70,7 +70,26 @@ bool Parson::valid_nom(const char *nom) {
 }
 
 bool Parson::valid_tag(const char *tag) {
-  return valid_nom(tag);
+  if (strlen(tag) > 31)
+    return false;
+  if (!tag[0])
+    return false;
+
+  for (unsigned int i = 0; i < 32; ++i) {
+    if (!tag[i])
+      break;
+    if (!(
+      tag[i] >= 'a' && tag[i] <= 'z' ||
+      tag[i] == ':' ||
+      tag[i] == ',' ||
+      tag[i] == '.' ||
+      tag[i] == '_' ||
+      tag[i] >= '0' && tag[i] <= '9'
+    )) {
+      return false;
+    }
+  }
+  return true;
 }
 
 void Parson::set_pass(const std::string &password) {
@@ -329,6 +348,7 @@ void Parson::set_parens(const char *anom, const char *bnom) {
   strcpy(parens[1], bnom);
 }
 
+#if 0
 void Parson::initialize(const char *_nom, double mean, double dev) {
   assert(valid_nom(_nom));
   if (!strcmp(nom, _nom)) {
@@ -371,7 +391,9 @@ void Parson::initialize(const char *_nom, double mean, double dev) {
 
   seedrand();
 }
+#endif
 
+#if 0
 void Parson::_from_pipe(Pipeline *pipe, unsigned int mbi) {
   assert(mbi < pipe->mbn);
   assert(pipe->ctrlay->n == ncontrols);
@@ -401,13 +423,13 @@ void Parson::_to_pipe(Pipeline *pipe, unsigned int mbi, bool ex) {
 
   memcpy(pipe->ctxbuf + mbi * hashlen, &ph, hashlen * sizeof(double));
   btodv(target, pipe->outbuf + mbi * dd3, dd3);
-
 }
 
 void Parson::generate(Pipeline *pipe, long min_age) {
   Parson *me = this;
   pipe->generate(&me, 1, min_age);
 }
+#endif
 
 void Parson::paste_target(PPM *ppm, unsigned int x0, unsigned int y0) {
   assert(x0 + dim <= ppm->w);

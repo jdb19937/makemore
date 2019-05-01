@@ -15,7 +15,7 @@ struct Project {
   std::map<std::string, std::string> config;
   unsigned int mbn;
 
-  Project(const char *_dir, unsigned int _mbn = 1);
+  Project(const std::string &_dir, unsigned int _mbn = 1);
 };
 
 }

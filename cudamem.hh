@@ -60,6 +60,66 @@ extern void cufocus(double *a, const double *x, const double *y, unsigned int n)
 
 extern void cutwiddle3(const double *z, unsigned int w, unsigned int h, double *lo, double *hi);
 
+extern void cucovariance(
+  const double *m,
+  unsigned int rows, unsigned int cols,
+  double *c
+);
+
+extern void cuupcovariance(
+  const double *m,
+  unsigned int rows, unsigned int cols,
+  unsigned int n,
+  unsigned int steps,
+  double *c
+);
+
+extern void cuupmeanexp(
+  const double *m,
+  unsigned int cols,
+  double decay,
+  double *c
+);
+extern void cuupmean(
+  const double *m,
+  unsigned int rows, unsigned int cols,
+  unsigned int n,
+  double *c
+);
+extern void cuupvarexp(
+  const double *m,
+  const double *mean,
+  unsigned int cols,
+  double decay,
+  double *c
+);
+
+extern void cuupvariance(
+  const double *m,
+  unsigned int rows, unsigned int cols,
+  unsigned int n,
+  double *c
+);
+
+extern void cuchol(
+  double *m, unsigned int rows
+);
+
+extern void cumatxvec(
+  const double *m, const double *x, unsigned int w, unsigned int h, double *y
+);
+extern void cutmatxvec(
+  const double *m, const double *x, unsigned int w, unsigned int h, double *y
+);
+
+extern void cumuld(const double *a, const double b, unsigned int n, double *c);
+extern void cumulvec(const double *a, const double *b, unsigned int n, double *c);
+extern void cubcevec(const double *a, const double *b, unsigned int n, double *c);
+extern void cumulsqrtvec(const double *a, const double *b, unsigned int n, double *c);
+extern void cudivsqrtvec(const double *a, const double *b, unsigned int n, double *c);
+
+
+extern void cumatxpose(const double *m, unsigned int w, unsigned int h, double *u);
 };
 
 #endif

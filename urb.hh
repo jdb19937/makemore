@@ -10,6 +10,9 @@
 #include "brane.hh"
 #include "bus.hh"
 
+#include "cholo.hh"
+#include "encgendis.hh"
+
 namespace makemore {
 
 struct Urb {
@@ -18,10 +21,11 @@ struct Urb {
 
   std::vector<Zone*> zones;
   Bus *outgoing;
-  std::vector<std::string> images;
+  std::vector<std::string> images, srcimages;
 
-  Brane *brane1;
-  Pipeline *pipe1, *pipex;
+  Encgendis *egd;
+  double *knobs;
+  Cholo *cholo;
 
   Urb(const char *_dir, unsigned int _mbn = 8);
   ~Urb();
@@ -32,7 +36,7 @@ struct Urb {
   unsigned int tier(const Zone *zone) const;
   Zone *zone(const Parson *x) const;
   Parson *find(const std::string &nom, unsigned int *tierp = NULL) const;
-  Parson *make(const std::string &nom, unsigned int tier = 0);
+  Parson *make(const std::string &nom, unsigned int tier = 0, unsigned int gens = 0, Parson *child = NULL, unsigned int which = 0);
   Parson *make(const char *nom, unsigned int tier = 0) {
     return make(std::string(nom), tier);
   }

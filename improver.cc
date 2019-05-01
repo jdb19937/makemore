@@ -33,7 +33,8 @@ Improver::Improver(const char *_dir, unsigned int _mbn) : Project(_dir, _mbn) {
 
   assert(config["type"] == "improver");
 
-  assert(ctxlay->n >= tgtlay->n);
+  // assert(ctxlay->n >= tgtlay->n);
+//  assert(tgtlay->n + 64 == ctxlay->n);
 
 
   char encmapfn[4096], enctopfn[4096];
@@ -41,23 +42,23 @@ Improver::Improver(const char *_dir, unsigned int _mbn) : Project(_dir, _mbn) {
   sprintf(encmapfn, "%s/enc.map", _dir);
   enctop = new Topology;
   enctop->load_file(enctopfn);
-  enc = new Multitron(*enctop, mbn, encmapfn);
+//  enc = new Multitron(*enctop, mbn, encmapfn);
 
   char genmapfn[4096], gentopfn[4096];
   sprintf(gentopfn, "%s/gen.top", _dir);
   sprintf(genmapfn, "%s/gen.map", _dir);
   gentop = new Topology;
   gentop->load_file(gentopfn);
-  gen = new Multitron(*gentop, mbn, genmapfn);
+//  gen = new Multitron(*gentop, mbn, genmapfn);
 
+#if 0
   if (config["activated"] == "1") {
     gen->mt1->activated = true;
   } else {
     assert(config["activated"] == "0" || config["activated"] == "");
     gen->mt1->activated = false;
   }
-
-  assert(tgtlay->n + 64 == ctxlay->n);
+#endif
 
   encinlay = new Layout(*ctxlay);
   *encinlay += *tgtlay;
@@ -193,13 +194,13 @@ void Improver::report(const char *prog, FILE *outfp) {
 }
 
 void Improver::save() {
-  enc->sync(1);
-  gen->sync(1);
+//  enc->sync(1);
+//  gen->sync(1);
 }
 
 void Improver::load() {
-  enc->sync(0);
-  gen->sync(0);
+//  enc->sync(0);
+//  gen->sync(0);
 }
 
 void Improver::scramble(double mean, double dev) {

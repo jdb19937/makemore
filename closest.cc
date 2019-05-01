@@ -8,7 +8,7 @@
 
 namespace makemore {
 
-unsigned int closest(const double *x, const double *m, unsigned int k, unsigned int n) {
+unsigned int closest(const double *x, const double *m, unsigned int k, unsigned int n, unsigned int *used, unsigned int max_used) {
   assert(n > 0);
   assert(k > 0);
 
@@ -16,6 +16,9 @@ unsigned int closest(const double *x, const double *m, unsigned int k, unsigned 
   unsigned int besti = 0;
 
   for (unsigned int i = 0; i < n; ++i) {
+    if (used && used[i] >= max_used)
+      continue;
+
     const double *y = m + i * k;
  
     double z = 0;
@@ -28,9 +31,9 @@ unsigned int closest(const double *x, const double *m, unsigned int k, unsigned 
       bestz = z;
       besti = i;
     }
- fprintf(stderr, "closest i=%u z=%lf besti=%u bestz=%lf\n", i, z, besti, bestz);
+// fprintf(stderr, "closest i=%u z=%lf besti=%u bestz=%lf\n", i, z, besti, bestz);
   }
-fprintf(stderr, "best i=%u\n", besti);
+//  fprintf(stderr, "best i=%u\n", besti);
 
   return besti;
 }

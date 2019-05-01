@@ -39,7 +39,40 @@ Layout *Layout::new_square_grid(unsigned int dim, double s, unsigned int chan) {
       for (unsigned int c = 0; c < chan; ++c) {
         l->x[chan * (j * dim + i) + c] = ((double)i + 0.5) / (double)dim;
         l->y[chan * (j * dim + i) + c] = ((double)j + 0.5) / (double)dim;
-        l->r[chan * (j + dim + i) + c] = r;
+        l->r[chan * (j * dim + i) + c] = r;
+      }
+    }
+  }
+
+  return l;
+}
+
+Layout *Layout::new_rect(unsigned int w, unsigned int h, unsigned int c) {
+  Layout *l = new Layout(w * h * c);
+
+  double pi = atan2(0, -1);
+
+  double dd;
+  double x0 = 0, x1 = 1;
+  double y0 = 0, y1 = 1;
+  if (w >= h) {
+    y0 = 0.5 - (double)h/(double)w * 0.5;
+    y1 = 0.5 - y0;
+    dd = 1.0 / (double)w;
+  } else {
+    x0 = 0.5 - (double)w/(double)h * 0.5;
+    x1 = 0.5 - x0;
+    dd = 1.0 / (double)h;
+  }
+
+  for (unsigned int j = 0; j < h; ++j) {
+    for (unsigned int i = 0; i < w; ++i) {
+      for (unsigned int k = 0; k < c; ++k) {
+        double iw = (double)i / (double)w;
+        double jh = (double)j / (double)h;
+        l->x[c * (j * w + i) + k] = x0 * iw + x1 * (1.0 - iw);
+        l->y[c * (j * w + i) + k] = y0 * jh + y1 * (1.0 - jh);
+        l->r[c * (j + w + i) + k] = 0;
       }
     }
   }

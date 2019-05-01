@@ -75,24 +75,24 @@ Brane::Brane(const char *_dir, unsigned int _mbn) : Project(_dir, _mbn) {
   sprintf(dismapfn, "%s/dis.map", _dir);
   distop = new Topology;
   distop->load_file(distopfn);
-  dis = new Multitron(*distop, mbn, dismapfn);
+//  dis = new Multitron(*distop, mbn, dismapfn);
 
   char encmapfn[4096], enctopfn[4096];
   sprintf(enctopfn, "%s/enc.top", _dir);
   sprintf(encmapfn, "%s/enc.map", _dir);
   enctop = new Topology;
   enctop->load_file(enctopfn);
-  enc = new Multitron(*enctop, mbn, encmapfn);
+//  enc = new Multitron(*enctop, mbn, encmapfn);
 
   char genmapfn[4096], gentopfn[4096];
   sprintf(gentopfn, "%s/gen.top", _dir);
   sprintf(genmapfn, "%s/gen.map", _dir);
   gentop = new Topology;
   gentop->load_file(gentopfn);
-  gen = new Multitron(*gentop, mbn, genmapfn);
+//  gen = new Multitron(*gentop, mbn, genmapfn);
 
-  gen->mt1->activated = false;
-  enc->mt1->activated = true;
+//  gen->mt1->activated = false;
+//  enc->mt1->activated = true;
 
   encinlay = new Layout(*ctxlay);
   *encinlay += *tgtlay;
@@ -423,15 +423,15 @@ void Brane::report(const char *prog) {
 }
 
 void Brane::save() {
-  enc->sync(1);
-  gen->sync(1);
-  dis->sync(1);
+//  enc->sync(1);
+//  gen->sync(1);
+//  dis->sync(1);
 }
 
 void Brane::load() {
-  enc->sync(0);
-  gen->sync(0);
-  dis->sync(0);
+//  enc->sync(0);
+//  gen->sync(0);
+//  dis->sync(0);
 }
 
 void Brane::scramble(double mean, double dev) {

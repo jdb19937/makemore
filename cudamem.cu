@@ -44,6 +44,65 @@ void cucopyv(const void *x, unsigned int n, void *y) {
   cudaMemcpy(y, x, n, cudaMemcpyDeviceToDevice);
 }
 
+__global__ void gpu_muld(const double *a, const double b, unsigned int n, double *c) {
+  unsigned int i = blockIdx.x * blockDim.x + threadIdx.x;
+  if (i < n)
+    c[i] = (a[i] * b);
+}
+
+void cumuld(const double *a, const double b, unsigned int n, double *c) {
+  int bs = 128;
+  int gs = ((n + bs - 1) / bs);
+  gpu_muld<<<gs, bs>>>(a, b, n, c);
+}
+
+__global__ void gpu_mulvec(const double *a, const double *b, unsigned int n, double *c) {
+  unsigned int i = blockIdx.x * blockDim.x + threadIdx.x;
+  if (i < n)
+    c[i] = (a[i] * b[i]);
+}
+
+void cumulvec(const double *a, const double *b, unsigned int n, double *c) {
+  int bs = 128;
+  int gs = ((n + bs - 1) / bs);
+  gpu_mulvec<<<gs, bs>>>(a, b, n, c);
+}
+
+__global__ void gpu_bcevec(const double *a, const double *b, unsigned int n, double *c) {
+  unsigned int i = blockIdx.x * blockDim.x + threadIdx.x;
+  if (i < n)
+    c[i] = (a[i]/(b[i] + 1e-9)) - (1-a[i])/(1 - b[i] + 1e-9);
+}
+
+void cubcevec(const double *a, const double *b, unsigned int n, double *c) {
+  int bs = 128;
+  int gs = ((n + bs - 1) / bs);
+  gpu_bcevec<<<gs, bs>>>(a, b, n, c);
+}
+
+
+__global__ void gpu_divsqrtvec(const double *a, const double *b, unsigned int n, double *c) {
+  unsigned int i = blockIdx.x * blockDim.x + threadIdx.x;
+  if (i < n)
+    c[i] = (a[i] / sqrt(b[i]));
+}
+
+void cudivsqrtvec(const double *a, const double *b, unsigned int n, double *c) {
+  int bs = 128;
+  int gs = ((n + bs - 1) / bs);
+  gpu_divsqrtvec<<<gs, bs>>>(a, b, n, c);
+}
+__global__ void gpu_mulsqrtvec(const double *a, const double *b, unsigned int n, double *c) {
+  unsigned int i = blockIdx.x * blockDim.x + threadIdx.x;
+  if (i < n)
+    c[i] = (a[i] * sqrt(b[i]));
+}
+
+void cumulsqrtvec(const double *a, const double *b, unsigned int n, double *c) {
+  int bs = 128;
+  int gs = ((n + bs - 1) / bs);
+  gpu_mulsqrtvec<<<gs, bs>>>(a, b, n, c);
+}
 
 __global__ void gpu_cuaddvec(const double *a, const double *b, unsigned int n, double *c) {
   unsigned int i = blockIdx.x * blockDim.x + threadIdx.x;
@@ -118,6 +177,8 @@ __global__ void gpu_cufocus(double *a, const double *xp, const double *yp, unsig
 //         3
 //  a[i] *= f * 1.5;
 
+// double g = 1.5;
+
 
 // In[26]:= Integrate[f[x,y]^2, {x,0,1},{y,0,1}]
 // 
@@ -125,7 +186,13 @@ __global__ void gpu_cufocus(double *a, const double *xp, const double *yp, unsig
 // Out[26]= --
 //          45
 
-  a[i] *= f * f * (45.0 / 22.0);
+// double g = 45.0 / 22.0;
+
+double g = 2.0;
+if (f < 0.1)
+f = 0.1;
+
+  a[i] *= f * f * g;
 
 
 }
@@ -434,5 +501,320 @@ void cunormalize(
   int gs = ((n + bs - 1) / bs);
   gpu_normalize<<<gs, bs>>>(a, rows, cols, m, d, b);
 }
+
+__global__ void gpu_upmean(
+  const double *m,
+  unsigned int rows, unsigned int cols,
+  unsigned int n,
+  double *c
+) {
+  unsigned int col = blockIdx.x * blockDim.x + threadIdx.x;
+  if (col >= cols)
+    return;
+
+  double w = c[col] * n;
+  for (unsigned int i = 0; i < rows; ++i) {
+    double z = m[i * cols + col];
+    w += z;
+  }
+
+  w /= ((double)n + (double)rows);
+  c[col] = w ;
+}
+
+void cuupmean(
+  const double *m,
+  unsigned int rows, unsigned int cols,
+  unsigned int n,
+  double *c
+) {
+  unsigned int cn = cols;
+  int bs = 256;
+  int gs = ((cn + bs - 1) / bs);
+  gpu_upmean<<<gs, bs>>>(m, rows, cols, n, c);
+}
+
+__global__ void gpu_upmeanexp(
+  const double *m,
+  unsigned int cols,
+  double decay,
+  double *c
+) {
+  unsigned int col = blockIdx.x * blockDim.x + threadIdx.x;
+  if (col >= cols)
+    return;
+  c[col] = c[col] * (1.0 - decay) + m[col] * decay;
+}
+
+void cuupmeanexp(
+  const double *m,
+  unsigned int cols,
+  double decay,
+  double *c
+) {
+  unsigned int cn = cols;
+  int bs = 256;
+  int gs = ((cn + bs - 1) / bs);
+  gpu_upmeanexp<<<gs, bs>>>(m, cols, decay, c);
+}
+
+__global__ void gpu_upvarexp(
+  const double *m,
+  const double *mean,
+  unsigned int cols,
+  double decay,
+  double *c
+) {
+  unsigned int col = blockIdx.x * blockDim.x + threadIdx.x;
+  if (col >= cols)
+    return;
+
+  double q = m[col] - mean[col];
+  double z = q * q;
+
+  c[col] = c[col] * (1.0 - decay) + z * decay;
+}
+
+void cuupvarexp(
+  const double *m,
+  const double *mean,
+  unsigned int cols,
+  double decay,
+  double *c
+) {
+  unsigned int cn = cols;
+  int bs = 256;
+  int gs = ((cn + bs - 1) / bs);
+  gpu_upvarexp<<<gs, bs>>>(m, mean, cols, decay, c);
+}
+
+
+__global__ void gpu_upvariance(
+  const double *m,
+  unsigned int rows, unsigned int cols,
+  unsigned int n,
+  double *c
+) {
+  unsigned int col = blockIdx.x * blockDim.x + threadIdx.x;
+  if (col >= cols)
+    return;
+
+  double w = c[col] * (double)n;
+  for (unsigned int i = 0; i < rows; ++i) {
+    double z = m[i * cols + col] * m[i * cols + col];
+    w += z;
+  }
+  w /= (double)(n + rows);
+
+  c[col] = w;
+}
+
+void cuupvariance(
+  const double *m,
+  unsigned int rows, unsigned int cols,
+  unsigned int n,
+  double *c
+) {
+  unsigned int cn = cols;
+  int bs = 256;
+  int gs = ((cn + bs - 1) / bs);
+  gpu_upvariance<<<gs, bs>>>(m, rows, cols, n, c);
+}
+
+
+__global__ void gpu_upcovariance(
+  const double *m,
+  unsigned int rows, unsigned int cols,
+  unsigned int n,
+  unsigned int steps,
+  double *c
+) {
+  unsigned int i = blockIdx.x * blockDim.x + threadIdx.x;
+  i *= steps;
+
+  unsigned int i1 = i + steps;
+  if (i1 > cols * cols)
+    i1 = cols * cols;
+
+  while (i < i1) {
+    unsigned int acol = i / cols;
+    unsigned int bcol = i % cols;
+
+    double w = c[i] * (double)n;
+    for (unsigned int row = 0; row < rows; ++row) {
+      double z = m[row * cols + acol] * m[row * cols + bcol];
+      w += z;
+    }
+
+    w /= ((double)(n + rows));
+    c[i] = w;
+    ++i;
+  }
+}
+
+void cuupcovariance(
+  const double *m,
+  unsigned int rows, unsigned int cols,
+  unsigned int n, unsigned int steps,
+  double *c
+) {
+  unsigned int cn = (cols * cols + steps - 1) / steps;
+  int bs = 32;
+  int gs = ((cn + bs - 1) / bs);
+  gpu_upcovariance<<<gs, bs>>>(m, rows, cols, n, steps, c);
+}
+
+
+__global__ void gpu_covariance(
+  const double *m,
+  unsigned int rows, unsigned int cols,
+  double *c
+) {
+  unsigned int i = blockIdx.x * blockDim.x + threadIdx.x;
+  if (i >= cols * cols)
+    return;
+  unsigned int acol = i / cols;
+  unsigned int bcol = i % cols;
+
+  double z = 0;
+  for (unsigned int row = 0; row < rows; ++row)
+    z += m[row * cols + acol] * m[row * cols + bcol];
+  z /= (double)rows;
+
+  c[i] = z;
+}
+
+void cucovariance(
+  const double *m,
+  unsigned int rows, unsigned int cols,
+  double *c
+) {
+  unsigned int cn = cols * cols;
+  int bs = 256;
+  int gs = ((cn + bs - 1) / bs);
+  gpu_covariance<<<gs, bs>>>(m, rows, cols, c);
+}
+
+__global__ void gpu_chol(double *U, unsigned int num_rows, int ops_per_thread)
+{
+  int tx = blockIdx.x * blockDim.x + threadIdx.x;
+  
+  unsigned int i, j, k;
+  
+  for (k = 0; k < num_rows; k++) {
+    if (tx == 0) {
+      U[k * num_rows + k] = sqrt(U[k * num_rows + k]);
+    
+      for (j = (k + 1); j < num_rows; j++) {
+        U[k * num_rows + j] /= U[k * num_rows + k];
+//        if (isnan(U[k * num_rows + j]))
+//          U[k * num_rows + j] = 0;
+      }
+    }
+    
+    __syncthreads();
+
+    int istart = tx * ops_per_thread + k + 1;
+    int iend = (istart + ops_per_thread);
+    if (iend > num_rows)
+      iend = num_rows;
+    
+    for (i = istart; i < iend; i++) {
+      for (j = i; j < num_rows; j++) {
+        U[i * num_rows + j] -= U[k * num_rows + i] * U[k * num_rows + j];
+      }
+    }
+  
+    __syncthreads();
+  }
+
+  __syncthreads();
+  
+  
+  unsigned int istart = tx * ops_per_thread;
+  unsigned int iend = istart + ops_per_thread;
+  if (iend > num_rows)
+    iend = num_rows;
+  
+  for (i = istart; i < iend; i++) {
+    for (j = 0; j < i; j++) {
+      U[i * num_rows + j] = 0.0;
+    }
+//    for (j = i; j < num_rows; j++) {
+//      if (isnan(U[i * num_rows + j]))
+//        U[i * num_rows + j] = 0.0;
+//    }
+  }
+}
+
+void cuchol(
+  double *m, unsigned int rows
+) {
+  unsigned int ops = 1;
+  unsigned int rn = (rows + ops - 1) / ops;
+  int bs = 128;
+  int gs = ((rn + bs - 1) / bs);
+  gpu_chol<<<gs, bs>>>(m, rows, ops);
+}
+
+__global__ void gpu_matxvec(const double *m, const double *x, unsigned int w, unsigned int h, double *y) {
+  unsigned int col = blockIdx.x * blockDim.x + threadIdx.x;
+  if (col >= w)
+    return;
+
+  double z = 0;
+  for (unsigned int row = 0; row < h; ++row)
+    z += m[row * w + col] * x[row];
+  y[col] = z;
+}
+
+void cumatxvec(
+  const double *m, const double *x, unsigned int w, unsigned int h, double *y
+) {
+  int bs = 256;
+  int gs = ((w + bs - 1) / bs);
+  gpu_matxvec<<<gs, bs>>>(m, x, w, h, y);
+}
+
+__global__ void gpu_tmatxvec(const double *m, const double *x, unsigned int w, unsigned int h, double *y) {
+  unsigned int row = blockIdx.x * blockDim.x + threadIdx.x;
+  if (row >= h)
+    return;
+
+  double z = 0;
+  for (unsigned int col = 0; col < w; ++col)
+    z += m[row * w + col] * x[col];
+
+  y[row] = z;
+}
+
+void cutmatxvec(
+  const double *m, const double *x, unsigned int w, unsigned int h, double *y
+) {
+  int bs = 256;
+  int gs = ((h + bs - 1) / bs);
+  gpu_tmatxvec<<<gs, bs>>>(m, x, w, h, y);
+}
+
+__global__ void gpu_matxpose(const double *m, unsigned int w, unsigned int h, double *u) {
+  unsigned int i = blockIdx.x * blockDim.x + threadIdx.x;
+  if (i >= w * h)
+    return;
+  unsigned int row = i / w;
+  unsigned int col = i % w;
+
+  u[col * h + row] = m[i];
+}
+  
+void cumatxpose(
+  const double *m, unsigned int w, unsigned int h, double *y
+) {
+  int bs = 256;
+  int gs = ((w * h + bs - 1) / bs);
+  gpu_matxpose<<<gs, bs>>>(m, w, h, y);
+}
+
+
+  
 
 };

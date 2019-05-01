@@ -3,7 +3,7 @@
 
 namespace makemore {
 
-unsigned int closest(const double *x, const double *m, unsigned int k, unsigned int n);
+unsigned int closest(const double *x, const double *m, unsigned int k, unsigned int n, unsigned int *used = NULL, unsigned int max_used = 1);
 unsigned int maxdot(const double *x, const double *m, unsigned int k, unsigned int n);
 
 };
