@@ -24,8 +24,8 @@ struct Cholo {
 
   void observe(const double *x);
   void observecu(const double *x);
-  void generate(double *x, double m = 1.0);
-  void generate(const double *y, double *x);
+  void generate(double *x, double m = 1.0, bool activate = false);
+  void generate(const double *y, double *x, bool activate = false);
   void encode(const double *x, double *y);
 
   void save(FILE *fp);

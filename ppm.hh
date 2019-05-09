@@ -55,6 +55,8 @@ struct PPM {
 
   void border(unsigned int x0, unsigned int y0, unsigned int x1, unsigned int y1, uint8_t cr = 0, uint8_t cg = 0, uint8_t cb = 255);
 
+  void paste(const uint8_t *vec, unsigned int vw, unsigned int vh, unsigned int x0, unsigned int y0);
+
   void pastelab(const double *vec, unsigned int vw, unsigned int vh, unsigned int x0, unsigned int y0);
   void pastelab(const uint8_t *vec, unsigned int vw, unsigned int vh, unsigned int x0, unsigned int y0);
   void cutlab(double *vec, unsigned int vw, unsigned int vh, unsigned int x0, unsigned int y0);

@@ -421,7 +421,7 @@ void Megatron::randomize(double disp) {
     const vector<unsigned int>& w = _mow[outri];
     assert(w.size());
 
-    double iss = disp / sqrt(w.size() + 1);
+    double iss = disp / sqrt(w.size() - 1);
     double sw = 0;
     for (unsigned int i = 0; i < w.size() - 1; ++i) {
       // double ww = iss * rnd(-1, 1);

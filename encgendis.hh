@@ -40,7 +40,7 @@ struct Encgendis : Project {
 
   double *cuinencin, *cuingenin;
   double *cuencin, *cuenctgt, *cudistgt;
-  double *cugenin, *cugentgt, *cudisin, *cudisfin, *cusegtgt, *cusegin;
+  double *cugenin, *cugentgt, *cudisin, *cudisfin, *cusegtgt, *cusegin, *cugenfin;
   double *realctr, *fakectr, *morectr, *distgt, *fakectx;
 
   uint8_t *bctxbuf, *btgtbuf, *boutbuf, *bsepbuf, *bctrbuf;

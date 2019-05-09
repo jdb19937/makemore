@@ -18,6 +18,7 @@
 #include <png.h>
 
 #include "strutils.hh"
+#include "numutils.hh"
 #include "parson.hh"
 
 namespace makemore {
@@ -259,12 +260,25 @@ bool pnglab(
   return true;
 }
 
+bool pngrgb(
+  const std::string &png,
+  unsigned int w,
+  unsigned int h,
+  double *rgb,
+  vector<string> *tags
+) {
+  uint8_t *tmp_rgb = new uint8_t[w * h * 3];
+  bool ret = pngrgb(png, w, h, tmp_rgb, tags);
+  btodv(tmp_rgb, rgb, w * h * 3);
+  delete[] tmp_rgb;
+  return ret;
+}
 
 bool pngrgb(
   const std::string &png,
   unsigned int w,
   unsigned int h,
-  uint8_t *lab,
+  uint8_t *rgb,
   vector<string> *tags
 ) {
   FILE *fp = fmemopen((void *)png.data(), png.length(), "r");
@@ -320,7 +334,7 @@ bool pngrgb(
 
   row_pointers = new png_bytep[h];
   for (unsigned int y = 0; y < h; y++)
-    row_pointers[y] = lab + y * w * 3;
+    row_pointers[y] = rgb + y * w * 3;
 
   png_read_image(png_ptr, row_pointers);
 
@@ -465,6 +479,8 @@ bool rgbpng(
 
   delete[] pngbuf;
   delete[] row_pointers;
+  if (png_ptr)
+    png_destroy_write_struct(&png_ptr, &info_ptr);
 
   return true;
 
@@ -474,6 +490,8 @@ fail:
     delete[] row_pointers;
   if (pngbuf)
     delete[] pngbuf;
+  if (png_ptr)
+    png_destroy_write_struct(&png_ptr, &info_ptr);
   return false;
 }
 

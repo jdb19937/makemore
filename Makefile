@@ -28,7 +28,7 @@ LABTOOLS = \
   labshrink labhifreq labtogray grayhifreq \
   reconlab recongray 
 
-MORETOOLS = makemore makelay catlay wireup maketop makemap chatfab learnfab learnmore genicon servemore makezone sampler makeipdat errstats fillparsonsdat autolign dumpbranetxt moretran learnmark makemark burnimp learnimp showimp impcholo cholo64 showcholo64  burnpre learnpre restock stest makesamp inburn incholo makeknobs inconc makeconc burnseg tmptag
+MORETOOLS = makemore makelay catlay wireup maketop makemap chatfab learnfab learnmore genicon servemore makezone sampler makeipdat errstats fillparsonsdat autolign dumpbranetxt moretran learnmark makemark burnbig burnimp learnimp showbig showimp impcholo cholo64 showcholo64  burnpre learnpre restock stest makesamp inburn incholo makeknobs inconc makeconc burnseg tmptag eyewarp aleyen makesamp makecholo
 
 MANUAL = moretran.pdf moretp.pdf
 
@@ -264,6 +264,9 @@ learnmark: learnmark.o $(LIB)
 cholo64.o: $(LIBHDR)
 cholo64: cholo64.o $(LIB)
 	$(CXX) -o $@ $(CXXFLAGS) $^ $(LDFLAGS) $(CULDFLAGS)
+makecholo.o: $(LIBHDR)
+makecholo: makecholo.o $(LIB)
+	$(CXX) -o $@ $(CXXFLAGS) $^ $(LDFLAGS) $(CULDFLAGS)
 impcholo.o: $(LIBHDR)
 impcholo: impcholo.o $(LIB)
 	$(CXX) -o $@ $(CXXFLAGS) $^ $(LDFLAGS) $(CULDFLAGS)
@@ -272,6 +275,9 @@ incholo: incholo.o $(LIB)
 	$(CXX) -o $@ $(CXXFLAGS) $^ $(LDFLAGS) $(CULDFLAGS)
 clones.o: $(LIBHDR)
 clones: clones.o $(LIB)
+	$(CXX) -o $@ $(CXXFLAGS) $^ $(LDFLAGS) $(CULDFLAGS)
+showbig.o: $(LIBHDR)
+showbig: showbig.o $(LIB)
 	$(CXX) -o $@ $(CXXFLAGS) $^ $(LDFLAGS) $(CULDFLAGS)
 showimp.o: $(LIBHDR)
 showimp: showimp.o $(LIB)
@@ -309,6 +315,15 @@ burnseg: burnseg.o libmakemore.so
 tmptag.o: $(LIBHDR)
 tmptag: tmptag.o libmakemore.so
 	$(CXX) -o $@ $(CXXFLAGS) tmptag.o $(LDFLAGS) $(CULDFLAGS)
+aleyen.o: $(LIBHDR)
+aleyen: aleyen.o libmakemore.so
+	$(CXX) -o $@ $(CXXFLAGS) aleyen.o $(LDFLAGS) $(CULDFLAGS)
+eyewarp.o: $(LIBHDR)
+eyewarp: eyewarp.o libmakemore.so
+	$(CXX) -o $@ $(CXXFLAGS) eyewarp.o $(LDFLAGS) $(CULDFLAGS)
+burnbig.o: $(LIBHDR)
+burnbig: burnbig.o libmakemore.so
+	$(CXX) -o $@ $(CXXFLAGS) burnbig.o $(LDFLAGS) $(CULDFLAGS)
 burnimp.o: $(LIBHDR)
 burnimp: burnimp.o libmakemore.so
 	$(CXX) -o $@ $(CXXFLAGS) burnimp.o $(LDFLAGS) $(CULDFLAGS)

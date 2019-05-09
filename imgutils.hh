@@ -101,6 +101,15 @@ bool pngrgb(
   uint8_t *rgb,
   std::vector<std::string> *tags = NULL
 );
+
+bool pngrgb(
+  const std::string &png,
+  unsigned int w,
+  unsigned int h,
+  double *rgb,
+  std::vector<std::string> *tags = NULL
+);
+
 bool pnglab(
   const std::string &png,
   unsigned int w,

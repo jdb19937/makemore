@@ -29,20 +29,8 @@ Urb::Urb(const char *_dir, unsigned int _mbn) {
 
   egd = new Encgendis(dir + "/egd.proj", 1);
 
-#if 1
-  {
-    std::string knobfn = dir + "/knobs.dat";
-    FILE *knobfp = fopen(knobfn.c_str(), "r");
-    assert(knobfp);
-    knobs = new double[egd->knblay->n * 10000];
-    int ret = fread(knobs, egd->knblay->n * sizeof(double), 10000, knobfp);
-    assert(ret == 10000);
-    fclose(knobfp);
-  }
-#endif
-
-  cholo = new Cholo(egd->knblay->n);
-  cholo->load(dir + "/cholo.dat");
+  cholo = new Cholo(egd->ctrlay->n);
+  cholo->load(dir + "/egd.proj/cholo.dat");
 
 
   images.clear();
@@ -75,6 +63,43 @@ Urb::Urb(const char *_dir, unsigned int _mbn) {
     int ret = ::mkdir(home.c_str(), 0700);
     assert(ret == 0 || ret == -1 && errno == EEXIST);
   }
+
+#if 1
+  {
+    std::string sampfn = dir + "/egd.proj/samp.dat";
+    FILE *sampfp = fopen(sampfn.c_str(), "r");
+    assert(sampfp);
+    assert(0 == fseek(sampfp, 0, 2));
+
+    nsamp = ftell(sampfp);
+    assert(nsamp % (sizeof(double) * egd->ctrlay->n) == 0);
+    nsamp /= egd->ctrlay->n * sizeof(double);
+    assert(0 == fseek(sampfp, 0, 0));
+
+    samp = new double[egd->ctrlay->n * nsamp];
+    int ret = fread(samp, egd->ctrlay->n * sizeof(double), nsamp, sampfp);
+    assert(ret == nsamp);
+    fclose(sampfp);
+  }
+#endif
+
+  {
+    std::string framefn = dir + "/egd.proj/frame.dat";
+    FILE *framefp = fopen(framefn.c_str(), "r");
+    assert(framefp);
+    assert(0 == fseek(framefp, 0, 2));
+
+    nframe = ftell(framefp);
+    assert(nframe % (sizeof(double) * 6) == 0);
+    nframe /= 6 * sizeof(double);
+    assert(0 == fseek(framefp, 0, 0));
+
+    frame = new double[6 * nframe];
+    int ret = fread(frame, 6 * sizeof(double), nframe, framefp);
+    assert(ret == nframe);
+    fclose(framefp);
+  }
+
 }
 
 Urb::~Urb() {
@@ -115,21 +140,21 @@ fprintf(stderr, "found %s\n", nom.c_str());
 
   if (nom.length() >= 5 && !strncmp(nom.c_str(), "anti", 4)) {
     Parson *x = this->make(nom.c_str() + 4, tier);
-    for (unsigned int j = 0; j < egd->knblay->n; ++j) {
-      parson.knobs[j] = -x->knobs[j];
+    for (unsigned int j = 0; j < egd->ctrlay->n; ++j) {
+      parson.controls[j] = -x->controls[j];
     }
   } else {
-    for (unsigned int j = 0; j < egd->knblay->n; ++j) {
-      unsigned int k = randuint() % 10000;
-      parson.knobs[j] = knobs[k * egd->knblay->n + j] * 1.0;
+    for (unsigned int j = 0; j < egd->ctrlay->n; ++j) {
+      unsigned int k = randuint() % nsamp;
+      parson.controls[j] = samp[k * egd->ctrlay->n + j] * 1.0;
     }
   }
 
   if (child) {
     seedrand(Parson::hash_nom(child->nom, 93));
-    for (unsigned int j = 0; j < egd->knblay->n; ++j) {
+    for (unsigned int j = 0; j < egd->ctrlay->n; ++j) {
       if (randuint() % 2 == which) {
-        parson.knobs[j] = child->knobs[j];
+        parson.controls[j] = child->controls[j];
       }
     }
   }
@@ -141,28 +166,17 @@ fprintf(stderr, "found %s\n", nom.c_str());
 
 fprintf(stderr, "%s -> %s, %s\n", nom.c_str(), parson.parens[0], parson.parens[1]);
 
-  cholo->generate(parson.knobs, egd->knbbuf);
+#if 0
+  cholo->generate(parson.controls, egd->ctrbuf);
 
-  for (unsigned int j = 0; j < egd->knblay->n; ++j)
-    egd->knbbuf[j] = sigmoid(egd->knbbuf[j]);
-
-
-  egd->ingenerate();
-
-//egd->inencode();
-//egd->ingenerate();
-
-  //assert(egd->ctrlay->n == Parson::ncontrols);
-  //memcpy(parson.controls, egd->ctrbuf, Parson::ncontrols * sizeof(double));
-
+  for (unsigned int j = 0; j < egd->ctrlay->n; ++j)
+    egd->ctrbuf[j] = sigmoid(egd->ctrbuf[j]);
 
   egd->generate();
 
-//egd->encode();
-//egd->generate();
-
   assert(egd->tgtlay->n == Parson::dim * Parson::dim * 3);
   labquant(egd->tgtbuf, Parson::dim * Parson::dim * 3, parson.target);
+#endif
 
 #if 0
   string imagefn = images[randuint() % images.size()];

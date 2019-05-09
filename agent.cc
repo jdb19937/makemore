@@ -14,10 +14,13 @@
 
 #include "agent.hh"
 #include "server.hh"
+#include "encgendis.hh"
 #include "urbite.hh"
+#include "numutils.hh"
 #include "strutils.hh"
 #include "imgutils.hh"
 #include "process.hh"
+#include "warp.hh"
 
 namespace makemore {
 
@@ -45,7 +48,7 @@ Agent::Agent(class Server *_server, int _s, uint32_t _ip, bool _secure) {
   inbuf = NULL; // new char[inbufm];
 
   outbufn = 0;
-  outbufm = (1 << 20);
+  outbufm = (10 << 20);
   outbuf = NULL; // new char[outbufm];
 
   if (secure) {
@@ -499,7 +502,8 @@ void Agent::command(const strvec &words) {
 static std::string htmlp(const std::string &nom, unsigned int dim) {
   char buf[4096];
   sprintf(buf, 
-    "<a href='/%s'><img width='%u' height='%u' style='image-rendering: pixelated' src='%s.png'/></a>",
+//    "<a href='/%s'><img width='%u' height='%u' style='image-rendering: pixelated' src='%s.png'/></a>",
+    "<a href='/%s'><img width='%u' height='%u' src='%s.png'/></a>",
     nom.c_str(), dim, dim, nom.c_str()
   );
   return buf;
@@ -682,87 +686,6 @@ fprintf(stderr, "req=[%s]\n", req.c_str());
     return;
   }
 
-
-  if (path == "/tagseg.png") {
-static FILE *tagfp = fopen("tags.tsv", "a");
-    unsigned int which = atoi(query.c_str()) % server->urb->srcimages.size();
-    string imagefn = server->urb->srcimages[which];
-    string png0 = makemore::slurp(imagefn);
-    unsigned int w = 400, h = 400;
-    uint8_t *tmp = new uint8_t[w * h * 3];
-    static double *tmpd = new double[w * h * 3];
-    vector<string> tags;
-
-if (1) {
-static std::vector<int*> samp;
-    if (const char *p = strchr(query.c_str(), '&')) {
-
-      int x = -1, y = -1, s = -1, r;
-      sscanf(p, "&%d&%d&%d&%d", &x, &y, &s, &r);
-      if (x >= 0 && y >= 0 && s >= 0 && x < w && y < h) {
-        int *sam = new int[3];
-        sam[0] = which;
-        sam[1] = x; sam[2] = y;
-        samp.push_back(sam);
-assert(tagfp);
-fprintf(tagfp, "%s\t%d\t%d\n", server->urb->srcimages[which].c_str(), x, y);
-fflush(tagfp);
-      }
-
-      for (unsigned int j = 0; j < 0; ++j) {
-        unsigned int k = randuint() % samp.size();
-        int *sam = samp[k];
-assert(sam[0] < server->urb->srcimages.size());
-        string imagefn = server->urb->srcimages[sam[0]];
-        string png0 = makemore::slurp(imagefn);
-        pnglab(png0, w, h, tmp, &tags);
-        labdequant(tmp, w * h * 3, tmpd);
-        encude(tmpd, w * h * 3, server->urb->egd->cusegin);
-assert(server->urb->egd->seg->inn == w * h * 3);
-assert(server->urb->egd->seginlay->n == w * h * 3);
- 
-        server->urb->egd->segment();
-        server->urb->egd->segbuf[0] = (double)sam[1] / (double)w;
-        server->urb->egd->segbuf[1] = (double)sam[2] / (double)h;
-
-assert(server->urb->egd->segoutlay->n == 2);
-assert(server->urb->egd->seg->outn == 2);
-
-        encude(server->urb->egd->segbuf, 2, server->urb->egd->cusegtgt);
-        server->urb->egd->seg->target(server->urb->egd->cusegtgt);
-        server->urb->egd->seg->train(0.01);
-      }
-    }
-}
-
-server->urb->egd->segmap->load();
-    pnglab(png0, w, h, tmp, &tags);
-    labdequant(tmp, w * h * 3, tmpd);
-    encude(tmpd, w * h * 3, server->urb->egd->cusegin);
-    server->urb->egd->segment();
-    
-    int px = (int)((double)w * server->urb->egd->segbuf[0]);
-    int py = (int)((double)h * server->urb->egd->segbuf[1]);
-    if (px < 0) px = 0; if (px >= w) px = w - 1;
-    if (py < 0) py = 0; if (py >= h) py = h - 1;
-fprintf(stderr, "px=%d py=%d\n", px, py);
-    tmpd[1 + 3 * w * py + 3 * px] = 1.0;
-    tmpd[2 + 3 * w * py + 3 * px] = 1.0;
-
-    string png;
-    labquant(tmpd, w * h * 3, tmp);
-    labpng(tmp, w, h, &png);
-
-    this->printf("HTTP/1.1 200 OK\r\n");
-    this->printf("Connection: keep-alive\r\n");
-    this->printf("Content-Type: image/png\r\n");
-    this->printf("Content-Length: %lu\r\n", png.length());
-    this->printf("\r\n");
-    this->write(png);
-    return;
-  }
-
-
   if (path == "/tagenc.png") {
     unsigned int which = atoi(query.c_str());
     string imagefn = server->urb->images[which % server->urb->images.size()];
@@ -866,8 +789,33 @@ fprintf(stderr, "px=%d py=%d\n", px, py);
   if (is_png) {
     Parson *parson = server->urb->make(nom, 0);
 
+    Cholo *cholo = server->urb->cholo;
+    Encgendis *egd = server->urb->egd; 
+
+    assert(cholo->dim == Parson::ncontrols);
+    cholo->generate(parson->controls, egd->ctrbuf, true);
+    assert(egd->ctrlay->n == Parson::ncontrols);
+    egd->generate();
+
+
+    seedrand(Parson::hash_nom(parson->nom));
+    unsigned int f = randuint() % server->urb->nframe;
+    // double *frame = server->urb->frame + 6 * f;
+    double y0 = randrange(0, 10.0);
+    double y1 = randrange(220, 230);
+    double frame[] = {0, y0, 255, y0, 0, y1};
+
+    assert(egd->tgtlay->n == 256 * 256 * 3);
+    double *tmp = new double[egd->tgtlay->n];
+    kwarp(egd->tgtbuf, 256, 256, frame[0], frame[1], frame[2], frame[3], frame[4], frame[5], NULL, NULL, NULL, NULL, NULL, NULL, 256, 256, tmp);
+
+    uint8_t *rgb = new uint8_t[egd->tgtlay->n];
+    dtobv(tmp, rgb, egd->tgtlay->n);
+
     std::string png;
-    labpng(parson->target, Parson::dim, Parson::dim, &png);
+    rgbpng(rgb, 256, 256, &png);
+    delete[] rgb;
+    delete[] tmp;
     
     this->printf("HTTP/1.1 200 OK\r\n");
     this->printf("Connection: keep-alive\r\n");

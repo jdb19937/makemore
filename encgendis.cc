@@ -140,8 +140,7 @@ Encgendis::Encgendis(const std::string &_dir, unsigned int _mbn) : Project(_dir,
   assert(ingen->inn == mbn * knblay->n);
   assert(ingen->outn == mbn * ctrlay->n);
 
-  encinlay = new Layout(*ctxlay);
-  *encinlay += *tgtlay;
+  encinlay = new Layout(*tgtlay);
   assert(enc->inn == mbn * encinlay->n);
   assert(enc->outn == mbn * ctrlay->n);
 
@@ -159,12 +158,6 @@ Encgendis::Encgendis(const std::string &_dir, unsigned int _mbn) : Project(_dir,
   assert(seg->inn == seginlay->n * mbn);
   assert(seg->outn == segoutlay->n * mbn);
 
-  encpass = new Passthrutron(ctxlay->n, mbn, enc);
-  genpass = new Passthrutron(ctxlay->n, mbn, gen);
-
-  encgen = new Compositron(encpass, gen);
-  genenc = new Compositron(genpass, enc);
-
   cumake(&cuenctgt, enc->outn);
   cumake(&cudistgt, dis->outn);
   cumake(&cuencin, enc->inn);
@@ -176,6 +169,7 @@ Encgendis::Encgendis(const std::string &_dir, unsigned int _mbn) : Project(_dir,
   cumake(&cusegtgt, seg->outn);
   cumake(&cusegin, seg->inn);
   cumake(&cugenin, gen->inn);
+  cumake(&cugenfin, gen->inn);
 
   distgt = new double[dis->outn];
 
@@ -195,10 +189,6 @@ Encgendis::Encgendis(const std::string &_dir, unsigned int _mbn) : Project(_dir,
 }
 
 Encgendis::~Encgendis() {
-  delete encpass; 
-  delete genpass;
-  delete encgen;
-  delete genenc;
   delete encinlay;
   delete geninlay;
 
@@ -207,6 +197,7 @@ Encgendis::~Encgendis() {
   delete ctrlay;
 
   cufree(cugenin);
+  cufree(cugenfin);
   cufree(cuencin);
   cufree(cudisin);
   cufree(cudisfin);
@@ -226,8 +217,6 @@ void Encgendis::report(const char *prog) {
   fprintf(
     stderr,
     "%s %s rounds=%u\n"
-    "%s %s encgen_err2=%g encgen_errm=%g\n"
-    "%s %s encpass_err2=%g encpass_errm=%g\n"
     "%s %s enc_err2=%g enc_errm=%g\n"
     "%s %s gen_err2=%g gen_errm=%g\n"
     "%s %s seg_err2=%g seg_errm=%g\n"
@@ -236,8 +225,6 @@ void Encgendis::report(const char *prog) {
     "%s %s %c dis_err2=%g dis_errm=%g\n"
     "\n",
     prog, dir.c_str(), rounds,
-    prog, dir.c_str(), encgen->err2, encgen->errm,
-    prog, dir.c_str(), encpass->err2, encpass->errm,
     prog, dir.c_str(), enc->err2, enc->errm,
     prog, dir.c_str(), gen->err2, gen->errm,
     prog, dir.c_str(), seg->err2, seg->errm,
@@ -248,12 +235,12 @@ void Encgendis::report(const char *prog) {
 }
 
 void Encgendis::save() {
-  segmap->save();
+//  segmap->save();
   encmap->save();
   genmap->save();
-  dismap->save();
-  inencmap->save();
-  ingenmap->save();
+//  dismap->save();
+//  inencmap->save();
+//  ingenmap->save();
 }
 
 void Encgendis::load() {
@@ -384,9 +371,9 @@ void Encgendis::scramble(double dev) {
 }
 
 void Encgendis::encode() {
+  assert(encinlay->n == tgtlay->n);
   for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
-    encude( ctxbuf + mbi * ctxlay->n, ctxlay->n, cuencin + mbi * encinlay->n + 0);
-    encude( tgtbuf + mbi * tgtlay->n, tgtlay->n, cuencin + mbi * encinlay->n + ctxlay->n);
+    encude( tgtbuf + mbi * tgtlay->n, tgtlay->n, cuencin + mbi * encinlay->n);
   }
 
   const double *cuencout = enc->feed(cuencin, NULL);
@@ -502,27 +489,41 @@ void Encgendis::inburn(const double *cusamp, unsigned int n, double nu, double p
 
 void Encgendis::burn(double nu, double pi) {
 
-  assert(encinlay->n == ctxlay->n + tgtlay->n);
+  assert(geninlay->n == ctxlay->n + ctrlay->n);
+  assert(encinlay->n == tgtlay->n);
   for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
-    encude(ctxbuf + mbi * ctxlay->n, ctxlay->n, cuencin + mbi * encinlay->n + 0);
-    encude(tgtbuf + mbi * tgtlay->n, tgtlay->n, cuencin + mbi * encinlay->n + ctxlay->n);
+    encude(ctxbuf + mbi * ctxlay->n, ctxlay->n, cugenin + mbi * geninlay->n);
+    encude(tgtbuf + mbi * tgtlay->n, tgtlay->n, cuencin + mbi * encinlay->n);
   }
+
+  const double *cuencout = enc->feed(cuencin, NULL);
+  for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
+    cucopy(cuencout + mbi * ctrlay->n, ctrlay->n, cugenin + mbi * geninlay->n + ctxlay->n);
+  }
+
+  cuzero(cugenfin, mbn * geninlay->n);
+  gen->feed(cugenin, cugenfin);
+
   assert(gen->outn == mbn * tgtlay->n);
   encude(tgtbuf, gen->outn, cugentgt);
+  gen->target(cugentgt, false);
 
-  encgen->feed(cuencin, NULL);
-  encgen->target(cugentgt, false);
+//  double *cugenfout = gen->foutput();
+//  for (unsigned int mbi = 0; mbi < mbn; ++mbi)
+//    cufocus(cugenfout + mbi * tgtlay->n, cutgtlayx, cutgtlayy, tgtlay->n);
 
-  double *cugenfout = gen->foutput();
-  for (unsigned int mbi = 0; mbi < mbn; ++mbi)
-    cufocus(cugenfout + mbi * tgtlay->n, cutgtlayx, cutgtlayy, tgtlay->n);
-
-  encgen->update_stats();
-
+  gen->update_stats();
   gen->train(pi);
 
-  encpass->update_stats();
-  encpass->train(nu);
+  if (nu > 0) {
+    double *cuencfoutput = enc->foutput();
+    for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
+      cucopy(cugenfin + mbi * geninlay->n + ctxlay->n, ctrlay->n, cuencfoutput + mbi * ctrlay->n);
+    }
+
+    enc->update_stats();
+    enc->train(nu);
+  }
 }
 
 

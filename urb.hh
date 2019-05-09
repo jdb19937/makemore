@@ -24,7 +24,10 @@ struct Urb {
   std::vector<std::string> images, srcimages;
 
   Encgendis *egd;
-  double *knobs;
+  double *samp;
+  unsigned int nsamp;
+  double *frame;
+  unsigned int nframe;
   Cholo *cholo;
 
   Urb(const char *_dir, unsigned int _mbn = 8);

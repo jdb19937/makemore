@@ -162,19 +162,25 @@ void Cholo::finalize() {
 #endif
 }
 
-void Cholo::generate(double *x, double m) {
+void Cholo::generate(double *x, double m, bool activate) {
   for (unsigned int i = 0; i < dim; ++i)
     tmp[i] = randgauss() * m;
-  generate(tmp, x);
+  generate(tmp, x, activate);
 }
 
-void Cholo::generate(const double *y, double *x) {
+void Cholo::generate(const double *y, double *x, bool activate) {
   encude(y, dim, in);
 
   cumatxvec(chol, in, dim, dim, out);
   cumulsqrtvec(out, var, dim, out);
   cuaddvec(out, mean, dim, out);
   decude(out, dim, x);
+
+  if (activate) {
+    for (unsigned int i = 0; i < dim; ++i) {
+      x[i] = sigmoid(x[i]);
+    }
+  }
 }
 
 void Cholo::encode(const double *x, double *y) {
@@ -227,27 +233,32 @@ memcpy(meantmp, tmp, sizeof(double) * dim);
 
 	  encude(tmp, dim, mean);
 
-	  ret = fread(tmp, sizeof(double), dim, fp);
+double *vartmp = new double[dim];
+	  ret = fread(vartmp, sizeof(double), dim, fp);
 	  assert(ret == dim);
-	  encude(tmp, dim, var);
+	  encude(vartmp, dim, var);
 
-for (unsigned int i = 0; i < dim; ++i) {
-fprintf(stderr, "cholo mean[%u] = %lf var[%u] = %lf\n", i, meantmp[i], i, tmp[i]);
-}
+//for (unsigned int i = 0; i < dim; ++i) {
+//fprintf(stderr, "cholo mean[%u] = %lf var[%u] = %lf\n", i, meantmp[i], i, tmp[i]);
+//}
 
 	  double *tmp2 = new double[dim2];
 
   ret = fread(tmp2, sizeof(double), dim2, fp);
   assert(ret == dim2);
-for (unsigned int i = 0; i < dim2; ++i) {
-  if (isnan(tmp2[i])) { fprintf(stderr, "isnan(tmp2[%u])\n", i); tmp2[i] = 0; }
-}
-for (unsigned int i = 0; i < dim2; ++i) {
-  assert(!isnan(tmp2[i]));
-  if (tmp2[i] < -100.0 || tmp2[i] > 100.0) {
-    fprintf(stderr, "tmp2[%u]=%lf\n", i, tmp2[i]);
+
+//for (unsigned int i = 0; i < dim2; ++i) {
+//  if (isnan(tmp2[i])) { fprintf(stderr, "isnan(tmp2[%u])\n", i); tmp2[i] = 0; }
+//}
+
+for (unsigned int i = 0; i < dim; ++i) {
+  double s = 0;
+  for (unsigned int j = 0; j < dim; ++j) {
+    s += fabs(tmp2[i * dim + j]) * vartmp[j];
   }
+  fprintf(stderr, "colsum[%u] = %lf\n", i, s);
 }
+  
   encude(tmp2, dim2, chol);
 double *tmp3 = new double[dim2];
 matinv(tmp2, tmp3, dim);
@@ -268,6 +279,8 @@ for (unsigned int i = 0; i < dim2; ++i) {
   encude(tmp2, dim2, cov);
 
   delete[] tmp2;
+  delete[] vartmp;
+  delete[] meantmp;
 }
 
 void Cholo::load(const std::string &fn) {

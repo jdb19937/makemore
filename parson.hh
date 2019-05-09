@@ -35,7 +35,6 @@ struct Parson {
   const static unsigned int ntags = 8;
   const static unsigned int dim = 64;
   const static unsigned int ncontrols = 512;
-  const static unsigned int nknobs = 128;
   const static unsigned int bufsize = 2048;
   const static unsigned int nbriefs = 8;
   const static unsigned int briefsize = 256;
@@ -93,15 +92,8 @@ struct Parson {
   // 1071
   uint8_t _fill[1071];
 
-  // 1920
-  uint8_t controls[ncontrols];
-  uint8_t ____paddy[1408];
-
-  // 1024
-  double knobs[nknobs];
-
-  // 1920
-  uint8_t ___pad[1152];
+  // 4096
+  double controls[ncontrols];
 
   // 64 * 64 * 3
   uint8_t target[dim * dim * 3];
