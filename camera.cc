@@ -19,6 +19,7 @@
 
 #include "camera.hh"
 #include "warp.hh"
+#include "partrait.hh"
 
 namespace makemore {
 
@@ -165,6 +166,59 @@ static void yuv422toRGB(const uint8_t *src, int w, int h, uint8_t *dst) {
       }
     }
   }
+}
+
+
+void Camera::read(Partrait *par, bool reflect) {
+  struct v4l2_buffer buf;
+  unsigned int i;
+
+  memset(&buf, 0, sizeof(buf));
+
+  buf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+  buf.memory = V4L2_MEMORY_MMAP;
+
+  int ret = ioctl(fd, VIDIOC_DQBUF, &buf);
+  assert(ret == 0);
+  assert(buf.index < n_buffers);
+
+  fprintf(stderr, "i=%u bs=%u [%lu]\n", buf.index, buf.bytesused, buffers[buf.index].length);
+  assert(buffers[buf.index].length == buf.bytesused);
+  assert(buffers[buf.index].length == w * h * 2);
+
+  if (par->w == w && par->h == h) {
+    yuv422toRGB((const uint8_t *)buffers[buf.index].start, w, h, par->rgb);
+  } else {
+    yuv422toRGB((const uint8_t *)buffers[buf.index].start, w, h, tmp);
+
+    int d = w / 2;
+    if (h/2 < d)
+      d = h/2;
+
+    int x0 = w/2 - d;
+    int y0 = h/2 - d;
+    int x1 = x0 + d * 2;
+    int y1 = y0;
+    int x2 = x0;
+    int y2 = y0 + d * 2;
+
+    kwarp(tmp, w, h, x0, y0, x1, y1, x2, y2, 
+      NULL, NULL, NULL, NULL, NULL, NULL,
+      par->w, par->h, par->rgb);
+  }
+
+  if (reflect) {
+    unsigned int fw2 = par->w / 2;
+    for (unsigned int y = 0; y < par->h; ++y) {
+      for (unsigned int x = 0; x < fw2; ++x) { 
+        for (unsigned int c = 0; c < 3; ++c) {
+          std::swap(par->rgb[y * par->w * 3 + x * 3 + c], par->rgb[y * par->w * 3 + (par->w - x) * 3 + c]);
+        }
+      }
+    }
+  }
+
+  assert(0 == ioctl(fd, VIDIOC_QBUF, &buf));
 }
 
 void Camera::read(uint8_t *rgb, unsigned int fw, unsigned int fh, bool reflect) {
