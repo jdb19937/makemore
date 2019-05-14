@@ -19,6 +19,22 @@ struct Partrait {
 
   Partrait();
   Partrait(unsigned int _w, unsigned int _h);
+  Partrait(const Partrait &par) {
+    w = par.w;
+    h = par.h;
+
+    if (par.rgb) {
+      assert(w > 0 && h > 0);
+      rgb = new uint8_t[w * h * 3];
+      memcpy(rgb, par.rgb, w * h * 3);
+    } else {
+      rgb = NULL;
+      assert(w == 0 && h == 0);
+    }
+
+    tags = par.tags;
+  }
+
   ~Partrait();
 
   bool empty() const;
@@ -35,9 +51,18 @@ struct Partrait {
   bool has_pose() const;
   void set_pose(const Pose &);
 
+  bool has_tag(const std::string &q) {
+    for (auto tag : tags)
+      if (tag == q)
+         return true;
+    return false;
+  }
+
   Triangle get_mark() const;
   bool has_mark() const;
   void set_mark(const Triangle &);
+
+  void encudub(double *cubuf) const;
 };
 
 }

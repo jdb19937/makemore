@@ -11,6 +11,9 @@
 #include "warp.hh"
 #include "pose.hh"
 #include "triangle.hh"
+#include "cudamem.hh"
+#include "numutils.hh"
+#include "strutils.hh"
 
 namespace makemore {
 
@@ -177,6 +180,14 @@ void Partrait::warp(Partrait *to) const {
     NULL, NULL, NULL, NULL, NULL, NULL,
     to->w, to->h, to->rgb
   );
+}
+
+void Partrait::encudub(double *cubuf) const {
+  assert(rgb && w > 0 && h > 0);
+  double *tmp = new double[w * h * 3];
+  btodv(rgb, tmp, w * h * 3);
+  makemore::encude(tmp, w * h * 3, cubuf);
+  delete[] tmp;
 }
 
 }
