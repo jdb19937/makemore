@@ -8,6 +8,7 @@
 
 #include <assert.h>
 #include <ctype.h>
+#include <string.h>
 
 namespace makemore {
 
@@ -20,6 +21,9 @@ extern void splitparts(const std::string &str, strvec *parts);
 extern void splitwords(const std::string &str, strvec *words);
 extern void splitlines(const std::string &str, strvec *lines);
 
+inline bool strbegins(const std::string &str, const std::string &pre) {
+  return (str.length() >= pre.length() && !memcmp(str.data(), pre.data(), pre.length()));
+}
 
 inline std::string join(const strvec &v, const char *sep) {
   std::string out;
@@ -60,6 +64,19 @@ inline void slurp(FILE *fp, std::string *str) {
     if (ret < 1)
       return;
     *str += std::string(buf, ret);
+  }
+}
+
+inline bool readline(FILE *fp, std::string *str) {
+  *str = "";
+
+  while (1) {
+    int c = getc(fp);
+    if (c == EOF)
+      return false;
+    if (c == '\n')
+      return true;
+    str->push_back((char)c);
   }
 }
 

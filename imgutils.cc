@@ -385,6 +385,126 @@ fail:
   return false;
 }
 
+bool pngrgb(
+  const std::string &png,
+  unsigned int *wp,
+  unsigned int *hp,
+  uint8_t **rgbp,
+  vector<string> *tags
+) {
+  FILE *fp = fmemopen((void *)png.data(), png.length(), "r");
+  assert(fp);
+
+  uint8_t header[8];
+  size_t ret;
+  png_structp png_ptr = NULL;
+  png_infop info_ptr = NULL;
+  png_infop end_ptr = NULL;
+  png_textp text = NULL;
+  png_bytep *row_pointers = NULL;
+  uint8_t *rgb = NULL;
+  unsigned int w = 0, h = 0;
+
+  ret = fread(header, 1, 8, fp);
+  if (ret != 8)
+    goto fail;
+  if (png_sig_cmp(header, 0, 8))
+    goto fail;
+
+  png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
+  if (!png_ptr)
+    goto fail;
+
+  info_ptr = png_create_info_struct(png_ptr);
+  if (!info_ptr)
+    goto fail;
+  end_ptr = png_create_info_struct(png_ptr);
+  if (!end_ptr)
+    goto fail;
+
+  if (setjmp(png_jmpbuf(png_ptr)))
+    goto fail;
+
+  png_init_io(png_ptr, fp);
+  png_set_sig_bytes(png_ptr, 8);
+
+  png_read_info(png_ptr, info_ptr);
+
+  w = png_get_image_width(png_ptr, info_ptr);
+  h = png_get_image_height(png_ptr, info_ptr);
+  rgb = new uint8_t[w * h * 3];
+
+  if (PNG_COLOR_TYPE_RGB != png_get_color_type(png_ptr, info_ptr))
+    goto fail;
+  if (8 != png_get_bit_depth(png_ptr, info_ptr))
+    goto fail;
+
+  png_set_interlace_handling(png_ptr);
+  png_read_update_info(png_ptr, info_ptr);
+
+  /* read file */
+  assert(!setjmp(png_jmpbuf(png_ptr)));
+
+  row_pointers = new png_bytep[h];
+  for (unsigned int y = 0; y < h; y++)
+    row_pointers[y] = rgb + y * w * 3;
+
+  png_read_image(png_ptr, row_pointers);
+
+  png_read_end(png_ptr, end_ptr);
+
+  if (tags) {
+    tags->clear();
+
+    for (int j = 0; j < 2; ++j) {
+      int numtext = png_get_text(png_ptr, j ? info_ptr : end_ptr, &text, NULL);
+      set<string> seen_tag;
+
+      for (int i = 0; i < numtext; ++i) {
+        std::string comment(text[i].text, text[i].text_length);
+        vector<string> words;
+        splitwords(comment, &words);
+        for (auto word : words) {
+          if (*word.c_str() != '#')
+            continue;
+          std::string tag = word.c_str() + 1;
+          if (!tag.length())
+            continue;
+          tag = lowercase(tag);
+          if (!Parson::valid_tag(tag))
+            continue;
+          if (seen_tag.count(tag))
+            continue;
+          tags->push_back(tag);
+          seen_tag.insert(tag);
+        }
+      }
+    }
+  }
+
+  fclose(fp);
+  if (row_pointers)
+    delete[] row_pointers;
+  if (png_ptr)
+    png_destroy_read_struct(&png_ptr, &info_ptr, &end_ptr);
+
+  *rgbp = rgb;
+  *wp = w;
+  *hp = h;
+  return true;
+
+fail:
+  fclose(fp);
+  if (row_pointers)
+    delete[] row_pointers;
+  if (png_ptr)
+    png_destroy_read_struct(&png_ptr, &info_ptr, &end_ptr);
+  if (rgb)
+    delete[] rgb;
+
+  return false;
+}
+
 bool labpng(
   const uint8_t *lab,
   unsigned int w,
