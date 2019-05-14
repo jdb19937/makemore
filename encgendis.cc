@@ -235,7 +235,7 @@ void Encgendis::report(const char *prog) {
 }
 
 void Encgendis::save() {
-//  segmap->save();
+  segmap->save();
   encmap->save();
   genmap->save();
 //  dismap->save();
