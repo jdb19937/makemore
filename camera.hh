@@ -24,6 +24,7 @@ struct Camera {
   void close();
 
   void read(uint8_t *rgb, unsigned int fw, unsigned int fh, bool reflect = false);
+  void read(class Partrait *par, bool reflect = false);
 };
 
 }
