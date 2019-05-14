@@ -11,6 +11,8 @@
 namespace makemore {
 
 struct Pose {
+  const static Pose STANDARD;
+
   Point center;
   double scale, angle, stretch, skew;
 

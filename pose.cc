@@ -11,6 +11,8 @@
 
 namespace makemore {
 
+const Pose Pose::STANDARD(128, 160, 64, 0.0, 1.0, 0.0);
+
 static inline double pdl(const Point &p0, const Point &p1, const Point &p2) {
   double d2 = (p2.y - p1.y) * (p2.y - p1.y) + (p2.x - p1.x) * (p2.x - p1.x);
   assert(d2 > 0);
