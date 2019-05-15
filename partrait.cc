@@ -182,6 +182,29 @@ void Partrait::warp(Partrait *to) const {
   );
 }
 
+void Partrait::warpover(Partrait *to) const {
+  assert(!to->empty());
+  assert(!empty());
+
+  Triangle fmark = get_mark();
+  assert(to->has_mark());
+  Triangle tmark = to->get_mark();
+
+  to->tags = tags;
+  to->set_mark(tmark);
+
+  Point p = makemore::trimap(Point(0, 0), tmark, fmark);
+  Point q = makemore::trimap(Point(to->w, 0), tmark, fmark);
+  Point r = makemore::trimap(Point(0, to->h), tmark, fmark);
+
+  kwarpover(
+    rgb, w, h,
+    p.x, p.y, q.x, q.y, r.x, r.y,
+    NULL, NULL, NULL, NULL, NULL, NULL,
+    to->w, to->h, to->rgb
+  );
+}
+
 void Partrait::encudub(double *cubuf) const {
   assert(rgb && w > 0 && h > 0);
   double *tmp = new double[w * h * 3];

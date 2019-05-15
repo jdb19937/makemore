@@ -218,5 +218,62 @@ void kwarp(const uint8_t *src,
   }
 }
 
+void kwarpover(const uint8_t *src,
+  int w, int h,
+  int x0, int y0, int x1, int y1, int x2, int y2,
+  int *px0, int *py0, int *px1, int *py1, int *px2, int *py2,
+  int dw, int dh,
+  uint8_t *dst
+) {
+  if (px0) {
+    assert(px0 && py0 && px1 && py1 && px2 && py2);
+
+    // CForm[{x,y} /. Solve[{
+    //   rx == x0 + (x1 - x0) * x / dw + (x2 - x0) * y / dh,
+    //   ry == y0 + (y1 - y0) * x / dw + (y2 - y0) * y / dh
+    // }, {x, y}][[1]]]
+
+
+    double rx = 0, ry = 0;
+    *px0 = -((dw*(ry*x0 - ry*x2 - rx*y0 + x2*y0 + rx*y2 - x0*y2))/(x1*y0 - x2*y0 - x0*y1 + x2*y1 + x0*y2 - x1*y2));
+    *py0 = -((-(dh*ry*x0) + dh*ry*x1 + dh*rx*y0 - dh*x1*y0 - dh*rx*y1 + dh*x0*y1)/(x1*y0 - x2*y0 - x0*y1 + x2*y1 + x0*y2 - x1*y2));
+
+    rx = w; ry = 0;
+    *px1 = -((dw*(ry*x0 - ry*x2 - rx*y0 + x2*y0 + rx*y2 - x0*y2))/(x1*y0 - x2*y0 - x0*y1 + x2*y1 + x0*y2 - x1*y2));
+    *py1 = -((-(dh*ry*x0) + dh*ry*x1 + dh*rx*y0 - dh*x1*y0 - dh*rx*y1 + dh*x0*y1)/(x1*y0 - x2*y0 - x0*y1 + x2*y1 + x0*y2 - x1*y2));
+
+    rx = 0; ry = h;
+    *px2 = -((dw*(ry*x0 - ry*x2 - rx*y0 + x2*y0 + rx*y2 - x0*y2))/(x1*y0 - x2*y0 - x0*y1 + x2*y1 + x0*y2 - x1*y2));
+    *py2 = -((-(dh*ry*x0) + dh*ry*x1 + dh*rx*y0 - dh*x1*y0 - dh*rx*y1 + dh*x0*y1)/(x1*y0 - x2*y0 - x0*y1 + x2*y1 + x0*y2 - x1*y2));
+
+  }
+
+  for (int y = 0; y < dh; ++y) {
+    for (int x = 0; x < dw; ++x) {
+      double rx = (double)x0 + (double)(x1 - x0) * (double)x / (double)dw + (double)(x2 - x0) * (double)y / (double)dh;
+      double ry = (double)y0 + (double)(y1 - y0) * (double)x / (double)dw + (double)(y2 - y0) * (double)y / (double)dh;
+
+      int rx0 = floorl(rx), rx1 = rx0 + 1;
+      int ry0 = floorl(ry), ry1 = ry0 + 1;
+      double bx = rx - rx0;
+      double by = ry - ry0;
+      bool ab = 0;
+      if (rx0 < 0) { ab = 1; } if (rx0 >= w) { ab = 1; }
+      if (rx1 < 0) { ab = 1; } if (rx1 >= w) { ab = 1; }
+      if (ry0 < 0) { ab = 1; } if (ry0 >= h) { ab = 1; }
+      if (ry1 < 0) { ab = 1; } if (ry1 >= h) { ab = 1; }
+      if (ab) { dst += 3; continue; }
+
+      for (int c = 0; c < 3; ++c) {
+        *dst++ =
+          (1.0-bx) * (1.0-by) * (double)src[ry0 * w * 3 + rx0 * 3 + c] +
+          (bx) * (1.0-by) * (double)src[ry0 * w * 3 + rx1 * 3 + c] +
+          (1.0-bx) * (by) * (double)src[ry1 * w * 3 + rx0 * 3 + c] +
+          (bx) * (by) * (double)src[ry1 * w * 3 + rx1 * 3 + c];
+      }
+    }
+  }
+}
+
 
 }

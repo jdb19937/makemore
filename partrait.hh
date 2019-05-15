@@ -46,6 +46,7 @@ struct Partrait {
   void to_png(std::string *png) const;
 
   void warp(Partrait *to) const;
+  void warpover(Partrait *to) const;
 
   Pose get_pose() const;
   bool has_pose() const;
