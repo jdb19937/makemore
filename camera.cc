@@ -186,6 +186,7 @@ void Camera::read(Partrait *par, bool reflect) {
   assert(buffers[buf.index].length == buf.bytesused);
   assert(buffers[buf.index].length == w * h * 2);
 
+assert(par->w == w && par->h == h);
   if (par->w == w && par->h == h) {
     yuv422toRGB((const uint8_t *)buffers[buf.index].start, w, h, par->rgb);
   } else {

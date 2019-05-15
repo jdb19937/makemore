@@ -9,7 +9,7 @@
 #include "numutils.hh"
 #include "imgutils.hh"
 #include "strutils.hh"
-#include "encgendis.hh"
+#include "autoposer.hh"
 #include "cholo.hh"
 #include "warp.hh"
 #include "triangle.hh"
@@ -22,20 +22,24 @@ int main() {
   seedrand();
 
   unsigned int mbn = 1;
-  Encgendis egd("oldseg.proj", mbn);
+  Autoposer autoposer("autoposer.proj");
 
   std::vector<std::string> srcimages;
 
-  std::string srcdir = "/home/dan/makemore/allmugs";
-  struct dirent *de;
-  DIR *dp = opendir(srcdir.c_str());
-  assert(dp);
-  while ((de = readdir(dp))) {
-    if (*de->d_name == '.')
-      continue;
-    srcimages.push_back(srcdir + "/" + de->d_name);
+  std::vector<std::string> srcdirs;
+  srcdirs.push_back("/home/dan/makemore/cam");
+  srcdirs.push_back("/home/dan/makemore/allmugs");
+  for (auto srcdir : srcdirs) {
+    struct dirent *de;
+    DIR *dp = opendir(srcdir.c_str());
+    assert(dp);
+    while ((de = readdir(dp))) {
+      if (*de->d_name == '.')
+        continue;
+      srcimages.push_back(srcdir + "/" + de->d_name);
+    }
+    closedir(dp);
   }
-  closedir(dp);
   std::sort(srcimages.begin(), srcimages.end());
   assert(srcimages.size());
 
@@ -50,33 +54,26 @@ fprintf(stderr, "starting\n");
     srcpar.load(imagefn);
     if (!srcpar.has_mark())
       continue;
+    Pose srcpose = srcpar.get_pose();
 
-    Partrait par = srcpar;
-    Triangle mark = par.get_mark();
+    Pose pose = Pose::STANDARD;
+    pose.center.x += randrange(-40.0, 40.0);
+    pose.center.y += randrange(-40.0, 40.0);
+    pose.scale = 64.0 + randrange(-20.0, 20.0);
+    pose.stretch = srcpose.stretch * randrange(0.95, 1.05);
+    pose.angle = srcpose.angle + randrange(-0.5, 0.5);
+    pose.skew = srcpose.skew + randrange(-0.05, 0.05);
 
-    assert(egd.seg->inn == par.w * par.h * 3);
-    par.encudub(egd.cusegin);
-    const double *cusegout = egd.seg->feed(egd.cusegin, NULL);
-    decude(cusegout, egd.seg->outn, egd.segbuf);
+    Partrait par(256, 256);
+    par.set_pose(pose);
+    srcpar.warp(&par);
 
-    egd.segbuf[0] = mark.p.x / (double)par.w;
-    egd.segbuf[1] = mark.p.y / (double)par.h;
-    egd.segbuf[2] = mark.q.x / (double)par.w;
-    egd.segbuf[3] = mark.q.y / (double)par.h;
-    egd.segbuf[4] = mark.r.x / (double)par.w;
-    egd.segbuf[5] = mark.r.y / (double)par.h;
+    autoposer.observe(par, 0.00002);
 
-     assert(egd.segoutlay->n == 6);
-     assert(egd.seg->outn == 6);
-
-    encude(egd.segbuf, 6, egd.cusegtgt);
-    egd.seg->target(egd.cusegtgt);
-    egd.seg->train(0.000005);
-    
     if (i % 100 == 0) {
-      egd.report("burnseg");
+      autoposer.report("burnseg");
 fprintf(stderr, "saving\n");
-      egd.save();
+      autoposer.save();
 fprintf(stderr, "saved\n");
     }
     ++i;
