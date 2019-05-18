@@ -213,4 +213,24 @@ void Partrait::encudub(double *cubuf) const {
   delete[] tmp;
 }
 
+void Partrait::reflect() {
+  unsigned int w2 = w / 2;
+  for (unsigned int y = 0; y < h; ++y) {
+    for (unsigned int x = 0; x < w2; ++x) { 
+      for (unsigned int c = 0; c < 3; ++c) {
+        std::swap(rgb[y * w * 3 + x * 3 + c], rgb[y * w * 3 + (w - x) * 3 + c]);
+      }
+    }
+  }
+
+  if (has_mark()) {
+    Triangle mark = get_mark();
+    std::swap(mark.p, mark.q);
+    mark.p.x = w - mark.p.x;
+    mark.q.x = w - mark.p.x;
+    mark.r.x = w - mark.r.x;
+    set_mark(mark);
+  }
+}
+
 }

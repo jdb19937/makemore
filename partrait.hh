@@ -64,6 +64,7 @@ struct Partrait {
   void set_mark(const Triangle &);
 
   void encudub(double *cubuf) const;
+  void reflect();
 };
 
 }
