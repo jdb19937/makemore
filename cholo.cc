@@ -183,8 +183,16 @@ void Cholo::generate(const double *y, double *x, bool activate) {
   }
 }
 
-void Cholo::encode(const double *x, double *y) {
-  encude(x, dim, in);
+void Cholo::encode(const double *x, double *y, bool deactivate) {
+  if (deactivate) {
+    for (unsigned int j = 0; j < dim; ++j) {
+      assert(x[j] > 0 && x[j] < 1);
+      y[j] = unsigmoid(x[j]);
+    }
+    encude(y, dim, in);
+  } else {
+    encude(x, dim, in);
+  }
 
   cusubvec(in, mean, dim, out);
   cudivsqrtvec(out, var, dim, out);

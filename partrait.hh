@@ -65,6 +65,8 @@ struct Partrait {
 
   void encudub(double *cubuf) const;
   void reflect();
+  bool read_ppm(FILE *);
+  void write_ppm(FILE *);
 };
 
 }
