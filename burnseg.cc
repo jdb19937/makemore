@@ -27,8 +27,7 @@ int main() {
   std::vector<std::string> srcimages;
 
   std::vector<std::string> srcdirs;
-  srcdirs.push_back("/home/dan/makemore/cam");
-  srcdirs.push_back("/home/dan/makemore/allmugs");
+  srcdirs.push_back("/spin/dan/celeba.tagged");
   for (auto srcdir : srcdirs) {
     struct dirent *de;
     DIR *dp = opendir(srcdir.c_str());
@@ -59,16 +58,16 @@ fprintf(stderr, "starting\n");
     Pose pose = Pose::STANDARD;
     pose.center.x += randrange(-40.0, 40.0);
     pose.center.y += randrange(-40.0, 40.0);
-    pose.scale = 64.0 + randrange(-20.0, 20.0);
+    pose.scale = 64.0 * randrange(0.75, 1.25);
     pose.stretch = srcpose.stretch * randrange(0.95, 1.05);
-    pose.angle = srcpose.angle + randrange(-0.5, 0.5);
+    pose.angle = srcpose.angle + randrange(-0.3, 0.3);
     pose.skew = srcpose.skew + randrange(-0.05, 0.05);
 
     Partrait par(256, 256);
     par.set_pose(pose);
     srcpar.warp(&par);
 
-    autoposer.observe(par, 0.00002);
+    autoposer.observe(par, 0.000001);
 
     if (i % 100 == 0) {
       autoposer.report("burnseg");

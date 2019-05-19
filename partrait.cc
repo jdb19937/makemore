@@ -227,7 +227,7 @@ void Partrait::reflect() {
     Triangle mark = get_mark();
     std::swap(mark.p, mark.q);
     mark.p.x = w - mark.p.x;
-    mark.q.x = w - mark.p.x;
+    mark.q.x = w - mark.q.x;
     mark.r.x = w - mark.r.x;
     set_mark(mark);
   }

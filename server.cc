@@ -626,7 +626,7 @@ fprintf(stderr, "got linebuf word=%s\n", word.c_str());
       }
 
       switch (agent->proto) {
-#if 0
+#if 1
       case Agent::MORETP:
         {
           unsigned int i, n;

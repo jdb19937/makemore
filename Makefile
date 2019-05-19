@@ -28,7 +28,7 @@ LABTOOLS = \
   labshrink labhifreq labtogray grayhifreq \
   reconlab recongray 
 
-MORETOOLS = makemore makelay catlay wireup maketop makemap chatfab learnfab learnmore genicon servemore makezone sampler makeipdat errstats fillparsonsdat autolign dumpbranetxt moretran learnmark makemark burnbig burnimp learnimp showbig showimp impcholo cholo64 showcholo64  burnpre learnpre restock stest makesamp inburn incholo makeknobs inconc makeconc burnseg tmptag eyewarp aleyen makesamp makecholo
+MORETOOLS = makemore makelay catlay wireup maketop makemap chatfab learnfab learnmore genicon servemore makezone sampler makeipdat errstats fillparsonsdat autolign dumpbranetxt moretran learnmark makemark burnbig burnimp learnimp showbig showimp impcholo cholo64 showcholo64  burnpre learnpre restock stest makesamp inburn incholo makeknobs inconc makeconc burnseg tmptag eyewarp aleyen makesamp makecholo 
 
 MANUAL = moretran.pdf moretp.pdf
 
@@ -309,6 +309,9 @@ makeknobs: makeknobs.o libmakemore.so
 testchol.o: $(LIBHDR)
 testchol: testchol.o libmakemore.so
 	$(CXX) -o $@ $(CXXFLAGS) testchol.o $(LDFLAGS) $(CULDFLAGS)
+burnreseg.o: $(LIBHDR)
+burnreseg: burnreseg.o libmakemore.so
+	$(CXX) -o $@ $(CXXFLAGS) burnreseg.o $(LDFLAGS) $(CULDFLAGS)
 burnseg.o: $(LIBHDR)
 burnseg: burnseg.o libmakemore.so
 	$(CXX) -o $@ $(CXXFLAGS) burnseg.o $(LDFLAGS) $(CULDFLAGS)
@@ -330,6 +333,9 @@ showtag: showtag.o libmakemore.so
 posestats.o: $(LIBHDR)
 posestats: posestats.o libmakemore.so
 	$(CXX) -o $@ $(CXXFLAGS) posestats.o $(LDFLAGS) $(CULDFLAGS)
+mf.o: $(LIBHDR)
+mf: mf.o libmakemore.so
+	$(CXX) -o $@ $(CXXFLAGS) mf.o $(LDFLAGS) $(CULDFLAGS)
 burnimp.o: $(LIBHDR)
 burnimp: burnimp.o libmakemore.so
 	$(CXX) -o $@ $(CXXFLAGS) burnimp.o $(LDFLAGS) $(CULDFLAGS)

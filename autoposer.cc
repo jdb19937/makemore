@@ -69,6 +69,11 @@ Autoposer::Autoposer(const std::string &_dir) : Project(_dir, 1) {
   segmap = new Mapfile(segmapfn);
   seg = new Multitron(*segtop, segmap, mbn, false);
 
+  char resegmapfn[4096];
+  sprintf(resegmapfn, "%s/reseg.map", dir.c_str());
+  resegmap = new Mapfile(resegmapfn);
+  reseg = new Multitron(*segtop, resegmap, mbn, false);
+
   assert(seg->outn == segoutlay->n);
   assert(segoutlay->n == 6);
 
@@ -97,9 +102,11 @@ void Autoposer::report(const char *prog) {
     stderr,
     "%s %s rounds=%u\n"
     "%s %s seg_err2=%g seg_errm=%g\n"
+    "%s %s reseg_err2=%g reseg_errm=%g\n"
     "\n",
     prog, dir.c_str(), rounds,
-    prog, dir.c_str(), seg->err2, seg->errm
+    prog, dir.c_str(), seg->err2, seg->errm,
+    prog, dir.c_str(), reseg->err2, reseg->errm
   );
 }
 
@@ -135,6 +142,30 @@ void Autoposer::observe(const Partrait &par, double mu) {
   seg->train(mu);
 }
 
+void Autoposer::reobserve(const Partrait &par, double mu) {
+  assert(par.has_mark());
+  Triangle mark = par.get_mark();
+
+  assert(reseg->inn == par.w * par.h * 3);
+  par.encudub(cusegin);
+
+  reseg->feed(cusegin, NULL);
+
+  mark.p.x /= (double)par.w;
+  mark.p.y /= (double)par.h;
+  mark.q.x /= (double)par.w;
+  mark.q.y /= (double)par.h;
+  mark.r.x /= (double)par.w;
+  mark.r.y /= (double)par.h;
+
+  assert(reseg->outn == 6);
+  assert(sizeof(mark) == 6 * sizeof(double));
+  encude((double *)&mark, 6, cusegtgt);
+
+  reseg->target(cusegtgt);
+  reseg->train(mu);
+}
+
 void Autoposer::autopose(Partrait *parp) {
   assert(parp->has_mark());
   assert(seginlay->n == 256 * 256 * 3);
@@ -156,7 +187,7 @@ void Autoposer::autopose(Partrait *parp) {
   xmark.r.x *= 256.0;
   xmark.r.y *= 256.0;
 
-fprintf(stderr, "xmark=(%lf,%lf) (%lf,%lf) (%lf,%lf)\n", xmark.p.x, xmark.p.y, xmark.q.x, xmark.q.y, xmark.r.x, xmark.r.y);
+//fprintf(stderr, "xmark=(%lf,%lf) (%lf,%lf) (%lf,%lf)\n", xmark.p.x, xmark.p.y, xmark.q.x, xmark.q.y, xmark.r.x, xmark.r.y);
 
   Triangle pmark = parp->get_mark();
   Triangle qmark = x.get_mark();
