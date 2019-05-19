@@ -233,4 +233,57 @@ void Partrait::reflect() {
   }
 }
 
+bool Partrait::read_ppm(FILE *fp) {
+  int ret = getc(fp);
+  if (ret == EOF)
+    return false;
+  assert(ret == 'P');
+  assert(getc(fp) == '6');
+  assert(isspace(getc(fp)));
+
+  int c;
+  char buf[256], *p = buf;
+  do { *p = getc(fp); } while (isspace(*p));
+  ++p;
+
+  while (!isspace(*p = getc(fp))) {
+    assert(isdigit(*p));
+    assert(p - buf < 32);
+    ++p;
+  }
+  *p = 0;
+  w = atoi(buf);
+
+  p = buf;
+  while (!isspace(*p = getc(fp))) {
+    assert(isdigit(*p));
+    assert(p - buf < 32);
+    ++p;
+  }
+  *p = 0;
+  h = atoi(buf);
+
+  p = buf;
+  while (!isspace(*p = getc(fp))) {
+    assert(isdigit(*p));
+    assert(p - buf < 32);
+    ++p;
+  }
+  *p = 0;
+  assert(!strcmp(buf, "255"));
+
+  if (rgb)
+    delete[] rgb;
+  rgb = new uint8_t[3 * w * h];
+
+  assert(3 * w * h == fread(rgb, 1, 3 * w * h, fp));
+  return true;
+}
+
+void Partrait::write_ppm(FILE *fp) {
+  fprintf(fp, "P6\n%u %u\n255\n", w, h);
+  assert(3 * w * h == fwrite(rgb, 1, 3 * w * h, fp));
+  fflush(fp);
+}
+
 }
