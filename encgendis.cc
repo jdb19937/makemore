@@ -235,7 +235,7 @@ void Encgendis::report(const char *prog) {
 }
 
 void Encgendis::save() {
-  segmap->save();
+//  segmap->save();
   encmap->save();
   genmap->save();
 //  dismap->save();
@@ -508,9 +508,9 @@ void Encgendis::burn(double nu, double pi) {
   encude(tgtbuf, gen->outn, cugentgt);
   gen->target(cugentgt, false);
 
-//  double *cugenfout = gen->foutput();
-//  for (unsigned int mbi = 0; mbi < mbn; ++mbi)
-//    cufocus(cugenfout + mbi * tgtlay->n, cutgtlayx, cutgtlayy, tgtlay->n);
+  double *cugenfout = gen->foutput();
+  for (unsigned int mbi = 0; mbi < mbn; ++mbi)
+    cufocus(cugenfout + mbi * tgtlay->n, cutgtlayx, cutgtlayy, tgtlay->n);
 
   gen->update_stats();
   gen->train(pi);

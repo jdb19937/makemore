@@ -48,8 +48,7 @@ int main(int argc, char **argv) {
       continue;
 
     Partrait newpar(256, 256);
-    newpar.set_pose(Pose(128, 160, 64, 0.0, 1.0, 0.0));
-
+    newpar.set_pose(Pose::STANDARD);
     par.warp(&newpar);
 
     newpar.save(dstdir + "/" + srcfn);

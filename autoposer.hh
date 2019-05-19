@@ -22,8 +22,8 @@ struct Autoposer : Project {
   Layout *seginlay, *segoutlay;
 
   Topology *segtop;
-  Mapfile *segmap;
-  Tron *seg;
+  Mapfile *segmap, *resegmap;
+  Tron *seg, *reseg;
 
   double *cusegtgt, *cusegin;
   unsigned int rounds;
@@ -36,6 +36,7 @@ struct Autoposer : Project {
   void save();
 
   void observe(const class Partrait &par, double mu);
+  void reobserve(const class Partrait &par, double mu);
   void autopose(class Partrait *parp);
 };
 
