@@ -73,16 +73,7 @@ Encgendis::Encgendis(const std::string &_dir, unsigned int _mbn) : Project(_dir,
   tgtlay = new Layout;
   tgtlay->load_file(tgtlayfn);
 
-  char segoutlayfn[4096];
-  sprintf(segoutlayfn, "%s/segoutput.lay", dir.c_str());
-  segoutlay = new Layout;
-  segoutlay->load_file(segoutlayfn);
-
-  char seginlayfn[4096];
-  sprintf(seginlayfn, "%s/seginput.lay", dir.c_str());
-  seginlay = new Layout;
-  seginlay->load_file(seginlayfn);
-
+#if 0
   char distopfn[4096];
   sprintf(distopfn, "%s/dis.top", dir.c_str());
   distop = new Topology;
@@ -95,6 +86,7 @@ Encgendis::Encgendis(const std::string &_dir, unsigned int _mbn) : Project(_dir,
 
   assert(dis->outn == mbn * 2);
   assert(dis->inn == mbn * 2 * (ctxlay->n + tgtlay->n));
+#endif
 
   char encmapfn[4096], enctopfn[4096];
   sprintf(enctopfn, "%s/enc.top", dir.c_str());
@@ -102,8 +94,9 @@ Encgendis::Encgendis(const std::string &_dir, unsigned int _mbn) : Project(_dir,
   enctop = new Topology;
   enctop->load_file(enctopfn);
   encmap = new Mapfile(encmapfn);
-  enc = new Multitron(*enctop, encmap, mbn, true);
+  enc = new Multitron(*enctop, encmap, mbn, false);
 
+#if 0
   char inencmapfn[4096], inenctopfn[4096];
   sprintf(inenctopfn, "%s/inenc.top", dir.c_str());
   sprintf(inencmapfn, "%s/inenc.map", dir.c_str());
@@ -113,6 +106,7 @@ Encgendis::Encgendis(const std::string &_dir, unsigned int _mbn) : Project(_dir,
   inenc = new Multitron(*inenctop, inencmap, mbn, true);
   assert(inenc->inn == mbn * ctrlay->n);
   assert(inenc->outn == mbn * knblay->n);
+#endif
 
   char genmapfn[4096], gentopfn[4096];
   sprintf(gentopfn, "%s/gen.top", dir.c_str());
@@ -122,14 +116,7 @@ Encgendis::Encgendis(const std::string &_dir, unsigned int _mbn) : Project(_dir,
   genmap = new Mapfile(genmapfn);
   gen = new Multitron(*gentop, genmap, mbn, false);
 
-  char segmapfn[4096], segtopfn[4096];
-  sprintf(segtopfn, "%s/seg.top", dir.c_str());
-  sprintf(segmapfn, "%s/seg.map", dir.c_str());
-  segtop = new Topology;
-  segtop->load_file(segtopfn);
-  segmap = new Mapfile(segmapfn);
-  seg = new Multitron(*segtop, segmap, mbn, false);
-
+#if 0
   char ingenmapfn[4096], ingentopfn[4096];
   sprintf(ingentopfn, "%s/ingen.top", dir.c_str());
   sprintf(ingenmapfn, "%s/ingen.map", dir.c_str());
@@ -139,6 +126,7 @@ Encgendis::Encgendis(const std::string &_dir, unsigned int _mbn) : Project(_dir,
   ingen = new Multitron(*ingentop, ingenmap, mbn, true);
   assert(ingen->inn == mbn * knblay->n);
   assert(ingen->outn == mbn * ctrlay->n);
+#endif
 
   encinlay = new Layout(*tgtlay);
   assert(enc->inn == mbn * encinlay->n);
@@ -155,29 +143,16 @@ Encgendis::Encgendis(const std::string &_dir, unsigned int _mbn) : Project(_dir,
 #endif
   *disinlay += *tgtlay;
 
-  assert(seg->inn == seginlay->n * mbn);
-  assert(seg->outn == segoutlay->n * mbn);
-
   cumake(&cuenctgt, enc->outn);
-  cumake(&cudistgt, dis->outn);
   cumake(&cuencin, enc->inn);
-  cumake(&cuinencin, inenc->inn);
-  cumake(&cuingenin, ingen->inn);
-  cumake(&cudisin, dis->inn);
-  cumake(&cudisfin, dis->inn);
   cumake(&cugentgt, gen->outn);
-  cumake(&cusegtgt, seg->outn);
-  cumake(&cusegin, seg->inn);
   cumake(&cugenin, gen->inn);
   cumake(&cugenfin, gen->inn);
-
-  distgt = new double[dis->outn];
 
   ctxbuf = new double[mbn * ctxlay->n]();
   ctrbuf = new double[mbn * ctrlay->n]();
   knbbuf = new double[mbn * knblay->n]();
   tgtbuf = new double[mbn * tgtlay->n]();
-  segbuf = new double[mbn * segoutlay->n]();
 
   cumake(&cutgtlayx, tgtlay->n);
   encude(tgtlay->x, tgtlay->n, cutgtlayx);
@@ -199,13 +174,8 @@ Encgendis::~Encgendis() {
   cufree(cugenin);
   cufree(cugenfin);
   cufree(cuencin);
-  cufree(cudisin);
-  cufree(cudisfin);
   cufree(cugentgt);
   cufree(cuenctgt);
-  cufree(cudistgt);
-
-  delete[] distgt;
 
   delete[] ctxbuf;
   delete[] ctrbuf;
@@ -219,37 +189,23 @@ void Encgendis::report(const char *prog) {
     "%s %s rounds=%u\n"
     "%s %s enc_err2=%g enc_errm=%g\n"
     "%s %s gen_err2=%g gen_errm=%g\n"
-    "%s %s seg_err2=%g seg_errm=%g\n"
-    "%s %s inenc_err2=%g inenc_errm=%g\n"
-    "%s %s ingen_err2=%g ingen_errm=%g\n"
-    "%s %s %c dis_err2=%g dis_errm=%g\n"
     "\n",
     prog, dir.c_str(), rounds,
     prog, dir.c_str(), enc->err2, enc->errm,
-    prog, dir.c_str(), gen->err2, gen->errm,
-    prog, dir.c_str(), seg->err2, seg->errm,
-    prog, dir.c_str(), inenc->err2, inenc->errm,
-    prog, dir.c_str(), ingen->err2, ingen->errm,
-    prog, dir.c_str(), ' ', dis->err2, dis->errm
+    prog, dir.c_str(), gen->err2, gen->errm
   );
 }
 
 void Encgendis::save() {
-//  segmap->save();
   encmap->save();
   genmap->save();
 //  dismap->save();
-//  inencmap->save();
-//  ingenmap->save();
 }
 
 void Encgendis::load() {
-  segmap->load();
   encmap->load();
   genmap->load();
   dismap->load();
-  inencmap->load();
-  ingenmap->load();
 }
 
 void Encgendis::observe(double mu, double yo, double wu, const double *realness) {
@@ -389,8 +345,6 @@ void Encgendis::inencode() {
 
 
 void Encgendis::segment() {
-  const double *cusegout = seg->feed(cusegin, NULL);
-  decude(cusegout, seg->outn, segbuf);
 }
 
 void Encgendis::generate() {
@@ -508,9 +462,11 @@ void Encgendis::burn(double nu, double pi) {
   encude(tgtbuf, gen->outn, cugentgt);
   gen->target(cugentgt, false);
 
+#if 0
   double *cugenfout = gen->foutput();
   for (unsigned int mbi = 0; mbi < mbn; ++mbi)
     cufocus(cugenfout + mbi * tgtlay->n, cutgtlayx, cutgtlayy, tgtlay->n);
+#endif
 
   gen->update_stats();
   gen->train(pi);

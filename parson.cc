@@ -83,6 +83,7 @@ bool Parson::valid_tag(const char *tag) {
       tag[i] == ':' ||
       tag[i] == ',' ||
       tag[i] == '.' ||
+      tag[i] == '-' ||
       tag[i] == '_' ||
       tag[i] >= '0' && tag[i] <= '9'
     )) {
@@ -386,7 +387,6 @@ void Parson::initialize(const char *_nom, double mean, double dev) {
   memset(parens, 0, sizeof(parens));
   paren_noms(nom, parens[0], parens[1]);
   memset(frens, 0, sizeof(frens));
-  memset(target, 0, sizeof(target));
   memset(partrait, 0, sizeof(partrait));
 
   seedrand();
@@ -404,38 +404,11 @@ void Parson::_from_pipe(Pipeline *pipe, unsigned int mbi) {
   dtobv(pipe->outbuf + mbi * dd3, partrait, dd3);
 }
 
-void Parson::_to_pipe(Pipeline *pipe, unsigned int mbi, bool ex) {
-  assert(mbi < pipe->mbn);
-  unsigned long dd3 = dim * dim * 3;
-  assert(pipe->outlay->n == dd3);
-  assert(sizeof(target) == dd3);
-
-  unsigned long hashlen = pipe->ctxlay->n;
-  assert(hashlen == pipe->ctxlay->n);
-  assert(hashlen <= Hashbag::n);
-  assert(hashlen * sizeof(double) <= sizeof(Hashbag));
-
-  Hashbag ph;
-  bagtags(&ph);
-  if (ex) {
-    ph.add(Hashbag::random());
-  }
-
-  memcpy(pipe->ctxbuf + mbi * hashlen, &ph, hashlen * sizeof(double));
-  btodv(target, pipe->outbuf + mbi * dd3, dd3);
-}
-
 void Parson::generate(Pipeline *pipe, long min_age) {
   Parson *me = this;
   pipe->generate(&me, 1, min_age);
 }
 #endif
-
-void Parson::paste_target(PPM *ppm, unsigned int x0, unsigned int y0) {
-  assert(x0 + dim <= ppm->w);
-  assert(y0 + dim <= ppm->h);
-  ppm->pastelab(target, dim, dim, x0, y0);
-}
 
 void Parson::paste_partrait(PPM *ppm, unsigned int x0, unsigned int y0) {
   assert(x0 + dim <= ppm->w);
@@ -459,16 +432,6 @@ void Parson::save(FILE *fp) {
   size_t ret;
   ret = fwrite((uint8_t *)this, 1, sizeof(Parson), fp);
   assert(ret == sizeof(Parson));
-}
-
-double Parson::error2() const {
-  double e2 = 0;
-  for (unsigned int i = 0; i < dim * dim * 3; ++i) {
-    double d = (target[i] - partrait[i]);
-    e2 += d * d;
-  }
-  e2 /= (double)(dim * dim * 3);
-  return e2;
 }
 
 double Parson::centerv() const {

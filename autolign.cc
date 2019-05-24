@@ -3,10 +3,13 @@
 #include "random.hh"
 #include "cudamem.hh"
 #include "project.hh"
-#include "pipeline.hh"
 
 #include "ppm.hh"
 #include "warp.hh"
+#include "partrait.hh"
+#include "encgendis.hh"
+#include "autoposer.hh"
+#include "imgutils.hh"
 
 #include <math.h>
 
@@ -14,143 +17,77 @@
 
 using namespace makemore;
 
-Pipeline *open_pipeline(unsigned int mbn) {
-  Pipeline *pipe = new Pipeline(mbn);
-  pipe->add_stage(new Project("test8.proj", mbn));
-  pipe->add_stage(new Project("test16.proj", mbn));
-  pipe->add_stage(new Project("test32.proj", mbn));
-  pipe->add_stage(new Project("test64.proj", mbn));
-  return pipe;
-}
-
-
-int usage() {
-  fprintf(stderr,
-    "Usage: errstats\n"
-  );
-  return 1;
-}
-
-void focus(double *a, const double *xp, const double *yp, unsigned int n) {
-  for (unsigned int i = 0; i < n; ++i) {
-    if (i >= n)
-      return;
-
-    double x = xp[i];
-    double y = yp[i];
-
-    double d2 = (x - 0.5) * (x - 0.5) + (y - 0.5) * (y - 0.5);
-    double f = 1.0 - 2.0 * d2;
-    if (f < 0.0)
-      f = 0.0;
-    if (f > 1.0)
-      f = 1.0;
-
-
-// In[2]:= f[x_,y_] := 1 - 2 * ((x-1/2)^2 + (y-1/2)^2) 
-// In[6]:= Integrate[f[x,y], {x,0,1},{y,0,1}]
-//
-//         2
-// Out[6]= -
-//         3
-//  a[i] *= f * 1.5;
-
-
-// In[26]:= Integrate[f[x,y]^2, {x,0,1},{y,0,1}]
-// 
-//          22
-// Out[26]= --
-//          45
-
-    a[i] *= f * f * (45.0 / 22.0);
-  }
-}
-
-void subvec(double *outbuf, double *tgtbuf) {
-  for (unsigned int j = 0; j < 64 * 64 * 3; ++j)
-    outbuf[j] -= tgtbuf[j];
-}
-
-double err2(double *buf) {
-  double e2 = 0;
-  for (unsigned int j = 0; j < 64 * 64 * 3; ++j)
-    e2 += buf[j] * buf[j];
-  e2 /= (64.0 * 64.0 * 3.0);
-  return e2;
-}
-
 int main(int argc, char **argv) {
   seedrand();
 
-  Pipeline *pipe = open_pipeline(1);
-  double srcbuf[320*400*3];
-  double tgtbuf[320*400*3];
-  double errbuf[64*64*3];
-  double best[64*64*3];
+  Autoposer autoposer("bestposer.proj");
+  Autoposer autoposer2("newposer.proj");
+  Encgendis egd("big.proj", 1);
 
-  int ret = fread(srcbuf, sizeof(double), 320 * 400 * 3, stdin);
-  assert(ret == 320 * 400 * 3);
+  Partrait par;
+  Pose curpose = Pose::STANDARD;
+  curpose.center.x = (double)par.w/2.0;
+  curpose.center.y = (double)par.h/2.0;
+  par.set_pose(curpose);
 
-  assert(pipe->ctxlay->n == 72);
-  for (unsigned int i = 0; i < pipe->ctxlay->n; ++i)
-    pipe->ctxbuf[i] = 0.5;
+  while (par.read_ppm(stdin)) {
+    Pose lastpose = par.get_pose();
 
-  pipe->ctxbuf[68] = 1.0;
-  pipe->ctxbuf[69] = 0;
-  pipe->ctxbuf[70] = 0;
-  pipe->ctxbuf[71] = 0;
+    double cdrift = 0.2;
+    double sdrift = 0.5;
+    double drift = 0.5;
+    curpose.center.x = (1.0 - cdrift) * lastpose.center.x + cdrift * (par.w / 2.0);
+    curpose.center.y = (1.0 - cdrift) * lastpose.center.y + cdrift * (par.h / 2.0);
+    curpose.scale = (1.0 - sdrift) * lastpose.scale + sdrift * 64.0;
 
-  pipe->ctrlock = 0;
-  pipe->tgtlock = -1;
+    curpose.angle = (1.0 - drift) * lastpose.angle;
+    curpose.stretch = (1.0 - drift) * lastpose.stretch + 1.0 * drift;
+    curpose.skew = (1.0 - drift) * lastpose.skew;
 
-  double beste2 = -1;
+    if (curpose.center.x < 0) curpose.center.x = 0;
+    if (curpose.center.x >= par.w) curpose.center.x = par.w - 1;
+    if (curpose.center.y < 0) curpose.center.y = 0;
+    if (curpose.center.y >= par.h) curpose.center.x = par.h - 1;
+    if (curpose.skew > 0.1) curpose.skew = 0.1;
+    if (curpose.skew < -0.1) curpose.skew = -0.1;
+    if (curpose.scale > 128.0) curpose.scale = 128.0;
+    if (curpose.scale < 32.0) curpose.scale = 32.0;
+    if (curpose.angle > 1.0) curpose.angle = 1.0;
+    if (curpose.angle < -1.0) curpose.angle = -1.0;
+    if (curpose.stretch > 1.2) curpose.stretch = 1.2;
+    if (curpose.stretch < 0.8) curpose.stretch = 0.8;
 
-  double guessx0 = -30;
-  double guessy0 = 0;
+    par.set_pose(curpose);
+    autoposer.autopose(&par);
+    autoposer2.autopose(&par);
 
-  PPM ppm(192, 64, 0);
+    Partrait stdpar(256, 256);
+    stdpar.set_pose(Pose::STANDARD);
+    par.warp(&stdpar);
 
-  jwarp(srcbuf, 320, 400, 0, 0, 320, 0, 64, 64, tgtbuf);
-  ppm.pastelab(tgtbuf, 64, 64, 0, 0);
+    memset(egd.ctxbuf, 0, egd.ctxlay->n * sizeof(double));
 
-  for (unsigned int i = 0; i < 1024; ++i) { 
-    double x0 = guessx0 + randrange(-30, 30);
-    double y0 = guessy0 + randrange(-30, 30);
-    double x1 = (320 - guessx0) + randrange(-5, 5);
-    double y1 = y0;
+    stdpar.make_sketch(egd.ctxbuf);
 
-    double ddy = randrange(-20.0, 20.0);
-    y1 += ddy;
-    y0 -= ddy;
-    
-    jwarp(srcbuf, 320, 400, (int)x0, (int)y0, (int)x1, (int)y1, 64, 64, tgtbuf);
+    Hashbag hb;
+    hb.add("male");
+    memcpy(egd.ctxbuf + 192, hb.vec, sizeof(double) * 64);
 
-    memcpy(pipe->outbuf, tgtbuf, sizeof(double) * 64 * 64 * 3);
-    pipe->reencode();
-    pipe->generate();
+    egd.ctxbuf[256] = 0;
+    egd.ctxbuf[257] = 1;
+    egd.ctxbuf[258] = 0;
 
-    memcpy(errbuf, pipe->outbuf, sizeof(double)*64*64*3);
-    subvec(errbuf, tgtbuf);
-assert(pipe->outlay->n == 64*64*3);
-    focus(errbuf, pipe->outlay->x, pipe->outlay->y, pipe->outlay->n);
-    double e2 = err2(errbuf);
 
-//    for (int k = 1; k < 4; ++k) {
-//      pipe->stages[k]->gen->reset_stats();
-//      encude(pipe->stages[k]->tgtbuf, pipe->stages[k]->tgtlay->n, cubuf);
-//      pipe->stages[k]->gen->target(cubuf);
-//      e2 += pipe->stages[k]->gen->err2;
-//    }
 
-    if (beste2 < 0 || e2 < beste2) {
-      beste2 = e2;
-      ppm.pastelab(tgtbuf, 64, 64, 64, 0);
-      ppm.pastelab(pipe->outbuf, 64, 64, 128, 0);
-    }
 
-fprintf(stderr, "%lf\tx0=%lf y0=%lf x1=%lf y1=%lf\n", e2, x0, y0, x1, y1);
+    assert(egd.tgtlay->n == stdpar.w * stdpar.h * 3);
+    rgblab(stdpar.rgb, egd.tgtlay->n, egd.tgtbuf);
+    egd.encode();
+    egd.generate();
+    labrgb(egd.tgtbuf, egd.tgtlay->n, stdpar.rgb);
+    stdpar.warpover(&par);
+
+    par.write_ppm(stdout);
   }
-
-  ppm.write(stdout);
   return 0;
 }

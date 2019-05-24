@@ -1024,7 +1024,7 @@ void Pipeline::generate(Parson **parsons, unsigned int nparsons, long min_age) {
   std::vector<unsigned int> todo;
   time_t now = time(NULL);
 
-  assert(dd3 == sizeof(Parson::target));
+//  assert(dd3 == sizeof(Parson::target));
 
   for (unsigned int i = 0; i < nparsons; ++i) {
     Parson *p = parsons[i];
@@ -1087,7 +1087,7 @@ void Pipeline::burnenc(Parson **parsons, unsigned int nparsons, double nu) {
 
   unsigned int mbi = 0;
   unsigned long dd3 = Parson::dim * Parson::dim * 3;
-  assert(dd3 == sizeof(Parson::target));
+  //assert(dd3 == sizeof(Parson::target));
 
   unsigned long hashlen = ctxlay->n;
   assert(hashlen == ctxlay->n);
@@ -1111,7 +1111,7 @@ void Pipeline::burnencgen(Parson **parsons, unsigned int nparsons, double nu, do
 
   unsigned int mbi = 0;
   unsigned long dd3 = Parson::dim * Parson::dim * 3;
-  assert(dd3 == sizeof(Parson::target));
+//  assert(dd3 == sizeof(Parson::target));
 
   unsigned long hashlen = ctxlay->n;
   assert(hashlen == ctxlay->n);
@@ -1137,7 +1137,7 @@ void Pipeline::discrim(Parson **parsons, unsigned int nparsons, double yo) {
 
   unsigned int mbi = 0;
   unsigned long dd3 = Parson::dim * Parson::dim * 3;
-  assert(dd3 == sizeof(Parson::target));
+//  assert(dd3 == sizeof(Parson::target));
 
   unsigned long hashlen = ctxlay->n;
   assert(hashlen == ctxlay->n);
@@ -1189,7 +1189,7 @@ void Pipeline::burngen(Parson **parsons, unsigned int nparsons, double wu) {
 
   unsigned int mbi = 0;
   unsigned long dd3 = Parson::dim * Parson::dim * 3;
-  assert(dd3 == sizeof(Parson::target));
+//  assert(dd3 == sizeof(Parson::target));
 
   unsigned long hashlen = ctxlay->n;
   assert(hashlen == ctxlay->n);

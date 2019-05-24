@@ -212,7 +212,7 @@ Parson *Urb::make(unsigned int tier) {
 
   vector<string> tags;
   // imglab("png", png, 64, 64, parson.target, &tags);
-  pnglab(png, 64, 64, parson.target, &tags);
+  // pnglab(png, 64, 64, parson.target, &tags);
 
   bool gender = 1;
   for (auto tag : tags) {

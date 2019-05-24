@@ -61,6 +61,20 @@ inline void labtorgb(double l, double a, double b, uint8_t *rp, uint8_t *gp, uin
   xyztorgb(x, y, z, rp, gp, bp);
 }
 
+inline void rgblab(const uint8_t *rgb, unsigned int n, double *lab) {
+  assert(n % 3 == 0);
+  for (unsigned int i = 0; i < n; i += 3) {
+    rgbtolab(rgb[i+0], rgb[i+1], rgb[i+2], &lab[i+0], &lab[i+1], &lab[i+2]);
+  }
+}
+
+inline void labrgb(const double *lab, unsigned int n, uint8_t *rgb) {
+  assert(n % 3 == 0);
+  for (unsigned int i = 0; i < n; i += 3) {
+    labtorgb(lab[i+0], lab[i+1], lab[i+2], &rgb[i+0], &rgb[i+1], &rgb[i+2]);
+  }
+}
+
 extern bool imglab(
   const std::string &fmt, 
   const std::string &data,

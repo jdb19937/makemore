@@ -94,9 +94,9 @@ void xyztolab(double x, double y, double z, double *lp, double *ap, double *bp) 
   *ap = 500.0 * (dx - dy);
   *bp = 200.0 * (dy - dz);
 
-//  *lp /= 100.0;
-//  *ap /= 100.0;
-//  *bp /= 100.0;
+  *lp /= 100.0;
+  *ap /= 100.0;
+  *bp /= 100.0;
 
 //  if (*ap < 0) { *ap = 0; } if (*ap > 1) { *ap = 1; }
 //  if (*bp < 0) { *bp = 0; } if (*bp > 1) { *bp = 1; }
@@ -104,6 +104,10 @@ void xyztolab(double x, double y, double z, double *lp, double *ap, double *bp) 
 }
 
 void labtoxyz(double l, double a, double b, double *xp, double *yp, double *zp) {
+  l *= 100.0;
+  a *= 100.0;
+  b *= 100.0;
+
 #if 0
   if (l <  0.0) l = 0.0;
   if (l >= 1.0) l = 1.0;

@@ -34,7 +34,7 @@ struct Parson {
   const static unsigned int nfrens = 16;
   const static unsigned int ntags = 8;
   const static unsigned int dim = 64;
-  const static unsigned int ncontrols = 512;
+  const static unsigned int ncontrols = 1024;
   const static unsigned int bufsize = 2048;
   const static unsigned int nbriefs = 8;
   const static unsigned int briefsize = 256;
@@ -92,11 +92,19 @@ struct Parson {
   // 1071
   uint8_t _fill[1071];
 
-  // 4096
+  // 8192
   double controls[ncontrols];
 
-  // 64 * 64 * 3
-  uint8_t target[dim * dim * 3];
+  // 1536
+  double sketch[192];
+
+  // 24
+  double angle;
+  double stretch; 
+  double skew;
+
+  uint8_t pad1[2536];
+  uint8_t pad2[4096];
 
   // 64 * 64 * 3
   uint8_t partrait[dim * dim * 3];
@@ -215,7 +223,6 @@ struct Parson {
 #endif
 
   void paste_partrait(class PPM *ppm, unsigned int x0 = 0, unsigned int y0 = 0);
-  void paste_target(class PPM *ppm, unsigned int x0 = 0, unsigned int y0 = 0);
 
   bool load(FILE *fp);
   void save(FILE *fp);
@@ -226,27 +233,6 @@ struct Parson {
   double error2() const;
 };
 
-
-struct CompareParsonTarget {
-  Parson *center;
-  CompareParsonTarget(Parson *_center) : center(_center) { }
-
-  bool operator()(Parson *a, Parson *b) {
-    double da2 = 0, db2 = 0, e;
-    for (unsigned i = 0; i < Parson::dim * Parson::dim * 3; ++i) {
-      e = ((double)a->target[i] - (double)center->target[i]);
-      if (i % 3 == 0)
-        e *= (100.0 / 256.0);
-      da2 += e * e;
-
-      e = ((double)b->target[i] - (double)center->target[i]);
-      if (i % 3 == 0)
-        e *= (100.0 / 256.0);
-      db2 += e * e;
-    }
-    return da2 < db2;
-  }
-};
 
 }
 

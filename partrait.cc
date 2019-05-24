@@ -103,6 +103,21 @@ bool Partrait::has_mark() const {
   return (got_left && got_right && got_mouth);
 }
 
+bool Partrait::has_auto_mark() const {
+  bool got_left = 0, got_right = 0, got_mouth = 0;
+
+  for (auto tag : tags) {
+    if (strbegins(tag, "auto_left_eye:"))
+      got_left = true;
+    else if (strbegins(tag, "auto_right_eye:"))
+      got_right = true;
+    else if (strbegins(tag, "auto_mouth:"))
+      got_mouth = true;
+  }
+
+  return (got_left && got_right && got_mouth);
+}
+
 Triangle Partrait::get_mark() const {
   Triangle mark;
   bool got_left = 0, got_right = 0, got_mouth = 0;
@@ -137,6 +152,40 @@ Triangle Partrait::get_mark() const {
   return mark;
 }
 
+Triangle Partrait::get_auto_mark() const {
+  Triangle mark;
+  bool got_left = 0, got_right = 0, got_mouth = 0;
+
+  for (auto tag : tags) {
+    const char *t = tag.c_str();
+    if (!strncmp(t, "auto_left_eye:", 14)) {
+      t += 14;
+      mark.p.x = atoi(t);
+      assert(t = strchr(t, ','));
+      t += 1;
+      mark.p.y = atoi(t);
+      got_left = true;
+    } else if (!strncmp(t, "auto_right_eye:", 15)) {
+      t += 15;
+      mark.q.x = atoi(t);
+      assert(t = strchr(t, ','));
+      t += 1;
+      mark.q.y = atoi(t);
+      got_right = true;
+    } else if (!strncmp(t, "auto_mouth:", 11)) {
+      t += 11;
+      mark.r.x = atoi(t);
+      assert(t = strchr(t, ','));
+      t += 1;
+      mark.r.y = atoi(t);
+      got_mouth = true;
+    } 
+  }
+
+  assert(got_left && got_right && got_mouth);
+  return mark;
+}
+
 void Partrait::set_mark(const Triangle &tri) {
   std::vector<std::string> vtags;
 
@@ -153,6 +202,28 @@ void Partrait::set_mark(const Triangle &tri) {
     sprintf(posebuf, "right_eye:%ld,%ld", lround(tri.q.x), lround(tri.q.y));
     vtags.push_back(posebuf);
     sprintf(posebuf, "mouth:%ld,%ld", lround(tri.r.x), lround(tri.r.y));
+    vtags.push_back(posebuf);
+  }
+
+  tags = vtags;
+}
+
+void Partrait::set_auto_mark(const Triangle &tri) {
+  std::vector<std::string> vtags;
+
+  for (auto tag : tags) {
+    if (strbegins(tag, "auto_left_eye:") || strbegins(tag, "auto_right_eye:") || strbegins(tag, "auto_mouth:"))
+      continue;
+    vtags.push_back(tag);
+  }
+  
+  {
+    char posebuf[256];
+    sprintf(posebuf, "auto_left_eye:%ld,%ld", lround(tri.p.x), lround(tri.p.y));
+    vtags.push_back(posebuf);
+    sprintf(posebuf, "auto_right_eye:%ld,%ld", lround(tri.q.x), lround(tri.q.y));
+    vtags.push_back(posebuf);
+    sprintf(posebuf, "auto_mouth:%ld,%ld", lround(tri.r.x), lround(tri.r.y));
     vtags.push_back(posebuf);
   }
 
@@ -218,7 +289,7 @@ void Partrait::reflect() {
   for (unsigned int y = 0; y < h; ++y) {
     for (unsigned int x = 0; x < w2; ++x) { 
       for (unsigned int c = 0; c < 3; ++c) {
-        std::swap(rgb[y * w * 3 + x * 3 + c], rgb[y * w * 3 + (w - x) * 3 + c]);
+        std::swap(rgb[y * w * 3 + x * 3 + c], rgb[y * w * 3 + (w - 1 - x) * 3 + c]);
       }
     }
   }
@@ -226,9 +297,9 @@ void Partrait::reflect() {
   if (has_mark()) {
     Triangle mark = get_mark();
     std::swap(mark.p, mark.q);
-    mark.p.x = w - mark.p.x;
-    mark.q.x = w - mark.q.x;
-    mark.r.x = w - mark.r.x;
+    mark.p.x = w - 1 - mark.p.x;
+    mark.q.x = w - 1 - mark.q.x;
+    mark.r.x = w - 1 - mark.r.x;
     set_mark(mark);
   }
 }
@@ -284,6 +355,35 @@ void Partrait::write_ppm(FILE *fp) {
   fprintf(fp, "P6\n%u %u\n255\n", w, h);
   assert(3 * w * h == fwrite(rgb, 1, 3 * w * h, fp));
   fflush(fp);
+}
+
+void Partrait::make_sketch(double *sketch) {
+  assert(w % 8 == 0 && h % 8 == 0);
+
+  const unsigned int w8 = w / 8;
+  const unsigned int h8 = h / 8;
+  const unsigned int wh8 = w8 * h8;
+
+  for (unsigned int b = 0; b < 8; ++b) {
+    for (unsigned int a = 0; a < 8; ++a) {
+      uint8_t col[3];
+
+      for (unsigned int c = 0; c < 3; ++c) {
+        unsigned long v = 0;
+        unsigned int x0 = a * w8, x1 = x0 + w8;
+        unsigned int y0 = b * h8, y1 = y0 + h8;
+        for (unsigned int y = y0; y < y1; ++y) {
+          for (unsigned int x = x0; x < x1; ++x) {
+            v += rgb[y * w * 3 + x * 3 + c];
+          }
+        }
+        col[c] = (uint8_t)(v / wh8);
+      }
+
+      rgbtolab(col[0], col[1], col[2], sketch + 0, sketch + 1, sketch + 2);
+      sketch += 3;
+    }
+  }
 }
 
 }

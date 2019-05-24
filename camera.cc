@@ -213,7 +213,7 @@ assert(par->w == w && par->h == h);
     for (unsigned int y = 0; y < par->h; ++y) {
       for (unsigned int x = 0; x < fw2; ++x) { 
         for (unsigned int c = 0; c < 3; ++c) {
-          std::swap(par->rgb[y * par->w * 3 + x * 3 + c], par->rgb[y * par->w * 3 + (par->w - x) * 3 + c]);
+          std::swap(par->rgb[y * par->w * 3 + x * 3 + c], par->rgb[y * par->w * 3 + (par->w - 1 - x) * 3 + c]);
         }
       }
     }

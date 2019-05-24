@@ -16,7 +16,6 @@ var got_tags = 0;
     'a': 'asian',
     'h': 'hispanic',
 
-    'a': 'afro',
     'z': 'dreads',
 
     'g': 'glasses',
@@ -173,7 +172,8 @@ function savetags() {
     got_tags = 1;
     modstatus.innerHTML = '<font color=green>SAVED</font>'
 
-    if (autonext.checked) {
+    if (autonext.checked || (clicknext.checked && window.didclick)) {
+      window.didclick = 0;
       ++which;
       fresh();
     }
@@ -269,6 +269,7 @@ function onc(event) {
     return;
   }
 
+  window.didclick = 1;
   tags[curtag] = x + "," + y;
   uptags()
 }
@@ -292,6 +293,7 @@ function onc(event) {
 <input type=button value=save onclick="savetags()"><br/>
 <input type=checkbox id=autosave> autosave<br/>
 <input type=checkbox id=autonext> autonext<br/>
+<input type=checkbox id=clicknext> clicknext<br/>
 <br/><br/><br/>
 <span id="legend"></span>
 </body>

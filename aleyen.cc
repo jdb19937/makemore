@@ -47,6 +47,11 @@ int main(int argc, char **argv) {
     if (!par.has_pose())
       continue;
 
+    Pose pose = par.get_pose();
+    par.set_tag("angle", pose.angle);
+    par.set_tag("stretch", pose.stretch);
+    par.set_tag("skew", pose.skew);
+
     Partrait newpar(256, 256);
     newpar.set_pose(Pose::STANDARD);
     par.warp(&newpar);

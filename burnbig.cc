@@ -11,6 +11,7 @@
 #include "cholo.hh"
 #include "strutils.hh"
 #include "partrait.hh"
+#include "catalog.hh"
 
 
 using namespace makemore;
@@ -24,54 +25,47 @@ int main() {
   double *tmpd = new double[1<<20];
   unsigned int w = 256, h = 256;
 
-  std::vector<std::string> srcimages;
-
-  std::string srcdir = "/spin/dan/celeba.aligned";
-  struct dirent *de;
-  DIR *dp = opendir(srcdir.c_str());
-  assert(dp);
-  while ((de = readdir(dp))) {
-    if (*de->d_name == '.')
-      continue;
-    srcimages.push_back(srcdir + "/" + de->d_name);
-  }
-  closedir(dp);
-  std::sort(srcimages.begin(), srcimages.end());
-  assert(srcimages.size());
+  Catalog cat;
+  cat.add_dir("/spin/dan/celeba.aligned");
+  cat.add_dir("/spin/dan/shampane.aligned");
+  cat.add_dir("/spin/dan/dancam.aligned");
 
   assert(egd.tgtlay->n == w * h * 3);
 
 fprintf(stderr, "starting\n");
 
+Partrait *par = new Partrait;
+//  Partrait *spar = new Partrait[1024];
+
   int i = 0;
   while (1) {
-    memset(egd.ctxbuf, 0, mbn * egd.ctxlay->n * sizeof(double));
+//    if (i % 1024 == 0) {
+//      fprintf(stderr, "loading new samples\n");
+//      cat.pick(spar, 1024);
+//    }
 
-    for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
-again:
-      unsigned int which = randuint() % srcimages.size();
-      std::string srcfn = srcimages[which];
+//    Partrait *par = spar + (i % 1024);
 
-      Partrait par;
-      par.load(srcfn);
+    cat.pick(par, 1, true);
 
-      if (randuint() % 2)
-        par.reflect();
+    assert(par->w * par->h * 3 == egd.tgtlay->n);
+    rgblab(par->rgb, egd.tgtlay->n, egd.tgtbuf);
 
-      assert(par.w * par.h * 3 == egd.tgtlay->n);
-      btodv(par.rgb, egd.tgtbuf + mbi * egd.tgtlay->n, egd.tgtlay->n);
+    assert(egd.ctxlay->n >= 192 + 64 + 3);
+    par->make_sketch(egd.ctxbuf);
 
-      double *ctx = egd.ctxbuf + mbi * egd.ctxlay->n;
-      if (par.has_tag("male")) { ctx[0] = 1.0; }
-      if (par.has_tag("female")) { ctx[1] = 1.0; }
-      if (par.has_tag("white")) { ctx[2] = 1.0; }
-      if (par.has_tag("black")) { ctx[3] = 1.0; }
-      if (par.has_tag("hispanic")) { ctx[4] = 1.0; }
-      if (par.has_tag("asian")) { ctx[5] = 1.0; }
-      if (par.has_tag("glasses")) { ctx[6] = 1.0; }
-    }
+    Hashbag hb;
+    if (randuint() % 128)
+      par->bag_tags(&hb);
+    assert(Hashbag::n >= 64);
+    memcpy(egd.ctxbuf + 192, hb.vec, sizeof(double) * 64);
 
-    egd.burn(0.00002, 0.00002);
+    memset(egd.ctxbuf + 256, 0, sizeof(double) * 16);
+    egd.ctxbuf[256] = par->get_tag("angle", 0.0);
+    egd.ctxbuf[257] = par->get_tag("stretch", 1.0);
+    egd.ctxbuf[258] = par->get_tag("skew", 0.0);
+
+    egd.burn(0.0002, 0.0002);
 
     if (i % 100 == 0) {
       egd.report("burnbig");
