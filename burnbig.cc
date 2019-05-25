@@ -7,7 +7,7 @@
 #include "cudamem.hh"
 #include "numutils.hh"
 #include "imgutils.hh"
-#include "encgendis.hh"
+#include "encgen.hh"
 #include "cholo.hh"
 #include "strutils.hh"
 #include "partrait.hh"
@@ -21,7 +21,7 @@ int main() {
   seedrand();
 
   unsigned int mbn = 1;
-  Encgendis egd("big.proj", mbn);
+  Encgen egd("big.proj", mbn);
   double *tmpd = new double[1<<20];
   unsigned int w = 256, h = 256;
 

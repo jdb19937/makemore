@@ -82,15 +82,19 @@ struct Parson {
   // 8
   uint64_t cents;
 
-  // 1
+  // 8
   uint8_t briefptr;
+  uint8_t padddy[7];
 
   // 64
   uint8_t pass[32];
   char salt[32];
 
-  // 1071
-  uint8_t _fill[1071];
+  // 808
+  uint8_t _fill[808];
+
+  // 256
+  char srcfn[256];
 
   // 8192
   double controls[ncontrols];

@@ -462,7 +462,7 @@ void Encgendis::burn(double nu, double pi) {
   encude(tgtbuf, gen->outn, cugentgt);
   gen->target(cugentgt, false);
 
-#if 0
+#if 1
   double *cugenfout = gen->foutput();
   for (unsigned int mbi = 0; mbi < mbn; ++mbi)
     cufocus(cugenfout + mbi * tgtlay->n, cutgtlayx, cutgtlayy, tgtlay->n);

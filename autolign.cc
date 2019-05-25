@@ -25,12 +25,21 @@ int main(int argc, char **argv) {
   Encgendis egd("big.proj", 1);
 
   Partrait par;
-  Pose curpose = Pose::STANDARD;
-  curpose.center.x = (double)par.w/2.0;
-  curpose.center.y = (double)par.h/2.0;
-  par.set_pose(curpose);
+
+Pose curpose;
+bool first = 1;
 
   while (par.read_ppm(stdin)) {
+
+if (first) {
+  curpose = Pose::STANDARD;
+  curpose.scale = 150;
+  curpose.center.x = (double)par.w / 2.0;
+  curpose.center.y = (double)par.h / 2.0;
+  par.set_pose(curpose);
+}
+
+first = 0;
     Pose lastpose = par.get_pose();
 
     double cdrift = 0.2;
@@ -47,7 +56,7 @@ int main(int argc, char **argv) {
     if (curpose.center.x < 0) curpose.center.x = 0;
     if (curpose.center.x >= par.w) curpose.center.x = par.w - 1;
     if (curpose.center.y < 0) curpose.center.y = 0;
-    if (curpose.center.y >= par.h) curpose.center.x = par.h - 1;
+    if (curpose.center.y >= par.h) curpose.center.y = par.h - 1;
     if (curpose.skew > 0.1) curpose.skew = 0.1;
     if (curpose.skew < -0.1) curpose.skew = -0.1;
     if (curpose.scale > 128.0) curpose.scale = 128.0;
@@ -58,7 +67,9 @@ int main(int argc, char **argv) {
     if (curpose.stretch < 0.8) curpose.stretch = 0.8;
 
     par.set_pose(curpose);
+
     autoposer.autopose(&par);
+    autoposer2.autopose(&par);
     autoposer2.autopose(&par);
 
     Partrait stdpar(256, 256);
@@ -70,14 +81,13 @@ int main(int argc, char **argv) {
     stdpar.make_sketch(egd.ctxbuf);
 
     Hashbag hb;
-    hb.add("male");
+    hb.add("female");
+    hb.add("brown_hair");
     memcpy(egd.ctxbuf + 192, hb.vec, sizeof(double) * 64);
 
-    egd.ctxbuf[256] = 0;
-    egd.ctxbuf[257] = 1;
-    egd.ctxbuf[258] = 0;
-
-
+    egd.ctxbuf[256] = par.get_tag("angle", 0.0);
+    egd.ctxbuf[257] = par.get_tag("stretch", 1.0);
+    egd.ctxbuf[258] = par.get_tag("skew", 0.0);
 
 
     assert(egd.tgtlay->n == stdpar.w * stdpar.h * 3);
