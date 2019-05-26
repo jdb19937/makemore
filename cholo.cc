@@ -81,8 +81,17 @@ Cholo::~Cholo() {
   cufree(out);
 }
 
-void Cholo::observe(const double *x) {
-  encude(x, dim, in);
+void Cholo::observe(const double *x, bool deactivate) {
+  if (deactivate) {
+    for (unsigned int j = 0; j < dim; ++j) {
+      assert(x[j] > 0.0 && x[j] < 1.0);
+      tmp[j] = unsigmoid(x[j]);
+    }
+    encude(tmp, dim, in);
+  } else {
+    encude(x, dim, in);
+  }
+
   observecu(in);
 }
 

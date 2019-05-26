@@ -12,6 +12,7 @@
 #include "strutils.hh"
 #include "partrait.hh"
 #include "catalog.hh"
+#include "impdis.hh"
 
 
 using namespace makemore;
@@ -22,41 +23,29 @@ int main() {
 
   unsigned int mbn = 1;
   Encgen egd("bignew.proj", mbn);
-  double *tmpd = new double[1<<20];
+  Impdis id("id.proj", mbn);
   unsigned int w = 256, h = 256;
 
   Catalog cat;
   cat.add_dir("/spin/dan/celeba.aligned");
-  //cat.add_dir("/spin/dan/shampane.aligned");
-  //cat.add_dir("/spin/dan/dancam.aligned");
 
-  assert(egd.tgtlay->n == w * h * 3);
+  fprintf(stderr, "starting\n");
 
-fprintf(stderr, "starting\n");
-
-Partrait *par = new Partrait;
-//  Partrait *spar = new Partrait[1024];
-
+  Partrait *par = new Partrait;
   int i = 0;
   while (1) {
-//    if (i % 1024 == 0) {
-//      fprintf(stderr, "loading new samples\n");
-//      cat.pick(spar, 1024);
-//    }
-
-//    Partrait *par = spar + (i % 1024);
-
     cat.pick(par, 1, true);
 
     assert(par->w * par->h * 3 == egd.tgtlay->n);
-    rgblab(par->rgb, egd.tgtlay->n, egd.tgtbuf);
+    rgblab(par->rgb, id.tgtlay->n, id.tgtbuf);
+
+    memcpy(egd.tgtbuf, id.tgtbuf, sizeof(double) * egd.tgtlay->n);
+    egd.encode();
 
     assert(egd.ctxlay->n >= 192 + 64 + 3);
     par->make_sketch(egd.ctxbuf);
 
     Hashbag hb;
-    if (randuint() % 128)
-      par->bag_tags(&hb);
     assert(Hashbag::n >= 64);
     memcpy(egd.ctxbuf + 192, hb.vec, sizeof(double) * 64);
 
@@ -65,13 +54,18 @@ Partrait *par = new Partrait;
     egd.ctxbuf[257] = par->get_tag("stretch", 1.0);
     egd.ctxbuf[258] = par->get_tag("skew", 0.0);
 
-    egd.burn(0.0005, 0.0005);
+    egd.generate();
+    memcpy(id.inbuf, egd.tgtbuf, sizeof(double) * egd.tgtlay->n);
+
+//    id.burn(0.0005);
+    id.observe(0.0005);
 
     ++i;
     if (i % 100 == 0) {
-      egd.report("burnbig");
+      egd.load();
+      id.report("burnimp");
 fprintf(stderr, "saving\n");
-      egd.save();
+      id.save();
 fprintf(stderr, "saved\n");
     }
   }

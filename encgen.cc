@@ -1,4 +1,4 @@
-#define __MAKEMORE_ENCGENDIS_CC__ 1
+#define __MAKEMORE_ENCGEN_CC__ 1
 
 #include <netinet/in.h>
 
@@ -151,6 +151,9 @@ void Encgen::load() {
 void Encgen::scramble(double dev) {
   for (unsigned int j = 0, jn = mbn * ctrlay->n; j < jn; ++j) {
     ctrbuf[j] = randgauss() * dev;
+    if (ctract) {
+      ctrbuf[j] = sigmoid(ctrbuf[j]);
+    }
   }
 }
 

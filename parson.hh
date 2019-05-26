@@ -102,12 +102,16 @@ struct Parson {
   // 1536
   double sketch[192];
 
-  // 24
+  // 32
   double angle;
   double stretch; 
   double skew;
+  double recon_err;
+  double pmark_err;
+  double qmark_err;
+  double rmark_err;
 
-  uint8_t pad1[2536];
+  uint8_t pad1[2504];
   uint8_t pad2[4096];
 
   // 64 * 64 * 3

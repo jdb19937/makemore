@@ -22,7 +22,7 @@ struct Cholo {
   Cholo(unsigned int _dim);
   ~Cholo();
 
-  void observe(const double *x);
+  void observe(const double *x, bool deactivate = false);
   void observecu(const double *x);
   void generate(double *x, double m = 1.0, bool activate = false);
   void generate(const double *y, double *x, bool activate = false);

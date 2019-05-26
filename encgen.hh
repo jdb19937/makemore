@@ -31,7 +31,6 @@ struct Encgen : Project {
 
   Tron *enc, *gen;
 
-  double *cuinencin, *cuingenin;
   double *cuencin, *cuenctgt;
   double *cugenin, *cugentgt, *cugenfin;
 
