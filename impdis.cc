@@ -125,7 +125,7 @@ void Impdis::burn(double pi) {
   imp->feed(cuimpin, NULL);
 
   encude(tgtbuf, imp->outn, cuimptgt);
-  cusubvec(cuimptgt, cuimpin, tgtlay->n, cuimptgt);
+  cusubvec(cuimptgt, cuimpin, mbn * tgtlay->n, cuimptgt);
   imp->target(cuimptgt, false);
 
   if (focus) {
@@ -138,12 +138,13 @@ void Impdis::burn(double pi) {
   imp->train(pi);
 }
 
-void Impdis::observe(double xi) {
+void Impdis::observe(double mu, double xi) {
   encude(tgtbuf, mbn * tgtlay->n, cudisin);
 
   double *blend = new double[mbn];
   for (unsigned int mbi = 0; mbi < mbn; ++mbi)
     blend[mbi] = randrange(0.0, 1.0);
+  encude(blend, mbn, cudistgt);
 
   encude(inbuf, imp->inn, cuimpin);
   imp->feed(cuimpin, NULL);
@@ -151,6 +152,7 @@ void Impdis::observe(double xi) {
   double *tmp;
   cumake(&tmp, imp->outn);
   cucopy(imp->output(), imp->outn, tmp);
+  cuaddvec(tmp, cuimpin, mbn * tgtlay->n, tmp);
 
   for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
     cumuld(tmp + mbi * tgtlay->n, 1.0 - blend[mbi], tgtlay->n, tmp + mbi * tgtlay->n);
@@ -158,13 +160,33 @@ void Impdis::observe(double xi) {
     cuaddvec(cudisin + mbi * tgtlay->n, tmp + mbi * tgtlay->n, tgtlay->n, cudisin + mbi * tgtlay->n);
   }
 
-  encude(blend, mbn, cudistgt);
-  delete[] blend;
-  cufree(tmp);
-
   dis->feed(cudisin, NULL);
   dis->target(cudistgt);
   dis->train(xi);
+
+  for (unsigned int mbi = 0; mbi < mbn; ++mbi)
+    blend[mbi] = 1.0;
+  encude(blend, mbn, cudistgt);
+
+  cucopy(imp->output(), imp->outn, tmp);
+  cuaddvec(tmp, cuimpin, mbn * tgtlay->n, tmp);
+
+  dis->feed(tmp, imp->foutput());
+  dis->target(cudistgt, false);
+  dis->train(0);
+
+  imp->update_stats();
+  imp->train(mu);
+
+  delete[] blend;
+  cufree(tmp);
+}
+
+void Impdis::improve() {
+  encude(inbuf, imp->inn, cuimpin);
+  const double *cuimpout = imp->feed(cuimpin, NULL);
+  cuaddvec(cuimpin, cuimpout, tgtlay->n, cuimpin);
+  decude(cuimpin, imp->outn, tgtbuf);
 }
 
 }

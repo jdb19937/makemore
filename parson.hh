@@ -31,7 +31,7 @@ struct Parson {
   static std::string gen_nom(bool gender);
   static std::string gen_nom();
 
-  const static unsigned int nfrens = 16;
+  const static unsigned int nfrens = 13;
   const static unsigned int ntags = 8;
   const static unsigned int dim = 64;
   const static unsigned int ncontrols = 1024;
@@ -58,6 +58,9 @@ struct Parson {
 
   // 27 * 32
   Nom nom;
+  Tag gen;
+  Tag sty;
+  Tag sks;
   Nom frens[nfrens];
   Nom parens[2];
   Tag tags[ntags];
@@ -111,7 +114,10 @@ struct Parson {
   double qmark_err;
   double rmark_err;
 
-  uint8_t pad1[2504];
+  uint32_t skid;
+  uint32_t ummmmpad;
+  double tone;
+  uint8_t pad1[2486];
   uint8_t pad2[4096];
 
   // 64 * 64 * 3
@@ -181,7 +187,7 @@ struct Parson {
   void add_fren(const char *fnom);
   void del_fren(const char *fnom);
 
-  bool has_tag(const char *tag);
+  bool has_tag(const char *tag) const;
   void add_tag(const char *tag);
   void del_tag(const char *tag);
 

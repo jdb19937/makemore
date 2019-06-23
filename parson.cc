@@ -276,7 +276,7 @@ std::string Parson::bread_nom(const char *nom0, const char *nom1, uint8_t gender
   return newnom;
 }
 
-bool Parson::has_tag(const char *tag) {
+bool Parson::has_tag(const char *tag) const {
   for (unsigned int i = 0; i < ntags; ++i)
     if (!strcmp(tags[i], tag))
       return true;

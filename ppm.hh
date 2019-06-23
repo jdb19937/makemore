@@ -62,11 +62,9 @@ struct PPM {
   void cutlab(double *vec, unsigned int vw, unsigned int vh, unsigned int x0, unsigned int y0);
   void make(unsigned int _w, unsigned int _h, uint8_t v);
 
-#if 0
   void write_jpeg(FILE *);
   bool read_jpeg(const std::string &);
   void write_jpeg(std::string *);
-#endif
 
   double centerlight();
 };

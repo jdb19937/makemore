@@ -57,8 +57,8 @@ int main() {
     egd.generate();
     memcpy(id.inbuf, egd.tgtbuf, sizeof(double) * egd.tgtlay->n);
 
-//    id.burn(0.0005);
-    id.observe(0.0005);
+    id.burn(0.00005);
+//    id.observe(0.0005);
 
     ++i;
     if (i % 100 == 0) {

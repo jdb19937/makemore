@@ -87,6 +87,11 @@ function uptags() {
   var ctx = can.getContext('2d');
   ctx.clearRect(0, 0, can.width, can.height);
 
+  var nw = window.nw;
+  if (nw < 1) {
+    return;
+  }
+
   var bufstr = '';
   for (var tagname in tags) {
     var tagval = tags[tagname];
@@ -96,20 +101,22 @@ function uptags() {
       bufstr += "#" + tagname + ":" + tagval + "\n";
 
       var xy = tagval.split(',');
-      var x = xy[0] * 2
-      var y = xy[1] * 2
+      if (xy.length == 2) {
+        var x = xy[0] * 500 / nw;
+        var y = xy[1] * 500 / nw;
 
-      ctx.strokeStyle = 'blue';
+        ctx.strokeStyle = 'blue';
 
-      ctx.beginPath();
-      ctx.moveTo(x - 20, y)
-      ctx.lineTo(x + 20, y)
-      ctx.stroke()
+        ctx.beginPath();
+        ctx.moveTo(x - 20, y)
+        ctx.lineTo(x + 20, y)
+        ctx.stroke()
 
-      ctx.beginPath();
-      ctx.moveTo(x, y - 20)
-      ctx.lineTo(x, y + 20)
-      ctx.stroke()
+        ctx.beginPath();
+        ctx.moveTo(x, y - 20)
+        ctx.lineTo(x, y + 20)
+        ctx.stroke()
+      }
     }
   }
 
@@ -191,7 +198,11 @@ function fresh() {
   got_tags = 0;
   modstatus.value = "<font color=gray>UNLOADED</font>";
 
-  document.getElementById('pic').src = '/pic.png?' + which;
+  // document.getElementById('overlay').style.backgroundImage = 'url(/pic.png?' + which + ')';
+  var pic = document.getElementById('pic');
+  pic.onload = function() { window.nw = pic.naturalWidth };
+  pic.src = '/pic.png?' + which;
+
   var obj = { Title: which, Url: "/tagger.html?" + which };
   history.pushState(obj, obj.Title, obj.Url);
   reqtags()
@@ -261,8 +272,8 @@ function chtags() {
 }
 
 function onc(event) {
-  var x = Math.floor(event.offsetX / 2);
-  var y = Math.floor(event.offsetY / 2);
+  var x = Math.floor(event.offsetX * nw / 500);
+  var y = Math.floor(event.offsetY * nw / 500);
   // var s = event.shiftKey ? 1 : 0;
 
   if (curtag == '') {
@@ -278,18 +289,45 @@ function onc(event) {
 </head>
 
 <body onload="onl()" onkeypress="onk(event)">
-<table><tr valign=top><td>
-<div border=0 id="overlay" style="position: absolute; width: 800; height: 800; z-index: 100" onclick="onc(event); chtags()">
-<canvas border=0 id=overlaycan width=800 height=800></canvas>
-</div><img border=0 id=pic width=800 height=800>
 
-</td><td>
-<textarea style='font-size: x-large' onfocus="modstatus.innerHTML='<font color=blue>EDITING</font>'" onchange="parsetags(); seltag(); chtags()" oninput="parsetags(); seltag()" onclick='seltag()' id=tagbuf rows=24 cols=60></textarea>
+<table>
+  <tr valign="top">
+    <td>
+      <div border=0 id="overlay" style="position: absolute; width: 500; height: 800; z-index: 100" onclick="onc(event); chtags()">
+        <canvas border=0 id=overlaycan width=500 height=800></canvas>
+      </div>
+
+      <img src="/pic.png?1" border=0 id=pic width="500" />
+
+    </td>
+    <td>
+      <textarea style='font-size: x-large' onfocus="modstatus.innerHTML='<font color=blue>EDITING</font>'" onchange="parsetags(); seltag(); chtags()" oninput="parsetags(); seltag()" onclick='seltag()' id=tagbuf rows=24 cols=60></textarea>
 <br/>
-<span style='font-size: xx-large' id=modstatus><font color="gray">UNLOADED</font></span>
-<br/><span style='font-size: xx-large' id="curtag"></span>
-</td></tr></table>
+      <span style='font-size: xx-large' id=modstatus><font color="gray">UNLOADED</font></span>
+      <br/><span style='font-size: xx-large' id="curtag"></span>
+    </td>
+  </tr>
+</table>
+
+
+
 <hr/>
+<br/>
+<br/>
+<br/>
+<br/>
+<br/>
+<br/>
+<br/>
+<br/>
+<br/>
+<br/>
+<br/>
+<br/>
+<br/>
+<br/>
+<br/>
+<br/>
 <input type=button value=save onclick="savetags()"><br/>
 <input type=checkbox id=autosave> autosave<br/>
 <input type=checkbox id=autonext> autonext<br/>

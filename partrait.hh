@@ -18,6 +18,7 @@ namespace makemore {
 struct Partrait {
   unsigned int w, h;
   uint8_t *rgb;
+  uint8_t *alpha;
 
   std::vector<std::string> tags;
 
@@ -36,6 +37,13 @@ struct Partrait {
       assert(w == 0 && h == 0);
     }
 
+    if (par.alpha) {
+      alpha = new uint8_t[w * h * 1];
+      memcpy(alpha, par.alpha, w * h * 1);
+    } else {
+      alpha = NULL;
+    }
+
     tags = par.tags;
   }
 
@@ -44,10 +52,40 @@ struct Partrait {
   bool empty() const;
 
   void clear();
+
+  void create(unsigned int _w, unsigned int _h) {
+    clear();
+    w = _w;
+    h = _h;
+    assert(w > 0 && h > 0);
+    rgb = new uint8_t[w * h * 3];
+  }
+
+  void fill_white() {
+    assert(rgb);
+    memset(rgb, 0xFF, w * h * 3);
+  }
+  void fill_gray() {
+    assert(rgb);
+    memset(rgb, 0x80, w * h * 3);
+  }
+  void fill_black() {
+    assert(rgb);
+    memset(rgb, 0, w * h * 3);
+  }
+  void fill_blue() {
+    assert(rgb);
+    unsigned int wh3 = w * h * 3;
+    memset(rgb, 0, wh3);
+    for (unsigned int j = 2; j < wh3; j += 3)
+      rgb[j] = 255;
+  }
+
   void load(const std::string &fn);
   void save(const std::string &fn) const;
   void save(FILE *) const;
   void to_png(std::string *png) const;
+  void from_png(const std::string &png);
 
   void warp(Partrait *to) const;
   void warpover(Partrait *to) const;
@@ -56,14 +94,14 @@ struct Partrait {
   bool has_pose() const;
   void set_pose(const Pose &);
 
-  bool has_tag(const std::string &q) {
+  bool has_tag(const std::string &q) const {
     for (auto tag : tags)
       if (tag == q)
          return true;
     return false;
   }
 
-  double get_tag(const std::string &k, double dv) {
+  double get_tag(const std::string &k, double dv) const {
     std::string kc = k + ":";
     std::vector<std::string> new_tags;
     for (auto tag : tags)
@@ -72,7 +110,7 @@ struct Partrait {
     return dv;
   }
 
-  std::string get_tag(const std::string &k, const std::string &dv = "") {
+  std::string get_tag(const std::string &k, const std::string &dv = "") const {
     std::string kc = k + ":";
     std::vector<std::string> new_tags;
     for (auto tag : tags)
@@ -124,7 +162,10 @@ struct Partrait {
   bool read_ppm(FILE *);
   void write_ppm(FILE *);
 
-  void make_sketch(double *sketch);
+  void make_sketch(double *sketch, bool bw = false) const;
+
+  void erase_bg(const Partrait &mask);
+  void replace_bg(const Partrait &mask, const Partrait &bg);
 };
 
 }

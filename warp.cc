@@ -168,7 +168,10 @@ void kwarp(const uint8_t *src,
   int x0, int y0, int x1, int y1, int x2, int y2,
   int *px0, int *py0, int *px1, int *py1, int *px2, int *py2,
   int dw, int dh,
-  uint8_t *dst
+  uint8_t *dst,
+
+  const uint8_t *alphasrc,
+  uint8_t *alphadst
 ) {
   if (px0) {
     assert(px0 && py0 && px1 && py1 && px2 && py2);
@@ -213,6 +216,14 @@ void kwarp(const uint8_t *src,
           (bx) * (1.0-by) * (double)src[ry0 * w * 3 + rx1 * 3 + c] +
           (1.0-bx) * (by) * (double)src[ry1 * w * 3 + rx0 * 3 + c] +
           (bx) * (by) * (double)src[ry1 * w * 3 + rx1 * 3 + c];
+      }
+
+      if (alphadst && alphasrc) {
+        *alphadst++ =
+          (1.0-bx) * (1.0-by) * (double)alphasrc[ry0 * w + rx0] +
+          (bx) * (1.0-by) * (double)alphasrc[ry0 * w + rx1] +
+          (1.0-bx) * (by) * (double)alphasrc[ry1 * w + rx0] +
+          (bx) * (by) * (double)alphasrc[ry1 * w + rx1];
       }
     }
   }

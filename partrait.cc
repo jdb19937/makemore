@@ -21,10 +21,13 @@ Partrait::Partrait() {
   w = 0;
   h = 0;
   rgb = NULL;
+  alpha = NULL;
 }
 
 Partrait::Partrait(unsigned int _w, unsigned int _h) : w(_w), h(_h) {
+  assert(w > 0 && h > 0);
   rgb = new uint8_t[w * h * 3];
+  alpha = NULL;
 }
 
 Partrait::~Partrait() {
@@ -43,6 +46,10 @@ void Partrait::clear() {
     delete[] rgb;
     rgb = NULL;
   }
+  if (alpha) {
+    delete[] alpha;
+    alpha = NULL;
+  }
   w = h = 0;
 }
 
@@ -50,7 +57,11 @@ void Partrait::load(const std::string &fn) {
   clear();
 
   std::string png = makemore::slurp(fn);
-  bool ret = pngrgb(png, &w, &h, &rgb, &tags);
+  from_png(png);
+}
+
+void Partrait::from_png(const std::string &png) {
+  bool ret = pngrgb(png, &w, &h, &rgb, &tags, &alpha);
   assert(ret);
   assert(!empty());
 }
@@ -72,7 +83,7 @@ void Partrait::to_png(std::string *png) const {
   assert(!empty());
 
 
-  bool ret = rgbpng(rgb, w, h, png, &tags);
+  bool ret = rgbpng(rgb, w, h, png, &tags, alpha);
   assert(ret);
 }
 
@@ -249,7 +260,9 @@ void Partrait::warp(Partrait *to) const {
     rgb, w, h,
     p.x, p.y, q.x, q.y, r.x, r.y,
     NULL, NULL, NULL, NULL, NULL, NULL,
-    to->w, to->h, to->rgb
+    to->w, to->h, to->rgb,
+
+    alpha, to->alpha
   );
 }
 
@@ -290,6 +303,14 @@ void Partrait::reflect() {
     for (unsigned int x = 0; x < w2; ++x) { 
       for (unsigned int c = 0; c < 3; ++c) {
         std::swap(rgb[y * w * 3 + x * 3 + c], rgb[y * w * 3 + (w - 1 - x) * 3 + c]);
+      }
+    }
+  }
+
+  if (alpha) {
+    for (unsigned int y = 0; y < h; ++y) {
+      for (unsigned int x = 0; x < w2; ++x) { 
+        std::swap(alpha[y * w + x], alpha[y * w + (w - 1 - x)]);
       }
     }
   }
@@ -357,7 +378,7 @@ void Partrait::write_ppm(FILE *fp) {
   fflush(fp);
 }
 
-void Partrait::make_sketch(double *sketch) {
+void Partrait::make_sketch(double *sketch, bool bw) const {
   assert(w % 8 == 0 && h % 8 == 0);
 
   const unsigned int w8 = w / 8;
@@ -377,12 +398,130 @@ void Partrait::make_sketch(double *sketch) {
             v += rgb[y * w * 3 + x * 3 + c];
           }
         }
+
         col[c] = (uint8_t)(v / wh8);
+      }
+
+      if (bw) {
+        col[1] = 0;
+        col[2] = 0;
       }
 
       rgbtolab(col[0], col[1], col[2], sketch + 0, sketch + 1, sketch + 2);
       sketch += 3;
     }
+  }
+}
+
+void Partrait::erase_bg(const Partrait &mask) {
+  const double k = 1.0;
+  if (!alpha)
+    alpha = new uint8_t[w * h];
+
+  for (unsigned int j = 0, wh = w * h; j < wh; ++j) {
+    double a;
+
+#if 0
+    if (mask.rgb[j * 3 + 2] > mask.rgb[j * 3 + 0] && mask.rgb[j * 3 + 2] > mask.rgb[j * 3 + 1]) {
+      a = 1.0;
+    } else {
+      a = 0.0;
+    }
+#endif
+
+#if 0
+    a = (double)mask.rgb[j * 3 + 2];
+    a = (a - 127.5) / 127.5;
+    alpha = sigmoid(k * a);
+#endif
+
+#if 0
+    a -= 0.5 * ((double)mask.rgb[j * 3 + 1] / 255.0);
+    a -= 0.5 * ((double)mask.rgb[j * 3 + 0] / 255.0);
+    a *= 2.0;
+#endif
+
+#if 0
+    a = (double)mask.rgb[j * 3 + 2] / 255.0;
+#endif
+
+#if 1
+    a = 1.0;
+    a -= (double)mask.rgb[j * 3 + 0] / 255.0;
+    a -= (double)mask.rgb[j * 3 + 1] / 255.0;
+#endif
+
+#if 1
+    a = (a - 0.2) / 0.6;
+#endif
+
+    if (a < 0.0)
+      a = 0.0;
+    if (a > 1.0)
+      a = 1.0;
+
+    const double bg[3] = {128.0, 128.0, 128.0};
+
+    rgb[3 * j + 0] = (uint8_t)((double)rgb[3 * j + 0] * (1.0 - a) + a * bg[0]);
+    rgb[3 * j + 1] = (uint8_t)((double)rgb[3 * j + 1] * (1.0 - a) + a * bg[1]);
+    rgb[3 * j + 2] = (uint8_t)((double)rgb[3 * j + 2] * (1.0 - a) + a * bg[2]);
+
+    alpha[j] = (uint8_t)(a * 255.0);
+  }
+}
+
+void Partrait::replace_bg(const Partrait &mask, const Partrait &bg) {
+  const double k = 1.0;
+  if (!alpha)
+    alpha = new uint8_t[w * h];
+
+  for (unsigned int j = 0, wh = w * h; j < wh; ++j) {
+    double a;
+
+#if 0
+    if (mask.rgb[j * 3 + 2] > mask.rgb[j * 3 + 0] && mask.rgb[j * 3 + 2] > mask.rgb[j * 3 + 1]) {
+      a = 1.0;
+    } else {
+      a = 0.0;
+    }
+#endif
+
+#if 0
+    a = (double)mask.rgb[j * 3 + 2];
+    a = (a - 127.5) / 127.5;
+    alpha = sigmoid(k * a);
+#endif
+
+#if 0
+    a -= 0.5 * ((double)mask.rgb[j * 3 + 1] / 255.0);
+    a -= 0.5 * ((double)mask.rgb[j * 3 + 0] / 255.0);
+    a *= 2.0;
+#endif
+
+#if 0
+    a = (double)mask.rgb[j * 3 + 2] / 255.0;
+#endif
+
+#if 1
+    a = 1.0;
+    a -= (double)mask.rgb[j * 3 + 0] / 255.0;
+    a -= (double)mask.rgb[j * 3 + 1] / 255.0;
+#endif
+
+#if 1
+    a = (a - 0.2) / 0.6;
+#endif
+
+    if (a < 0.0)
+      a = 0.0;
+    if (a > 1.0)
+      a = 1.0;
+
+    rgb[3 * j + 0] = (uint8_t)((double)rgb[3 * j + 0] * (1.0 - a) + a * (double)bg.rgb[3 * j + 0]);
+    rgb[3 * j + 1] = (uint8_t)((double)rgb[3 * j + 1] * (1.0 - a) + a * (double)bg.rgb[3 * j + 1]);
+    rgb[3 * j + 2] = (uint8_t)((double)rgb[3 * j + 2] * (1.0 - a) + a * (double)bg.rgb[3 * j + 2]);
+
+    alpha[j] = (uint8_t)(a * 255.0);
   }
 }
 

@@ -11,10 +11,20 @@
 #include "pipeline.hh"
 #include "strutils.hh"
 #include "imgutils.hh"
+#include "encoder.hh"
+#include "generator.hh"
 
 namespace makemore {
 
 using namespace std;
+
+void Urb::add_gen(const std::string &tag, const std::string &projdir) {
+  gens[tag] = new Generator(projdir, 1);
+}
+
+void Urb::add_sty(const std::string &tag, const std::string &projdir) {
+  stys[tag] = new Styler(projdir);
+}
 
 Urb::Urb(const char *_dir, unsigned int _mbn) {
   mbn = _mbn;
@@ -22,16 +32,29 @@ Urb::Urb(const char *_dir, unsigned int _mbn) {
   assert(strlen(_dir) < 4000);
   dir = _dir;
 
+  ruffposer = new Autoposer("bestposer.proj");
+  fineposer = new Autoposer("newposer.proj");
+
   Zone *main = new Zone(dir + "/main.zone");
   zones.push_back(main);
 
+  sks0 = new Zone("/spin/dan/easyceleb.dat");
+  sks1 = new Zone("/spin/dan/shampane.dat");
+
   outgoing = new Bus(dir + "/outgoing.bus");
 
-  egd = new Encgendis(dir + "/egd.proj", 1);
+  enc = new Encoder("enc.proj", 1);
 
-  cholo = new Cholo(egd->ctrlay->n);
-  cholo->load(dir + "/egd.proj/cholo.dat");
+  add_gen("shampane", "gen.shampane.proj");
+  // add_gen("easyceleb", "gen.easyceleb.proj");
+  add_gen("lfw", "gen.lfw.proj");
+  add_gen("lfw_masks", "gen.lfw_masks.proj");
+  default_gen = gens["shampane"];
 
+  add_sty("shampane", "sty.shampane.proj");
+  add_sty("easyceleb", "sty.easyceleb.proj");
+  add_sty("lfw", "sty.lfw.proj");
+  default_sty = stys["shampane"];
 
   images.clear();
   DIR *dp = opendir((dir + "/images").c_str());
@@ -63,47 +86,16 @@ Urb::Urb(const char *_dir, unsigned int _mbn) {
     int ret = ::mkdir(home.c_str(), 0700);
     assert(ret == 0 || ret == -1 && errno == EEXIST);
   }
-
-#if 1
-  {
-    std::string sampfn = dir + "/egd.proj/samp.dat";
-    FILE *sampfp = fopen(sampfn.c_str(), "r");
-    assert(sampfp);
-    assert(0 == fseek(sampfp, 0, 2));
-
-    nsamp = ftell(sampfp);
-    assert(nsamp % (sizeof(double) * egd->ctrlay->n) == 0);
-    nsamp /= egd->ctrlay->n * sizeof(double);
-    assert(0 == fseek(sampfp, 0, 0));
-
-    samp = new double[egd->ctrlay->n * nsamp];
-    int ret = fread(samp, egd->ctrlay->n * sizeof(double), nsamp, sampfp);
-    assert(ret == nsamp);
-    fclose(sampfp);
-  }
-#endif
-
-  {
-    std::string framefn = dir + "/egd.proj/frame.dat";
-    FILE *framefp = fopen(framefn.c_str(), "r");
-    assert(framefp);
-    assert(0 == fseek(framefp, 0, 2));
-
-    nframe = ftell(framefp);
-    assert(nframe % (sizeof(double) * 6) == 0);
-    nframe /= 6 * sizeof(double);
-    assert(0 == fseek(framefp, 0, 0));
-
-    frame = new double[6 * nframe];
-    int ret = fread(frame, 6 * sizeof(double), nframe, framefp);
-    assert(ret == nframe);
-    fclose(framefp);
-  }
-
 }
 
 Urb::~Urb() {
-  delete egd;
+  delete enc;
+
+  for (auto i : gens)
+    delete i.second;
+
+  for (auto i : stys)
+    delete i.second;
 
   for (Zone *zone : zones) {
     delete zone;
@@ -135,29 +127,132 @@ fprintf(stderr, "found %s\n", nom.c_str());
   memset(&parson, 0, sizeof(Parson));
   strcpy(parson.nom, nom.c_str());
 
-  seedrand(Parson::hash_nom(nom.c_str()));
+  double dev = 1.0;
+  if (strstr(parson.nom, "norm"))
+    dev = 0;
+
+  std::string seednom = nom;
+  while (!strncmp(seednom.c_str(), "anti", 4)) {
+    seednom = seednom.c_str() + 4;
+    dev = -dev;
+  }
+
+  seedrand(Parson::hash_nom(seednom.c_str()));
+  for (unsigned int k = 0; k < Parson::ncontrols; ++k)
+    parson.controls[k] = randgauss() * dev;
   parson.paren_noms(nom.c_str(), parson.parens[0], parson.parens[1]);
 
-  if (nom.length() >= 5 && !strncmp(nom.c_str(), "anti", 4)) {
-    Parson *x = this->make(nom.c_str() + 4, tier);
-    for (unsigned int j = 0; j < egd->ctrlay->n; ++j) {
-      parson.controls[j] = -x->controls[j];
-    }
-  } else {
-    for (unsigned int j = 0; j < egd->ctrlay->n; ++j) {
-      unsigned int k = randuint() % nsamp;
-      parson.controls[j] = samp[k * egd->ctrlay->n + j] * 1.0;
+  parson.tone = dev;
+
+
+  {
+    Zone *sks = sks0;
+
+    Parson *skp = sks->pick(which ? "female" : "male", 32);
+    if (!skp)
+      skp = sks->pick();
+    assert(skp);
+
+    parson.skid = sks->dom(skp);
+    memcpy(parson.sketch, skp->sketch, sizeof(parson.sketch));
+
+
+#if 0
+    std::string srcfn = skp->srcfn;
+    assert(srcfn.length());
+    strcpy(parson.srcfn, skp->srcfn);
+
+    Partrait prt;
+    prt.load(srcfn);
+
+    strcpy(parson.sty, "easyceleb");
+
+    Styler *sty = get_sty(parson.sty);
+    assert(sty);
+    enc->encode(prt, &parson, sty);
+#endif
+  }
+
+  if (strstr(parson.nom, "gray")) {
+    for (unsigned int k = 0; k < 192; k += 3) {
+      parson.sketch[k + 1] = 0;
+      parson.sketch[k + 2] = 0;
     }
   }
+
+  parson.angle = randrange(-0.05, 0.05);
+  parson.stretch = 1.0 + randrange(-0.05, 0.05);
+  parson.skew = randrange(-0.05, 0.05);
+
+  parson.add_tag(which ? "female" : "male");
+
+  strcpy(parson.gen, "shampane");
+  strcpy(parson.sks, "easyceleb");
 
   if (child) {
     seedrand(Parson::hash_nom(child->nom, 93));
-    for (unsigned int j = 0; j < egd->ctrlay->n; ++j) {
-      if (randuint() % 2 == which) {
-        parson.controls[j] = child->controls[j];
-      }
+    for (unsigned int k = 0; k < Parson::ncontrols; ++k)
+      if (randuint() % 2 == which)
+        parson.controls[k] = child->controls[k];
+    seedrand(Parson::hash_nom(parson.nom, 93));
+
+    // for (unsigned int k = 0; k < 192; ++k)
+    //   parson.sketch[k] = 0.5 * parson.sketch[k] + 0.5 * child->sketch[k];
+
+    if (randuint() % 16 == 0) {
+      const char *race[8] = {
+        "white", "white", "white",
+        "black", "black", "black",
+        "asian", "hispanic"
+      };
+      parson.add_tag(race[randuint() % 8]);
+    } else {
+      if (child->has_tag("white"))
+        parson.add_tag("white");
+      else if (child->has_tag("black"))
+        parson.add_tag("black");
+      else if (child->has_tag("hispanic"))
+        parson.add_tag("hispanic");
+      else if (child->has_tag("asian"))
+        parson.add_tag("asian");
     }
+  } else {
+    const char *race[8] = {
+      "white", "white", "white",
+      "black", "black", "black",
+      "asian", "hispanic"
+    };
+    parson.add_tag(race[randuint() % 8]);
   }
+
+  strcpy(parson.sty, "shampane");
+
+#if 0
+  int samb = 0;
+  samb += parson.has_tag("male");
+  samb += parson.has_tag("female");
+  int ramb = 0;
+  ramb += parson.has_tag("white");
+  ramb += parson.has_tag("black");
+  ramb += parson.has_tag("hispanic");
+  ramb += parson.has_tag("asian");
+
+  if (ramb == 1 && samb == 1) {
+    bool isw = parson.has_tag("white");
+    bool isb = parson.has_tag("black");
+    bool ism = parson.has_tag("male");
+    bool isf = parson.has_tag("female");
+
+    if (isw && ism)
+      strcpy(parson.sty, "shampane_wm");
+    if (isb && isf)
+      strcpy(parson.sty, "shampane_bf");
+    if (isw && isf)
+      strcpy(parson.sty, "shampane_wf");
+    if (isb && isf)
+      strcpy(parson.sty, "shampane_bf");
+  }
+#endif
 
   if (gens) {
     (void) make(parson.parens[0], tier, gens - 1, &parson, 0);
@@ -165,30 +260,6 @@ fprintf(stderr, "found %s\n", nom.c_str());
   }
 
 fprintf(stderr, "%s -> %s, %s\n", nom.c_str(), parson.parens[0], parson.parens[1]);
-
-#if 0
-  cholo->generate(parson.controls, egd->ctrbuf);
-
-  for (unsigned int j = 0; j < egd->ctrlay->n; ++j)
-    egd->ctrbuf[j] = sigmoid(egd->ctrbuf[j]);
-
-  egd->generate();
-
-  assert(egd->tgtlay->n == Parson::dim * Parson::dim * 3);
-  labquant(egd->tgtbuf, Parson::dim * Parson::dim * 3, parson.target);
-#endif
-
-#if 0
-  string imagefn = images[randuint() % images.size()];
-  string png = slurp(imagefn);
-
-  vector<string> tags;
-  // imglab("png", png, 64, 64, parson.target, &tags);
-  pnglab(png, 64, 64, parson.target, &tags);
-  for (auto tag : tags) {
-    parson.add_tag(tag.c_str());
-  }
-#endif
 
   time_t now = time(NULL);
   parson.creator = 0x7F000001;

@@ -9,9 +9,15 @@
 #include "zone.hh"
 #include "brane.hh"
 #include "bus.hh"
-
 #include "cholo.hh"
-#include "encgendis.hh"
+#include "random.hh"
+#include "encoder.hh"
+#include "generator.hh"
+#include "styler.hh"
+#include "autoposer.hh"
+
+#include <map>
+#include <string>
 
 namespace makemore {
 
@@ -20,18 +26,40 @@ struct Urb {
   std::string dir;
 
   std::vector<Zone*> zones;
+  Zone *sks0, *sks1;
   Bus *outgoing;
   std::vector<std::string> images, srcimages;
 
-  Encgendis *egd;
-  double *samp;
-  unsigned int nsamp;
-  double *frame;
-  unsigned int nframe;
-  Cholo *cholo;
+  Autoposer *ruffposer;
+  Autoposer *fineposer;
+
+  Encoder *enc;
+
+  std::map<std::string, Generator *> gens;
+  Generator *default_gen;
+
+  std::map<std::string, Styler *> stys;
+  Styler *default_sty;
 
   Urb(const char *_dir, unsigned int _mbn = 8);
   ~Urb();
+
+  void add_gen(const std::string &tag, const std::string &projdir);
+  void add_sty(const std::string &tag, const std::string &projdir);
+
+  Generator *get_gen(const std::string &tag) {
+    Generator *gen = gens[tag];
+    if (!gen)
+      gen = default_gen;
+    return gen;
+  }
+
+  Styler *get_sty(const std::string &tag) {
+    Styler *sty = stys[tag];
+    if (!sty)
+      sty = default_sty;
+    return sty;
+  }
 
   void generate(Parson *p, long min_age = 0);
 
@@ -39,7 +67,8 @@ struct Urb {
   unsigned int tier(const Zone *zone) const;
   Zone *zone(const Parson *x) const;
   Parson *find(const std::string &nom, unsigned int *tierp = NULL) const;
-  Parson *make(const std::string &nom, unsigned int tier = 0, unsigned int gens = 0, Parson *child = NULL, unsigned int which = 0);
+
+  Parson *make(const std::string &nom, unsigned int tier = 0, unsigned int gens = 0, Parson *child = NULL, unsigned int which = randuint() % 2);
   Parson *make(const char *nom, unsigned int tier = 0) {
     return make(std::string(nom), tier);
   }

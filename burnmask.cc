@@ -12,7 +12,7 @@
 #include "partrait.hh"
 #include "catalog.hh"
 #include "generator.hh"
-#include "autoposer.hh"
+#include "automasker.hh"
 
 
 using namespace makemore;
@@ -34,7 +34,7 @@ int main(int argc, char **argv) {
 
   assert(argc == 3);
   Zone zone(argv[1]);
-  Autoposer *ap = new Autoposer(argv[2]);
+  Automasker *am = new Automasker(argv[2]);
 
 fprintf(stderr, "starting\n");
 
@@ -57,19 +57,19 @@ Partrait *par = new Partrait;
 
     assert(prt.w == w);
     assert(prt.h == h);
+    assert(prt.alpha);
 
-    Triangle mark = prt.get_mark();
-    double de = 4.0;
-    double dm = 8.0;
-    mark.p.x += randrange(-de, de);
-    mark.p.y += randrange(-de, de);
-    mark.q.x += randrange(-de, de);
-    mark.q.y += randrange(-de, de);
-    mark.r.x += randrange(-dm, dm);
-    mark.r.y += randrange(-dm, dm);
-    Pose adjpose = Pose(mark);
+    Pose adjpose = prt.get_pose();
+    adjpose.stretch += randrange(-0.03, 0.03);
+    adjpose.skew += randrange(-0.03, 0.03);
+    adjpose.angle += randrange(-0.05, 0.05);
+    adjpose.scale += randrange(-4.0, 4.0);
+    adjpose.center.x += randrange(-8.0, 8.0);
+    adjpose.center.y += randrange(-8.0, 8.0);
 
     Partrait adjprt(w, h);
+    adjprt.fill_black();
+    adjprt.alpha = new uint8_t[w * h]();
     adjprt.set_pose(adjpose);
     prt.warp(&adjprt);
 
@@ -77,11 +77,11 @@ Partrait *par = new Partrait;
       adjprt.reflect();
     }
 
-    ap->observe(adjprt, 0.00001);
+    am->observe(adjprt, 0.0001);
 
     if (i % 100 == 0) {
-      ap->report("burnseg");
-      ap->save();
+      am->report("burnmask");
+      am->save();
     }
 
     ++i;

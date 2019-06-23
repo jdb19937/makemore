@@ -11,14 +11,21 @@ static void cpuchol(double *U, unsigned int dim) {
   unsigned int i, j, k; 
 
   for (k = 0; k < dim; k++) {
-    assert(U[k * dim + k] > 0);
+    // assert(U[k * dim + k] > 0);
+    if (U[k * dim + k] < 0)
+      U[k * dim + k] = 0;
     U[k * dim + k] = sqrt(U[k * dim + k]);
-    assert(U[k * dim + k] > 0);
     
-    for (j = (k + 1); j < dim; j++)
-      U[k * dim + j] /= U[k * dim + k];
+    if (U[k * dim + k] > 0) {
+      for (j = k + 1; j < dim; j++)
+        U[k * dim + j] /= U[k * dim + k];
+    } else {
+      U[k * dim + k] = 1.0;
+      for (j = k + 1; j < dim; j++)
+        U[k * dim + j] = 0;
+    }
              
-    for (i = (k + 1); i < dim; i++)
+    for (i = k + 1; i < dim; i++)
       for (j = i; j < dim; j++)
         U[i * dim + j] -= U[k * dim + i] * U[k * dim + j];
 
@@ -158,7 +165,7 @@ void Cholo::finalize() {
   cucopy(chol, dim2, cov);
 
   cufree(tmp2);
-  cufree(tmp);
+  cufree(tmp1);
 
 #if 1
   tmp2 = new double[dim2];
@@ -273,7 +280,7 @@ for (unsigned int i = 0; i < dim; ++i) {
   for (unsigned int j = 0; j < dim; ++j) {
     s += fabs(tmp2[i * dim + j]) * vartmp[j];
   }
-  fprintf(stderr, "colsum[%u] = %lf\n", i, s);
+//  fprintf(stderr, "colsum[%u] = %lf\n", i, s);
 }
   
   encude(tmp2, dim2, chol);
@@ -305,6 +312,16 @@ void Cholo::load(const std::string &fn) {
   assert(fp);
   this->load(fp);
   fclose(fp);
+}
+
+void Cholo::port(Cholo *to, const double *x, double *y) {
+  assert(dim == to->dim);
+  encude(x, dim, in);
+  cusubvec(in, mean, dim, out);
+  cudivsqrtvec(out, var, dim, out);
+  cumulsqrtvec(out, to->var, dim, out);
+  cuaddvec(out, to->mean, dim, out);
+  decude(out, dim, y);
 }
 
 }

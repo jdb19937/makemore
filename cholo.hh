@@ -20,6 +20,9 @@ struct Cholo {
   const unsigned int dim;
 
   Cholo(unsigned int _dim);
+  Cholo(const std::string &fn, unsigned int _dim) : Cholo(_dim) {
+    load(fn);
+  }
   ~Cholo();
 
   void observe(const double *x, bool deactivate = false);
@@ -27,6 +30,7 @@ struct Cholo {
   void generate(double *x, double m = 1.0, bool activate = false);
   void generate(const double *y, double *x, bool activate = false);
   void encode(const double *x, double *y, bool deactivate = false);
+  void port(Cholo *to, const double *x, double *y);
 
   void save(FILE *fp);
   void load(FILE *fp);

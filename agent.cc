@@ -14,13 +14,15 @@
 
 #include "agent.hh"
 #include "server.hh"
-#include "encgendis.hh"
+#include "encgen.hh"
 #include "urbite.hh"
 #include "numutils.hh"
 #include "strutils.hh"
 #include "imgutils.hh"
 #include "process.hh"
 #include "warp.hh"
+#include "pose.hh"
+#include "partrait.hh"
 
 namespace makemore {
 
@@ -502,8 +504,8 @@ void Agent::command(const strvec &words) {
 static std::string htmlp(const std::string &nom, unsigned int dim) {
   char buf[4096];
   sprintf(buf, 
-//    "<a href='/%s'><img width='%u' height='%u' style='image-rendering: pixelated' src='%s.png'/></a>",
-    "<a href='/%s'><img width='%u' height='%u' src='%s.png'/></a>",
+//    "<a href='/%s'><img width='%u' height='%u' style='image-rendering: pixelated' src='/%s.png'/></a>",
+    "<a href='/%s'><img width='%u' height='%u' src='/%s.png'/></a>",
     nom.c_str(), dim, dim, nom.c_str()
   );
   return buf;
@@ -513,6 +515,12 @@ void Agent::handle_http() {
   std::string req = httpbuf[0];
   strvec reqwords;
   splitwords(req, &reqwords);
+
+  for (auto kv : httpbuf) {
+    if (strbegins(kv, "Cookie: ")) {
+      std::string v = kv.c_str() + 8;
+    }
+  }
 
 fprintf(stderr, "req=[%s]\n", req.c_str());
   if (reqwords[0] != "GET") {
@@ -626,9 +634,9 @@ fprintf(stderr, "req=[%s]\n", req.c_str());
     string imagefn = server->urb->srcimages[which];
     string png = makemore::slurp(imagefn);
 
-    unsigned int w = 400, h = 400;
-    uint8_t *tmp = new uint8_t[w * h * 3];
-    pngrgb(png, w, h, tmp);
+    unsigned int w, h;
+    uint8_t *tmp;
+    pngrgb(png, &w, &h, &tmp);
     png = "";
     rgbpng(tmp, w, h, &png, &new_tags);
     new_tags.clear();
@@ -663,17 +671,12 @@ fprintf(stderr, "req=[%s]\n", req.c_str());
 
     which %= server->urb->srcimages.size();
     string imagefn = server->urb->srcimages[which];
-    string png = makemore::slurp(imagefn);
 
-    vector<string> tags;
-
-    unsigned int w = 400, h = 400;
-    uint8_t *tmp = new uint8_t[w * h * 3];
-    pngrgb(png, w, h, tmp, &tags);
-    delete[] tmp;
+    Partrait prt;
+    prt.load(imagefn);
 
     std::string txt;
-    for (auto tag : tags) {
+    for (auto tag : prt.tags) {
       txt += std::string("#") + tag + "\n";
     }
 
@@ -686,6 +689,7 @@ fprintf(stderr, "req=[%s]\n", req.c_str());
     return;
   }
 
+#if 0
   if (path == "/tagenc.png") {
     unsigned int which = atoi(query.c_str());
     string imagefn = server->urb->images[which % server->urb->images.size()];
@@ -711,6 +715,7 @@ fprintf(stderr, "req=[%s]\n", req.c_str());
     this->write(png);
     return;
   }
+#endif
 
   if (path == "/tagraw.png") {
     unsigned int which = atoi(query.c_str());
@@ -731,7 +736,7 @@ fprintf(stderr, "req=[%s]\n", req.c_str());
     return;
   }
 
-  if (path == "/tagger.html" || path == "/cam.html") {
+  if (path == "/tagger.html" || path == "/cam.html" || path == "/edit.html") {
     std::string html = makemore::slurp(path.c_str() + 1);
 
     this->printf("HTTP/1.1 200 OK\r\n");
@@ -756,6 +761,123 @@ fprintf(stderr, "req=[%s]\n", req.c_str());
     return;
   }
 
+
+  if (path == "/edit") {
+    map<string, string> cgi;
+    cgiparse(query, &cgi);
+    string nom = cgi["nom"];
+    string op = cgi["op"];
+
+    if (op == "loadgens") {
+      for (auto g : server->urb->gens) {
+        g.second->load();
+      }
+      string txt = "ok, reloaded gens";
+
+      this->printf("HTTP/1.1 200 OK\r\n");
+      this->printf("Connection: keep-alive\r\n");
+      this->printf("Content-Type: text/plain\r\n");
+      this->printf("Content-Length: %lu\r\n", txt.length());
+      this->printf("\r\n");
+      this->write(txt);
+      return;
+    }
+
+    if (!Parson::valid_nom(nom)) {
+      this->printf("HTTP/1.1 404 Not Found\r\n");
+      this->printf("Connection: keep-alive\r\n");
+      this->printf("Content-Type: text/plain\r\n");
+      this->printf("Content-Length: 0\r\n");
+      this->printf("\r\n");
+      return;
+    }
+
+
+    Parson *parson = server->urb->find(nom);
+    if (!parson) {
+      this->printf("HTTP/1.1 404 Not Found\r\n");
+      this->printf("Connection: keep-alive\r\n");
+      this->printf("Content-Type: text/plain\r\n");
+      this->printf("Content-Length: 0\r\n");
+      this->printf("\r\n");
+      return;
+    }
+
+    
+    string txt = "huh";
+    if (op == "scramble") {
+      strcpy(parson->srcfn, "");
+      for (unsigned int j = 0; j < Parson::ncontrols; ++j)
+        parson->controls[j] = randgauss();
+      txt = "ok, scrambled " + nom;
+    } else if (op == "pickreal") {
+      Generator *gen = server->urb->get_gen(parson->gen);
+      Zone *sks = gen->zone;
+     
+      Parson *skp = sks->pick();
+      assert(skp);
+
+      std::string srcfn = skp->srcfn;
+      assert(srcfn.length());
+      strcpy(parson->srcfn, skp->srcfn);
+
+      Partrait prt;
+      prt.load(srcfn);
+      memset(parson->tags, 0, sizeof(parson->tags));
+
+      Styler *sty = server->urb->get_sty(parson->sty);
+      assert(sty);
+      server->urb->enc->encode(prt, parson, sty);
+
+      txt = "ok, pickreal " + nom;
+    } else if (op == "resketch") {
+      std::string skstag = cgi["sks"];
+      if (skstag.length() && Parson::valid_tag(skstag.c_str()))
+        strcpy(parson->sks, skstag.c_str());
+
+      Zone *sks = server->urb->sks0;
+      if (!strcmp(parson->sks, "shampane"))
+        sks = server->urb->sks1;
+
+      Parson *skp = sks->pick();
+      assert(skp);
+
+      parson->skid = sks->dom(skp);
+      memcpy(parson->sketch, skp->sketch, sizeof(parson->sketch));
+      txt = "ok, resketched " + nom;
+    } else if (op == "add_tag") {
+      std::string tag = cgi["tag"];
+      parson->add_tag(tag.c_str());
+      txt = "ok, added tag " + tag;
+    } else if (op == "del_tag") {
+      std::string tag = cgi["tag"];
+      parson->del_tag(tag.c_str());
+      txt = "ok, deleted tag " + tag;
+    } else if (op == "set_gen") {
+      std::string tag = cgi["gen"];
+      if (Parson::valid_tag(tag.c_str())) {
+        strcpy(parson->gen, tag.c_str());
+        txt = "ok, set gen " + tag;
+      }
+    } else if (op == "set_sty") {
+      std::string tag = cgi["sty"];
+      if (Parson::valid_tag(tag.c_str())) {
+        strcpy(parson->sty, tag.c_str());
+        txt = "ok, set sty " + tag;
+      }
+    }
+
+    this->printf("HTTP/1.1 200 Ok\r\n");
+    this->printf("Connection: keep-alive\r\n");
+    this->printf("Content-Type: text/plain\r\n");
+    this->printf("Content-Length: %lu\r\n", txt.length());
+    this->printf("\r\n");
+    this->write(txt);
+    return;
+  }
+
+
+
   std::string nom;
   if (path == "/") {
     nom = Parson::gen_nom();
@@ -769,10 +891,16 @@ fprintf(stderr, "req=[%s]\n", req.c_str());
   }
 
   nom = path.c_str() + 1;
-  bool is_png = false;
-  if (nom.length() > 4 && !strcmp(nom.c_str() + nom.length() - 4, ".png")) {
-    nom = std::string(nom.c_str(), nom.length() - 4);
-    is_png = true;
+  std::string ext;
+  if (const char *p = strchr(nom.c_str(), '.')) {
+    ext = p + 1;
+    nom = std::string(nom.c_str(), p - nom.c_str());
+  }
+
+  std::string func = "html";
+  if (const char *p = strchr(nom.c_str(), '/')) {
+    func = p + 1;
+    nom = std::string(nom.c_str(), p - nom.c_str());
   }
 
 //fprintf(stderr, "nom=[%s] is_png=%d\n", 
@@ -786,37 +914,108 @@ fprintf(stderr, "req=[%s]\n", req.c_str());
     return;
   }
 
-  if (is_png) {
+  if (func == "edit") {
+    std::string html = makemore::slurp("edit.html");
+
+    this->printf("HTTP/1.1 200 OK\r\n");
+    this->printf("Connection: keep-alive\r\n");
+    this->printf("Content-Type: text/html\r\n");
+    this->printf("Content-Length: %lu\r\n", html.length());
+    this->printf("\r\n");
+    this->write(html);
+    return;
+  }
+
+  if (ext == "json") {
+    Parson *parson = server->urb->make(nom, 0);
+    assert(parson);
+
+    std::string json;
+    json += "{\n";
+    json += string("  \"nom\": \"") + parson->nom + "\",\n";
+    json += string("  \"gen\": \"") + parson->gen + "\",\n";
+    json += string("  \"sty\": \"") + parson->sty + "\",\n";
+    json += string("  \"sks\": \"") + parson->sks + "\",\n";
+    json += string("  \"srcfn\": \"") + parson->srcfn + "\",\n";
+
+    char numstr[256];
+    sprintf(numstr, "%u", parson->skid);
+    json += string("  \"skid\": ") + numstr + ",\n";
+
+    json += string("  \"parens\": [");
+    for (unsigned int j = 0; j < 2; ++j) {
+      const char *paren = parson->parens[j];
+      if (!*paren)
+        continue;
+      if (j)
+        json += ", ";
+      json += string("\"") + paren + string("\"");
+    }
+    json += "],\n";
+
+    json += string("  \"frens\": [");
+    for (unsigned int j = 0; j < 2; ++j) {
+      const char *fren = parson->frens[j];
+      if (!*fren)
+        continue;
+      if (j)
+        json += ", ";
+      json += string("\"") + fren + string("\"");
+    }
+    json += "],\n";
+
+    json += string("  \"tags\": [");
+    for (unsigned int j = 0; j < Parson::ntags; ++j) {
+      const char *tag = parson->tags[j];
+      if (!*tag)
+        continue;
+
+      if (j)
+        json += ", ";
+      json += string("\"") + tag + string("\"");
+    }
+    json += "],\n";
+
+    sprintf(numstr, "%lf", parson->angle);
+    json += string("  \"angle\": ") + numstr + ",\n";
+    sprintf(numstr, "%lf", parson->stretch);
+    json += string("  \"stretch\": ") + numstr + ",\n";
+    sprintf(numstr, "%lf", parson->skew);
+    json += string("  \"skew\": ") + numstr + "\n";
+
+    json += "}\n";
+
+    this->printf("HTTP/1.1 200 OK\r\n");
+    this->printf("Connection: keep-alive\r\n");
+    this->printf("Content-Type: text/json\r\n");
+    this->printf("Content-Length: %lu\r\n", json.length());
+    this->printf("\r\n");
+    this->write(json);
+    return;
+  }
+
+  if (ext == "png") {
     Parson *parson = server->urb->make(nom, 0);
 
-    Cholo *cholo = server->urb->cholo;
-    Encgendis *egd = server->urb->egd; 
+#if 0
+    Pose pose = Pose::STANDARD;
+    pose.angle = parson->angle * 0.5;
+    pose.stretch = (parson->stretch - 1.0) * 0.5 + 1.0;
+    pose.skew = parson->skew * 0.25;
+#endif
 
-    assert(cholo->dim == Parson::ncontrols);
-    cholo->generate(parson->controls, egd->ctrbuf, true);
-    assert(egd->ctrlay->n == Parson::ncontrols);
-    egd->generate();
+//fprintf(stderr, "[%lf %lf %lf]\n", pose.angle, pose.stretch, pose.skew);
 
+    Encoder *enc = server->urb->enc;
+    Generator *gen = server->urb->get_gen(parson->gen);
+    Styler *sty = server->urb->get_sty(parson->sty);
 
-    seedrand(Parson::hash_nom(parson->nom));
-    unsigned int f = randuint() % server->urb->nframe;
-    // double *frame = server->urb->frame + 6 * f;
-    double y0 = randrange(0, 10.0);
-    double y1 = randrange(220, 230);
-    double frame[] = {0, y0, 255, y0, 0, y1};
-
-    assert(egd->tgtlay->n == 256 * 256 * 3);
-    double *tmp = new double[egd->tgtlay->n];
-    kwarp(egd->tgtbuf, 256, 256, frame[0], frame[1], frame[2], frame[3], frame[4], frame[5], NULL, NULL, NULL, NULL, NULL, NULL, 256, 256, tmp);
-
-    uint8_t *rgb = new uint8_t[egd->tgtlay->n];
-    dtobv(tmp, rgb, egd->tgtlay->n);
+    Partrait showpar;
+    gen->generate(*parson, &showpar, sty);
 
     std::string png;
-    rgbpng(rgb, 256, 256, &png);
-    delete[] rgb;
-    delete[] tmp;
-    
+    showpar.to_png(&png);
+
     this->printf("HTTP/1.1 200 OK\r\n");
     this->printf("Connection: keep-alive\r\n");
     this->printf("Content-Type: image/png\r\n");
@@ -825,6 +1024,25 @@ fprintf(stderr, "req=[%s]\n", req.c_str());
     this->write(png);
     return;
   }
+
+  if (ext == "sketch.png") {
+    Parson *parson = server->urb->make(nom, 0);
+
+    Partrait showpar(8, 8);
+    labrgb(parson->sketch, 192, showpar.rgb);
+
+    std::string png;
+    showpar.to_png(&png);
+
+    this->printf("HTTP/1.1 200 OK\r\n");
+    this->printf("Connection: keep-alive\r\n");
+    this->printf("Content-Type: image/png\r\n");
+    this->printf("Content-Length: %lu\r\n", png.length());
+    this->printf("\r\n");
+    this->write(png);
+    return;
+  }
+
 
   {
     Parson *parson = server->urb->make(nom, 0, 2);
@@ -849,7 +1067,7 @@ fprintf(stderr, "paren0=%s\n", parson->parens[0]);
     htmlbuf += "<meta property='og:url' content='https://peaple.io/" + nom + "'>";
     htmlbuf += "<meta property='og:type' content='article'>";
 
-    htmlbuf += "</head><body bgcolor='#000000'><center>";
+    htmlbuf += "</head><body bgcolor='#FFFFFF'><center>";
 
     htmlbuf += htmlp(paren0->parens[0], 128);
     htmlbuf += htmlp(paren0->parens[1], 128);
@@ -865,6 +1083,7 @@ fprintf(stderr, "paren0=%s\n", parson->parens[0]);
     this->printf("HTTP/1.1 200 OK\r\n");
     this->printf("Connection: keep-alive\r\n");
     this->printf("Content-Type: text/html\r\n");
+    this->printf("Set-Cookie: foo=baz\r\n");
     this->printf("Content-Length: %u\r\n", htmlbuf.length());
     this->printf("\r\n");
     this->write(htmlbuf);

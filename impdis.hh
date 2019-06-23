@@ -45,8 +45,10 @@ struct Impdis : Project {
   void load();
   void save();
 
+  void improve();
+
   void burn(double pi);
-  void observe(double xi);
+  void observe(double mu, double xi);
 };
 
 }

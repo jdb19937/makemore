@@ -98,7 +98,8 @@ bool rgbpng(
   unsigned int w,
   unsigned int h,
   std::string *png,
-  const std::vector<std::string> *tags = NULL
+  const std::vector<std::string> *tags = NULL,
+  const uint8_t *alpha = NULL
 );
 bool labpng(
   const uint8_t *lab,
@@ -121,7 +122,8 @@ bool pngrgb(
   unsigned int *wp,
   unsigned int *hp,
   uint8_t **rgbp,
-  std::vector<std::string> *tags = NULL
+  std::vector<std::string> *tags = NULL,
+  uint8_t **alphap = NULL
 );
 
 bool pngrgb(

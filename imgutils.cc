@@ -3,6 +3,7 @@
 
 #include <string.h>
 #include <assert.h>
+#include <stdint.h>
 
 #include <math.h>
 
@@ -394,7 +395,8 @@ bool pngrgb(
   unsigned int *wp,
   unsigned int *hp,
   uint8_t **rgbp,
-  vector<string> *tags
+  vector<string> *tags,
+  uint8_t **alphap
 ) {
   FILE *fp = fmemopen((void *)png.data(), png.length(), "r");
   assert(fp);
@@ -408,26 +410,39 @@ bool pngrgb(
   png_bytep *row_pointers = NULL;
   uint8_t *rgb = NULL;
   unsigned int w = 0, h = 0;
+  int ct;
 
   ret = fread(header, 1, 8, fp);
-  if (ret != 8)
+  if (ret != 8) {
+fprintf(stderr, "pngfail0\n");
     goto fail;
-  if (png_sig_cmp(header, 0, 8))
+  }
+  if (png_sig_cmp(header, 0, 8)) {
+fprintf(stderr, "pngfail1\n");
     goto fail;
+  }
 
   png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
-  if (!png_ptr)
+  if (!png_ptr) {
+fprintf(stderr, "pngfail2\n");
     goto fail;
+  }
 
   info_ptr = png_create_info_struct(png_ptr);
-  if (!info_ptr)
+  if (!info_ptr) {
+fprintf(stderr, "pngfail3\n");
     goto fail;
+  }
   end_ptr = png_create_info_struct(png_ptr);
-  if (!end_ptr)
+  if (!end_ptr) {
+fprintf(stderr, "pngfail4\n");
     goto fail;
+  }
 
-  if (setjmp(png_jmpbuf(png_ptr)))
+  if (setjmp(png_jmpbuf(png_ptr))) {
+fprintf(stderr, "pngfail5\n");
     goto fail;
+  }
 
   png_init_io(png_ptr, fp);
   png_set_sig_bytes(png_ptr, 8);
@@ -436,12 +451,18 @@ bool pngrgb(
 
   w = png_get_image_width(png_ptr, info_ptr);
   h = png_get_image_height(png_ptr, info_ptr);
+//fprintf(stderr, "png w=%u h=%u\n", w, h);
   rgb = new uint8_t[w * h * 3];
 
-  if (PNG_COLOR_TYPE_RGB != png_get_color_type(png_ptr, info_ptr))
+  ct = png_get_color_type(png_ptr, info_ptr);
+  if (PNG_COLOR_TYPE_RGB != ct && PNG_COLOR_TYPE_RGBA != ct) {
+fprintf(stderr, "pngfail6\n");
     goto fail;
-  if (8 != png_get_bit_depth(png_ptr, info_ptr))
+  }
+  if (8 != png_get_bit_depth(png_ptr, info_ptr)) {
+fprintf(stderr, "pngfail7\n");
     goto fail;
+  }
 
   png_set_interlace_handling(png_ptr);
   png_read_update_info(png_ptr, info_ptr);
@@ -450,12 +471,39 @@ bool pngrgb(
   assert(!setjmp(png_jmpbuf(png_ptr)));
 
   row_pointers = new png_bytep[h];
-  for (unsigned int y = 0; y < h; y++)
-    row_pointers[y] = rgb + y * w * 3;
+  if (ct == PNG_COLOR_TYPE_RGBA) {
+    for (unsigned int y = 0; y < h; y++)
+      row_pointers[y] = new uint8_t[w * 4];
+  } else {
+    for (unsigned int y = 0; y < h; y++)
+      row_pointers[y] = rgb + y * w * 3;
+  }
 
   png_read_image(png_ptr, row_pointers);
-
   png_read_end(png_ptr, end_ptr);
+
+  if (alphap)
+    *alphap = NULL;
+
+  if (ct == PNG_COLOR_TYPE_RGBA) {
+    uint8_t *alpha = NULL;
+    if (alphap) {
+      alpha = new uint8_t[w * h];
+      *alphap = alpha;
+    }
+
+    for (unsigned int y = 0; y < h; y++) {
+      for (unsigned int x = 0; x < w; ++x) {
+        rgb[y * w * 3 + x * 3 + 0] = *(row_pointers[y] + x * 4 + 0);
+        rgb[y * w * 3 + x * 3 + 1] = *(row_pointers[y] + x * 4 + 1);
+        rgb[y * w * 3 + x * 3 + 2] = *(row_pointers[y] + x * 4 + 2);
+
+        if (alpha)
+          alpha[y * w  + x] = *(row_pointers[y] + x * 4 + 3);
+      }
+      delete[] row_pointers[y];
+    }
+  }
 
   if (tags) {
     tags->clear();
@@ -487,8 +535,9 @@ bool pngrgb(
   }
 
   fclose(fp);
-  if (row_pointers)
+  if (row_pointers) {
     delete[] row_pointers;
+  }
   if (png_ptr)
     png_destroy_read_struct(&png_ptr, &info_ptr, &end_ptr);
 
@@ -499,8 +548,9 @@ bool pngrgb(
 
 fail:
   fclose(fp);
-  if (row_pointers)
+  if (row_pointers) {
     delete[] row_pointers;
+  }
   if (png_ptr)
     png_destroy_read_struct(&png_ptr, &info_ptr, &end_ptr);
   if (rgb)
@@ -536,7 +586,8 @@ bool rgbpng(
   unsigned int w,
   unsigned int h,
   std::string *png,
-  const vector<string> *tags
+  const vector<string> *tags,
+  const uint8_t *alpha
 ) {
   uint8_t *pngbuf = new uint8_t[1 << 20];
   FILE *fp = fmemopen(pngbuf, 1 << 20, "wb");
@@ -568,7 +619,7 @@ bool rgbpng(
 
   png_set_IHDR(
     png_ptr, info_ptr, w, h,
-    8, PNG_COLOR_TYPE_RGB, PNG_INTERLACE_NONE,
+    8, alpha ? PNG_COLOR_TYPE_RGBA : PNG_COLOR_TYPE_RGB, PNG_INTERLACE_NONE,
     PNG_COMPRESSION_TYPE_BASE, PNG_FILTER_TYPE_BASE
   );
 
@@ -576,8 +627,23 @@ bool rgbpng(
 
   assert(!setjmp(png_jmpbuf(png_ptr)));
   row_pointers = new png_bytep[h];
-  for (unsigned int y = 0; y < h; y++)
-    row_pointers[y] = (png_bytep)rgb + y * w * 3;
+
+  if (alpha) {
+    for (unsigned int y = 0; y < h; y++) {
+      uint8_t *p = new uint8_t[w * 4];
+      for (unsigned int x = 0; x < w; ++x) {
+        p[x * 4 + 0] = *(rgb + y * w * 3 + x * 3 + 0);
+        p[x * 4 + 1] = *(rgb + y * w * 3 + x * 3 + 1);
+        p[x * 4 + 2] = *(rgb + y * w * 3 + x * 3 + 2);
+        p[x * 4 + 3] = *(alpha + y * w + x);
+      }
+      row_pointers[y] = p;
+    }
+  } else {
+    for (unsigned int y = 0; y < h; y++)
+      row_pointers[y] = (png_bytep)rgb + y * w * 3;
+  }
+
   png_write_image(png_ptr, row_pointers);
 
   if (tags) {
@@ -602,7 +668,12 @@ bool rgbpng(
   }
 
   delete[] pngbuf;
+
+  if (alpha)
+    for (unsigned int y = 0; y < h; y++)
+      delete[] ((uint8_t *)row_pointers[y]);
   delete[] row_pointers;
+
   if (png_ptr)
     png_destroy_write_struct(&png_ptr, &info_ptr);
 
@@ -610,8 +681,12 @@ bool rgbpng(
 
 fail:
   fclose(fp);
-  if (row_pointers)
+  if (row_pointers) {
+    if (alpha)
+      for (unsigned int y = 0; y < h; y++)
+        delete[] ((uint8_t *)row_pointers[y]);
     delete[] row_pointers;
+  }
   if (pngbuf)
     delete[] pngbuf;
   if (png_ptr)

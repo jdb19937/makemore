@@ -7,7 +7,7 @@
 #include "ppm.hh"
 #include "warp.hh"
 #include "partrait.hh"
-#include "encgendis.hh"
+#include "encgen.hh"
 #include "autoposer.hh"
 #include "imgutils.hh"
 
@@ -22,7 +22,7 @@ int main(int argc, char **argv) {
 
   Autoposer autoposer("bestposer.proj");
   Autoposer autoposer2("newposer.proj");
-  Encgendis egd("big.proj", 1);
+  Encgen egd("bigsham.proj", 1);
 
   Partrait par;
 
@@ -33,7 +33,7 @@ bool first = 1;
 
 if (first) {
   curpose = Pose::STANDARD;
-  curpose.scale = 150;
+  curpose.scale = 64;
   curpose.center.x = (double)par.w / 2.0;
   curpose.center.y = (double)par.h / 2.0;
   par.set_pose(curpose);
@@ -81,8 +81,8 @@ first = 0;
     stdpar.make_sketch(egd.ctxbuf);
 
     Hashbag hb;
-    hb.add("female");
-    hb.add("brown_hair");
+    hb.add("white");
+    hb.add("male");
     memcpy(egd.ctxbuf + 192, hb.vec, sizeof(double) * 64);
 
     egd.ctxbuf[256] = par.get_tag("angle", 0.0);

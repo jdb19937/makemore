@@ -11,7 +11,7 @@
 
 #include "imgutils.hh"
 
-#if 0
+#if 1
 #include <jpeglib.h>
 #endif
 
@@ -41,7 +41,6 @@ double PPM::centerlight() {
   return s;
 }
 
-#if 0
 bool PPM::read_jpeg(const std::string &jpeg) {
   struct jpeg_decompress_struct cinfo;
   struct jpeg_error_mgr jerr;
@@ -152,7 +151,6 @@ void PPM::write_jpeg(FILE *outfile) {
   jpeg_finish_compress(&cinfo);
   jpeg_destroy_compress(&cinfo);
 }
-#endif
 
 bool PPM::read(FILE *fp) {
   int ret = getc(fp);
