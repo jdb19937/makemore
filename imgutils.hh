@@ -82,6 +82,17 @@ inline void labrgb(const double *lab, unsigned int n, uint8_t *rgb) {
   }
 }
 
+inline void labargba(const double *laba, unsigned int n, uint8_t *rgb, uint8_t *a) {
+  for (unsigned int i = 0; i < n; i++) {
+    labtorgb(laba[4*i+0], laba[4*i+1], laba[4*i+2], &rgb[3*i+0], &rgb[3*i+1], &rgb[3*i+2]);
+
+    double ax = laba[4*i+3];
+    if (ax > 1.0) ax = 1.0;
+    if (ax < 0.0) ax = 0.0;
+    a[i] = (uint8_t)(ax * 255.0);
+  }
+}
+
 extern bool imglab(
   const std::string &fmt, 
   const std::string &data,
