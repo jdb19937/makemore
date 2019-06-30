@@ -275,6 +275,9 @@ void Generator::generate(const Parson &prs, class Partrait *prt, class Styler *s
     pose.skew = prs.skew;
 
     prt->set_pose(pose);
+
+    if (!prt->alpha)
+      prt->alpha = new uint8_t[256 * 256];
     stdprt.warp(prt);
 
     for (unsigned int j = 0; j < Parson::ntags; ++j) {
