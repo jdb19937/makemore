@@ -289,21 +289,11 @@ void Generator::burn(const class Partrait &prt, double pi) {
   assert(prt.w * prt.h * 4 == tgtlay->n);
   assert(prt.alpha);
 
-  rgblab(prt.rgb, prt.w * prt.h * 3, buf);
-  {
-    const double *u = buf;
-    const uint8_t *a = prt.alpha;
-    double *t = tgtbuf;
-    for (unsigned int j = 0, jn = prt.w * prt.h; j < jn; ++j) {
-      double ax = (double)*a++ / 255.0;
-      *t++ = *u++ * ax;
-      *t++ = *u++ * ax;
-      *t++ = *u++ * ax;
-      *t++ = ax;
-    }
-  }
+  rgbalaba(prt.rgb, prt.alpha, prt.w * prt.h, tgtbuf);
   encude(tgtbuf, tgtlay->n, cugentgt);
   gen->target(cugentgt, false);
+
+  cudalpha(gen->foutput(), cugentgt, prt.w * prt.h);
 
   if (focus)
     cufocus(gen->foutput(), cutgtlayx, cutgtlayy, tgtlay->n);

@@ -41,7 +41,7 @@ struct Encoder : Project {
   void save();
 
   void encode(const Partrait &prt, class Parson *prs, class Styler *sty = NULL);
-  void burn(const Partrait &prt, class Generator *gen, double nu, double pi);
+  void burn(const class Generator &gen, double nu);
 };
 
 }

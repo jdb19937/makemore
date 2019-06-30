@@ -68,6 +68,13 @@ inline void rgblab(const uint8_t *rgb, unsigned int n, double *lab) {
   }
 }
 
+inline void rgbalaba(const uint8_t *rgb, const uint8_t *a, unsigned int n, double *laba) {
+  for (unsigned int i = 0; i < n; i++) {
+    rgbtolab(rgb[3*i+0], rgb[3*i+1], rgb[3*i+2], &laba[4*i+0], &laba[4*i+1], &laba[4*i+2]);
+    laba[4*i+3] = (double)a[i] / 255.0;
+  }
+}
+
 inline void labrgb(const double *lab, unsigned int n, uint8_t *rgb) {
   assert(n % 3 == 0);
   for (unsigned int i = 0; i < n; i += 3) {

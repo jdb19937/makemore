@@ -203,6 +203,27 @@ void cufocus(double *a, const double *x, const double *y, unsigned int n) {
   gpu_cufocus<<<gs, bs>>>(a, x, y, n);
 }
 
+__global__ void gpu_cudalpha(double *x, const double *tx, unsigned int n) {
+  unsigned int i = blockIdx.x * blockDim.x + threadIdx.x;
+
+  if (i >= n)
+    return;
+
+  x  += i * 4;
+  tx += i * 4;
+
+  x[0] *= tx[3];
+  x[1] *= tx[3];
+  x[2] *= tx[3];
+}
+
+
+void cudalpha(double *a, const double *tx, unsigned int n) {
+  int bs = 128;
+  int gs = ((n + bs - 1) / bs);
+  gpu_cudalpha<<<gs, bs>>>(a, tx, n);
+}
+
 
 __global__ void gpu_cutwiddle3(const double *z, unsigned int w, unsigned int h, double *lo, double *hi) {
   unsigned int i = blockIdx.x * blockDim.x + threadIdx.x;

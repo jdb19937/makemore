@@ -120,6 +120,7 @@ extern void cudivsqrtvec(const double *a, const double *b, unsigned int n, doubl
 
 
 extern void cumatxpose(const double *m, unsigned int w, unsigned int h, double *u);
+extern void cudalpha(double *a, const double *alpha, unsigned int n);
 };
 
 #endif

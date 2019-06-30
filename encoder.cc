@@ -10,6 +10,7 @@
 #include "parson.hh"
 #include "strutils.hh"
 #include "imgutils.hh"
+#include "generator.hh"
 
 namespace makemore {
 
@@ -116,7 +117,16 @@ void Encoder::encode(const Partrait &prt, class Parson *prs, class Styler *sty) 
   }
 }
 
-void Encoder::burn(const Partrait &prt, class Generator *gen, double nu, double pi) {
+void Encoder::burn(const class Generator &gen, double nu) {
+  assert(gen.ctrlay->n == ctrlay->n);
+  cucopy(gen.cugenfin + gen.ctxlay->n, gen.ctrlay->n, enc->foutput());
+  enc->update_stats();
+  enc->train(nu);
+}
+
+
+
+
 #if 0
   assert(geninlay->n == ctxlay->n + ctrlay->n);
   assert(encinlay->n == inplay->n);
@@ -156,6 +166,5 @@ void Encoder::burn(const Partrait &prt, class Generator *gen, double nu, double 
     enc->train(nu);
   }
 #endif
-}
 
 }
