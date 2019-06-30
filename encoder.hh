@@ -20,7 +20,7 @@ namespace makemore {
 struct Encoder : Project {
   bool ctract;
 
-  Layout *tgtlay, *ctrlay;
+  Layout *inplay, *ctrlay;
   Layout *encinlay;
 
   Topology *enctop;
@@ -28,8 +28,8 @@ struct Encoder : Project {
 
   Tron *enc;
 
-  double *cuencin, *cuenctgt;
-  double *ctrbuf, *tgtbuf;
+  double *cuencin, *cuencinp;
+  double *ctrbuf, *inpbuf;
 
   unsigned int rounds;
 

@@ -30,10 +30,10 @@ Encoder::Encoder(const std::string &_dir, unsigned int _mbn) : Project(_dir, _mb
   ctrlay = new Layout;
   ctrlay->load_file(ctrlayfn);
 
-  char tgtlayfn[4096];
-  sprintf(tgtlayfn, "%s/target.lay", dir.c_str());
-  tgtlay = new Layout;
-  tgtlay->load_file(tgtlayfn);
+  char inplayfn[4096];
+  sprintf(inplayfn, "%s/input.lay", dir.c_str());
+  inplay = new Layout;
+  inplay->load_file(inplayfn);
 
   char encmapfn[4096], enctopfn[4096];
   sprintf(enctopfn, "%s/enc.top", dir.c_str());
@@ -43,15 +43,15 @@ Encoder::Encoder(const std::string &_dir, unsigned int _mbn) : Project(_dir, _mb
   encmap = new Mapfile(encmapfn);
   enc = new Multitron(*enctop, encmap, mbn, ctract);
 
-  encinlay = new Layout(*tgtlay);
+  encinlay = new Layout(*inplay);
   assert(enc->inn == mbn * encinlay->n);
   assert(enc->outn == mbn * ctrlay->n);
 
-  cumake(&cuenctgt, enc->outn);
+  cumake(&cuencinp, enc->outn);
   cumake(&cuencin, enc->inn);
 
   ctrbuf = new double[mbn * ctrlay->n]();
-  tgtbuf = new double[mbn * tgtlay->n]();
+  inpbuf = new double[mbn * inplay->n]();
 
   rounds = 0;
 }
@@ -59,14 +59,14 @@ Encoder::Encoder(const std::string &_dir, unsigned int _mbn) : Project(_dir, _mb
 Encoder::~Encoder() {
   delete encinlay;
 
-  delete tgtlay;
+  delete inplay;
   delete ctrlay;
 
   cufree(cuencin);
-  cufree(cuenctgt);
+  cufree(cuencinp);
 
   delete[] ctrbuf;
-  delete[] tgtbuf;
+  delete[] inpbuf;
 }
 
 
@@ -88,11 +88,11 @@ void Encoder::load() {
 
 void Encoder::encode(const Partrait &prt, class Parson *prs, class Styler *sty) {
   assert(mbn == 1);
-  assert(encinlay->n == tgtlay->n);
-  assert(tgtlay->n == prt.w * prt.h * 3);
+  assert(encinlay->n == inplay->n);
+  assert(inplay->n == prt.w * prt.h * 3);
 
-  rgblab(prt.rgb, tgtlay->n, tgtbuf);
-  encude( tgtbuf, tgtlay->n, cuencin);
+  rgblab(prt.rgb, inplay->n, inpbuf);
+  encude( inpbuf, inplay->n, cuencin);
 
   const double *cuencout = enc->feed(cuencin, NULL);
   assert(enc->outn == ctrlay->n);
@@ -119,10 +119,10 @@ void Encoder::encode(const Partrait &prt, class Parson *prs, class Styler *sty) 
 void Encoder::burn(const Partrait &prt, class Generator *gen, double nu, double pi) {
 #if 0
   assert(geninlay->n == ctxlay->n + ctrlay->n);
-  assert(encinlay->n == tgtlay->n);
+  assert(encinlay->n == inplay->n);
   for (unsigned int mbi = 0; mbi < mbn; ++mbi) {
     encude(ctxbuf + mbi * ctxlay->n, ctxlay->n, cugenin + mbi * geninlay->n);
-    encude(tgtbuf + mbi * tgtlay->n, tgtlay->n, cuencin + mbi * encinlay->n);
+    encude(inpbuf + mbi * inplay->n, inplay->n, cuencin + mbi * encinlay->n);
   }
 
   const double *cuencout = enc->feed(cuencin, NULL);
@@ -133,14 +133,14 @@ void Encoder::burn(const Partrait &prt, class Generator *gen, double nu, double 
   cuzero(cugenfin, mbn * geninlay->n);
   gen->feed(cugenin, cugenfin);
 
-  assert(gen->outn == mbn * tgtlay->n);
-  encude(tgtbuf, gen->outn, cugentgt);
-  gen->target(cugentgt, false);
+  assert(gen->outn == mbn * inplay->n);
+  encude(inpbuf, gen->outn, cugeninp);
+  gen->target(cugeninp, false);
 
   if (focus) {
     double *cugenfout = gen->foutput();
     for (unsigned int mbi = 0; mbi < mbn; ++mbi)
-      cufocus(cugenfout + mbi * tgtlay->n, cutgtlayx, cutgtlayy, tgtlay->n);
+      cufocus(cugenfout + mbi * inplay->n, cuinplayx, cuinplayy, inplay->n);
   }
 
   gen->update_stats();

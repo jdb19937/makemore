@@ -77,7 +77,7 @@ Partrait *par = new Partrait;
       adjprt.reflect();
     }
 
-    am->observe(adjprt, 0.0001);
+    am->observe(adjprt, 0.00001);
 
     if (i % 100 == 0) {
       am->report("burnmask");

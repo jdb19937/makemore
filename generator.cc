@@ -77,6 +77,7 @@ Generator::Generator(const std::string &_dir, unsigned int _mbn) : Project(_dir,
   ctxbuf = new double[mbn * ctxlay->n]();
   ctrbuf = new double[mbn * ctrlay->n]();
   tgtbuf = new double[mbn * tgtlay->n]();
+  buf = new double[mbn * tgtlay->n]();
 
   if (focus) {
     cumake(&cutgtlayx, tgtlay->n);
@@ -109,6 +110,7 @@ Generator::~Generator() {
   delete[] ctxbuf;
   delete[] ctrbuf;
   delete[] tgtbuf;
+  delete[] buf;
 }
 
 
@@ -281,6 +283,33 @@ void Generator::generate(const Parson &prs, class Partrait *prt, class Styler *s
       prt->tags.push_back(prs.tags[j]);
     }
   }
+}
+
+void Generator::burn(const class Partrait &prt, double pi) {
+  assert(prt.w * prt.h * 4 == tgtlay->n);
+  assert(prt.alpha);
+
+  rgblab(prt.rgb, prt.w * prt.h * 3, buf);
+  {
+    const double *u = buf;
+    const uint8_t *a = prt.alpha;
+    double *t = tgtbuf;
+    for (unsigned int j = 0, jn = prt.w * prt.h; j < jn; ++j) {
+      double ax = (double)*a++ / 255.0;
+      *t++ = *u++ * ax;
+      *t++ = *u++ * ax;
+      *t++ = *u++ * ax;
+      *t++ = ax;
+    }
+  }
+  encude(tgtbuf, tgtlay->n, cugentgt);
+  gen->target(cugentgt, false);
+
+  if (focus)
+    cufocus(gen->foutput(), cutgtlayx, cutgtlayy, tgtlay->n);
+
+  gen->update_stats();
+  gen->train(pi);
 }
 
 }

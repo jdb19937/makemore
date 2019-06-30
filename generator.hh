@@ -35,7 +35,7 @@ struct Generator : Project {
   Zone *zone;
 
   double *cugenin, *cugentgt, *cugenfin;
-  double *ctxbuf, *ctrbuf, *tgtbuf;
+  double *ctxbuf, *ctrbuf, *tgtbuf, *buf;
 
   double *cutgtlayx, *cutgtlayy;
 
@@ -50,7 +50,7 @@ struct Generator : Project {
 
   void scramble(double dev = 1.0);
   void generate(const class Parson &prs, class Partrait *prt, class Styler *sty = NULL, bool bp = false);
-  // void burn(double nu, double pi);
+  void burn(const class Partrait &prt, double pi);
 };
 
 }
