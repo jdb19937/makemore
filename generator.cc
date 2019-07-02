@@ -254,14 +254,17 @@ void Generator::generate(const Parson &prs, class Partrait *prt, class Styler *s
 
   if (prt) {
     decude(cugenout, gen->outn, tgtbuf);
-    assert(tgtlay->n == 256 * 256 * 4);
 
     Partrait stdprt(256, 256);
     stdprt.set_pose(Pose::STANDARD);
-    stdprt.alpha = new uint8_t[256 * 256];
+    if (tgtlay->n == 256 * 256 * 4)
+      stdprt.alpha = new uint8_t[256 * 256];
 
     assert(!is_rgb);
-    labargba(tgtbuf, 256 * 256, stdprt.rgb, stdprt.alpha);
+    if (tgtlay->n == 256 * 256 * 4)
+      labargba(tgtbuf, 256 * 256, stdprt.rgb, stdprt.alpha);
+    else
+      labrgb(tgtbuf, 256 * 256 * 3, stdprt.rgb);
 
     prt->create(256, 256);
     if (ctxtype == 2)
@@ -276,7 +279,7 @@ void Generator::generate(const Parson &prs, class Partrait *prt, class Styler *s
 
     prt->set_pose(pose);
 
-    if (!prt->alpha)
+    if (stdprt.alpha && !prt->alpha)
       prt->alpha = new uint8_t[256 * 256];
     stdprt.warp(prt);
 

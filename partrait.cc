@@ -526,4 +526,45 @@ void Partrait::replace_bg(const Partrait &mask, const Partrait &bg) {
   }
 }
 
+void Partrait::jitter(unsigned int z) {
+  int dx = randuint() % (2 * z + 1) - z;
+  int dy = randuint() % (2 * z + 1) - z;
+
+  if (dx == 0 && dy == 0)
+    return;
+  uint8_t *nrgb = new uint8_t[w * h * 3];
+  uint8_t *nalpha = NULL;
+  if (alpha)
+    nalpha = new uint8_t[w * h];
+
+  for (int y = 0; y < h; ++y) {
+    int y0 = y - dy; if (y0 < 0) y0 = 0; if (y0 >= h) y0 = h - 1;
+    for (int x = 0; x < w; ++x) {
+      int x0 = x - dx; if (x0 < 0) x0 = 0; if (x0 >= w) x0 = w - 1;
+      nrgb[y * w * 3 + x * 3 + 0] = rgb[y0 * w * 3 + x0 * 3 + 0];
+      nrgb[y * w * 3 + x * 3 + 1] = rgb[y0 * w * 3 + x0 * 3 + 1];
+      nrgb[y * w * 3 + x * 3 + 2] = rgb[y0 * w * 3 + x0 * 3 + 2];
+      if (nalpha)
+        nalpha[y * w + x] = alpha[y0 * w + x0];
+    }
+  }
+
+  memcpy(rgb, nrgb, w * h * 3);
+  if (nalpha)
+    memcpy(alpha, nalpha, w * h);
+
+  delete[] nrgb;
+  if (nalpha)
+    delete[] nalpha;
+
+  if (has_mark()) {
+    Triangle m = get_mark();
+    m.p += Point(dx, dy);
+    m.q += Point(dx, dy);
+    m.r += Point(dx, dy);
+    set_mark(m);
+  }
+}
+     
+
 }

@@ -215,6 +215,7 @@ __global__ void gpu_cudalpha(double *x, const double *tx, unsigned int n) {
   x[0] *= tx[3];
   x[1] *= tx[3];
   x[2] *= tx[3];
+  x[3] *= 0.25;
 }
 
 

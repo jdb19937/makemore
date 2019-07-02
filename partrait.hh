@@ -162,6 +162,8 @@ struct Partrait {
   bool read_ppm(FILE *);
   void write_ppm(FILE *);
 
+  void jitter(unsigned int z = 1);
+
   void make_sketch(double *sketch, bool bw = false) const;
 
   void erase_bg(const Partrait &mask);
