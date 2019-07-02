@@ -41,7 +41,8 @@ extern void kwarpover(const uint8_t *src,
   int x0, int y0, int x1, int y1, int x2, int y2,
   int *px0, int *py0, int *px1, int *py1, int *px2, int *py2,
   int dw, int dh,
-  uint8_t *dst
+  uint8_t *dst,
+  const uint8_t *alphasrc = NULL
 );
 
 }

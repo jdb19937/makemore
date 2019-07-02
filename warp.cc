@@ -234,7 +234,8 @@ void kwarpover(const uint8_t *src,
   int x0, int y0, int x1, int y1, int x2, int y2,
   int *px0, int *py0, int *px1, int *py1, int *px2, int *py2,
   int dw, int dh,
-  uint8_t *dst
+  uint8_t *dst,
+  const uint8_t *alphasrc
 ) {
   if (px0) {
     assert(px0 && py0 && px1 && py1 && px2 && py2);
@@ -275,12 +276,24 @@ void kwarpover(const uint8_t *src,
       if (ry1 < 0) { ab = 1; } if (ry1 >= h) { ab = 1; }
       if (ab) { dst += 3; continue; }
 
+      
+      double a = 1.0;
+      if (alphasrc)
+        a = alphasrc[ry0 * w + rx0] / 256.0;
+//a = (a - 0.5) / 0.4;
+a = (a - 0.2) / 0.6;
+if (a > 1.0) a = 1.0; 
+if (a < 0.0) a = 0.0;
+
       for (int c = 0; c < 3; ++c) {
-        *dst++ =
+        double q =  
           (1.0-bx) * (1.0-by) * (double)src[ry0 * w * 3 + rx0 * 3 + c] +
           (bx) * (1.0-by) * (double)src[ry0 * w * 3 + rx1 * 3 + c] +
           (1.0-bx) * (by) * (double)src[ry1 * w * 3 + rx0 * 3 + c] +
           (bx) * (by) * (double)src[ry1 * w * 3 + rx1 * 3 + c];
+
+        dst[0] = q * a + (1 - a) * dst[0];
+        ++dst;
       }
     }
   }

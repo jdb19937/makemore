@@ -285,7 +285,8 @@ void Partrait::warpover(Partrait *to) const {
     rgb, w, h,
     p.x, p.y, q.x, q.y, r.x, r.y,
     NULL, NULL, NULL, NULL, NULL, NULL,
-    to->w, to->h, to->rgb
+    to->w, to->h, to->rgb,
+    alpha
   );
 }
 
