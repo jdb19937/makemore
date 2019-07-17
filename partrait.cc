@@ -99,6 +99,17 @@ bool Partrait::has_pose() const {
   return has_mark();
 }
 
+bool Partrait::has_gaze() const {
+  bool got_gaze = 0;
+
+  for (auto tag : tags) {
+    if (strbegins(tag, "gaze:"))
+      got_gaze = true;
+  }
+
+  return (got_gaze);
+}
+
 bool Partrait::has_mark() const {
   bool got_left = 0, got_right = 0, got_mouth = 0;
 
@@ -163,6 +174,26 @@ Triangle Partrait::get_mark() const {
   return mark;
 }
 
+Point Partrait::get_gaze() const {
+  Point gz;
+  bool got_gaze = 0;
+
+  for (auto tag : tags) {
+    const char *t = tag.c_str();
+    if (!strncmp(t, "gaze:", 5)) {
+      t += 5;
+      gz.x = strtod(t, NULL);
+      assert(t = strchr(t, ','));
+      t += 1;
+      gz.y = strtod(t, NULL);
+      got_gaze = true;
+    } 
+  }
+
+  assert(got_gaze);
+  return gz;
+}
+
 Triangle Partrait::get_auto_mark() const {
   Triangle mark;
   bool got_left = 0, got_right = 0, got_mouth = 0;
@@ -214,6 +245,24 @@ void Partrait::set_mark(const Triangle &tri) {
     vtags.push_back(posebuf);
     sprintf(posebuf, "mouth:%ld,%ld", lround(tri.r.x), lround(tri.r.y));
     vtags.push_back(posebuf);
+  }
+
+  tags = vtags;
+}
+
+void Partrait::set_gaze(const Point &gz) {
+  std::vector<std::string> vtags;
+
+  for (auto tag : tags) {
+    if (strbegins(tag, "gaze:"))
+      continue;
+    vtags.push_back(tag);
+  }
+  
+  {
+    char gzbuf[256];
+    sprintf(gzbuf, "gaze:%lf,%lf", gz.x, gz.y);
+    vtags.push_back(gzbuf);
   }
 
   tags = vtags;
@@ -323,6 +372,12 @@ void Partrait::reflect() {
     mark.q.x = w - 1 - mark.q.x;
     mark.r.x = w - 1 - mark.r.x;
     set_mark(mark);
+  }
+
+  if (has_gaze()) {
+    Point gaze = get_gaze();
+    gaze.x = 1.0 - gaze.x;
+    set_gaze(gaze);
   }
 }
 
@@ -557,6 +612,7 @@ void Partrait::jitter(unsigned int z) {
   if (nalpha)
     delete[] nalpha;
 
+#if 0
   if (has_mark()) {
     Triangle m = get_mark();
     m.p += Point(dx, dy);
@@ -564,6 +620,7 @@ void Partrait::jitter(unsigned int z) {
     m.r += Point(dx, dy);
     set_mark(m);
   }
+#endif
 }
      
 

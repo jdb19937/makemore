@@ -153,6 +153,10 @@ struct Partrait {
   bool has_mark() const;
   void set_mark(const Triangle &);
 
+  Point get_gaze() const;
+  bool has_gaze() const;
+  void set_gaze(const Point &);
+
   Triangle get_auto_mark() const;
   bool has_auto_mark() const;
   void set_auto_mark(const Triangle &);
