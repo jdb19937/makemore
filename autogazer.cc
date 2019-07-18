@@ -97,7 +97,7 @@ void Autogazer::observe(const Partrait &par, double mu) {
   Triangle mark;
   mark.p = Point(64, 64);
   mark.q = Point(64 + 256, 64);
-  mark.r = Point(64 + 256/2, 64 + (256*3)/2);
+  mark.r = Point(64 + 128, 64 + 128 * 3);
 
   Partrait leye(128, 128);
   leye.set_mark(mark);
@@ -105,7 +105,7 @@ void Autogazer::observe(const Partrait &par, double mu) {
 
   mark.p = Point(64 - 256, 64);
   mark.q = Point(64, 64);
-  mark.r = Point(64 - 256/2, 64 + (256*3)/2);
+  mark.r = Point(64 - 128, 64 + 128 * 3);
 
   Partrait reye(128, 128);
   reye.set_mark(mark);
@@ -159,7 +159,7 @@ void Autogazer::autogaze(Partrait *parp) {
   Triangle mark;
   mark.p = Point(64, 64);
   mark.q = Point(64 + 256, 64);
-  mark.r = Point(64 + 256/2, 64 + (256*3)/2);
+  mark.r = Point(64 + 128, 64 + 128 * 3);
 
   Partrait leye(128, 128);
   leye.set_mark(mark);
@@ -167,7 +167,7 @@ void Autogazer::autogaze(Partrait *parp) {
 
   mark.p = Point(64 - 256, 64);
   mark.q = Point(64, 64);
-  mark.r = Point(64 - 256/2, 64 + (256*3)/2);
+  mark.r = Point(64 - 128, 64 + 128 * 3);
 
   Partrait reye(128, 128);
   reye.set_mark(mark);

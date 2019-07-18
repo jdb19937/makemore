@@ -54,7 +54,7 @@ Partrait *par = new Partrait;
     assert(prt.has_mark());
     {
       Triangle mark = prt.get_mark();
-      double d = 2.0;
+      double d = 1.0;
       mark.p.x += randrange(-d, d);
       mark.p.y += randrange(-d, d);
       mark.q.x += randrange(-d, d);
@@ -64,7 +64,7 @@ Partrait *par = new Partrait;
       prt.set_mark(mark);
     }
 
-    ag->observe(prt, 0.00001);
+    ag->observe(prt, 0.00003);
 
     ++i;
     if (i % 100 == 0) {
