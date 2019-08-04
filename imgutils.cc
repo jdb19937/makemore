@@ -589,8 +589,8 @@ bool rgbpng(
   const vector<string> *tags,
   const uint8_t *alpha
 ) {
-  uint8_t *pngbuf = new uint8_t[1 << 20];
-  FILE *fp = fmemopen(pngbuf, 1 << 20, "wb");
+  uint8_t *pngbuf = new uint8_t[10 << 20];
+  FILE *fp = fmemopen(pngbuf, 10 << 20, "wb");
   assert(fp);
 
   uint8_t header[8];
