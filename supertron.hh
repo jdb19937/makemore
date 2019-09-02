@@ -4,6 +4,9 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <assert.h>
+
+#include <vector>
 
 #include "mapfile.hh"
 
@@ -25,15 +28,19 @@ struct Supertron {
       out = NULL;
       fout = NULL;
       weight = NULL;
-      bias = NULL;
-      mbias = NULL; 
-      vbias = NULL;
+      wbuf = NULL;
+      wbufk = 0;
       m = NULL;
       v = NULL;
 
       wn = 0;
       inn = 0;
       outn = 0;
+      activated = false;
+
+      oiwtab = NULL;
+      iowtab = NULL;
+      wiotab = NULL;
     }
 
     ~Layer() {
@@ -46,15 +53,19 @@ struct Supertron {
       out = l.out;
       fout = l.fout;
       weight = l.weight;
-      bias = l.bias;
-      mbias = l.mbias;
-      vbias = l.vbias;
+      wbuf = l.wbuf;
+      wbufk = l.wbufk;
       m = l.m;
       v = l.v;
 
       wn = l.wn;
       inn = l.inn;
       outn = l.outn;
+      activated = l.activated;
+
+      oiwtab = l.oiwtab;
+      iowtab = l.iowtab;
+      wiotab = l.wiotab;
     }
 
     enum Type {
@@ -73,7 +84,9 @@ struct Supertron {
       unsigned int d;
       int s;
 
+      bool adam;
       double adam_b1, adam_b2, adam_b3, adam_eps, eta;
+
       bool activated;
     };
 
@@ -81,9 +94,14 @@ struct Supertron {
     const double *in;
     double *fin, *out, *fout;
     double *weight, *m, *v;
-    double *bias, *mbias, *vbias;
+
+    double *wbuf;
+    unsigned int wbufk;
 
     unsigned int wn, inn, outn;
+    bool activated;
+
+    int *oiwtab, *iowtab, *wiotab;
   };
 
   uint64_t *cunlayers;
