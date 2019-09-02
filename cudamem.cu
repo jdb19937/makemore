@@ -44,6 +44,18 @@ void cucopyv(const void *x, unsigned int n, void *y) {
   cudaMemcpy(y, x, n, cudaMemcpyDeviceToDevice);
 }
 
+__global__ void gpu_mulf(const float *a, const float b, unsigned int n, float *c) {
+  unsigned int i = blockIdx.x * blockDim.x + threadIdx.x;
+  if (i < n)
+    c[i] = (a[i] * b);
+}
+
+void cumulf(const float *a, const float b, unsigned int n, float *c) {
+  int bs = 128;
+  int gs = ((n + bs - 1) / bs);
+  gpu_mulf<<<gs, bs>>>(a, b, n, c);
+}
+
 __global__ void gpu_muld(const double *a, const double b, unsigned int n, double *c) {
   unsigned int i = blockIdx.x * blockDim.x + threadIdx.x;
   if (i < n)
@@ -126,6 +138,18 @@ void cusubvec(const double *a, const double *b, unsigned int n, double *c) {
   int bs = 128;
   int gs = ((n + bs - 1) / bs);
   gpu_cusubvec<<<gs, bs>>>(a, b, n, c);
+}
+
+__global__ void gpu_cusubvecf(const float *a, const float *b, unsigned int n, float *c) {
+  unsigned int i = blockIdx.x * blockDim.x + threadIdx.x;
+  if (i < n)
+    c[i] = a[i] - b[i];
+}
+
+void cusubvecf(const float *a, const float *b, unsigned int n, float *c) {
+  int bs = 128;
+  int gs = ((n + bs - 1) / bs);
+  gpu_cusubvecf<<<gs, bs>>>(a, b, n, c);
 }
 
 __global__ void gpu_cumulvec(const double *a, double m, int n, double *b) {
@@ -409,6 +433,48 @@ double cusumsq(
   return s;
 }
 
+__global__ void gpu_sumsqf(
+  const float *a, unsigned int n, float *sumsqfp
+) {
+  unsigned int si = blockIdx.x * blockDim.x + threadIdx.x;
+
+  unsigned int i0 = si * 128;
+  if (i0 >= n)
+    return;
+  unsigned int i1 = (i0 + 128 >= n) ? n : (i0 + 128);
+  
+  double s = 0;
+  for (unsigned int i = i0; i < i1; ++i)
+    s += a[i] * a[i];
+  sumsqfp[si] = s;
+}
+
+float cusumsqf(
+  const float *a, unsigned int n
+) {
+  if (n == 0)
+    return 0;
+
+  float *sumsqfp = NULL;
+  unsigned int sumsqfn = ((n + 127) / 128);
+  cumake(&sumsqfp, sumsqfn);
+
+  int bs = 128;
+  int gs = (sumsqfn + bs - 1) / bs;
+  gpu_sumsqf<<<gs, bs>>>(a, n, sumsqfp);
+
+  float *sumsqfv = new float[sumsqfn];
+  decude(sumsqfp, sumsqfn, sumsqfv);
+
+  double s = 0;
+  for (int i = 0; i < sumsqfn; ++i)
+    s += sumsqfv[i];
+
+  cufree(sumsqfp);
+  delete[] sumsqfv;
+
+  return s;
+}
 
 __global__ void gpu_maxabs(
   const double *a, unsigned int n, double *maxp
@@ -451,6 +517,58 @@ double cumaxabs(
   decude(maxp, maxn, maxv);
 
   double s = maxv[0];
+  for (int i = 1; i < maxn; ++i)
+    if (maxv[i] > s)
+      s = maxv[i];
+
+  cufree(maxp);
+  delete[] maxv;
+
+  return s;
+}
+
+
+__global__ void gpu_maxabsf(
+  const float *a, unsigned int n, float *maxp
+) {
+  unsigned int si = blockIdx.x * blockDim.x + threadIdx.x;
+
+  unsigned int i0 = si * 128;
+  if (i0 >= n)
+    return;
+  unsigned int i1 = (i0 + 128 >= n) ? n : (i0 + 128);
+
+  unsigned int i = i0;
+  float s = fabs(a[i]);
+  ++i;
+  
+  for (; i < i1; ++i) {
+    float aa = fabs(a[i]);
+    if (aa > s)
+      s = aa;
+  }
+
+  maxp[si] = s;
+}
+
+float cumaxabsf(
+  const float *a, unsigned int n
+) {
+  if (n == 0)
+    return 0;
+
+  float *maxp = NULL;
+  unsigned int maxn = ((n + 127) / 128);
+  cumake(&maxp, maxn);
+
+  int bs = 128;
+  int gs = (maxn + bs - 1) / bs;
+  gpu_maxabsf<<<gs, bs>>>(a, n, maxp);
+
+  float *maxv = new float[maxn];
+  decude(maxp, maxn, maxv);
+
+  float s = maxv[0];
   for (int i = 1; i < maxn; ++i)
     if (maxv[i] > s)
       s = maxv[i];
@@ -838,5 +956,51 @@ void cumatxpose(
 
 
   
+__global__ void gpu_dctii(const double *x, unsigned int n, double *y) {
+  unsigned int k = blockIdx.x * blockDim.x + threadIdx.x;
+  if (k >= n)
+    return;
 
+  double pi = 3.1415926535897;
+
+  double sum = 0;
+  for (unsigned int i = 0; i < n; ++i) {
+    sum += x[i] * cos((pi / (double)n) * ((double)i + 0.5) * k);
+  }
+
+  sum *= sqrt(2.0 / (double)n);
+
+  y[k] = sum;
+}
+
+void cudctii(const double *x, unsigned int n, double *y) {
+  int bs = 256;
+  int gs = ((n + bs - 1) / bs);
+  gpu_dctii<<<gs, bs>>>(x, n, y);
+}
+  
+
+__global__ void gpu_dctiii(const double *x, unsigned int n, double *y) {
+  unsigned int k = blockIdx.x * blockDim.x + threadIdx.x;
+  if (k >= n)
+    return;
+
+  double pi = 3.1415926535897;
+
+  double sum = 0.5 * x[0];
+  for (unsigned int i = 1; i < n; ++i) {
+    sum += x[i] * cos((pi / (double)n) * (double)i * ((double)k + 0.5));
+  }
+
+  sum *= sqrt(2.0 / (double)n);
+
+  y[k] = sum;
+}
+
+void cudctiii(const double *x, unsigned int n, double *y) {
+  int bs = 256;
+  int gs = ((n + bs - 1) / bs);
+  gpu_dctiii<<<gs, bs>>>(x, n, y);
+}
+  
 };

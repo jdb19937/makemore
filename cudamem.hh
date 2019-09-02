@@ -37,6 +37,7 @@ template <class T> inline void cucopy(const T *da, unsigned int n, T *db)
 
 extern void cuaddvec(const double *a, const double *b, unsigned int n, double *c);
 extern void cusubvec(const double *a, const double *b, unsigned int n, double *c);
+extern void cusubvecf(const float *a, const float *b, unsigned int n, float *c);
 extern void cucutpaste(
   const double *a, const double *b,
   unsigned int rows, unsigned int acols, unsigned int bcols, unsigned int ccols,
@@ -50,9 +51,15 @@ extern void cucutadd(
 extern double cusumsq(
   const double *a, unsigned int n
 );
+extern float cusumsqf(
+  const float *a, unsigned int n
+);
 
 extern double cumaxabs(
   const double *a, unsigned int n
+);
+extern float cumaxabsf(
+  const float *a, unsigned int n
 );
 
 extern void cuexpand(double *a, unsigned int n, double m);
@@ -113,6 +120,7 @@ extern void cutmatxvec(
 );
 
 extern void cumuld(const double *a, const double b, unsigned int n, double *c);
+extern void cumulf(const float *a, const float b, unsigned int n, float *c);
 extern void cumulvec(const double *a, const double *b, unsigned int n, double *c);
 extern void cubcevec(const double *a, const double *b, unsigned int n, double *c);
 extern void cumulsqrtvec(const double *a, const double *b, unsigned int n, double *c);
@@ -121,6 +129,32 @@ extern void cudivsqrtvec(const double *a, const double *b, unsigned int n, doubl
 
 extern void cumatxpose(const double *m, unsigned int w, unsigned int h, double *u);
 extern void cudalpha(double *a, const double *alpha, unsigned int n);
-};
+
+void cudctii(const double *x, unsigned int n, double *y);
+void cudctiii(const double *x, unsigned int n, double *y);
+
+inline void dctii(const double *x, unsigned int n, double *y) {
+  double *cx, *cy;
+  cumake(&cx, n);
+  encude(x, n, cx);
+  cumake(&cy, n);
+  cudctii(cx, n, cy);
+  decude(cy, n, y);
+  cufree(cx);
+  cufree(cy);
+}
+
+inline void dctiii(const double *x, unsigned int n, double *y) {
+  double *cx, *cy;
+  cumake(&cx, n);
+  encude(x, n, cx);
+  cumake(&cy, n);
+  cudctiii(cx, n, cy);
+  decude(cy, n, y);
+  cufree(cx);
+  cufree(cy);
+}
+
+}
 
 #endif
