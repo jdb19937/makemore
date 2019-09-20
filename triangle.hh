@@ -10,6 +10,8 @@ struct Triangle {
   Triangle(double px, double py, double qx, double qy, double rx, double ry) : p(px, py), q(qx, qy), r(rx, ry) { }
   Triangle(const Point &_p, const Point &_q, const Point &_r) : p(_p), q(_q), r(_r) { }
   Point p, q, r;
+
+  bool contains(const Point &a);
 };
 
 inline Point trimap(const Point &a, const Triangle &from, const Triangle &to) {

@@ -516,11 +516,18 @@ void Agent::handle_http() {
   strvec reqwords;
   splitwords(req, &reqwords);
 
+  std::string host;
+
   for (auto kv : httpbuf) {
     if (strbegins(kv, "Cookie: ")) {
       std::string v = kv.c_str() + 8;
+    } else if (strbegins(kv, "Host: ")) {
+      std::string v = kv.c_str() + 6;
+      host = v;
     }
   }
+
+fprintf(stderr, "host=[%s]\n", host.c_str());
 
 fprintf(stderr, "req=[%s]\n", req.c_str());
   if (reqwords[0] != "GET") {
@@ -530,6 +537,14 @@ fprintf(stderr, "req=[%s]\n", req.c_str());
 
   std::string path = reqwords[1];
   if (path[0] != '/') {
+    this->close();
+    return;
+  }
+
+  if (host != "peaple.io") {
+    this->printf("HTTP/1.1 302 Redirect\r\n");
+    this->printf("Connection: close\r\n");
+    this->printf("Location: https://peaple.io/\r\n\r\n");
     this->close();
     return;
   }
@@ -555,8 +570,8 @@ fprintf(stderr, "req=[%s]\n", req.c_str());
   }
 #endif
 
-  if (path == "/test.png") {
-    std::string png = makemore::slurp("test.png");
+  if (path == "/test.png" || path == "/mandelbrot.png") {
+    std::string png = makemore::slurp(std::string(".") + path);
 
     this->printf("HTTP/1.1 200 OK\r\n");
     this->printf("Connection: keep-alive\r\n");
@@ -736,7 +751,7 @@ fprintf(stderr, "req=[%s]\n", req.c_str());
     return;
   }
 
-  if (path == "/tagger.html" || path == "/cam.html" || path == "/edit.html") {
+  if (path == "/tagger.html" || path == "/cam.html" || path == "/edit.html" || path == "/memory.html") {
     std::string html = makemore::slurp(path.c_str() + 1);
 
     this->printf("HTTP/1.1 200 OK\r\n");
@@ -769,6 +784,7 @@ fprintf(stderr, "req=[%s]\n", req.c_str());
     string op = cgi["op"];
 
     if (op == "loadgens") {
+      server->urb->enc->load();
       for (auto g : server->urb->gens) {
         g.second->load();
       }
@@ -811,7 +827,7 @@ fprintf(stderr, "req=[%s]\n", req.c_str());
         parson->controls[j] = randgauss();
       txt = "ok, scrambled " + nom;
     } else if (op == "pickreal") {
-      Generator *gen = server->urb->get_gen(parson->gen);
+      Supergen *gen = server->urb->get_gen(parson->gen);
       Zone *sks = gen->zone;
      
       Parson *skp = sks->pick();
@@ -827,7 +843,7 @@ fprintf(stderr, "req=[%s]\n", req.c_str());
 
       Styler *sty = server->urb->get_sty(parson->sty);
       assert(sty);
-      server->urb->enc->encode(prt, parson, sty);
+//      server->urb->enc->encode(prt, parson, sty);
 
       txt = "ok, pickreal " + nom;
     } else if (op == "resketch") {
@@ -1006,12 +1022,34 @@ fprintf(stderr, "req=[%s]\n", req.c_str());
 
 //fprintf(stderr, "[%lf %lf %lf]\n", pose.angle, pose.stretch, pose.skew);
 
-    Encoder *enc = server->urb->enc;
-    Generator *gen = server->urb->get_gen(parson->gen);
+    Superenc *enc = server->urb->enc;
+    Supergen *gen = server->urb->get_gen(parson->gen);
+//gen->load();
     Styler *sty = server->urb->get_sty(parson->sty);
 
-    Partrait showpar;
+    Partrait showpar(256, 256);
+
+double *tmp = new double[Parson::ncontrols];
+sty->generate(*parson, tmp);
+gen->generate(tmp, &showpar);
+delete[] tmp;
+
+#if 0
     gen->generate(*parson, &showpar, sty);
+
+assert(showpar.alpha);
+assert(showpar.w == 256 && showpar.h == 256);
+for (unsigned int j = 0; j < 256 * 256; ++j) {
+  double a = (double)showpar.alpha[j] / 255.0;
+  // a = (a - 0.2) / 0.6;
+  // a = (a - 0.5) / 0.01;
+  if (a > 1.0) a = 1.0;
+  if (a < 0.0) a = 0.0;
+
+  if (a < 0.3) a = 0.3;
+  showpar.alpha[j] = (uint8_t)(a * 255.0);
+}
+#endif
 
     std::string png;
     showpar.to_png(&png);
@@ -1066,8 +1104,9 @@ fprintf(stderr, "paren0=%s\n", parson->parens[0]);
     htmlbuf += "<meta property='og:image:height' content='64'>";
     htmlbuf += "<meta property='og:url' content='https://peaple.io/" + nom + "'>";
     htmlbuf += "<meta property='og:type' content='article'>";
+    htmlbuf += "<link rel='canonical' href='https://peaple.io/" + nom + "'/>";
 
-    htmlbuf += "</head><body bgcolor='#FFFFFF'><center>";
+    htmlbuf += "</head><body bgcolor='#000000'><center>";
 
     htmlbuf += htmlp(paren0->parens[0], 128);
     htmlbuf += htmlp(paren0->parens[1], 128);

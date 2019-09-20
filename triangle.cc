@@ -4,6 +4,19 @@
 
 namespace makemore {
 
+bool Triangle::contains(const Point &a) {
+  double d;
+
+  d = (a.x - p.x) * (q.y - p.y) - (a.y - p.y) * (q.x - p.x);
+  if (d > 0) return true;
+  d = (a.x - q.x) * (r.y - q.y) - (a.y - q.y) * (r.x - q.x);
+  if (d > 0) return true;
+  d = (a.x - r.x) * (p.y - r.y) - (a.y - r.y) * (p.x - r.x);
+  if (d > 0) return true;
+
+  return false;
+}
+
 }
 
 #if MAIN

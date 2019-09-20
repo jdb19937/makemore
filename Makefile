@@ -4,9 +4,9 @@ NVCCFLAGS = -O3 -Xcompiler -fPIC
 CXXFLAGS = -O3 -g -fPIC
 LDFLAGS = -L. -Wl,-rpath,'$$ORIGIN' -lmakemore -lm -lpng -lssl -lcrypto -lcudart -ldl -ljpeg -lSDL2
 CULDFLAGS = -lcuda -lcudart
- 
-LIBHDR = cudamem.hh random.hh tron.hh ppm.hh layout.hh megatron.hh wiring.hh persist.hh dataset.hh topology.hh multitron.hh project.hh twiddle.hh sampler.hh closest.hh pipeline.hh parson.hh ipdb.hh warp.hh vocab.hh script.hh strutils.hh hashbag.hh shibboleth.hh brane.hh rule.hh wildleth.hh stage.hh zone.hh bus.hh numutils.hh server.hh urb.hh org.hh urbite.hh convo.hh shibbomore.hh wildmore.hh agent.hh markov.hh imgutils.hh judge.hh process.hh command.hh system.hh io.hh session.hh improver.hh lineref.hh word.hh tmutils.hh cholo.hh encgendis.hh mapfile.hh normatron.hh camera.hh partrait.hh triangle.hh point.hh pose.hh autoposer.hh catalog.hh encgen.hh impdis.hh encoder.hh generator.hh styler.hh automasker.hh display.hh autogazer.hh
-LIBOBJ = cudamem.o random.o tron.o ppm.o layout.o megatron.o wiring.o persist.o dataset.o topology.o multitron.o project.o twiddle.o sampler.o closest.o pipeline.o parson.o ipdb.o warp.o vocab.o script.o strutils.o hashbag.o shibboleth.o brane.o rule.o wildleth.o stage.o zone.o bus.o numutils.o server.o urb.o org.o urbite.o convo.o shibbomore.o wildmore.o agent.o markov.o imgutils.o judge.o process.o command.o system.o io.o session.o improver.o lineref.o word.o cholo.o encgendis.o mapfile.o normatron.o camera.o partrait.o triangle.o point.o pose.o autoposer.o catalog.o encgen.o impdis.o encoder.o generator.o styler.o automasker.o display.o autogazer.o
+
+LIBHDR = cudamem.hh random.hh tron.hh ppm.hh layout.hh megatron.hh wiring.hh persist.hh dataset.hh topology.hh multitron.hh project.hh twiddle.hh sampler.hh closest.hh pipeline.hh parson.hh ipdb.hh warp.hh vocab.hh script.hh strutils.hh hashbag.hh shibboleth.hh brane.hh rule.hh wildleth.hh stage.hh zone.hh bus.hh numutils.hh server.hh urb.hh org.hh urbite.hh convo.hh shibbomore.hh wildmore.hh agent.hh markov.hh imgutils.hh judge.hh process.hh command.hh system.hh io.hh session.hh improver.hh lineref.hh word.hh tmutils.hh cholo.hh encgendis.hh mapfile.hh normatron.hh camera.hh partrait.hh triangle.hh point.hh pose.hh autoposer.hh catalog.hh encgen.hh impdis.hh encoder.hh generator.hh styler.hh automasker.hh display.hh autogazer.hh supertron.hh superenc.hh supergen.hh sndenc.hh sndgen.hh soundpic.hh polyphone.hh superdis.hh video.hh
+LIBOBJ = cudamem.o random.o tron.o ppm.o layout.o megatron.o wiring.o persist.o dataset.o topology.o multitron.o project.o twiddle.o sampler.o closest.o pipeline.o parson.o ipdb.o warp.o vocab.o script.o strutils.o hashbag.o shibboleth.o brane.o rule.o wildleth.o stage.o zone.o bus.o numutils.o server.o urb.o org.o urbite.o convo.o shibbomore.o wildmore.o agent.o markov.o imgutils.o judge.o process.o command.o system.o io.o session.o improver.o lineref.o word.o cholo.o encgendis.o mapfile.o normatron.o camera.o partrait.o triangle.o point.o pose.o autoposer.o catalog.o encgen.o impdis.o encoder.o generator.o styler.o automasker.o display.o autogazer.o supertron.o superenc.o supergen.o sndenc.o sndgen.o soundpic.o polyphone.o superdis.o video.o
 LIB = libmakemore.a
 
 DATASETS = face-attrs.dat face8.dat face16.dat face32.dat face64.dat face128.dat
@@ -351,6 +351,12 @@ catencode: catencode.o libmakemore.so
 burnsham.o: $(LIBHDR)
 burnsham: burnsham.o libmakemore.so
 	$(CXX) -o $@ $(CXXFLAGS) burnsham.o $(LDFLAGS) $(CULDFLAGS)
+burndis.o: $(LIBHDR)
+burndis: burndis.o libmakemore.so
+	$(CXX) -o $@ $(CXXFLAGS) burndis.o $(LDFLAGS) $(CULDFLAGS)
+burnsuper.o: $(LIBHDR)
+burnsuper: burnsuper.o libmakemore.so
+	$(CXX) -o $@ $(CXXFLAGS) burnsuper.o $(LDFLAGS) $(CULDFLAGS)
 burnencgen.o: $(LIBHDR)
 burnencgen: burnencgen.o libmakemore.so
 	$(CXX) -o $@ $(CXXFLAGS) burnencgen.o $(LDFLAGS) $(CULDFLAGS)
@@ -372,6 +378,9 @@ apose: apose.o libmakemore.so
 addposetags.o: $(LIBHDR)
 addposetags: addposetags.o libmakemore.so
 	$(CXX) -o $@ $(CXXFLAGS) addposetags.o $(LDFLAGS) $(CULDFLAGS)
+addtag.o: $(LIBHDR)
+addtag: addtag.o libmakemore.so
+	$(CXX) -o $@ $(CXXFLAGS) addtag.o $(LDFLAGS) $(CULDFLAGS)
 showtag.o: $(LIBHDR)
 showtag: showtag.o libmakemore.so
 	$(CXX) -o $@ $(CXXFLAGS) showtag.o $(LDFLAGS) $(CULDFLAGS)
@@ -393,6 +402,30 @@ burnimp: burnimp.o libmakemore.so
 eyetest.o: $(LIBHDR)
 eyetest: eyetest.o libmakemore.so
 	$(CXX) -o $@ $(CXXFLAGS) eyetest.o $(LDFLAGS) $(CULDFLAGS) -lSDL2
+merg.o: $(LIBHDR)
+merg: merg.o libmakemore.so
+	$(CXX) -o $@ $(CXXFLAGS) merg.o $(LDFLAGS) $(CULDFLAGS) -lSDL2
+maketron.o: $(LIBHDR)
+maketron: maketron.o libmakemore.so
+	$(CXX) -o $@ $(CXXFLAGS) maketron.o $(LDFLAGS) $(CULDFLAGS) -lSDL2
+genpack.o: $(LIBHDR)
+genpack: genpack.o libmakemore.so
+	$(CXX) -o $@ $(CXXFLAGS) genpack.o $(LDFLAGS) $(CULDFLAGS) -lSDL2
+burnsnd.o: $(LIBHDR)
+burnsnd: burnsnd.o libmakemore.so
+	$(CXX) -o $@ $(CXXFLAGS) burnsnd.o $(LDFLAGS) $(CULDFLAGS) -lSDL2
+playsndpic.o: $(LIBHDR)
+playsndpic: playsndpic.o libmakemore.so
+	$(CXX) -o $@ $(CXXFLAGS) playsndpic.o $(LDFLAGS) $(CULDFLAGS) -lSDL2
+makesndpic.o: $(LIBHDR)
+makesndpic: makesndpic.o libmakemore.so
+	$(CXX) -o $@ $(CXXFLAGS) makesndpic.o $(LDFLAGS) $(CULDFLAGS) -lSDL2
+imgminus.o: $(LIBHDR)
+imgminus: imgminus.o libmakemore.so
+	$(CXX) -o $@ $(CXXFLAGS) imgminus.o $(LDFLAGS) $(CULDFLAGS) -lSDL2
+tst.o: $(LIBHDR)
+tst: tst.o libmakemore.so
+	$(CXX) -o $@ $(CXXFLAGS) tst.o $(LDFLAGS) $(CULDFLAGS) -lSDL2
 sdltest.o: $(LIBHDR)
 sdltest: sdltest.o libmakemore.so
 	$(CXX) -o $@ $(CXXFLAGS) sdltest.o $(LDFLAGS) $(CULDFLAGS) -lSDL2

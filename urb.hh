@@ -11,8 +11,8 @@
 #include "bus.hh"
 #include "cholo.hh"
 #include "random.hh"
-#include "encoder.hh"
-#include "generator.hh"
+#include "superenc.hh"
+#include "supergen.hh"
 #include "styler.hh"
 #include "autoposer.hh"
 
@@ -33,10 +33,10 @@ struct Urb {
   Autoposer *ruffposer;
   Autoposer *fineposer;
 
-  Encoder *enc;
+  Superenc *enc;
 
-  std::map<std::string, Generator *> gens;
-  Generator *default_gen;
+  std::map<std::string, Supergen *> gens;
+  Supergen *default_gen;
 
   std::map<std::string, Styler *> stys;
   Styler *default_sty;
@@ -47,8 +47,8 @@ struct Urb {
   void add_gen(const std::string &tag, const std::string &projdir);
   void add_sty(const std::string &tag, const std::string &projdir);
 
-  Generator *get_gen(const std::string &tag) {
-    Generator *gen = gens[tag];
+  Supergen *get_gen(const std::string &tag) {
+    Supergen *gen = gens[tag];
     if (!gen)
       gen = default_gen;
     return gen;

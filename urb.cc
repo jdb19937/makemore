@@ -19,7 +19,7 @@ namespace makemore {
 using namespace std;
 
 void Urb::add_gen(const std::string &tag, const std::string &projdir) {
-  gens[tag] = new Generator(projdir, 1);
+  gens[tag] = new Supergen(projdir);
 }
 
 void Urb::add_sty(const std::string &tag, const std::string &projdir) {
@@ -43,6 +43,7 @@ Urb::Urb(const char *_dir, unsigned int _mbn) {
 
   outgoing = new Bus(dir + "/outgoing.bus");
 
+#if 0
   enc = new Encoder("enc.proj", 1);
 
   add_gen("shampane", "gen.shampane.proj");
@@ -55,6 +56,32 @@ Urb::Urb(const char *_dir, unsigned int _mbn) {
   add_sty("easyceleb", "sty.easyceleb.proj");
   add_sty("lfw", "sty.lfw.proj");
   default_sty = stys["shampane"];
+#endif
+
+
+
+  enc = new Superenc("nenc.proj", 1);
+
+add_gen("n", "ngen.proj");
+//add_gen("minidne", "gena.minidne.proj");
+#if 0
+add_gen("miniceleb", "gena.miniceleb.proj");
+add_gen("alpha", "gena.proj");
+add_gen("gazetest1", "gena.gazetest1.proj");
+add_gen("anderson", "gena.anderson.proj");
+#endif
+  default_gen = gens["n"];
+
+  add_sty("n", "nsty.proj");
+  //add_sty("minidne", "stya.minidne.proj");
+#if 0
+  add_sty("miniceleb", "stya.miniceleb.proj");
+  add_sty("alpha", "stya.proj");
+  add_sty("gazetest1", "stya.gazetest1.proj");
+  add_sty("anderson", "stya.anderson.proj");
+#endif
+
+  default_sty = stys["n"];
 
   images.clear();
   DIR *dp = opendir((dir + "/images").c_str());
@@ -139,6 +166,7 @@ fprintf(stderr, "found %s\n", nom.c_str());
 
   seedrand(Parson::hash_nom(seednom.c_str()));
   for (unsigned int k = 0; k < Parson::ncontrols; ++k)
+//    parson.controls[k] = randrange(0.0, 1.0); //randgauss() * dev;
     parson.controls[k] = randgauss() * dev;
   parson.paren_noms(nom.c_str(), parson.parens[0], parson.parens[1]);
 
@@ -186,7 +214,7 @@ fprintf(stderr, "found %s\n", nom.c_str());
 
   parson.add_tag(which ? "female" : "male");
 
-  strcpy(parson.gen, "shampane");
+  strcpy(parson.gen, "alpha");
   strcpy(parson.sks, "easyceleb");
 
   if (child) {
@@ -224,6 +252,12 @@ fprintf(stderr, "found %s\n", nom.c_str());
     };
     parson.add_tag(race[randuint() % 8]);
   }
+
+  int age = randuint() % 3;
+  if (age == 0)
+    parson.add_tag("young");
+  if (age == 2)
+    parson.add_tag("old");
 
   strcpy(parson.sty, "shampane");
 
