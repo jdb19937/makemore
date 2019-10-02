@@ -694,4 +694,18 @@ fail:
   return false;
 }
 
+void padshift(const uint8_t *in, unsigned int w, unsigned int h, int dx, int dy, uint8_t *out, unsigned int nc) {
+  for (int y = 0; y < h; ++y) {
+    for (int x = 0; x < w; ++x) {
+      int x0 = x - dx;
+      int y0 = y - dy;
+      if (x0 >= w) x0 = w - 1; if (x0 < 0) x0 = 0;
+      if (y0 >= h) y0 = h - 1; if (y0 < 0) y0 = 0;
+
+      for (int c = 0; c < nc; ++c)
+        out[y * w * nc + x * nc + c] = in[y0 * w * nc + x0 * nc + c];
+    }
+  }
+}
+
 }

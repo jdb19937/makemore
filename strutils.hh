@@ -192,7 +192,9 @@ std::string base64_encode(const uint8_t * , unsigned int len);
 std::string base64_decode(const std::string &s);
 
 void cgiparse(const std::string &cgistr, std::map<std::string, std::string> *cgimap);
-std::string urldeode(const std::string &str);
+std::string urldecode(const std::string &str);
+
+std::string replacestr(const std::string &x, const std::string &pat, const std::string &rep);
 
 }
 

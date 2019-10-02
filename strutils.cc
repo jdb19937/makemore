@@ -420,4 +420,19 @@ void cgiparse(const std::string &cgistr, std::map<std::string, std::string> *cgi
   }
 }
 
+
+std::string replacestr(const std::string &x, const std::string &pat, const std::string &rep) {
+  const char *xp = x.c_str();
+  const char *patp = pat.c_str();
+  std::string z;
+
+  while (const char *yp = strstr(xp, patp)) {
+    z += std::string(xp, yp - xp) + rep;
+    xp = yp + pat.length();
+  }
+
+  z += std::string(xp);
+  return z;
+}
+
 }

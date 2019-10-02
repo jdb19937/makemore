@@ -8,7 +8,6 @@
 #include "project.hh"
 #include "layout.hh"
 #include "parson.hh"
-#include "org.hh"
 
 namespace makemore {
 
@@ -1076,10 +1075,6 @@ void Pipeline::generate(Parson **parsons, unsigned int nparsons, long min_age) {
 
 void Pipeline::generate(class Parson *parson, long min_age) {
   generate(&parson, 1, min_age);
-}
-
-void Pipeline::generate(class Org *org, long min_age) {
-  generate(org->member.data(), org->n, min_age);
 }
 
 void Pipeline::burnenc(Parson **parsons, unsigned int nparsons, double nu) {

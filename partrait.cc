@@ -60,6 +60,13 @@ void Partrait::load(const std::string &fn) {
   from_png(png);
 }
 
+void Partrait::load(FILE *fp) {
+  clear();
+
+  std::string png = makemore::slurp(fp);
+  from_png(png);
+}
+
 void Partrait::from_png(const std::string &png) {
   bool ret = pngrgb(png, &w, &h, &rgb, &tags, &alpha);
   assert(ret);
@@ -428,7 +435,7 @@ bool Partrait::read_ppm(FILE *fp) {
   return true;
 }
 
-void Partrait::write_ppm(FILE *fp) {
+void Partrait::write_ppm(FILE *fp) const {
   fprintf(fp, "P6\n%u %u\n255\n", w, h);
   assert(3 * w * h == fwrite(rgb, 1, 3 * w * h, fp));
   fflush(fp);
@@ -579,6 +586,31 @@ void Partrait::replace_bg(const Partrait &mask, const Partrait &bg) {
 
     alpha[j] = (uint8_t)(a * 255.0);
   }
+}
+
+void Partrait::shrink(Partrait *zpar) {
+  assert(w % 2 == 0 && h % 2 == 0);
+  zpar->create(w / 2, h / 2);
+
+  const uint8_t *r = rgb;
+  double *tmp = new double[w * h * 3 / 4];
+  memset(tmp, 0, w * h * 3 * sizeof(double) / 4);
+
+  for (unsigned int y = 0; y < h; ++y) {
+    unsigned int y1 = y / 2;
+    for (unsigned int x = 0; x < w; ++x) {
+      unsigned int x1 = x / 2;
+      for (unsigned int c = 0; c < 3; ++c) {
+        tmp[y1 * zpar->w * 3 + x1 * 3 + c] += (double)*r++ / 4.0;
+      }
+    }
+  }
+
+  for (unsigned int j = 0, jn = zpar->w * zpar->h * 3; j < jn; ++j) {
+    zpar->rgb[j] = tmp[j];
+  }
+
+  delete[] tmp;
 }
 
 void Partrait::jitter(unsigned int z) {

@@ -53,6 +53,8 @@ struct Partrait {
 
   void clear();
 
+  void shrink(Partrait *zprt);
+
   void create(unsigned int _w, unsigned int _h) {
     clear();
     w = _w;
@@ -81,6 +83,7 @@ struct Partrait {
       rgb[j] = 255;
   }
 
+  void load(FILE *fp);
   void load(const std::string &fn);
   void save(const std::string &fn) const;
   void save(FILE *) const;
@@ -164,7 +167,7 @@ struct Partrait {
   void encudub(double *cubuf) const;
   void reflect();
   bool read_ppm(FILE *);
-  void write_ppm(FILE *);
+  void write_ppm(FILE *) const;
 
   void jitter(unsigned int z = 1);
 

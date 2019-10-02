@@ -9,6 +9,8 @@
 #include "cholo.hh"
 #include "parson.hh"
 #include "styler.hh"
+#include "strutils.hh"
+
 
 namespace makemore {
 
@@ -38,24 +40,36 @@ fprintf(stderr, "tag=%s\n", tag.c_str());
   closedir(dp);
 
   assert(tag_cholo["base"]);
+
 }
 
 void Styler::encode(const double *ctr, Parson *prs) {
   Cholo *base = tag_cholo["base"];
+
+#if 0
+if (prs->has_tag("male"))
+base = tag_cholo["male"];
+else if (prs->has_tag("female"))
+base = tag_cholo["female"];
+#endif
+
   assert(base);
 
   memcpy(tmp, ctr, sizeof(double) * dim);
 
+if (0) {
   for (unsigned int i = 0; i < Parson::ntags; ++i) {
     const char *tag = prs->tags[i];
     if (!*tag)
       break;
+if (!strcmp(tag, "male") || !strcmp(tag, "female")) continue;
     Cholo *cholo = tag_cholo[tag];
     if (!cholo)
       continue;
 
     cholo->port(base, tmp, tmp);
   }
+}
 
   assert(dim == Parson::ncontrols);
   base->encode(tmp, prs->controls);
@@ -64,14 +78,24 @@ fprintf(stderr, "here1 ctr=%lf,%lf,...\n", prs->controls[0], prs->controls[1]);
 
 void Styler::generate(const Parson &prs, double *ctr, unsigned int m) {
   Cholo *base = tag_cholo["base"];
+
+#if 0
+if (prs.has_tag("male"))
+base = tag_cholo["male"];
+else if (prs.has_tag("female"))
+base = tag_cholo["female"];
+#endif
+
   assert(base);
 
   base->generate(prs.controls, ctr);
 
+if (0) {
   for (unsigned int i = 0; i < Parson::ntags; ++i) {
     const char *tag = prs.tags[i];
     if (!*tag)
       break;
+if (!strcmp(tag, "male") || !strcmp(tag, "female")) continue;
     Cholo *cholo = tag_cholo[tag];
     if (!cholo)
       continue;
@@ -79,6 +103,7 @@ void Styler::generate(const Parson &prs, double *ctr, unsigned int m) {
     for (unsigned int j = 0; j < m; ++j)
       base->port(cholo, ctr, ctr);
   }
+}
 }
 
 }

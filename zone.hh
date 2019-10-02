@@ -2,6 +2,7 @@
 #define __MAKEMORE_ZONE_HH__ 1
 
 #include "parson.hh"
+#include "autocompleter.hh"
 
 namespace makemore {
 
@@ -14,6 +15,8 @@ struct Zone {
 
   Parson *db;
   unsigned int n;
+
+  Autocompleter *ac;
 
   static void create(const char *_fn, unsigned int _n);
   void fill_fam(const char *nom, Parson::Nom *);

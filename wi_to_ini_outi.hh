@@ -97,10 +97,14 @@
       int ix = shr(ox, head->s) - dx;
       int iy = shr(oy, head->s) - dy;
   
-      if (ix < 0 || ix >= head->iw || iy < 0 || iy >= head->ih) {
-        *inip = -2;
-        return true;
-      }
+//      if (ix < 0 || ix >= head->iw || iy < 0 || iy >= head->ih) {
+//        *inip = -2;
+//        return true;
+//      }
+      while (ix < 0) ix += head->iw;
+      ix %= head->iw;
+      while (iy < 0) iy += head->ih;
+      iy %= head->ih;
 
       *inip = iz + head->ic * (ix + head->iw * iy);
       return true;

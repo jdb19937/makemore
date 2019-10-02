@@ -238,7 +238,7 @@ void Generator::generate(const Parson &prs, class Partrait *prt, class Styler *s
   assert(Parson::ncontrols == ctrlay->n);
   if (sty) {
     assert(sty->dim == ctrlay->n);
-    sty->generate(prs, ctrbuf, 2.0);
+    sty->generate(prs, ctrbuf, 1);
     encude(ctrbuf, ctrlay->n, cugenin + ctxlay->n);
   } else {
     encude(prs.controls, ctrlay->n, cugenin + ctxlay->n);
@@ -293,9 +293,12 @@ void Generator::generate(const Parson &prs, class Partrait *prt, class Styler *s
 
 void Generator::burn(const class Partrait &prt, double pi) {
   assert(prt.w * prt.h * 4 == tgtlay->n);
-  assert(prt.alpha);
 
-  rgbalaba(prt.rgb, prt.alpha, prt.w * prt.h, tgtbuf);
+  if (prt.alpha)
+    rgbalaba(prt.rgb, prt.alpha, prt.w * prt.h, tgtbuf);
+  else
+    rgblaba(prt.rgb, prt.w * prt.h, tgtbuf);
+
   encude(tgtbuf, tgtlay->n, cugentgt);
   gen->target(cugentgt, false);
 

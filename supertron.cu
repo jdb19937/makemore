@@ -72,7 +72,31 @@ __global__ void gpu_supertron_feed(
 
   double sum = 0;
 
-  if (int *oiwtab = layer.oiwtab) {
+  if (head->type == Supertron::Layer::TYPE_MPOOL) {
+    int tmp = outi;
+    int oz = tmp % head->oc; tmp /= head->oc;
+    int ox = tmp % head->ow; tmp /= head->ow;
+    int oy = tmp;
+
+    if (head->s >= 0)
+      return;
+    int md = (1 << -head->s);
+    int max_ini = -1;
+  
+    for (int dy = 0; dy < md; ++ dy) {
+      for (int dx = 0; dx < md; ++ dx) {
+        int ix = dx + ox * md;
+        int iy = dy + oy * md;
+        int iz = oz;
+
+        int ini = iz + head->ic * (ix + head->iw * iy);
+        if (max_ini < -1 || in[ini] > in[max_ini])
+          max_ini = ini;
+      }
+    }
+
+    sum = in[max_ini];
+  } else if (int *oiwtab = layer.oiwtab) {
     unsigned int oiwtabn = dev_get_oiwtabn(head);
 
     oiwtab += outi * oiwtabn * 2;
@@ -98,11 +122,22 @@ __global__ void gpu_supertron_feed(
     }
   }
 
-  if (head->activated) {
-    double q = 1.0 / (1.0 + exp(-sum));
-    layer.out[outi] = q;
-  } else {
+  switch (head->activated) {
+  case Supertron::Layer::ACTIVATION_NONE:
     layer.out[outi] = sum;
+    break;
+  case Supertron::Layer::ACTIVATION_SIGMOID:
+    layer.out[outi] = 1.0 / (1.0 + exp(-sum));
+    break;
+  case Supertron::Layer::ACTIVATION_RELU:
+    layer.out[outi] = (sum > 0) ? sum : 0;
+    break;
+  case Supertron::Layer::ACTIVATION_SOFTPLUS:
+    layer.out[outi] = (sum > 64) ? sum : log(1 + exp(sum));
+    break;
+  default:
+    layer.out[outi] = 0;
+    break;
   }
 
   layer.fout[outi] = 0.0;
@@ -116,18 +151,33 @@ __global__ void gpu_supertron_train0(
   int outi = blockIdx.x * blockDim.x + threadIdx.x;
   if (outi >= outn)
     return;
-  if (!head->activated)
-    return;
 
-  double o = layer.out[outi];
-  double fo = layer.fout[outi];
+  switch (head->activated) {
+  case Supertron::Layer::ACTIVATION_NONE:
+    break;
+  case Supertron::Layer::ACTIVATION_SIGMOID:
+    {
+      double o = layer.out[outi];
+      double fo = layer.fout[outi];
 
-  if (o > 1.0)
-    o = 1.0;
-  else if (o < 0.0)
-    o = 0.0;
+      if (o > 1.0)
+        o = 1.0;
+      else if (o < 0.0)
+        o = 0.0;
 
-  layer.fout[outi] = fo * o * (1.0 - o);
+      layer.fout[outi] = fo * o * (1.0 - o);
+    }
+    break;
+  case Supertron::Layer::ACTIVATION_RELU:
+    if (layer.out[outi] <= 0)
+      layer.fout[outi] = 0;
+    break;
+  case Supertron::Layer::ACTIVATION_SOFTPLUS:
+    layer.fout[outi] = layer.fout[outi] * (1 - exp(-layer.out[outi]));
+    break;
+  default:
+    break;
+  }
 }
 
 
@@ -147,6 +197,42 @@ __global__ void gpu_supertron_train1(
 
   double *weight = layer.weight;
   double *fout = layer.fout;
+
+  if (head->type == Supertron::Layer::TYPE_MPOOL) {
+    int tmp = ini;
+    int iz = tmp % head->ic; tmp /= head->ic;
+    int ix = tmp % head->iw; tmp /= head->iw;
+    int iy = tmp;
+
+    if (head->s >= 0)
+      return;
+    int md = (1 << -head->s);
+
+    int oz = iz;
+    int ox = ix / md;
+    int oy = iy / md;
+
+    int max_inj = -1;
+  
+    for (int dy = 0; dy < md; ++ dy) {
+      for (int dx = 0; dx < md; ++ dx) {
+        int jx = dx + ox * md;
+        int jy = dy + oy * md;
+        int jz = oz;
+
+        int inj = jz + head->ic * (jx + head->iw * jy);
+        if (max_inj < -1 || layer.in[inj] > layer.in[max_inj])
+          max_inj = inj;
+      }
+    }
+
+    if (max_inj != ini)
+      return;
+
+    int outi = oz + head->oc * (ox + head->ow * oy);
+    layer.fin[ini] += layer.fout[outi];
+    return;
+  }
 
   if (int *iowtab = layer.iowtab) {
     unsigned int iowtabn = dev_get_iowtabn(head);
@@ -175,6 +261,11 @@ __global__ void gpu_supertron_train2(
 ) {
   Supertron::Layer::Head *head = layer.head;
   int wn = head->wn;
+
+  if (head->type == Supertron::Layer::TYPE_MPOOL)
+    return;
+  if (a == 0)
+    return;
 
   unsigned int wi;
   int k;
@@ -251,9 +342,14 @@ __global__ void gpu_supertron_train2(
     dw /= (double)nw;
 
   if (head->adam) {
-    layer.m[wi] = layer.head->adam_b1 * layer.m[wi] + (1.0 - layer.head->adam_b1) * dw;
-    layer.v[wi] = layer.head->adam_b2 * layer.v[wi] + (1.0 - layer.head->adam_b2) * dw * dw;
-    layer.weight[wi] += a * layer.m[wi] / (pow(layer.v[wi], layer.head->adam_b3) + layer.head->adam_eps);
+    double adam_b1 = layer.head->adam_b1;
+    double adam_b2 = layer.head->adam_b2;
+    double adam_b3 = layer.head->adam_b3;
+    double adam_eps = layer.head->adam_eps;
+
+    layer.m[wi] = adam_b1 * layer.m[wi] + (1.0 - adam_b1) * dw;
+    layer.v[wi] = adam_b2 * layer.v[wi] + (1.0 - adam_b2) * dw * dw;
+    layer.weight[wi] += a * layer.m[wi] / (pow(layer.v[wi], adam_b3) + adam_eps);
   } else {
     layer.weight[wi] += a * dw;
   }
@@ -263,7 +359,7 @@ const double *Supertron::feed(const double *_in, double *_fin) {
   assert(layers.size() > 0);
 
   for (unsigned int li = 0; li < layers.size(); ++li) {
-    Layer &lay = *layers[li];
+    Supertron::Layer &lay = *layers[li];
 
     if (li > 0) {
       lay.in = layers[li - 1]->out;
@@ -286,18 +382,19 @@ const double *Supertron::feed(const double *_in, double *_fin) {
 
 void Supertron::target(const double *tgt) {
   assert(layers.size());
-  Layer *lay = layers[layers.size() - 1];
+  Supertron::Layer *lay = layers[layers.size() - 1];
   cusubvec(tgt, lay->out, lay->outn, lay->fout);
 }
 
 
 void Supertron::update_stats() {
   assert(layers.size());
-  Layer *lay = layers[layers.size() - 1];
+  Supertron::Layer *lay = layers[layers.size() - 1];
 
   double z = pow(1.0 - errdecay, (double)rounds);
 
   double nerr2 = sqrt(cusumsq(lay->fout, lay->outn) / (double)lay->outn);
+//fprintf(stderr, "nerr2=%lf\n", nerr2);
   err2 *= (1.0 - z);
   err2 *= (1.0 - errdecay);
   err2 += errdecay * nerr2;
@@ -313,24 +410,20 @@ void Supertron::update_stats() {
 }
 
 void Supertron::train(double nu) {
-  unsigned int uli = 0;
-  for (auto li = layers.rbegin(); li != layers.rend(); ++li) {
-    Layer &lay = **li;
 
-    if (lay.activated) {
+  for (auto li = layers.rbegin(); li != layers.rend(); ++li) {
+    Supertron::Layer &lay = **li;
+
+    {
       int bs0 = 256;
       int gs0 = (lay.outn + bs0 - 1) / bs0;
-//fprintf(stderr, "training0 layer %u\n", uli);
       gpu_supertron_train0<<<gs0, bs0>>>(lay, nu);
-//fprintf(stderr, "trained1  layer %u\n", uli);
     }
 
     if (lay.fin) {
       int bs1 = 256;
       int gs1 = (lay.inn + bs1 - 1) / bs1;
-//fprintf(stderr, "training1 layer %u\n", uli);
       gpu_supertron_train1<<<gs1, bs1>>>(lay);
-//fprintf(stderr, "trained1  layer %u\n", uli);
     }
 
 
@@ -341,12 +434,8 @@ void Supertron::train(double nu) {
     } else {
       int bs2 = 256;
       int gs2 = (lay.wn + bs2 - 1) / bs2;
-//fprintf(stderr, "training2 layer %u\n", uli);
       gpu_supertron_train2<<<gs2, bs2>>>(lay, nu);
-//fprintf(stderr, "trained2  layer %u\n", uli);
     }
-
-    ++uli;
   }
 }
 
@@ -369,17 +458,16 @@ Supertron::Supertron(Mapfile *_mapfile) {
   layers.resize(nlayers);
 
   for (unsigned int i = 0; i < nlayers; ++i) {
-    Layer *lay = new Layer;
+    Supertron::Layer *lay = new Supertron::Layer;
     cumake(&lay->head, 1);
     mapfile->map(lay->head, 1);
     mapfile->load(lay->head);
 
-    Layer::Head head;
+    Supertron::Layer::Head head;
     decude(lay->head, 1, &head);
     lay->wn = head.wn;
     lay->inn = head.inn;
     lay->outn = head.outn;
-    lay->activated = head.activated;
 
     cumake(&lay->out, head.outn);
     cumake(&lay->fout, head.outn);
@@ -401,7 +489,14 @@ Supertron::Supertron(Mapfile *_mapfile) {
     lay->wiotab = NULL;
 
     if (head.type == Supertron::Layer::TYPE_CONV) {
-      lay->wbufk = 128;
+
+      unsigned int mwn = 16384;
+      if (lay->wn < mwn) {
+        lay->wbufk = 2 * mwn / lay->wn;
+        if (lay->wbufk > 128)
+          lay->wbufk = 128;
+      }
+
       cumake(&lay->wbuf, lay->wn * lay->wbufk);
     }
 
@@ -430,6 +525,10 @@ Supertron::Supertron(Mapfile *_mapfile) {
 
 
     layers[i] = lay;
+    if (i > 0) {
+fprintf(stderr, "i=%d\n", i);
+      assert(layers[i - 1]->outn == layers[i]->inn);
+}
   }
 
   if (nlayers) {
@@ -453,13 +552,13 @@ Supertron::~Supertron() {
 }
 
 void Supertron::add_layer(
-   Layer::Type type,
+   Supertron::Layer::Type type,
    unsigned int iw, unsigned int ih, unsigned int ic,
    unsigned int ow, unsigned int oh, unsigned int oc,
    unsigned int d, int s,
-   bool activated
+   Supertron::Layer::Activation activated
 ) {
-  Layer::Head head;
+  Supertron::Layer::Head head;
 
   head.type = type;
   head.iw = iw;
@@ -487,28 +586,36 @@ void Supertron::add_layer(
   int s2 = (s > 0) ? (1 << s) : 1;
 
   switch (head.type) {
-  case Layer::TYPE_FULL:
+  case Supertron::Layer::TYPE_FULL:
     head.wn = (head.inn + 1) * head.outn;
     assert(d == 0);
     assert(s == 0);
     break;
 
-  case Layer::TYPE_LOCAL:
+  case Supertron::Layer::TYPE_LOCAL:
     head.wn = head.outn * m;
 fprintf(stderr, "%d, %d, %d, %d\n", ow, iw, s, (iw>>-s));
     assert(ow == shl(iw, s));
     assert(oh == shl(ih, s));
     break;
 
-  case Layer::TYPE_CONV:
+  case Supertron::Layer::TYPE_CONV:
     head.wn = s2 * s2 * head.oc * m;
     assert(ow == shl(iw, s));
     assert(oh == shl(ih, s));
     break;
 
-  case Layer::TYPE_YCONV:
+  case Supertron::Layer::TYPE_YCONV:
     head.wn = s2 * oc * ow * m;
 //fprintf(stderr, "s=%d iw=%u ow=%u\n", s, iw, ow);
+    assert(ow == shl(iw, s));
+    assert(oh == shl(ih, s));
+    break;
+
+  case Supertron::Layer::TYPE_MPOOL:
+    head.wn = 1;
+    assert(s < 0);
+    assert(d == 0);
     assert(ow == shl(iw, s));
     assert(oh == shl(ih, s));
     break;
@@ -524,10 +631,15 @@ fprintf(stderr, "wn=%d\n", head.wn);
 
 void Supertron::add_layer(const Supertron::Layer::Head &head) {
   uint64_t nlayers = layers.size();
+  if (nlayers) {
+    Layer *ll = layers[nlayers - 1];
+    assert(ll->outn == head.inn);
+  }
+
   ++nlayers;
   encude(&nlayers, 1, cunlayers);
 
-  Layer *lay = new Layer;
+  Supertron::Layer *lay = new Supertron::Layer;
   cumake(&lay->head, 1);
   mapfile->map(lay->head, 1);
   encude(&head, 1, lay->head);
@@ -545,7 +657,6 @@ void Supertron::add_layer(const Supertron::Layer::Head &head) {
   lay->wn = head.wn;
   lay->inn = head.inn;
   lay->outn = head.outn;
-  lay->activated = head.activated;
 
   lay->iowtab = NULL;
   lay->oiwtab = NULL;
@@ -618,13 +729,41 @@ void Supertron::randomize(double disp) {
   for (auto lay : layers) {
     Supertron::Layer::Head head;
     decude(lay->head, 1, &head);
+
     unsigned int s = get_oiwtabn(&head);
-
-    double f = disp / sqrt((double)s + 1);
-
+    double f = disp / sqrt((double)s);
     double *weight = new double[lay->wn];
-    for (unsigned int wi = 0; wi < lay->wn; ++wi)
-      weight[wi] = randgauss() * f;
+
+    switch (head.type) {
+    case Supertron::Layer::TYPE_FULL:
+    case Supertron::Layer::TYPE_LOCAL:
+      for (unsigned int outi = 0; outi < head.outn; ++outi) {
+
+        double sw = 0;
+        int ini, wi;
+        for (int i = 0; i < s; ++i) {
+          outi_to_ini_wi(&head, outi, i, &ini, &wi);
+          if (ini != -1) {
+            weight[wi] = randgauss() * f;
+            sw += weight[wi];
+          }
+        }
+        for (int i = 0; i < s; ++i) {
+          outi_to_ini_wi(&head, outi, i, &ini, &wi);
+          if (ini == -1 && wi != -1) {
+            weight[wi] = -sw/2.0;
+            break;
+          }
+        }
+      }
+      break;
+
+    default:
+      for (unsigned int wi = 0; wi < lay->wn; ++wi)
+        weight[wi] = randgauss() * f;
+      break;
+    }
+
     encude(weight, lay->wn, lay->weight);
     delete[] weight;
   }

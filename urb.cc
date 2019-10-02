@@ -13,6 +13,7 @@
 #include "imgutils.hh"
 #include "encoder.hh"
 #include "generator.hh"
+#include "cudamem.hh"
 
 namespace makemore {
 
@@ -131,6 +132,18 @@ Urb::~Urb() {
   delete outgoing;
 }
 
+static void nomsuffixes(const std::string &nom, std::vector<std::string> *suf) {
+  const char *p = nom.c_str();
+  const char *q = p + nom.length();
+
+  while (p < q) {
+    if (*p == '_' && p[1]) {
+      suf->push_back(p + 1);
+    }
+    ++p;
+  }
+}
+
 Parson *Urb::make(const std::string &nom, unsigned int tier, unsigned int gens, Parson *child, unsigned int which) {
 
   if (!Parson::valid_nom(nom))
@@ -165,9 +178,25 @@ fprintf(stderr, "found %s\n", nom.c_str());
   }
 
   seedrand(Parson::hash_nom(seednom.c_str()));
-  for (unsigned int k = 0; k < Parson::ncontrols; ++k)
-//    parson.controls[k] = randrange(0.0, 1.0); //randgauss() * dev;
+
+  for (unsigned int k = 0; k < Parson::ncontrols; ++k) {
     parson.controls[k] = randgauss() * dev;
+    parson.variations[k] = 0.001;
+  }
+
+  {
+    std::vector<std::string> suf;
+    nomsuffixes(parson.nom, &suf);
+    for (auto famnom : suf) {
+      if (Parson *fam = find(famnom)) {
+        for (unsigned int k = 0; k < Parson::ncontrols; ++k) {
+          parson.controls[k] = parson.controls[k] * sqrt(fam->variations[k]) + fam->controls[k];
+        }
+        break;
+      }
+    }
+  }
+
   parson.paren_noms(nom.c_str(), parson.parens[0], parson.parens[1]);
 
   parson.tone = dev;

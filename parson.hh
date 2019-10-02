@@ -121,7 +121,8 @@ struct Parson {
   uint8_t pad2[4096];
 
   // 64 * 64 * 3
-  uint8_t partrait[dim * dim * 3];
+  double variations[ncontrols];
+  uint8_t ___pad[4096];
 
   // 2048
   Brief briefs[nbriefs];
@@ -241,9 +242,6 @@ struct Parson {
   bool load(FILE *fp);
   void save(FILE *fp);
 
-  double centerh() const;
-  double centers() const;
-  double centerv() const;
   double error2() const;
 };
 

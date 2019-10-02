@@ -23,6 +23,8 @@
 #include "warp.hh"
 #include "pose.hh"
 #include "partrait.hh"
+#include "autocompleter.hh"
+#include "mob.hh"
 
 namespace makemore {
 
@@ -511,6 +513,16 @@ static std::string htmlp(const std::string &nom, unsigned int dim) {
   return buf;
 }
 
+static std::string htmlpe(const std::string &nom, unsigned int dim) {
+  char buf[4096];
+  sprintf(buf, 
+//    "<a href='/%s'><img width='%u' height='%u' style='image-rendering: pixelated' src='/%s.png'/></a>",
+    "<a href='/%s/edit'><img width='%u' height='%u' src='/%s.png'/></a>",
+    nom.c_str(), dim, dim, nom.c_str()
+  );
+  return buf;
+}
+
 void Agent::handle_http() {
   std::string req = httpbuf[0];
   strvec reqwords;
@@ -732,6 +744,52 @@ fprintf(stderr, "req=[%s]\n", req.c_str());
   }
 #endif
 
+  if (!strncmp(path.c_str(), "/images/", 8)) {
+    std::set<std::string> valid;
+    valid.insert("makemore.png");
+    valid.insert("slashfam.png");
+    valid.insert("createdby.png");
+    valid.insert("frens.png");
+    valid.insert("add_to_cart.png");
+
+    valid.insert("rand.png");
+    valid.insert("file.png");
+    valid.insert("fam.png");
+    valid.insert("frens.png");
+    valid.insert("doc.png");
+    valid.insert("cam.png");
+    valid.insert("mem.png");
+    valid.insert("mob.png");
+    valid.insert("email.png");
+    valid.insert("addfren.png");
+    valid.insert("pushnom.png");
+    valid.insert("pushfam.png");
+    valid.insert("capture.png");
+    valid.insert("xform.png");
+    valid.insert("blend.png");
+    valid.insert("add_fren.png");
+    valid.insert("gen_nom.png");
+
+    std::string imagefn = path.c_str() + 8;
+    if (!valid.count(imagefn)) {
+      this->printf("HTTP/1.1 404 Not Found\r\n");
+      this->printf("Connection: keep-alive\r\n");
+      this->printf("Content-Type: text/plain\r\n");
+      this->printf("Content-Length: 0\r\n");
+      this->printf("\r\n");
+    } else {
+      string png = makemore::slurp(std::string("images/") + imagefn);
+
+      this->printf("HTTP/1.1 200 OK\r\n");
+      this->printf("Connection: keep-alive\r\n");
+      this->printf("Content-Type: image/png\r\n");
+      this->printf("Content-Length: %lu\r\n", png.length());
+      this->printf("\r\n");
+      this->write(png);
+    }
+    return;
+  }
+
   if (path == "/tagraw.png") {
     unsigned int which = atoi(query.c_str());
     string imagefn = server->urb->images[which % server->urb->images.size()];
@@ -751,7 +809,7 @@ fprintf(stderr, "req=[%s]\n", req.c_str());
     return;
   }
 
-  if (path == "/tagger.html" || path == "/cam.html" || path == "/edit.html" || path == "/memory.html") {
+  if (path == "/tagger.html" || path == "/cam.html" || path == "/edit.html" || path == "/memory.html" || path == "/autocomplete.html") {
     std::string html = makemore::slurp(path.c_str() + 1);
 
     this->printf("HTTP/1.1 200 OK\r\n");
@@ -760,6 +818,58 @@ fprintf(stderr, "req=[%s]\n", req.c_str());
     this->printf("Content-Length: %lu\r\n", html.length());
     this->printf("\r\n");
     this->write(html);
+    return;
+  }
+
+  if (path == "/autocomplete.css") {
+    std::string css = makemore::slurp(path.c_str() + 1);
+
+    this->printf("HTTP/1.1 200 OK\r\n");
+    this->printf("Connection: keep-alive\r\n");
+    this->printf("Content-Type: text/css\r\n");
+    this->printf("Content-Length: %lu\r\n", css.length());
+    this->printf("\r\n");
+    this->write(css);
+    return;
+  }
+
+  if (path == "/autocomplete") {
+    map<string, string> cgi;
+    cgiparse(query, &cgi);
+    string prefix = cgi["prefix"];
+
+    Autocompleter *ac = server->urb->zones[0]->ac;
+    assert(ac);
+
+    std::vector<std::string> completions;
+    ac->find(prefix, &completions);
+
+    std::string json = "[";
+    for (auto ci = completions.begin(); ci != completions.end(); ++ci) {
+      if (ci != completions.begin())
+        json += ",";
+      json += "\n  \"" + *ci + "\"";
+    }
+    json += "\n]\n";
+
+    this->printf("HTTP/1.1 200 OK\r\n");
+    this->printf("Connection: keep-alive\r\n");
+    this->printf("Content-Type: text/json\r\n");
+    this->printf("Content-Length: %lu\r\n", json.length());
+    this->printf("\r\n");
+    this->write(json);
+    return;
+  }
+
+  if (path == "/gennom.js" || path == "/autocomplete.js") {
+    std::string js = makemore::slurp(path.c_str() + 1);
+
+    this->printf("HTTP/1.1 200 OK\r\n");
+    this->printf("Connection: keep-alive\r\n");
+    this->printf("Content-Type: text/javascript\r\n");
+    this->printf("Content-Length: %lu\r\n", js.length());
+    this->printf("\r\n");
+    this->write(js);
     return;
   }
 
@@ -809,7 +919,7 @@ fprintf(stderr, "req=[%s]\n", req.c_str());
     }
 
 
-    Parson *parson = server->urb->find(nom);
+    Parson *parson = server->urb->make(nom, 0, 2);
     if (!parson) {
       this->printf("HTTP/1.1 404 Not Found\r\n");
       this->printf("Connection: keep-alive\r\n");
@@ -822,10 +932,98 @@ fprintf(stderr, "req=[%s]\n", req.c_str());
     
     string txt = "huh";
     if (op == "scramble") {
-      strcpy(parson->srcfn, "");
       for (unsigned int j = 0; j < Parson::ncontrols; ++j)
         parson->controls[j] = randgauss();
       txt = "ok, scrambled " + nom;
+    } else if (op == "tone") {
+      double mul = 1.0;
+      if (cgi["mul"] != "")
+        mul = strtod(cgi["mul"].c_str(), NULL);
+      for (unsigned int j = 0; j < Parson::ncontrols; ++j)
+        parson->controls[j] *= mul;
+      txt = "ok, toned " + nom;
+    } else if (op == "addvec") {
+      double mul = 1.0;
+      if (cgi["mul"] != "")
+        mul = strtod(cgi["mul"].c_str(), NULL);
+
+      double vdev = 0.0;
+      if (cgi["vdev"] != "")
+        vdev = strtod(cgi["vdev"].c_str(), NULL);
+
+      unsigned int r = randuint();
+      if (cgi["r"] != "")
+        r = strtoul(cgi["r"].c_str(), NULL, 0);
+
+      if (Parson::valid_nom(cgi["vec"])) {
+        if (Parson *vec = server->urb->find(cgi["vec"])) {
+          seedrand(r);
+
+          for (unsigned int j = 0; j < Parson::ncontrols; ++j) {
+            //parson->controls[j] += mul * vec->controls[j];
+            double ma = parson->controls[j];
+            double va = parson->variations[j];
+            double vb = vec->variations[j];
+            double mb = vec->controls[j] + randgauss() * vdev * sqrt(vb);
+            double vbk = pow(vb, mul);
+
+            double vbg;
+            if (fabs(vb - 1) < 1e-6) {
+               vbg = mul;
+            } else {
+               vbg = (vbk - 1.0) / (vb - 1.0);
+            }
+            parson->controls[j] = vbk * ma + vbg * mb;
+            parson->variations[j] = va * vbk;
+          }
+        }
+      }
+
+      txt = "ok, addveced " + nom;
+    } else if (op == "addvec2") {
+      double mul = 1.0;
+      if (cgi["mul"] != "")
+        mul = strtod(cgi["mul"].c_str(), NULL);
+
+      double vdev = 0.0;
+      if (cgi["vdev"] != "")
+        vdev = strtod(cgi["vdev"].c_str(), NULL);
+
+      unsigned int r = randuint();
+      if (cgi["r"] != "")
+        r = strtoul(cgi["r"].c_str(), NULL, 0);
+
+      if (Parson::valid_nom(cgi["vec"])) {
+        if (Parson *vec = server->urb->find(cgi["vec"])) {
+          seedrand(r);
+          for (unsigned int j = 0; j < Parson::ncontrols; ++j) {
+            //parson->controls[j] += mul * vec->controls[j];
+            double ma = parson->controls[j];
+            double va = parson->variations[j];
+            double vb = vec->variations[j];
+            double mb = vec->controls[j] + randgauss() * sqrt(vb) * vdev;
+            parson->controls[j] = (1.0 - mul) * ma + mul * mb;
+            parson->variations[j] = (1.0 - mul) * va + mul * (vb + (ma - mb) * (ma - mb));
+            // parson->variations[j] = (1.0 - mul) * va + mul * ((ma - mb) * (ma - mb));
+          }
+        }
+      }
+
+      txt = "ok, addveced " + nom;
+    } else if (op == "recom") {
+      double mul = 1.0;
+      if (cgi["mul"] != "")
+        mul = strtod(cgi["mul"].c_str(), NULL);
+
+      if (Parson::valid_nom(cgi["vec"])) {
+        if (Parson *vec = server->urb->find(cgi["vec"])) {
+          for (unsigned int j = 0; j < Parson::ncontrols; ++j) {
+            if (randrange(0, 1) < mul)
+              parson->controls[j] = vec->controls[j];
+          }
+        }
+      }
+      txt = "ok, addveced " + nom;
     } else if (op == "pickreal") {
       Supergen *gen = server->urb->get_gen(parson->gen);
       Zone *sks = gen->zone;
@@ -881,6 +1079,18 @@ fprintf(stderr, "req=[%s]\n", req.c_str());
         strcpy(parson->sty, tag.c_str());
         txt = "ok, set sty " + tag;
       }
+    } else if (op == "addfren") {
+      std::string fren = cgi["fren"];
+      if (Parson::valid_nom(fren.c_str())) {
+        parson->add_fren(fren.c_str());
+
+        Parson *fp = server->urb->make(fren, 0);
+        fp->add_fren(parson->nom);
+
+        txt = "ok, added fren " + fren;
+      } else {
+        txt = "oops";
+      }
     }
 
     this->printf("HTTP/1.1 200 Ok\r\n");
@@ -896,6 +1106,17 @@ fprintf(stderr, "req=[%s]\n", req.c_str());
 
   std::string nom;
   if (path == "/") {
+#if 0
+    std::string html = makemore::slurp("index.html");
+
+    this->printf("HTTP/1.1 200 Ok\r\n");
+    this->printf("Connection: keep-alive\r\n");
+    this->printf("Content-Type: text/html\r\n");
+    this->printf("Content-Length: %lu\r\n", html.length());
+    this->printf("\r\n");
+    this->write(html);
+#else
+
     nom = Parson::gen_nom();
     this->printf("HTTP/1.1 302 Redirect\r\n");
     this->printf("Connection: keep-alive\r\n");
@@ -903,17 +1124,18 @@ fprintf(stderr, "req=[%s]\n", req.c_str());
     this->printf("Content-Length: 0\r\n");
     this->printf("Location: /%s\r\n", nom.c_str());
     this->printf("\r\n", nom.c_str());
+#endif
     return;
   }
 
   nom = path.c_str() + 1;
-  std::string ext;
+  std::string ext = "html";
   if (const char *p = strchr(nom.c_str(), '.')) {
     ext = p + 1;
     nom = std::string(nom.c_str(), p - nom.c_str());
   }
 
-  std::string func = "html";
+  std::string func = "file";
   if (const char *p = strchr(nom.c_str(), '/')) {
     func = p + 1;
     nom = std::string(nom.c_str(), p - nom.c_str());
@@ -930,8 +1152,31 @@ fprintf(stderr, "req=[%s]\n", req.c_str());
     return;
   }
 
-  if (func == "edit") {
-    std::string html = makemore::slurp("edit.html");
+  if (func == "mob" && ext == "png") {
+    Supergen *gen = server->urb->default_gen;
+    Styler *sty = server->urb->default_sty;
+
+    Partrait mpar;
+    make_mob(gen, sty, NULL, &mpar);
+    std::string png;
+    mpar.to_png(&png);
+
+    this->printf("HTTP/1.1 200 OK\r\n");
+    this->printf("Connection: keep-alive\r\n");
+    this->printf("Content-Type: image/png\r\n");
+    this->printf("Content-Length: %lu\r\n", png.length());
+    this->printf("\r\n");
+    this->write(png);
+    return;
+  }
+
+  if (ext == "html") {
+  if (func == "edit" || func == "cam" || func == "file" || func == "fam" || func == "frens" || func == "xform" || func == "blend" || func == "mem" || func == "mob" || func == "grid") {
+    std::string html = makemore::slurp(func + ".html");
+
+    std::string header = makemore::slurp("header.html");
+    html = replacestr(html, "$HEADER", header);
+    html = replacestr(html, "$NOM", nom);
 
     this->printf("HTTP/1.1 200 OK\r\n");
     this->printf("Connection: keep-alive\r\n");
@@ -941,10 +1186,14 @@ fprintf(stderr, "req=[%s]\n", req.c_str());
     this->write(html);
     return;
   }
+  }
 
   if (ext == "json") {
-    Parson *parson = server->urb->make(nom, 0);
+    Parson *parson = server->urb->make(nom, 0, 2);
     assert(parson);
+
+    Parson *paren0 = server->urb->make(parson->parens[0], 0);
+    Parson *paren1 = server->urb->make(parson->parens[1], 0);
 
     std::string json;
     json += "{\n";
@@ -954,9 +1203,16 @@ fprintf(stderr, "req=[%s]\n", req.c_str());
     json += string("  \"sks\": \"") + parson->sks + "\",\n";
     json += string("  \"srcfn\": \"") + parson->srcfn + "\",\n";
 
+double dev = 0;
+for (unsigned int j = 0; j < Parson::ncontrols; ++j) {
+  dev += parson->controls[j] * parson->controls[j];
+}
+dev /= (double)Parson::ncontrols;
+dev = sqrt(dev);
+
     char numstr[256];
-    sprintf(numstr, "%u", parson->skid);
-    json += string("  \"skid\": ") + numstr + ",\n";
+    sprintf(numstr, "%lf", dev);
+    json += string("  \"tone\": ") + numstr + ",\n";
 
     json += string("  \"parens\": [");
     for (unsigned int j = 0; j < 2; ++j) {
@@ -969,8 +1225,19 @@ fprintf(stderr, "req=[%s]\n", req.c_str());
     }
     json += "],\n";
 
+    json += string("  \"gparens\": [");
+    for (unsigned int j = 0; j < 4; ++j) {
+      const char *gparen = (j < 2 ? paren0 : paren1)->parens[j % 2];
+      if (!*gparen)
+        continue;
+      if (j)
+        json += ", ";
+      json += string("\"") + gparen + string("\"");
+    }
+    json += "],\n";
+
     json += string("  \"frens\": [");
-    for (unsigned int j = 0; j < 2; ++j) {
+    for (unsigned int j = 0; j < Parson::nfrens; ++j) {
       const char *fren = parson->frens[j];
       if (!*fren)
         continue;
@@ -1011,14 +1278,33 @@ fprintf(stderr, "req=[%s]\n", req.c_str());
   }
 
   if (ext == "png") {
+    map<string, string> cgi;
+    cgiparse(query, &cgi);
+
+    double dev = 1.0;
+    if (cgi["dev"] != "")
+      dev = strtod(cgi["dev"].c_str(), NULL);
+
+    double vdev = 0.0;
+    if (cgi["vdev"] != "")
+      vdev = strtod(cgi["vdev"].c_str(), NULL);
+
+    unsigned int r = randuint();
+    if (cgi["r"] != "")
+      r = strtoul(cgi["r"].c_str(), NULL, 0);
+
+    unsigned int dim = 256;
+    if (cgi["dim"] != "")
+      dim = strtoul(cgi["dim"].c_str(), NULL, 0);
+    if (dim > 256)
+      dim = 256;
+    if (dim < 32)
+      dim = 32;
+
     Parson *parson = server->urb->make(nom, 0);
 
-#if 0
-    Pose pose = Pose::STANDARD;
-    pose.angle = parson->angle * 0.5;
-    pose.stretch = (parson->stretch - 1.0) * 0.5 + 1.0;
-    pose.skew = parson->skew * 0.25;
-#endif
+parson->visit(1);
+
 
 //fprintf(stderr, "[%lf %lf %lf]\n", pose.angle, pose.stretch, pose.skew);
 
@@ -1027,29 +1313,32 @@ fprintf(stderr, "req=[%s]\n", req.c_str());
 //gen->load();
     Styler *sty = server->urb->get_sty(parson->sty);
 
-    Partrait showpar(256, 256);
+    Partrait genpar(256, 256);
+
 
 double *tmp = new double[Parson::ncontrols];
-sty->generate(*parson, tmp);
-gen->generate(tmp, &showpar);
+memcpy(tmp, parson->controls, sizeof(double) * Parson::ncontrols);
+
+seedrand(r);
+
+fprintf(stderr, "dev=%lf\n", dev);
+for (unsigned int j = 0; j < Parson::ncontrols; ++j) {
+  tmp[j] += randgauss() * sqrt(parson->variations[j]) * vdev;
+  tmp[j] *= dev;
+}
+
+sty->tag_cholo["base"]->generate(tmp, tmp);
+gen->generate(tmp, &genpar);
 delete[] tmp;
 
-#if 0
-    gen->generate(*parson, &showpar, sty);
 
-assert(showpar.alpha);
-assert(showpar.w == 256 && showpar.h == 256);
-for (unsigned int j = 0; j < 256 * 256; ++j) {
-  double a = (double)showpar.alpha[j] / 255.0;
-  // a = (a - 0.2) / 0.6;
-  // a = (a - 0.5) / 0.01;
-  if (a > 1.0) a = 1.0;
-  if (a < 0.0) a = 0.0;
+Partrait showpar(dim, dim);
+Pose pose = Pose::STANDARD;
+pose.center *= (double)dim / 256.0;
+pose.scale *= (double)dim / 256.0;
 
-  if (a < 0.3) a = 0.3;
-  showpar.alpha[j] = (uint8_t)(a * 255.0);
-}
-#endif
+showpar.set_pose(pose);
+genpar.warp(&showpar);
 
     std::string png;
     showpar.to_png(&png);
@@ -1080,6 +1369,14 @@ for (unsigned int j = 0; j < 256 * 256; ++j) {
     this->write(png);
     return;
   }
+
+this->printf("HTTP/1.1 302 Redirect\r\n");
+this->printf("Connection: keep-alive\r\n");
+this->printf("Content-Type: text/plain\r\n");
+this->printf("Content-Length: 0\r\n");
+this->printf("Location: /%s\r\n", nom.c_str());
+this->printf("\r\n");
+return;
 
 
   {
@@ -1116,7 +1413,7 @@ fprintf(stderr, "paren0=%s\n", parson->parens[0]);
     htmlbuf += htmlp(paren0->nom, 256);
     htmlbuf += htmlp(paren1->nom, 256);
     htmlbuf += "<br>";
-    htmlbuf += htmlp(parson->nom, 512);
+    htmlbuf += htmlpe(parson->nom, 512);
     htmlbuf += "</center></body></html>\n";
 
     this->printf("HTTP/1.1 200 OK\r\n");

@@ -17,6 +17,9 @@ struct Styler : Project {
   unsigned int dim;
   std::map<std::string, Cholo*> tag_cholo;
 
+  double *msamp, *fsamp;
+  unsigned int msampn, fsampn;
+
   Styler(const std::string &dir);
 
   ~Styler() {

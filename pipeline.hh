@@ -61,7 +61,6 @@ struct Pipeline : Project {
 
   void generate(class Parson **parsons, unsigned int nparsons, long min_age = 0);
   void generate(class Parson *parson, long min_age = 0);
-  void generate(class Org *org, long min_age = 0);
 
   void burnenc(Parson **parsons, unsigned int nparsons, double nu);
   void burngen(Parson **parsons, unsigned int nparsons, double wu);

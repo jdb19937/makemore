@@ -59,8 +59,8 @@ Partrait *par = new Partrait;
     assert(prt.h == h);
 
     Triangle mark = prt.get_mark();
-    double de = 4.0;
-    double dm = 8.0;
+    double de = 8.0;
+    double dm = 16.0;
     mark.p.x += randrange(-de, de);
     mark.p.y += randrange(-de, de);
     mark.q.x += randrange(-de, de);
@@ -77,7 +77,7 @@ Partrait *par = new Partrait;
       adjprt.reflect();
     }
 
-    ap->observe(adjprt, 0.00001);
+    ap->observe(adjprt, 0.0000001);
 
     if (i % 100 == 0) {
       ap->report("burnseg");

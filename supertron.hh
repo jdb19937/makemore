@@ -36,7 +36,6 @@ struct Supertron {
       wn = 0;
       inn = 0;
       outn = 0;
-      activated = false;
 
       oiwtab = NULL;
       iowtab = NULL;
@@ -61,7 +60,6 @@ struct Supertron {
       wn = l.wn;
       inn = l.inn;
       outn = l.outn;
-      activated = l.activated;
 
       oiwtab = l.oiwtab;
       iowtab = l.iowtab;
@@ -72,7 +70,16 @@ struct Supertron {
       TYPE_FULL = 0,
       TYPE_LOCAL = 1,
       TYPE_CONV = 2,
-      TYPE_YCONV = 3
+      TYPE_YCONV = 3,
+      TYPE_MPOOL = 4,
+      TYPE_IDENTITY = 5
+    };
+
+    enum Activation {
+      ACTIVATION_NONE = 0,
+      ACTIVATION_SIGMOID = 1,
+      ACTIVATION_RELU = 2,
+      ACTIVATION_SOFTPLUS = 3
     };
 
     struct Head {
@@ -87,7 +94,7 @@ struct Supertron {
       bool adam;
       double adam_b1, adam_b2, adam_b3, adam_eps, eta;
 
-      bool activated;
+      int8_t activated;
     };
 
     Head *head;
@@ -99,7 +106,6 @@ struct Supertron {
     unsigned int wbufk;
 
     unsigned int wn, inn, outn;
-    bool activated;
 
     int *oiwtab, *iowtab, *wiotab;
   };
@@ -128,7 +134,7 @@ struct Supertron {
     unsigned int iw, unsigned int ih, unsigned int ic,
     unsigned int ow, unsigned int oh, unsigned int oc,
     unsigned int d, int s,
-    bool activated
+    Layer::Activation activated
   );
 };
 

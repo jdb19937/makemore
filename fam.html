@@ -1,0 +1,129 @@
+<html>
+<head>
+<title>makemore peaple / fam</title>
+
+<meta property='og:title' content='fam of $NOM'>
+<meta property='og:description' content='fam of $NOM'>
+<meta property='og:image' content='https://peaple.io/$NOM.png'>
+<meta property='og:image:type' content='image/png'>
+<meta property='og:image:width' content='256'>
+<meta property='og:image:height' content='256'>
+<meta property='og:url' content='https://peaple.io/$NOM/fam'>
+<meta property='og:type' content='article'>
+<link rel='canonical' href='https://peaple.io/$NOM/fam'>
+
+
+
+<script src="/gennom.js"></script>
+
+<script src="/autocomplete.js"></script>
+<link rel="stylesheet" type="text/css" href="/autocomplete.css">
+
+<script>
+function get_nom() {
+  var nom = window.location.pathname;
+  nom = nom.substr(1);
+  var slash = nom.indexOf('/');
+  nom = nom.substr(0, slash);
+  return nom;
+}
+
+function randstr() {
+  return "" + Math.floor(Math.random() * 1000000000);
+}
+
+function httpget(url, cb) {
+  var i = new XMLHttpRequest;
+  i.open('GET', url);
+  i.overrideMimeType("text/plain");
+  i.onload = function(e) {
+    if (!(this.readyState == 4 && this.status == 200)) {
+      return;
+    }
+    cb(this.responseText);
+  }
+  i.send();
+}
+
+function reload() {
+  mainlink.href = "https://peaple.io/" + window.nom + "/frens";
+  mainpic.src = "/" + window.nom + ".png" + "?r=" + randstr();
+
+  httpget("/" + window.nom + ".json", function(txt) {
+    var attrs = JSON.parse(txt);
+
+    gp0link.href = "/" + attrs.gparens[0] + "/fam";
+    gp0pic.src   = "/" + attrs.gparens[0] + ".png";
+    gp1link.href = "/" + attrs.gparens[1] + "/fam";
+    gp1pic.src   = "/" + attrs.gparens[1] + ".png";
+    gp2link.href = "/" + attrs.gparens[2] + "/fam";
+    gp2pic.src   = "/" + attrs.gparens[2] + ".png";
+    gp3link.href = "/" + attrs.gparens[3] + "/fam";
+    gp3pic.src   = "/" + attrs.gparens[3] + ".png";
+
+    p0link.href = "/" + attrs.parens[0] + "/fam";
+    p0pic.src   = "/" + attrs.parens[0] + ".png";
+    p1link.href = "/" + attrs.parens[1] + "/fam";
+    p1pic.src   = "/" + attrs.parens[1] + ".png";
+  });
+}
+
+function onload() {
+  window.nom = get_nom();
+  reload();
+}
+
+</script>
+</head>
+
+<body text="#ffffff" bgcolor="#000000" onload="onload()">
+
+$HEADER
+
+<table width="1280"> <tr><td>
+
+<table cellspacing=0 cellpadding=0 align="center">
+
+<!--
+<tr>
+  <td colspan=4><a id="mainlink"><img id="mainpic" width=512 height=512></a></td>
+</tr>
+
+<tr>
+  <td colspan=2><a id="p0link"><img id="p0pic" width=256 height=256></a></td>
+  <td colspan=2><a id="p1link"><img id="p1pic" width=256 height=256></a></td>
+</tr>
+
+
+<tr>
+  <td><a id="gp0link"><img id="gp0pic" width=128 height=128></a></td>
+  <td><a id="gp1link"><img id="gp1pic" width=128 height=128></a></td>
+  <td><a id="gp2link"><img id="gp2pic" width=128 height=128></a></td>
+  <td><a id="gp3link"><img id="gp3pic" width=128 height=128></a></td>
+</tr>
+-->
+
+<tr>
+  <td><a id="gp0link"><img id="gp0pic" width=128 height=128></a></td>
+  <td rowspan=2><a id="p0link"><img id="p0pic" width=256 height=256></a></td>
+  <td rowspan=4><a id="mainlink"><img id="mainpic" width=512 height=512></a></td>
+</tr>
+<tr>
+  <td><a id="gp1link"><img id="gp1pic" width=128 height=128></a></td>
+</tr>
+<tr>
+  <td><a id="gp2link"><img id="gp2pic" width=128 height=128></a></td>
+  <td rowspan=2><a id="p1link"><img id="p1pic" width=256 height=256></a></td>
+</tr>
+<tr>
+  <td><a id="gp3link"><img id="gp3pic" width=128 height=128></a></td>
+</tr>
+
+
+
+</table>
+
+</td></tr></table>
+
+</body>
+</html>

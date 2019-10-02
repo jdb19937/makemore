@@ -1,0 +1,179 @@
+<html>
+<head>
+<title>makemore peaple / mem</title>
+
+<meta property='og:title' content='$NOM memory game'>
+<meta property='og:description' content='$NOM memory game'>
+<meta property='og:image' content='https://peaple.io/$NOM.png'>
+<meta property='og:image:type' content='image/png'>
+<meta property='og:image:width' content='256'>
+<meta property='og:image:height' content='256'>
+<meta property='og:url' content='https://peaple.io/$NOM/mem'>
+<meta property='og:type' content='article'>
+<link rel='canonical' href='https://peaple.io/$NOM/mem'>
+
+
+
+<script src="/gennom.js"></script>
+
+<script>
+
+function get_nom() {
+  var nom = window.location.pathname;
+  nom = nom.substr(1);
+  var slash = nom.indexOf('/');
+  nom = nom.substr(0, slash);
+  return nom;
+}
+
+window.nom = get_nom();
+
+function shuffle(array) {
+  var currentIndex = array.length, temporaryValue, randomIndex;
+
+  // While there remain elements to shuffle...
+  while (0 !== currentIndex) {
+
+    // Pick a remaining element...
+    randomIndex = Math.floor(Math.random() * currentIndex);
+    currentIndex -= 1;
+
+    // And swap it with the current element.
+    temporaryValue = array[currentIndex];
+    array[currentIndex] = array[randomIndex];
+    array[randomIndex] = temporaryValue;
+  }
+
+  return array;
+}
+
+
+function onload() {
+  window.nsolved = 0;
+  var noms = new Array(18);
+  for (var i = 0; i < 18; ++i) {
+    noms[i] = genfnom() + "_" + window.nom;
+    if (noms[i].length > 31) { noms[i] = window.nom; }
+  }
+
+  var ar = new Array(36);
+  for (var i = 0; i < 36; ++i) {
+    ar[i] = Math.floor(i / 2);
+  }
+
+  window.cells = new Array(36);
+  window.solved = new Array(36);
+
+  ar = shuffle(ar);
+  for (var i = 0; i < 36; ++i) {
+    window.cells[i] = noms[ar[i]];
+    window.solved[i] = 0;
+  }
+
+  window.prev = -1;
+  window.state = 0;
+}
+
+function onc(im) {
+  var i = Math.floor(im.id.substr(3));
+
+  if (window.state == 0) {
+    if (window.solved[i]) {
+      return;
+    }
+
+    document.getElementById('img' + i).src = "/" + window.cells[i] + ".png" + "?dim=192";
+    window.state = 1;
+    window.prev = i;
+    return;
+  }
+
+  if (window.state == 1) {
+    if (i == window.prev)
+      return;
+
+    document.getElementById('img' + i).src = "/" + window.cells[i] + ".png" + "?dim=192";
+    if (window.cells[i] == window.cells[window.prev]) {
+      ++window.nsolved;
+if (window.nsolved == 18) { window.location = '/' + window.nom + '/cam'; }
+      window.solved[i] = 1;
+      window.solved[window.prev] = 1;
+      window.state = 0;
+      window.prev = -1;
+    } else {
+      window.setTimeout(function() {
+        document.getElementById('img' + i).src = "/mandelbrot.png";
+        document.getElementById('img' + window.prev).src = "/mandelbrot.png";
+        window.state = 0;
+        window.prev = -1;
+      }, 1000)
+    }
+
+    return;
+  }
+}
+</script>
+</head>
+
+<body text="#ffffff" bgcolor="#000000" onload="onload()">
+
+$HEADER
+
+<table cellpadding=0 cellspacing=0 width=1280>
+<tr><td align=center>
+
+<table cellpadding=0 cellspacing=1>
+<tr>
+  <td><img onclick="onc(this)" width="192px" src="/mandelbrot.png" id="img0"></td>
+  <td><img onclick="onc(this)" width="192px" src="/mandelbrot.png" id="img1"></td>
+  <td><img onclick="onc(this)" width="192px" src="/mandelbrot.png" id="img2"></td>
+  <td><img onclick="onc(this)" width="192px" src="/mandelbrot.png" id="img3"></td>
+  <td><img onclick="onc(this)" width="192px" src="/mandelbrot.png" id="img4"></td>
+  <td><img onclick="onc(this)" width="192px" src="/mandelbrot.png" id="img5"></td>
+</tr>
+<tr>
+  <td><img onclick="onc(this)" width="192px" src="/mandelbrot.png" id="img6"></td>
+  <td><img onclick="onc(this)" width="192px" src="/mandelbrot.png" id="img7"></td>
+  <td><img onclick="onc(this)" width="192px" src="/mandelbrot.png" id="img8"></td>
+  <td><img onclick="onc(this)" width="192px" src="/mandelbrot.png" id="img9"></td>
+  <td><img onclick="onc(this)" width="192px" src="/mandelbrot.png" id="img10"></td>
+  <td><img onclick="onc(this)" width="192px" src="/mandelbrot.png" id="img11"></td>
+</tr>
+<tr>
+  <td><img onclick="onc(this)" width="192px" src="/mandelbrot.png" id="img12"></td>
+  <td><img onclick="onc(this)" width="192px" src="/mandelbrot.png" id="img13"></td>
+  <td><img onclick="onc(this)" width="192px" src="/mandelbrot.png" id="img14"></td>
+  <td><img onclick="onc(this)" width="192px" src="/mandelbrot.png" id="img15"></td>
+  <td><img onclick="onc(this)" width="192px" src="/mandelbrot.png" id="img16"></td>
+  <td><img onclick="onc(this)" width="192px" src="/mandelbrot.png" id="img17"></td>
+</tr>
+<tr>
+  <td><img onclick="onc(this)" width="192px" src="/mandelbrot.png" id="img18"></td>
+  <td><img onclick="onc(this)" width="192px" src="/mandelbrot.png" id="img19"></td>
+  <td><img onclick="onc(this)" width="192px" src="/mandelbrot.png" id="img20"></td>
+  <td><img onclick="onc(this)" width="192px" src="/mandelbrot.png" id="img21"></td>
+  <td><img onclick="onc(this)" width="192px" src="/mandelbrot.png" id="img22"></td>
+  <td><img onclick="onc(this)" width="192px" src="/mandelbrot.png" id="img23"></td>
+</tr>
+<tr>
+  <td><img onclick="onc(this)" width="192px" src="/mandelbrot.png" id="img24"></td>
+  <td><img onclick="onc(this)" width="192px" src="/mandelbrot.png" id="img25"></td>
+  <td><img onclick="onc(this)" width="192px" src="/mandelbrot.png" id="img26"></td>
+  <td><img onclick="onc(this)" width="192px" src="/mandelbrot.png" id="img27"></td>
+  <td><img onclick="onc(this)" width="192px" src="/mandelbrot.png" id="img28"></td>
+  <td><img onclick="onc(this)" width="192px" src="/mandelbrot.png" id="img29"></td>
+</tr>
+<tr>
+  <td><img onclick="onc(this)" width="192px" src="/mandelbrot.png" id="img30"></td>
+  <td><img onclick="onc(this)" width="192px" src="/mandelbrot.png" id="img31"></td>
+  <td><img onclick="onc(this)" width="192px" src="/mandelbrot.png" id="img32"></td>
+  <td><img onclick="onc(this)" width="192px" src="/mandelbrot.png" id="img33"></td>
+  <td><img onclick="onc(this)" width="192px" src="/mandelbrot.png" id="img34"></td>
+  <td><img onclick="onc(this)" width="192px" src="/mandelbrot.png" id="img35"></td>
+</tr>
+</table>
+
+</td></tr></table>
+
+</body>
+</html>

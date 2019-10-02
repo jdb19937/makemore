@@ -410,12 +410,6 @@ void Parson::generate(Pipeline *pipe, long min_age) {
 }
 #endif
 
-void Parson::paste_partrait(PPM *ppm, unsigned int x0, unsigned int y0) {
-  assert(x0 + dim <= ppm->w);
-  assert(y0 + dim <= ppm->h);
-  ppm->pastelab(partrait, dim, dim, x0, y0);
-}
-
 bool Parson::load(FILE *fp) {
   size_t ret;
   ret = fread((uint8_t *)this, 1, sizeof(Parson), fp);
@@ -432,90 +426,6 @@ void Parson::save(FILE *fp) {
   size_t ret;
   ret = fwrite((uint8_t *)this, 1, sizeof(Parson), fp);
   assert(ret == sizeof(Parson));
-}
-
-double Parson::centerv() const {
-  unsigned int w = dim;
-  unsigned int h = dim;
-  unsigned int x0 = h / 4;
-  unsigned int x1 = w * 3 / 4;
-  unsigned int y0 = h / 4;
-  unsigned int y1 = h * 3 / 4;
-
-  double s = 0;
-  unsigned int tot = 0;
-
-  for (unsigned int y = y0; y < y1; ++y) {
-    for (unsigned int x = x0; x < x1; ++x) {
-      s += partrait[y * w * 3 + x * 3 + 0];
-      ++tot;
-    }
-  }
-  assert(tot > 0);
-  s /= (double)tot;
-  s /= (double)256.0;
-
-  return s;
-}
-
-double Parson::centerh() const {
-  unsigned int w = dim;
-  unsigned int h = dim;
-  unsigned int x0 = h / 4;
-  unsigned int x1 = w * 3 / 4;
-  unsigned int y0 = h / 4;
-  unsigned int y1 = h * 3 / 4;
-
-  double sa = 0, sb = 0;
-  unsigned int tot = 0;
-
-  for (unsigned int y = y0; y < y1; ++y) {
-    for (unsigned int x = x0; x < x1; ++x) {
-      sa += partrait[y * w * 3 + x * 3 + 1];
-      sb += partrait[y * w * 3 + x * 3 + 2];
-      ++tot;
-    }
-  }
-  assert(tot > 0);
-  sa /= (double)tot;
-  sa /= (double)256.0;
-  sb /= (double)tot;
-  sb /= (double)256.0;
-
-  sa -= 0.5;
-  sb -= 0.5;
-
-  return atan2(sb, sa);
-}
-
-double Parson::centers() const {
-  unsigned int w = dim;
-  unsigned int h = dim;
-  unsigned int x0 = h / 4;
-  unsigned int x1 = w * 3 / 4;
-  unsigned int y0 = h / 4;
-  unsigned int y1 = h * 3 / 4;
-
-  double sa = 0, sb = 0;
-  unsigned int tot = 0;
-
-  for (unsigned int y = y0; y < y1; ++y) {
-    for (unsigned int x = x0; x < x1; ++x) {
-      sa += partrait[y * w * 3 + x * 3 + 1];
-      sb += partrait[y * w * 3 + x * 3 + 2];
-      ++tot;
-    }
-  }
-  assert(tot > 0);
-  sa /= (double)tot;
-  sa /= (double)256.0;
-  sb /= (double)tot;
-  sb /= (double)256.0;
-
-  sa -= 0.5;
-  sb -= 0.5;
-
-  return sa * sa + sb * sb;
 }
 
 }

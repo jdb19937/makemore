@@ -1,0 +1,85 @@
+<html>
+<head>
+<title>makemore peaple / file</title>
+
+<meta property='og:title' content='$NOM'>
+<meta property='og:description' content='$NOM'>
+<meta property='og:image' content='https://peaple.io/$NOM.png'>
+<meta property='og:image:type' content='image/png'>
+<meta property='og:image:width' content='256'>
+<meta property='og:image:height' content='256'>
+<meta property='og:url' content='https://peaple.io/$NOM'>
+<meta property='og:type' content='article'>
+<link rel='canonical' href='https://peaple.io/$NOM'>
+
+
+<script src="/gennom.js"></script>
+
+<script src="/autocomplete.js"></script>
+<link rel="stylesheet" type="text/css" href="/autocomplete.css">
+
+<script>
+function get_nom() {
+  var nom = window.location.pathname;
+  nom = nom.substr(1);
+  var slash = nom.indexOf('/');
+  if (slash != -1) {
+    nom = nom.substr(0, slash);
+  }
+  return nom;
+}
+
+function randstr() {
+  return "" + Math.floor(Math.random() * 1000000000);
+}
+
+function httpget(url, cb) {
+  var i = new XMLHttpRequest;
+  i.open('GET', url);
+  i.overrideMimeType("text/plain");
+  i.onload = function(e) {
+    if (!(this.readyState == 4 && this.status == 200)) {
+      return;
+    }
+    cb(this.responseText);
+  }
+  i.send();
+}
+
+function reload() {
+  mainlink.href = "https://peaple.io/" + window.nom + "/fam";
+  mainpic.src = "/" + window.nom + ".png" + "?r=" + randstr();
+}
+
+function onload() {
+  window.nom = get_nom();
+  reload();
+}
+
+</script>
+</head>
+
+<body text="#ffffff" bgcolor="#000000" onload="onload()">
+
+$HEADER
+
+<script>
+var nom = get_nom();
+</script>
+
+
+
+<table width="1280"> <tr><td>
+
+<table cellspacing=0 cellpadding=0 align="center">
+
+<tr>
+  <td><a id="mainlink"><img id="mainpic" width=512 height=512></a></td>
+</tr>
+
+</table>
+
+</td></tr></table>
+
+</body>
+</html>

@@ -81,14 +81,21 @@
       int dx = dx0 - head->d;
       int dy = dy0 - head->d;
 
-      int ox = shl(ix + dx, head->s) + rx;
-      int oy = shl(iy + dy, head->s) + ry;
+      ix += dx;
+      iy += dy;
+      while (ix < 0) ix += head->iw;
+      ix %= head->iw;
+      while (iy < 0) iy += head->ih;
+      iy %= head->ih;
 
-      if (ox < 0 || ox >= head->ow || oy < 0 || oy >= head->oh) {
-        *outip = -1;
-        *wip = -1;
-        return true;
-      }
+      int ox = shl(ix, head->s) + rx;
+      int oy = shl(iy, head->s) + ry;
+
+//      if (ox < 0 || ox >= head->ow || oy < 0 || oy >= head->oh) {
+//        *outip = -1;
+//        *wip = -1;
+//        return true;
+//      }
 
       *outip = oz + head->oc * (ox + head->ow * oy);
       *wip = rxy + s2 * s2 * (oz + head->oc * (iz + head->ic * (dx0 + d21 * (dy0))));

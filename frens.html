@@ -1,0 +1,197 @@
+<html>
+<head>
+<title>makemore peaple / frens</title>
+
+<meta property='og:title' content='frens of $NOM'>
+<meta property='og:description' content='frens of $NOM'>
+<meta property='og:image' content='https://peaple.io/$NOM.png'>
+<meta property='og:image:type' content='image/png'>
+<meta property='og:image:width' content='256'>
+<meta property='og:image:height' content='256'>
+<meta property='og:url' content='https://peaple.io/$NOM/frens'>
+<meta property='og:type' content='article'>
+<link rel='canonical' href='https://peaple.io/$NOM/frens'>
+
+
+
+<script src="/gennom.js"></script>
+
+<script src="/autocomplete.js"></script>
+<link rel="stylesheet" type="text/css" href="/autocomplete.css">
+
+
+<script>
+
+function get_nom() {
+  var nom = window.location.pathname;
+  nom = nom.substr(1);
+  var slash = nom.indexOf('/');
+  nom = nom.substr(0, slash);
+  return nom;
+}
+
+function randstr() {
+  return "" + Math.floor(Math.random() * 1000000000);
+}
+
+function httpget(url, cb) {
+  var i = new XMLHttpRequest;
+  i.open('GET', url);
+  i.overrideMimeType("text/plain");
+  i.onload = function(e) {
+    if (!(this.readyState == 4 && this.status == 200)) {
+      return;
+    }
+    cb(this.responseText);
+  }
+  i.send();
+}
+
+function reloadpic() {
+  piclink.href = "/" + window.nom + "/xform";
+  pic.src = "/" + window.nom + ".png" + "?r=" + randstr();
+}
+
+function reloadfrens() {
+  httpget("/" + window.nom + ".json", function(txt) {
+    // json.innerHTML = "<pre>" + txt + "</pre>";
+    var attrs = JSON.parse(txt);
+    upfrenlist(attrs.frens);
+  });
+}
+
+var maxfrens = 13;
+var frencols = 3;
+
+function onload() {
+  window.nom = get_nom();
+  window.frens = [ ];
+
+  reloadpic();
+  reloadfrens();
+}
+
+function make_frenlist() {
+  document.write("<table cellpadding=0 cellspacing=0>");
+
+  for (var i = 0; i < maxfrens; ++i) {
+    if (i % frencols == 0) {
+      document.write("<tr>");
+    }
+
+    document.write(
+      "<td id='frentd" + i + "'>" + 
+        "<a id='frenlink" + i + "'>" +
+          "<img width=128 height=128 id='fren" + i + "' " +
+          ">" +
+        "</a>" +
+      "</td>"
+    );
+
+    if (i % frencols == frencols - 1) {
+      document.write("</tr>");
+    }
+  }
+  if (maxfrens % frencols) {
+    document.write("</tr>");
+  }
+
+  document.write("</table>");
+}
+
+function upfrenlist(frens) {
+  window.frens = frens;
+
+  for (var i = 0; i < frens.length && i < maxfrens; ++i) {
+    var td = document.getElementById("frentd" + i);
+    var img = document.getElementById("fren" + i);
+    var link = document.getElementById("frenlink" + i);
+    link.href = "/" + frens[i] + "/frens";
+    img.src = "/" + frens[i] + ".png" + "?dim=128&" ;// + "r=" + randstr();
+    td.style.visibility = 'visible';
+  }
+  for (var i = frens.length; i < maxfrens; ++i) {
+    var td = document.getElementById("frentd" + i);
+    td.style.visibility = 'hidden';
+  }
+}
+
+function addfren() {
+  if (!frenbuf.value)
+    frenbuf.value = gennom();
+
+  var fren = frenbuf.value;
+
+  httpget("/edit?op=addfren&nom=" + window.nom + "&fren=" + fren, function(txt) {
+    reloadfrens();
+    frenbuf.value = '';
+  });
+}
+
+</script>
+</head>
+
+<body text="#ffffff" bgcolor="#000000" onload="onload()">
+
+$HEADER
+
+
+
+<table width=1280 cellpadding=0 cellspacing=0>
+  <tr valign="top">
+    <td width=530>
+
+
+
+
+<form autocomplete="off">
+  <div class="autocomplete">
+    <input type="text" size="32" id="frenbuf" placeholder="nom" style='font-size: large'>
+    <script>autocomplete(document.getElementById('frenbuf'), function() { addfren() });</script>
+  </div>
+&nbsp;
+    <img align=center width=168 height=24 style="outline: 3px solid blue" src="/images/addfren.png"
+      onClick="addfren()" >
+<!--
+  <input type="button" style='font-size: large' value="addfren" onClick="addfren()">
+-->
+</form>
+  <br/>
+
+
+
+
+
+<!--
+      <span style="padding: 2px; background-color: gray"><img id="addfrenbutton" onClick="addfren()" src="/images/add_fren.png"></span>
+      <img id="gennombutton" onClick="frenbuf.value = gennom()" src="/images/gen_nom.png">
+-->
+      <br/><br/>
+
+      <!-- <img src="/images/frens.png"><br/><br/> -->
+
+      <script>make_frenlist()</script>
+    </td>
+    <td align=center>
+      <table cellpadding=0 cellspacing=0>
+        <tr>
+          <td colspan=4>
+            <a id="piclink">
+              <img id="pic" width="512" height="512">
+            </a>
+          </td>
+        </tr>
+      </table>
+
+    </td>
+  </tr>
+</table>
+
+<br/>
+
+<!-- <div style="background-color: white" id="json"></div> -->
+
+<br/>
+
+</body>
+</html>

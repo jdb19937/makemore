@@ -307,6 +307,36 @@ void PPM::make(unsigned int _w, unsigned int _h, uint8_t v) {
     data[i] = v;
 }
 
+void PPM::pastealpha(const uint8_t *vec, const uint8_t *a, unsigned int vw, unsigned int vh, unsigned int x0, unsigned int y0) {
+  // assert(y0 + vh <= h);
+  // assert(x0 + vw <= w);
+
+  unsigned int i = 0;
+  for (unsigned int vy = 0; vy < vh; ++vy) {
+    unsigned int y = y0 + vy;
+    unsigned int yw3 = y * w * 3;
+
+    for (unsigned int vx = 0; vx < vw; ++vx) {
+      unsigned int x = x0 + vx;
+      unsigned int x3 = x * 3;
+
+      if (x < w && y < h) {
+        double ax = (double)a[i / 3] / 255.0;
+
+//ax = (ax - 0.5) / 0.01;
+if (ax > 1) ax = 1;
+if (ax < 0) ax = 0;
+
+        data[yw3 + x3 + 0] = data[yw3 + x3 + 0] * (1 - ax) + ax * vec[i + 0];
+        data[yw3 + x3 + 1] = data[yw3 + x3 + 1] * (1 - ax) + ax * vec[i + 1];
+        data[yw3 + x3 + 2] = data[yw3 + x3 + 2] * (1 - ax) + ax * vec[i + 2];
+      }
+
+      i += 3;
+    }
+  }
+}
+
 void PPM::pastelab(const double *vec, unsigned int vw, unsigned int vh, unsigned int x0, unsigned int y0) {
   assert(y0 + vh <= h);
   assert(x0 + vw <= w);
@@ -354,8 +384,8 @@ void PPM::pastelab(const uint8_t *vec, unsigned int vw, unsigned int vh, unsigne
 }
 
 void PPM::paste(const uint8_t *vec, unsigned int vw, unsigned int vh, unsigned int x0, unsigned int y0) {
-  assert(y0 + vh <= h);
-  assert(x0 + vw <= w);
+//  assert(y0 + vh <= h);
+//  assert(x0 + vw <= w);
 
   unsigned int i = 0;
   for (unsigned int vy = 0; vy < vh; ++vy) {
@@ -366,9 +396,11 @@ void PPM::paste(const uint8_t *vec, unsigned int vw, unsigned int vh, unsigned i
       unsigned int x = x0 + vx;
       unsigned int x3 = x * 3;
 
+if (x < w && y < h) {
       data[yw3 + x3 + 0] = vec[i + 0];
       data[yw3 + x3 + 1] = vec[i + 1];
       data[yw3 + x3 + 2] = vec[i + 2];
+}
 
       i += 3;
     }

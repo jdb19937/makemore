@@ -223,7 +223,7 @@ void Supergen::burn(const class Partrait &prt, double pi, Superdis *dis) {
 //fprintf(stderr, "sc=%lf\n", sc);
   dis->burn(1.0, 0.0);
 
-  double reinf = 8e-3;
+  double reinf = 1e-4;
 //  double reinf = 2e-4;
   {
     rgblab(prt.rgb, 256 * 256 * 3, tgtbuf);

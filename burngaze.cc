@@ -64,7 +64,7 @@ Partrait *par = new Partrait;
       prt.set_mark(mark);
     }
 
-    ag->observe(prt, 0.00003);
+    ag->observe(prt, 0.00001);
 
     ++i;
     if (i % 100 == 0) {

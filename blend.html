@@ -1,0 +1,339 @@
+<html>
+<head>
+<title>makemore peaple / doc</title>
+
+<meta property='og:title' content='blend $NOM'>
+<meta property='og:description' content='blend $NOM'>
+<meta property='og:image' content='https://peaple.io/$NOM.png'>
+<meta property='og:image:type' content='image/png'>
+<meta property='og:image:width' content='256'>
+<meta property='og:image:height' content='256'>
+<meta property='og:url' content='https://peaple.io/$NOM/blend'>
+<meta property='og:type' content='article'>
+<link rel='canonical' href='https://peaple.io/$NOM/blend'>
+
+
+
+<script src="/autocomplete.js"></script>
+<link rel="stylesheet" type="text/css" href="/autocomplete.css">
+
+
+<script src="/gennom.js"></script>
+
+<script>
+
+function get_nom() {
+  var nom = window.location.pathname;
+  nom = nom.substr(1);
+  var slash = nom.indexOf('/');
+  nom = nom.substr(0, slash);
+  return nom;
+}
+
+window.nom = get_nom();
+
+function randstr() {
+  return "" + Math.floor(Math.random() * 1000000000);
+}
+
+function httpget(url, cb) {
+  var i = new XMLHttpRequest;
+  i.open('GET', url);
+  i.overrideMimeType("text/plain");
+  i.onload = function(e) {
+    if (!(this.readyState == 4 && this.status == 200)) {
+      return;
+    }
+    cb(this.responseText);
+  }
+  i.send();
+}
+
+function reloadpic() {
+  piclink.href = "/" + window.nom + "/mob";
+  pic.src = "/" + window.nom + ".png" + "?r=" + randstr();
+
+if (0) {
+  var f = function(v, r) {
+    v.onclick = function() { addvecr(window.nom, r, 1) }
+    v.src = "/" + window.nom + ".png" + "?dim=128&vdev=1&r=" + r;
+  }
+
+  f(var0, randstr());
+  f(var1, randstr());
+  f(var2, randstr());
+  f(var3, randstr());
+}
+}
+
+function pushcelebs(k) {
+  var ntags = new Array(k);
+  for (var i = 0; i < k; ++i) {
+    ntags[i] = gencelebnom();
+  }
+  pushtags(ntags);
+}
+
+function pushrandoms(k) {
+  var ntags = new Array(k);
+  for (var i = 0; i < k; ++i) {
+    ntags[i] = gennom();
+  }
+  pushtags(ntags);
+}
+
+function pushvariants(k) {
+  var ntags = new Array(k);
+  for (var i = 0; i < k; ++i) {
+    ntags[i] = genfnom() + "_" + window.nom;
+  }
+  pushtags(ntags);
+}
+
+function pushsamples(tag, k) {
+  if (tag == "real") {
+    pushcelebs(k);
+    return;
+  }
+  if (tag == "self") {
+    pushvariants(k);
+    return;
+  }
+  if (tag == "rand" || tag == "") {
+    pushrandoms(k);
+    return;
+  }
+
+  var ntags = new Array(k);
+  for (var i = 0; i < k; ++i) {
+    ntags[i] = genfnom() + "_" + tag;
+  }
+  pushtags(ntags);
+}
+
+
+function pushtags(ntags) {
+  var k = ntags.length;
+
+  for (var i = tags.length - k - 1; i >= 0; --i) {
+    var ti0 = document.getElementById('tag' + i);
+    var ti1 = document.getElementById('tag' + (i + k));
+    ti1.src = ti0.src;
+    tags[i + k] = tags[i];
+  }
+
+  for (var i = 0; i < k; ++i) {
+    if (ntags[i] == "") {
+      ntags[i] = gennom();
+    }
+    window.tags[i] = ntags[i];
+    document.getElementById('tag' + i).src = "/" + ntags[i] + ".png?dim=128";
+  }
+}
+
+function make_taglist() {
+  window.tags = new Array(24);
+  var tags = window.tags;
+
+  for (var i = 0; i < tags.length; ++i) {
+//    if (Math.random() < 0.5) {
+//      tags[i] = gennom();
+//    } else {
+      tags[i] = gencelebnom();
+//    }
+  }
+
+  var cols = 4;
+
+  document.write("<table cellpadding=0 cellspacing=0>");
+  for (var i = 0; i < tags.length; ++i) {
+    if (i % cols == 0) {
+      document.write("<tr>");
+    }
+    document.write(
+      "<td id='tagtd" + i + "'>" + 
+          "<img width=128 height=128 " + 
+            "id='tag" + i + "' " +
+            "src='/" + tags[i] + ".png?dim=128' " +
+            "onClick='addtvec(" + i + ")' " +
+          ">" +
+      "</td>"
+    );
+    if (i % cols == cols - 1) {
+      document.write("</tr>");
+    }
+  }
+
+  if (tags.length % cols) {
+    document.write("</tr>");
+  }
+
+  document.write("</table>");
+}
+
+function scramble() {
+  httpget("/edit?op=scramble&nom=" + window.nom, function(txt) {
+    reloadpic();
+  });
+}
+
+function tone(mul) {
+  httpget("/edit?op=tone&nom=" + window.nom + "&mul=" + mul, function(txt) {
+    reloadpic();
+  });
+}
+
+function addvecr(vec, r, vdev) {
+  var mul = window.mul;
+  // if (event.shiftKey)
+  //   mul = -mul;
+
+  httpget("/edit?op=addvec2&nom=" + nom + "&vec=" + vec + "&mul=" + mul + "&r=" + r + "&vdev=" + vdev, function(txt) {
+    reloadpic();
+  });
+}
+
+function addtvec(ti) {
+  addvecr(window.tags[ti], 0, 0)
+}
+
+
+
+function addfvec(i) {
+  addvec(window.frens[i]);
+}
+
+</script>
+</head>
+
+<body text="#ffffff" bgcolor="#000000">
+
+$HEADER
+
+<table width=1280>
+
+
+
+  <tr valign="top">
+    <td align=center>
+
+      <div id="picdiv">
+        <a id="piclink"><img id="pic" width="512" height="512"></a>
+      </div>
+       
+
+      <br/>
+
+<!--
+      <div id="vardiv">
+        <table cellpadding=0 cellspacing=0>
+          <tr>
+            <td><a id="var0link"><img id="var0" width="128" height="128"></a></td>
+            <td><a id="var1link"><img id="var1" width="128" height="128"></a></td>
+            <td><a id="var2link"><img id="var2" width="128" height="128"></a></td>
+            <td><a id="var3link"><img id="var3" width="128" height="128"></a></td>
+          </tr>
+        </table>
+      </div>
+-->
+
+      <script>reloadpic()</script>
+    </td>
+
+    <td align="right">
+
+<table>
+
+
+
+
+<tr><td>
+<form autocomplete="off">
+  <div class="autocomplete">
+    <input type="text" size="32" id="pushnom" placeholder="nom" style='font-size: large'>
+    <script>autocomplete(document.getElementById('pushnom'), function() { pushtags([pushnom.value]) });</script>
+  </div>
+&nbsp;
+    <img align=center width=168 height=24 style="outline: 3px solid blue" src="/images/pushnom.png"
+      onClick="pushtags([pushnom.value])" >
+
+<!--
+      <input type="button" onClick="pushtags([pushnom.value])" style='font-size: large' value="pushnom">
+-->
+
+</form>
+</td></tr>
+
+
+
+
+<tr><td>
+<form autocomplete="off">
+  <div class="autocomplete">
+    <input type="text" size="32" id="pushfam" placeholder="fam" value="real" style='font-size: large'>
+    <script>autocomplete(document.getElementById('pushfam'), function() { pushsamples(pushfam.value, 4) });</script>
+  </div>
+<!--
+      <input type="button" onClick="pushsamples(pushfam.value, 4)" style='font-size: large' value="pushfam(4)">
+-->
+
+&nbsp;
+    <img align=top width=168 height=24 style="outline: 3px solid blue" src="/images/pushfam.png"
+      onClick="pushsamples(pushfam.value, 4)" 
+    />
+    
+
+</form>
+</td></tr>
+
+
+
+<!--
+      <input type="button" onClick="pushsamples(pushnom.value, 4)" style='font-size: large' value="pushfam(4)">
+      <input type="button" onClick="pushcelebs(4)" style='font-size: large' value="pushcelebs">
+      <input type="button" onClick="pushrandoms(4)" style='font-size: large' value="pushrandoms">
+      <input type="button" onClick="pushvariants(4)" style='font-size: large' value="pushvariants">
+-->
+
+
+
+
+    <tr>
+    <td align="left">
+    <script>
+      var sw = 512;
+      var sh = 40;
+      function clickslider() {
+        sliderbar.style.width = event.offsetX;
+        window.mul = event.offsetX / (sw - 8);
+      }
+    </script>
+    <div id=slidewrap onClick="clickslider()" id="slider" style="border-style: solid; border-width: 4px; border-color: gray">
+    <div id="sliderbar" style="background-color: blue"></div>
+    <script>
+      window.mul = 0.33;
+      slidewrap.style.width = sw;
+      sliderbar.style.width = window.mul * (sw - 8);
+      slidewrap.style.height = sh;
+      sliderbar.style.height = sh - 8;
+    </script>
+    </div>
+  </td></tr>
+
+
+
+<tr><td>
+
+      <div style="border-style: solid; border-color: black; border-width: 2">
+        <script>make_taglist()</script>
+      </div>
+</td></tr></table>
+
+    </td>
+  </tr>
+</table>
+
+<br/>
+
+</body>
+</html>

@@ -82,6 +82,7 @@ Cholo::Cholo(unsigned int _dim) : dim(_dim) {
 Cholo::~Cholo() {
   cufree(cov);
   cufree(chol);
+  cufree(unchol);
   cufree(mean);
   cufree(var);
   cufree(in);

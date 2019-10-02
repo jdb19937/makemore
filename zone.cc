@@ -119,6 +119,14 @@ Zone::Zone(const std::string &_fn) {
   assert(map != MAP_FAILED);
 
   db = (Parson *)map;
+
+  ac = new Autocompleter;
+  for (unsigned int i = 0; i < n; ++i) {
+    Parson *prs = db + i;
+    if (!prs->revised)
+      continue;
+    ac->add(prs->nom);
+  }
 }
 
 Zone::~Zone() {
@@ -221,8 +229,10 @@ Parson *Zone::make(const Parson &x, bool *evicted, Parson *evictee) {
   for (unsigned int j = 0; j < nvariants; ++j) {
     Parson *cand = db + Parson::hash_nom(x.nom, j) % n;
 
-    if (!strcmp(cand->nom, x.nom))
+    if (!strcmp(cand->nom, x.nom)) {
+      memcpy(cand, &x, sizeof(Parson));
       return cand;
+    }
 
     double act = cand->activity();
     act_cand.insert(make_pair(act, cand));

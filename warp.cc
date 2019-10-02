@@ -281,6 +281,7 @@ void kwarpover(const uint8_t *src,
       if (alphasrc)
         a = alphasrc[ry0 * w + rx0] / 256.0;
 //a = (a - 0.5) / 0.4;
+//a = (a - 0.5) / 0.01;
 a = (a - 0.2) / 0.6;
 if (a > 1.0) a = 1.0; 
 if (a < 0.0) a = 0.0;

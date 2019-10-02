@@ -200,7 +200,7 @@ function fresh() {
 
   // document.getElementById('overlay').style.backgroundImage = 'url(/pic.png?' + which + ')';
   var pic = document.getElementById('pic');
-  pic.onload = function() { window.nw = pic.naturalWidth };
+  pic.onload = function() { window.nw = pic.naturalWidth; uptags() };
   pic.src = '/pic.png?' + which;
 
   var obj = { Title: which, Url: "/tagger.html?" + which };

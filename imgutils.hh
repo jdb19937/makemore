@@ -75,6 +75,13 @@ inline void rgbalaba(const uint8_t *rgb, const uint8_t *a, unsigned int n, doubl
   }
 }
 
+inline void rgblaba(const uint8_t *rgb, unsigned int n, double *laba) {
+  for (unsigned int i = 0; i < n; i++) {
+    rgbtolab(rgb[3*i+0], rgb[3*i+1], rgb[3*i+2], &laba[4*i+0], &laba[4*i+1], &laba[4*i+2]);
+    laba[4*i+3] = 1.0;
+  }
+}
+
 inline void labrgb(const double *lab, unsigned int n, uint8_t *rgb) {
   assert(n % 3 == 0);
   for (unsigned int i = 0; i < n; i += 3) {
@@ -160,6 +167,7 @@ bool pnglab(
   std::vector<std::string> *tags = NULL
 );
 
+void padshift(const uint8_t *in, unsigned int w, unsigned int h, int dx, int dy, uint8_t *out, unsigned int nc = 1);
 
 }
 

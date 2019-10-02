@@ -7,7 +7,7 @@
 #include "cudamem.hh"
 #include "numutils.hh"
 #include "imgutils.hh"
-#include "encoder.hh"
+#include "superenc.hh"
 #include "cholo.hh"
 #include "strutils.hh"
 #include "partrait.hh"
@@ -21,8 +21,15 @@ using namespace std;
 int main(int argc, char **argv) {
   seedrand();
 
+  bool reflect = 0;
+  if (argc > 1 && !strcmp(argv[1], "--reflect")) {
+    reflect = 1;
+    ++argv;
+    --argc;
+  }
+
   unsigned int mbn = 1;
-  Encoder enc("newenc.proj", mbn);
+  Superenc enc("nenc.proj", mbn);
 //  Generator gen("gen.shampane.proj", mbn);
   unsigned int w = 256, h = 256;
 
@@ -30,7 +37,7 @@ int main(int argc, char **argv) {
   Zone zone(argv[1]);
 
 //  assert(gen.tgtlay->n == w * h * 3);
-  assert(enc.tgtlay->n == w * h * 3);
+//  assert(enc.tgtlay->n == w * h * 3);
 
 fprintf(stderr, "starting\n");
 
@@ -46,7 +53,10 @@ Partrait *par = new Partrait;
     Partrait prt;
     prt.load(fn);
 
-    enc.encode(prt, prs);
+    if (reflect)
+      prt.reflect();
+
+    enc.encode(prt, prs->controls);
 
     prs->revised = time(NULL);
 
@@ -60,6 +70,7 @@ Partrait *par = new Partrait;
 //    prs->recon_err = sqrt(cusumsq(gen.gen->foutput(), gen.tgtlay->n) / (double)gen.tgtlay->n);
 //fprintf(stdout, "%s\t%lf\t%lf\t%lf\n", prs->srcfn, prs->recon_err, prs->stretch, prs->skew);
 //fflush(stdout);
+fprintf(stderr, "%s\n", prs->srcfn);
 
     ++i;
   }
