@@ -1,6 +1,6 @@
 <html>
 <head>
-<title>makemore peaple / doc</title>
+<title>makemore peaple / blend $NOM</title>
 
 <meta property='og:title' content='blend $NOM'>
 <meta property='og:description' content='blend $NOM'>
@@ -50,7 +50,7 @@ function httpget(url, cb) {
 }
 
 function reloadpic() {
-  piclink.href = "/" + window.nom + "/mob";
+  piclink.href = "/" + window.nom + "/xform";
   pic.src = "/" + window.nom + ".png" + "?r=" + randstr();
 
 if (0) {
@@ -86,6 +86,7 @@ function pushvariants(k) {
   var ntags = new Array(k);
   for (var i = 0; i < k; ++i) {
     ntags[i] = genfnom() + "_" + window.nom;
+ if (ntags[i].length > 31) { ntags[i] = window.nom; } 
   }
   pushtags(ntags);
 }
@@ -103,10 +104,18 @@ function pushsamples(tag, k) {
     pushrandoms(k);
     return;
   }
+  if (tag == "frens" || tag == "fren") {
+    httpget("/" + window.nom + ".json", function(txt) {
+      var attrs = JSON.parse(txt);
+      pushtags(attrs.frens);
+    });
+    return;
+  }
 
   var ntags = new Array(k);
   for (var i = 0; i < k; ++i) {
     ntags[i] = genfnom() + "_" + tag;
+if (ntags[i].length > 31) { ntags[i] = tag; }
   }
   pushtags(ntags);
 }
@@ -124,7 +133,7 @@ function pushtags(ntags) {
 
   for (var i = 0; i < k; ++i) {
     if (ntags[i] == "") {
-      ntags[i] = gennom();
+      ntags[i] = gencelebnom();
     }
     window.tags[i] = ntags[i];
     document.getElementById('tag' + i).src = "/" + ntags[i] + ".png?dim=128";
@@ -155,7 +164,7 @@ function make_taglist() {
           "<img width=128 height=128 " + 
             "id='tag" + i + "' " +
             "src='/" + tags[i] + ".png?dim=128' " +
-            "onClick='addtvec(" + i + ")' " +
+            "onClick='onc(" + i + ")' " +
           ">" +
       "</td>"
     );
@@ -195,6 +204,14 @@ function addvecr(vec, r, vdev) {
 
 function addtvec(ti) {
   addvecr(window.tags[ti], 0, 0)
+}
+
+function onc(i) {
+  if (event.shiftKey) {
+    pushsamples(window.tags[i], 4)
+  } else {
+    addtvec(i);
+  }
 }
 
 
@@ -247,15 +264,76 @@ $HEADER
 
 
 
+<!--
+
+<tr><td align=right>
+<form autocomplete="off">
+
+
+<select name=pushfam style='font-size: large'>
+<option>real
+<option value="">rand
+<option>self
+<option>fren
+<option>human
+<option>male
+<option>female
+<option>white
+<option>black
+<option>asian
+<option>hispanic
+<option>blonde_hair
+<option>brown_hair
+<option>black_hair
+<option>gray_hair
+<option>bald
+<option>mustache
+<option>glasses
+<option>smiling
+<option>old
+<option>young
+<option>bengal
+<option>birman
+<option>bombay
+<option>maine_coon
+<option>persian
+<option>ragdoll
+<option>british_shorthair
+<option>russian_blue
+<option>basset_hound
+<option>beagle
+<option>havanese
+<option>keeshond
+<option>pomeranian
+<option>shiba_inu
+<option>yorkshire_terrier
+</select>
+
+
+
+&nbsp;
+    <img align=top width=168 height=24 style="outline: 3px solid blue" src="/images/pushfam.png"
+      onClick="pushsamples(pushfam.value, 4)" 
+    />
+    
+
+</form>
+</td></tr>
+
+-->
+
+
+
 <tr><td>
 <form autocomplete="off">
   <div class="autocomplete">
-    <input type="text" size="32" id="pushnom" placeholder="nom" style='font-size: large'>
+    <input type="text" size="32" id="pushnom" value="" placeholder="nom" style='font-size: large'>
     <script>autocomplete(document.getElementById('pushnom'), function() { pushtags([pushnom.value]) });</script>
   </div>
 &nbsp;
     <img align=center width=168 height=24 style="outline: 3px solid blue" src="/images/pushnom.png"
       onClick="pushtags([pushnom.value])" >
+
 
 <!--
       <input type="button" onClick="pushtags([pushnom.value])" style='font-size: large' value="pushnom">
@@ -267,24 +345,6 @@ $HEADER
 
 
 
-<tr><td>
-<form autocomplete="off">
-  <div class="autocomplete">
-    <input type="text" size="32" id="pushfam" placeholder="fam" value="real" style='font-size: large'>
-    <script>autocomplete(document.getElementById('pushfam'), function() { pushsamples(pushfam.value, 4) });</script>
-  </div>
-<!--
-      <input type="button" onClick="pushsamples(pushfam.value, 4)" style='font-size: large' value="pushfam(4)">
--->
-
-&nbsp;
-    <img align=top width=168 height=24 style="outline: 3px solid blue" src="/images/pushfam.png"
-      onClick="pushsamples(pushfam.value, 4)" 
-    />
-    
-
-</form>
-</td></tr>
 
 
 

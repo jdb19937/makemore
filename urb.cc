@@ -181,7 +181,7 @@ fprintf(stderr, "found %s\n", nom.c_str());
 
   for (unsigned int k = 0; k < Parson::ncontrols; ++k) {
     parson.controls[k] = randgauss() * dev;
-    parson.variations[k] = 0.001;
+    parson.variations[k] = 1.0;
   }
 
   {

@@ -61,7 +61,7 @@ function reloadfrens() {
 }
 
 var maxfrens = 13;
-var frencols = 3;
+var frencols = 4;
 
 function onload() {
   window.nom = get_nom();
@@ -69,6 +69,20 @@ function onload() {
 
   reloadpic();
   reloadfrens();
+}
+
+function onc(i) {
+  var f = window.frens[i];
+  if (window.tool == "goto") {
+    window.location = "/" + f + "/frens";
+    return;
+  }
+
+  if (window.tool == "bread") {
+    httpget("/edit?op=bread&nom=" + window.nom + "&vec=" + f, function(txt) {
+      reloadfrens();
+    });
+  }
 }
 
 function make_frenlist() {
@@ -81,10 +95,8 @@ function make_frenlist() {
 
     document.write(
       "<td id='frentd" + i + "'>" + 
-        "<a id='frenlink" + i + "'>" +
-          "<img width=128 height=128 id='fren" + i + "' " +
+          "<img width=128 height=128 onClick='onc(" + i + ")' id='fren" + i + "' " +
           ">" +
-        "</a>" +
       "</td>"
     );
 
@@ -106,7 +118,6 @@ function upfrenlist(frens) {
     var td = document.getElementById("frentd" + i);
     var img = document.getElementById("fren" + i);
     var link = document.getElementById("frenlink" + i);
-    link.href = "/" + frens[i] + "/frens";
     img.src = "/" + frens[i] + ".png" + "?dim=128&" ;// + "r=" + randstr();
     td.style.visibility = 'visible';
   }
@@ -184,6 +195,62 @@ $HEADER
       </table>
 
     </td>
+
+<td align=right>
+
+<table><tr><td>
+<table>
+    <tr><td align=right height="36"><img onClick="clicktool('goto')" id="gotobutton" src="/images/goto.png"> </td></tr>
+    <tr><td align=right height="36"><img onClick="clicktool('bread')" id="breadbutton" src="/images/bread.png"> </td></tr>
+</table>
+
+
+
+<script>
+function clicktool(t) {
+  breadbutton.style.outline = "";
+  gotobutton.style.outline = "";
+
+  var but = document.getElementById(t + "button");
+  but.style.outline = "3px solid #00ff00";
+  window.tool = t;
+}
+clicktool('goto');
+</script>
+
+
+</td></tr>
+<tr><td height="16"></td></tr>
+<tr>
+<td valign="top" height="320" style="outline: 3px solid blue; color: white">
+/\/\/\/\/\/\/\/\/\/\/\/\/\/\ <br/>
+/\/\/\/\/\/\/\/\/\/\/\/\/\/\  <br/>
+/\/\/\/\/\/\/\/\/\/\/\/\/\/\ <br/>
+/\/\/\/\/\/\/\/\/\/\/\/\/\/\ <br/>
+/\/\/\/\/\/\/\/\/\/\/\/\/\/\ <br/>
+/\/\/\/\/\/\/\/\/\/\/\/\/\/\ <br/>
+/\/\/\/\/\/\/\/\/\/\/\/\/\/\ <br/>
+/\/\/\/\/\/\/\/\/\/\/\/\/\/\ <br/>
+/\/\/\/\/\/\/\/\/\/\/\/\/\/\ <br/>
+/\/\/\/\/\/\/\/\/\/\/\/\/\/\ <br/>
+/\/\/\/\/\/\/\/\/\/\/\/\/\/\ <br/>
+/\/\/\/\/\/\/\/\/\/\/\/\/\/\ <br/>
+/\/\/\/\/\/\/\/\/\/\/\/\/\/\ <br/>
+/\/\/\/\/\/\/\/\/\/\/\/\/\/\ <br/>
+/\/\/\/\/\/\/\/\/\/\/\/\/\/\ <br/>
+/\/\/\/\/\/\/\/\/\/\/\/\/\/\ <br/>
+/\/\/\/\/\/\/\/\/\/\/\/\/\/\ <br/>
+/\/\/\/\/\/\/\/\/\/\/\/\/\/\ <br/>
+/\/\/\/\/\/\/\/\/\/\/\/\/\/\ <br/>
+/\/\/\/\/\/\/\/\/\/\/\/\/\/\ <br/>
+/\/\/\/\/\/\/\/\/\/\/\/\/\/\ <br/>
+/\/\/\/\/\/\/\/\/\/\/\/\/\/\ <br/>
+</td>
+</tr>
+</table>
+
+
+</td>
   </tr>
 </table>
 

@@ -4,7 +4,7 @@ LAYOUTS = seginput.lay segoutput.lay
 
 TOPOLOGIES = seg.top
 
-MAPFILES = seg.map
+MAPFILES = seg.map reseg.map
 
 BINDIR = ..
 
@@ -33,6 +33,8 @@ seg.top: seghidden1.wire seghidden2.wire seghidden3.wire segoutput.wire
 	$(BINDIR)/maketop $^ > $@
 seg.map: seg.top
 	$(BINDIR)/makemap --dispersion 3 seg.top seg.map
+reseg.map: seg.top
+	$(BINDIR)/makemap --dispersion 3 seg.top reseg.map
 
 clean:
 	rm -f *.lay *.wire *.top *.map

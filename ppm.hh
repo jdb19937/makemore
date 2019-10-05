@@ -68,6 +68,7 @@ struct PPM {
   void write_jpeg(std::string *);
 
   double centerlight();
+  void rotl();
 };
 
 }

@@ -751,6 +751,13 @@ fprintf(stderr, "req=[%s]\n", req.c_str());
     valid.insert("createdby.png");
     valid.insert("frens.png");
     valid.insert("add_to_cart.png");
+valid.insert("plus.png");
+valid.insert("minus.png");
+valid.insert("spawn.png");
+valid.insert("bread.png");
+valid.insert("mash.png");
+valid.insert("blend.png");
+valid.insert("goto.png");
 
     valid.insert("rand.png");
     valid.insert("file.png");
@@ -942,7 +949,34 @@ fprintf(stderr, "req=[%s]\n", req.c_str());
       for (unsigned int j = 0; j < Parson::ncontrols; ++j)
         parson->controls[j] *= mul;
       txt = "ok, toned " + nom;
+    } else if (op == "norm") {
+      double val = 1.0;
+      if (cgi["val"] != "")
+        val = strtod(cgi["val"].c_str(), NULL);
+
+      double q = 0;
+
+      for (unsigned int j = 0; j < Parson::ncontrols; ++j)
+        q += parson->controls[j] * parson->controls[j];
+      q /= Parson::ncontrols;
+      q = sqrt(q);
+
+      if (q < 1e-6)
+        q = 1e-6;
+      q = 1.0 / q; 
+      q *= val;
+
+      for (unsigned int j = 0; j < Parson::ncontrols; ++j) {
+        parson->controls[j] *= q;
+//        parson->variations[j] *= q;
+      }
+
+      txt = "ok, normed " + nom;
     } else if (op == "addvec") {
+      double val = 0.0;
+      if (cgi["val"] != "")
+        val = strtod(cgi["val"].c_str(), NULL);
+
       double mul = 1.0;
       if (cgi["mul"] != "")
         mul = strtod(cgi["mul"].c_str(), NULL);
@@ -974,13 +1008,34 @@ fprintf(stderr, "req=[%s]\n", req.c_str());
                vbg = (vbk - 1.0) / (vb - 1.0);
             }
             parson->controls[j] = vbk * ma + vbg * mb;
+
             parson->variations[j] = va * vbk;
+
+            // parson->variations[j] = (1.0 - mul) * va + mul * (vb + (ma - mb) * (ma - mb));
+
+            // parson->variations[j] = (1.0 - mul) * va + mul * ((ma - mb) * (ma - mb));
           }
         }
       }
 
-      txt = "ok, addveced " + nom;
-    } else if (op == "addvec2") {
+      double q = 0;
+      for (unsigned int j = 0; j < Parson::ncontrols; ++j)
+        q += parson->controls[j] * parson->controls[j];
+      q /= Parson::ncontrols;
+      q = sqrt(q);
+
+      if (val > 0) {
+        for (unsigned int j = 0; j < Parson::ncontrols; ++j) {
+           parson->controls[j]   *= val / q;
+//           parson->variations[j] *= val / q;
+        }
+        q = val;
+      }
+
+      char buf[256];
+      sprintf(buf, "%lf", q);
+      txt = buf;
+    } else if (op == "blend") {
       double mul = 1.0;
       if (cgi["mul"] != "")
         mul = strtod(cgi["mul"].c_str(), NULL);
@@ -1003,14 +1058,57 @@ fprintf(stderr, "req=[%s]\n", req.c_str());
             double vb = vec->variations[j];
             double mb = vec->controls[j] + randgauss() * sqrt(vb) * vdev;
             parson->controls[j] = (1.0 - mul) * ma + mul * mb;
-            parson->variations[j] = (1.0 - mul) * va + mul * (vb + (ma - mb) * (ma - mb));
-            // parson->variations[j] = (1.0 - mul) * va + mul * ((ma - mb) * (ma - mb));
+            // parson->variations[j] = (1.0 - mul) * va + mul * (vb + (ma - mb) * (ma - mb));
+            parson->variations[j] = (1.0 - mul) * va + mul * ((ma - mb) * (ma - mb));
           }
         }
       }
 
-      txt = "ok, addveced " + nom;
-    } else if (op == "recom") {
+      double q = 0;
+      for (unsigned int j = 0; j < Parson::ncontrols; ++j)
+        q += parson->controls[j] * parson->controls[j];
+      q /= Parson::ncontrols;
+      q = sqrt(q);
+
+      char buf[256];
+      sprintf(buf, "%lf", q);
+      txt = buf;
+    } else if (op == "bread") {
+      unsigned int r = randuint();
+      if (cgi["r"] != "")
+        r = strtoul(cgi["r"].c_str(), NULL, 0);
+
+      std::string childnom;
+      Parson *child;
+
+      if (Parson::valid_nom(cgi["vec"])) {
+        if (Parson *vec = server->urb->find(cgi["vec"])) {
+          seedrand(r);
+
+          childnom = Parson::bread_nom(parson->nom, vec->nom, randuint() % 2);
+          child = server->urb->make(childnom);
+
+          for (unsigned int j = 0; j < Parson::ncontrols; ++j) {
+            if (randuint() % 2) {
+              child->controls[j] = parson->controls[j];
+              child->variations[j] = parson->variations[j];
+            } else {
+              child->controls[j] = vec->controls[j];
+              child->variations[j] = vec->variations[j];
+            }
+          }
+
+          child->set_parens(parson->nom, vec->nom);
+          parson->add_fren(child->nom);
+          vec->add_fren(child->nom);
+
+          child->add_fren(parson->nom);
+          child->add_fren(vec->nom);
+        }
+      }
+
+      txt = childnom;
+    } else if (op == "mash") {
       double mul = 1.0;
       if (cgi["mul"] != "")
         mul = strtod(cgi["mul"].c_str(), NULL);
@@ -1018,12 +1116,23 @@ fprintf(stderr, "req=[%s]\n", req.c_str());
       if (Parson::valid_nom(cgi["vec"])) {
         if (Parson *vec = server->urb->find(cgi["vec"])) {
           for (unsigned int j = 0; j < Parson::ncontrols; ++j) {
-            if (randrange(0, 1) < mul)
+            if (randrange(0, 1) < mul) {
               parson->controls[j] = vec->controls[j];
+              parson->variations[j] = vec->variations[j];
+            }
           }
         }
       }
-      txt = "ok, addveced " + nom;
+
+      double q = 0;
+      for (unsigned int j = 0; j < Parson::ncontrols; ++j)
+        q += parson->controls[j] * parson->controls[j];
+      q /= Parson::ncontrols;
+      q = sqrt(q);
+
+      char buf[256];
+      sprintf(buf, "%lf", q);
+      txt = buf;
     } else if (op == "pickreal") {
       Supergen *gen = server->urb->get_gen(parson->gen);
       Zone *sks = gen->zone;
@@ -1171,12 +1280,16 @@ fprintf(stderr, "req=[%s]\n", req.c_str());
   }
 
   if (ext == "html") {
-  if (func == "edit" || func == "cam" || func == "file" || func == "fam" || func == "frens" || func == "xform" || func == "blend" || func == "mem" || func == "mob" || func == "grid") {
+  if (func == "cam" || func == "file" || func == "fam" || func == "frens" || func == "xform" || func == "blend" || func == "mem" || func == "mob") {
     std::string html = makemore::slurp(func + ".html");
 
     std::string header = makemore::slurp("header.html");
+    std::string url = "https://peaple.io/" + nom + "/" + func;
+    std::string escurl = "https%3A%2F%2Fpeaple.io%2F" + nom + "%2F" + func;
     html = replacestr(html, "$HEADER", header);
     html = replacestr(html, "$NOM", nom);
+    html = replacestr(html, "$URL", url);
+    html = replacestr(html, "$ESCURL", escurl);
 
     this->printf("HTTP/1.1 200 OK\r\n");
     this->printf("Connection: keep-alive\r\n");

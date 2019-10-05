@@ -19,6 +19,25 @@
 
 namespace makemore {
 
+void PPM::rotl() {
+  uint32_t nw = h, nh = w;
+  uint8_t *ndata = new uint8_t[nw * nh * 3];
+
+  for (unsigned int y = 0; y < h; ++y) {
+    for (unsigned int x = 0; x < w; ++x) {
+      unsigned int nx = y;
+      unsigned int ny = w - x - 1;
+      for (unsigned int c = 0; c < 3; ++c)
+        ndata[ny * nw * 3 + nx * 3 + c] = data[y * w * 3 + x * 3 + c];
+    }
+  }
+
+  delete[] data;
+  data = ndata;
+  w = nw;
+  h = nh;
+}
+
 double PPM::centerlight() {
   unsigned int x0 = w / 4;
   unsigned int x1 = w * 3 / 4;

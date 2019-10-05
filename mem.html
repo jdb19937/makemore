@@ -1,6 +1,6 @@
 <html>
 <head>
-<title>makemore peaple / mem</title>
+<title>makemore peaple / mem $NOM</title>
 
 <meta property='og:title' content='$NOM memory game'>
 <meta property='og:description' content='$NOM memory game'>
@@ -95,7 +95,8 @@ function onc(im) {
     document.getElementById('img' + i).src = "/" + window.cells[i] + ".png" + "?dim=192";
     if (window.cells[i] == window.cells[window.prev]) {
       ++window.nsolved;
-if (window.nsolved == 18) { window.location = '/' + window.nom + '/cam'; }
+//if (window.nsolved == 18) { window.location = '/' + window.nom + '/cam'; }
+if (window.nsolved == 18) { alert('great job'); }
       window.solved[i] = 1;
       window.solved[window.prev] = 1;
       window.state = 0;
