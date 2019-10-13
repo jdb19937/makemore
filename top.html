@@ -1,0 +1,116 @@
+<html>
+<head>
+<title>makemore peaple / active</title>
+
+<script> 
+function httpget(url, cb) {
+  var i = new XMLHttpRequest;
+  i.open('GET', url);
+  i.overrideMimeType("text/plain");
+  i.onload = function(e) {
+    if (!(this.readyState == 4 && this.status == 200)) {
+      return;
+    }
+    cb(this.responseText);
+  }
+  i.send();
+}
+</script>
+
+<style type="text/css">
+.topcell {
+  background-color: #333333;
+}
+.topcell_online {
+  border: 2px solid #654321;
+}
+.topcell_active {
+  border: 2px solid #550000;
+}
+.topcell_popular {
+  border: 2px solid #555500;
+}
+</style>
+</head>
+
+<body text="#ffffff" bgcolor="#000000">
+
+$HEADER
+<script>headtop.style.outline = '3px solid #00ff00';</script>
+
+<table cellpadding=0 cellspacing=0 width="1280">
+<tr height=8></tr>
+
+<tr><td align="center">
+<tr><td style='font-size: 40px'>[
+      <a href="/top/online"><img style="outline: 3px solid blue" id=headonline width=144 height=24 src="/images/online.png"></a> |
+      <a href="/top/active"><img style="outline: 3px solid blue" id=headactive width=144 height=24 src="/images/active.png"></a> |
+      <a href="/top/popular"><img style="outline: 3px solid blue" id=headpopular width=168 height=24 src="/images/popular.png"></a>
+]</td></tr></table>
+<br/>
+
+
+<table width="1280"><tr><td align="center">
+
+<table id="tab" cellpadding=4 cellspacing=8>
+
+<script>
+var pathparts = window.location.pathname.split('/');
+var func = pathparts[2];
+var valid = { };
+valid['online'] = 1;
+valid['active'] = 1;
+valid['popular'] = 1;
+if (!valid[func]) { func = 'online'; }
+var unit = {
+  'active': '&mu;Hz',
+  'popular': '<br>frens&nbsp;',
+  'online': 's',
+};
+linktop.href = '/top/' + func;
+
+
+
+var elem = document.getElementById('head' + func);
+elem.style = 'outline: 3px solid #00ff00';
+
+httpget("/" + func + ".json", function(txt) {
+  var ar = JSON.parse(txt);
+  var n = 0;
+  var rank = 1;
+
+  var cols = 4;
+  var html = '';
+
+  for (var k in ar) {
+    if (n % cols == 0) { html += "<tr>"; }
+
+    var freq = Math.floor(ar[k]) + "&nbsp;" + unit[func];
+    html += (
+      "<td class='topcell topcell_" + func + "'><table width=256 cellpadding=0 cellspacing=0><tr>" +
+      "<td width=128 style='background-color: #222222; font-size: 12px; font-family: monospace' align='center'>#" + rank + "</td>" + "<td></td></tr><tr>" +
+      "<td width=128><a href='/" + k + "'><img width=128 height=128 src='/" + k + ".png?dim=128'></a></td>" +
+      "<td style='font-size: 24px; font-family: monospace' align='right'>" + freq + "</td>" +
+      "</tr></table></td>"
+    );
+
+    if (n % cols == cols - 1) {
+      html += "</tr>";
+    }
+
+    ++n;
+    if (n >= 64) {
+      break;
+    }
+    ++rank;
+  }
+
+  tab.innerHTML = html
+});
+</script>
+
+</table>
+</td></tr></table>
+
+</body>
+</html>

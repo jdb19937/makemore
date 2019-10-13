@@ -47,13 +47,18 @@ function shuffle(array) {
   return array;
 }
 
+function randstr() {
+  return "" + Math.floor(Math.random() * 1000000000);
+}
+
 
 function onload() {
   window.nsolved = 0;
   var noms = new Array(18);
   for (var i = 0; i < 18; ++i) {
-    noms[i] = genfnom() + "_" + window.nom;
-    if (noms[i].length > 31) { noms[i] = window.nom; }
+    // noms[i] = genfnom() + "_" + window.nom;
+    // if (noms[i].length > 31) { noms[i] = window.nom; }
+    noms[i] = randstr();
   }
 
   var ar = new Array(36);
@@ -82,7 +87,8 @@ function onc(im) {
       return;
     }
 
-    document.getElementById('img' + i).src = "/" + window.cells[i] + ".png" + "?dim=192";
+    var vdev = warpvar(window.mul);
+    document.getElementById('img' + i).src = "/" + window.nom + ".png" + "?dim=192&vdev=" + vdev + "&r=" + window.cells[i];
     window.state = 1;
     window.prev = i;
     return;
@@ -92,11 +98,12 @@ function onc(im) {
     if (i == window.prev)
       return;
 
-    document.getElementById('img' + i).src = "/" + window.cells[i] + ".png" + "?dim=192";
+    var vdev = warpvar(window.mul);
+    document.getElementById('img' + i).src = "/" + window.nom + ".png" + "?dim=192&vdev=" + vdev + "&r=" + window.cells[i];
     if (window.cells[i] == window.cells[window.prev]) {
       ++window.nsolved;
 //if (window.nsolved == 18) { window.location = '/' + window.nom + '/cam'; }
-if (window.nsolved == 18) { alert('great job'); }
+//if (window.nsolved == 18) { alert('great job'); }
       window.solved[i] = 1;
       window.solved[window.prev] = 1;
       window.state = 0;
@@ -119,8 +126,56 @@ if (window.nsolved == 18) { alert('great job'); }
 <body text="#ffffff" bgcolor="#000000" onload="onload()">
 
 $HEADER
+$SUBHEAD
 
-<table cellpadding=0 cellspacing=0 width=1280>
+<table width=1280>
+
+
+<tr><td align="center">
+<table><tr><td>
+    <script>
+      function warpvar(x) {
+        if (x >= 1) {
+          return 1e12;
+        }
+        if (x <= -1) {
+          return 1e-12;
+        }
+      
+        return (x / (1 - x));
+      }
+      
+      function unwarpvar(y) {
+        return (y / (1 + y));
+      }
+      var sw = 1280 - 128;
+      var sh = 40;
+      function clickslider() {
+        sliderbar.style.width = event.offsetX;
+        window.mul = event.offsetX / sw;
+
+        if (window.state == 1) {
+          var i = window.prev;
+          var vdev = warpvar(window.mul);
+          document.getElementById('img' + i).src = "/" + window.nom + ".png" + "?dim=192&vdev=" + vdev + "&r=" + window.cells[i];
+        }
+      }
+    </script>
+    <div id=slidewrap onClick="clickslider()" id="slider" style="border-style: solid; border-width: 4px; border-color: gray">
+    <div id="sliderbar" style="background-color: purple"></div>
+    <script>
+      window.mul = 0.5;
+      slidewrap.style.width = sw;
+      sliderbar.style.width = window.mul * sw;
+      slidewrap.style.height = sh;
+      sliderbar.style.height = sh;
+    </script>
+    </div>
+</td></tr></table>
+</td></tr>
+
+<tr height=8></tr>
+
 <tr><td align=center>
 
 <table cellpadding=0 cellspacing=1>

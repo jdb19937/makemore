@@ -1,0 +1,79 @@
+
+<table width=1280 cellpadding=0 cellspacing=0>
+
+  <tr height=8></tr>
+
+  <tr>
+    <td style='font-size: 40px'>[
+      <a href="/$NOM"><img style="outline: 3px solid blue" id=headfile width=96 height=24 src="/images/file.png"></a> |
+      <a href="/$NOM/fam"><img style="outline: 3px solid blue" id=headfam width=72 height=24 src="/images/fam.png"></a> |
+      <a href="/$NOM/frens"><img style="outline: 3px solid blue" id=headfrens width=120 height=24 src="/images/frens.png"></a> |
+
+      <a id='xformlink' href="/$NOM/xform"><img style="outline: 3px solid blue" id=headxform width=120 height=24 src="/images/xform.png"></a> |
+      <a id="camlink" href="https://peaple.io/$NOM/cam"><img style="outline: 3px solid blue" id=headcam width=72 height=24 src="/images/cam.png"></a> |
+
+
+
+      <a href="/$NOM/mob"><img style="outline: 3px solid blue" id=headmob width=72 height=24 src="/images/mob.png"></a> |
+      <a href="/$NOM/mem"><img style="outline: 3px solid blue" id=headmem width=72 height=24 src="/images/mem.png"></a>
+    ]</td>
+
+    <td align="right"><div id='msgdiv' style="display: none; font-size: 40px">[
+      <img style="outline: 3px solid blue" onClick="headaddfren()" id=headfren width=144 height=24 src="/images/befren.png">  |
+      <a href="/$NOM/msg"><img style="outline: 3px solid blue" id=headmsg width=72 height=24 src="/images/msg.png"></a>
+    ]</div></td>
+
+  </tr>
+</table>
+<br/>
+
+
+<script>
+
+function headaddfren() {
+  if (!window.usernom || !window.nom) {
+    return;
+  }
+  var i = new XMLHttpRequest;
+  i.open('GET', '/edit?op=addfren&nom=' + window.usernom + "&fren=" + window.nom);
+  i.overrideMimeType("text/plain");
+  i.onload = function(e) {
+    if (!(this.readyState == 4 && this.status == 200)) {
+      return;
+    }
+    var txt = this.responseText;
+    if (txt.substr(0, 2) == "ok") {
+      window.location = "/" + window.usernom + "/frens";
+    } else {
+alert(txt);
+    }
+  }
+  i.send();
+}
+
+msgdiv.style.display = window.usernom ? 'inline' : 'none';
+headxform.style.outline = ($LOCKED && window.hdrnom != window.usernom) ? '3px solid red' : '3px solid blue';
+headcam.style.outline = ($LOCKED && window.hdrnom != window.usernom) ? '3px solid red' : '3px solid blue';
+
+window.onlogin = [function() {
+  msgdiv.style.display = window.usernom ? 'inline' : 'none';
+  headxform.style.outline = ($LOCKED && window.hdrnom != window.usernom) ? '3px solid red' : '3px solid blue';
+  headcam.style.outline = ($LOCKED && window.hdrnom != window.usernom) ? '3px solid red' : '3px solid blue';
+}];
+
+window.onlogout = [function() {
+  msgdiv.style.display = window.usernom ? 'inline' : 'none';
+  headxform.style.outline = ($LOCKED && window.hdrnom != window.usernom) ? '3px solid red' : '3px solid blue';
+  headcam.style.outline = ($LOCKED && window.hdrnom != window.usernom) ? '3px solid red' : '3px solid blue';
+}];
+
+(function() {
+  var ll = window.location + "";
+  var fl = ll.lastIndexOf('/');
+  if (fl < 0) { return; }
+  var func = ll.substr(fl + 1);
+  if (func == '$NOM') { func = 'file'; }
+  var elem = document.getElementById('head' + func);
+  elem.style = 'outline: 3px solid #00ff00';
+})();
+</script>

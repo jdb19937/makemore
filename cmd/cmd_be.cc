@@ -15,11 +15,11 @@
 #include <strutils.hh>
 #include <strutils.hh>
 #include <parson.hh>
-#include <org.hh>
 #include <zone.hh>
 #include <server.hh>
 #include <ppm.hh>
 #include <imgutils.hh>
+#include <agent.hh>
 
 namespace makemore {
 
@@ -33,6 +33,14 @@ void mainmore(
 ) {
   unsigned int zid = 0;
   strvec &arg = process->args;
+
+if (arg.size() > 0)
+fprintf(stderr, "arg0=%lu\n", arg[0].length());
+if (arg.size() > 1)
+fprintf(stderr, "arg1=%lu\n", arg[1].length());
+if (arg.size() > 2)
+fprintf(stderr, "arg2=%lu\n", arg[2].length());
+
   if (arg.size() != 1 && arg.size() != 2 && arg.size() != 3) {
     strvec errvec;
     splitwords("error bad args", &errvec);
@@ -54,8 +62,20 @@ void mainmore(
     return;
   }
 
+  std::string newpubkey;
+  if (arg.size() == 3) {
+    newpubkey = arg[2];
+fprintf(stderr, "newpubkeylen=%lu\n", newpubkey.length());
+    if (newpubkey.length() != 128) {
+      strvec errvec;
+      splitwords("error bad pubkey", &errvec);
+      process->write(errvec);
+      return;
+    }
+  }
+
   string sespass;
-  if (arg.size() == 2)
+  if (arg.size() >= 2)
     sespass = arg[1];
 
   string session;
@@ -78,21 +98,28 @@ void mainmore(
       }
 
       unsigned long duration = 86400;
-      if (arg.size() == 3)
-        duration = strtoul(arg[2].c_str(), NULL, 0);
-
       session = server->make_session(newnom, duration);
     }
   } else {
     session = sespass;
     if (!server->check_session(newnom, session)) {
-      unsigned long duration = 1UL << 48;
-      if (arg.size() == 3)
-        duration = strtoul(arg[2].c_str(), NULL, 0);
+      if (newpubkey.length() != 128) {
+        strvec errvec;
+        splitwords("error bad pubkey2", &errvec);
+        process->write(errvec);
+        return;
+      }
 
+      std::string newpass = sespass;
+      parson->set_pass(newpass);
+      memcpy(parson->pubkey, newpubkey.data(), newpubkey.length());
+      
+      unsigned long duration = 1UL << 48;
       session = server->make_session(newnom, duration);
     }
   }
+
+  parson->acted = time(NULL);
 
   strvec outvec;
   outvec.resize(2);
@@ -100,9 +127,10 @@ void mainmore(
   outvec[1] = session;
   process->write(outvec);
 
-  process->system->server->renom(process->session->agent, newnom);
+  Agent *agent = process->session->agent;
+  server->renom(agent, newnom);
 
-  process->session->loadvars();
+  // process->session->loadvars();
 
   return;
 }

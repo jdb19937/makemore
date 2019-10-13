@@ -50,8 +50,7 @@ int main(int argc, char **argv) {
       pars->target[i] = ((double)tgtbuf[i] + 0.5) / 256.0;
     }
 
-    pars->target_lock = -1;
-    pars->control_lock = 0;
+    prs->acted = 0;
     pars->created = time(NULL);
     pars->creator = 0x7F000001;
     pars->revised = time(NULL);

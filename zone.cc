@@ -10,6 +10,7 @@
 
 #include <set>
 
+#include "tmutils.hh"
 #include "random.hh"
 #include "zone.hh"
 
@@ -126,6 +127,50 @@ Zone::Zone(const std::string &_fn) {
     if (!prs->revised)
       continue;
     ac->add(prs->nom);
+  }
+
+  actup();
+  popup();
+  onlup();
+}
+
+void Zone::actup() {
+  act_nom.clear();
+  for (unsigned int i = 0; i < n; ++i) {
+    Parson *prs = db + i;
+    if (!prs->revised)
+      continue;
+    act_nom.insert(std::pair<double,std::string>(prs->activity(), prs->nom));
+  }
+}
+
+void Zone::onlup() {
+  onl_nom.clear();
+  for (unsigned int i = 0; i < n; ++i) {
+    Parson *prs = db + i;
+    if (!prs->acted)
+      continue;
+    onl_nom.insert(std::pair<double,std::string>(prs->acted, prs->nom));
+  }
+}
+
+void Zone::popup() {
+  std::map<std::string, unsigned int> nom_pop;
+
+  for (unsigned int i = 0; i < n; ++i) {
+    Parson *prs = db + i;
+    if (!prs->revised)
+      continue;
+    for (unsigned int j = 0; j < Parson::nfrens; ++j) {
+      if (!*prs->frens[j])
+        break;
+      ++nom_pop[prs->frens[j]];
+    }
+  }
+
+  pop_nom.clear();
+  for (auto q : nom_pop) {
+    pop_nom.insert(std::make_pair(q.second, q.first));
   }
 }
 

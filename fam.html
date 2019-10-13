@@ -14,11 +14,6 @@
 
 
 
-<script src="/gennom.js"></script>
-
-<script src="/autocomplete.js"></script>
-<link rel="stylesheet" type="text/css" href="/autocomplete.css">
-
 <script>
 function get_nom() {
   var nom = window.location.pathname;
@@ -74,11 +69,13 @@ function onload() {
 }
 
 </script>
+
 </head>
 
 <body text="#ffffff" bgcolor="#000000" onload="onload()">
 
 $HEADER
+$SUBHEAD
 
 <table width="1280"> <tr><td>
 
@@ -90,23 +87,23 @@ $HEADER
 </tr>
 
 <tr>
-  <td colspan=2><a id="p0link"><img id="p0pic" width=256 height=256></a></td>
-  <td colspan=2><a id="p1link"><img id="p1pic" width=256 height=256></a></td>
+  <td colspan=2><a id="p0link"><img style='box-sizing: border-box' id="p0pic" width=256 height=256></a></td>
+  <td colspan=2><a id="p1link"><img style='box-sizing: border-box' id="p1pic" width=256 height=256></a></td>
 </tr>
 
 
 <tr>
-  <td><a id="gp0link"><img id="gp0pic" width=128 height=128></a></td>
-  <td><a id="gp1link"><img id="gp1pic" width=128 height=128></a></td>
-  <td><a id="gp2link"><img id="gp2pic" width=128 height=128></a></td>
-  <td><a id="gp3link"><img id="gp3pic" width=128 height=128></a></td>
+  <td><a id="gp0link"><img style='box-sizing: border-box' id="gp0pic" width=128 height=128></a></td>
+  <td><a id="gp1link"><img style='box-sizing: border-box' id="gp1pic" width=128 height=128></a></td>
+  <td><a id="gp2link"><img style='box-sizing: border-box' id="gp2pic" width=128 height=128></a></td>
+  <td><a id="gp3link"><img style='box-sizing: border-box' id="gp3pic" width=128 height=128></a></td>
 </tr>
 -->
 
 <tr>
   <td><a id="gp0link"><img id="gp0pic" width=128 height=128></a></td>
-  <td rowspan=2><a id="p0link"><img id="p0pic" width=256 height=256></a></td>
-  <td rowspan=4><a id="mainlink"><img id="mainpic" width=512 height=512></a></td>
+  <td rowspan=2><a id="p0link"><img style='box-sizing: border-box' id="p0pic" width=256 height=256></a></td>
+  <td rowspan=4><a id="mainlink"><img style="box-sizing: border-box; border: 3px solid blue" id="mainpic" width=512 height=512></a></td>
 </tr>
 <tr>
   <td><a id="gp1link"><img id="gp1pic" width=128 height=128></a></td>

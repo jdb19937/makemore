@@ -12,6 +12,7 @@
 #include <urbite.hh>
 #include <process.hh>
 #include <strutils.hh>
+#include <strutils.hh>
 #include <parson.hh>
 #include <zone.hh>
 #include <server.hh>
@@ -28,39 +29,29 @@ extern "C" void mainmore(Process *);
 void mainmore(
   Process *process
 ) {
-  unsigned int npicks = 1;
-  if (process->args.size() > 0)
-    npicks = (unsigned int)strtoul(process->args[0].c_str(), NULL, 0);
+  const strvec &arg = process->args;
 
-  unsigned int zid = 0;
-  if (process->args.size() > 1)
-    zid = (unsigned int)strtoul(process->args[1].c_str(), NULL, 0);
+  if (arg.size() != 1)
+    return;
 
   Server *server = process->system->server;
   assert(server);
   Urb *urb = server->urb;
   assert(urb);
 
-  if (zid >= urb->zones.size()) {
+  string nom = arg[0];
+
+  Parson *parson = urb->find(nom);
+  if (!parson)
     return;
-  }
 
-  Zone *zone = urb->zones[zid];
-  assert(zone);
+  string png;
+  //labpng(parson->target, Parson::dim, Parson::dim, &png);
 
-  for (unsigned int i = 0; i < npicks; ++i) {
-    Parson *pick;
-    pick = zone->pick();
-    if (!pick)
-      break;
-
-    strvec outvec;
-    outvec.resize(1);
-    outvec[0] = string(pick->nom);
-
-    if (!process->write(outvec))
-      break;
-  }
+  strvec outvec;
+  outvec.resize(1);
+  outvec[0] = png;
+  (void) process->write(outvec);
 }
 
 }

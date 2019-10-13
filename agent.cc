@@ -746,15 +746,32 @@ fprintf(stderr, "req=[%s]\n", req.c_str());
 
   if (!strncmp(path.c_str(), "/images/", 8)) {
     std::set<std::string> valid;
+    valid.insert("conf.png");
     valid.insert("makemore.png");
+    valid.insert("mork.png");
     valid.insert("slashfam.png");
     valid.insert("createdby.png");
     valid.insert("frens.png");
     valid.insert("add_to_cart.png");
+valid.insert("small_nom.png");
+valid.insert("small_pass.png");
+valid.insert("pass.png");
+valid.insert("pass2.png");
+valid.insert("login.png");
+valid.insert("logout.png");
+valid.insert("active.png");
+valid.insert("online.png");
+valid.insert("popular.png");
+valid.insert("more.png");
+valid.insert("more.png");
+valid.insert("less.png");
 valid.insert("plus.png");
+valid.insert("map.png");
+valid.insert("unmap.png");
 valid.insert("minus.png");
 valid.insert("spawn.png");
 valid.insert("bread.png");
+valid.insert("claim.png");
 valid.insert("mash.png");
 valid.insert("blend.png");
 valid.insert("goto.png");
@@ -764,11 +781,22 @@ valid.insert("goto.png");
     valid.insert("fam.png");
     valid.insert("frens.png");
     valid.insert("doc.png");
+    valid.insert("sh.png");
     valid.insert("cam.png");
     valid.insert("mem.png");
+    valid.insert("new.png");
+    valid.insert("who.png");
+    valid.insert("msg.png");
+    valid.insert("top.png");
     valid.insert("mob.png");
+    valid.insert("send.png");
+    valid.insert("buy.png");
     valid.insert("email.png");
     valid.insert("addfren.png");
+    valid.insert("add.png");
+    valid.insert("befren.png");
+    valid.insert("dashgt.png");
+    valid.insert("fren.png");
     valid.insert("pushnom.png");
     valid.insert("pushfam.png");
     valid.insert("capture.png");
@@ -816,8 +844,19 @@ valid.insert("goto.png");
     return;
   }
 
-  if (path == "/tagger.html" || path == "/cam.html" || path == "/edit.html" || path == "/memory.html" || path == "/autocomplete.html") {
-    std::string html = makemore::slurp(path.c_str() + 1);
+  // if (path == "/tagger.html" || path == "/cam.html" || path == "/edit.html" || path == "/memory.html" || path == "/autocomplete.html" || path == "/terminal.html") {
+  if (path == "/sh" || path == "/popular" || path == "/active" || path == "/conf" || path == "/buy" || path == "/who" || path == "/online" || path == "/top" || path == "/top/" || path == "/top/active" || path == "/top/online" || path == "/top/popular") {
+    strvec pathparts;
+    split(path, '/', &pathparts);
+    std::string html = makemore::slurp(pathparts[0] + ".html");
+
+    std::string header = makemore::slurp("header.html");
+    std::string url = "https://peaple.io" + path;
+    std::string escurl = "https%3A%2F%2Fpeaple.io%2F" + std::string(path.c_str() + 1);
+
+    html = replacestr(html, "$HEADER", header);
+    html = replacestr(html, "$URL", url);
+    html = replacestr(html, "$ESCURL", escurl);
 
     this->printf("HTTP/1.1 200 OK\r\n");
     this->printf("Connection: keep-alive\r\n");
@@ -868,7 +907,7 @@ valid.insert("goto.png");
     return;
   }
 
-  if (path == "/gennom.js" || path == "/autocomplete.js") {
+  if (path == "/gennom.js" || path == "/autocomplete.js" || path == "/aes.js" || path == "/sha256.js" || path == "/crypto.js" || path == "/moretp.js") {
     std::string js = makemore::slurp(path.c_str() + 1);
 
     this->printf("HTTP/1.1 200 OK\r\n");
@@ -890,6 +929,112 @@ valid.insert("goto.png");
     this->printf("Content-Length: %lu\r\n", favicon.length());
     this->printf("\r\n");
     this->write(favicon);
+    return;
+  }
+
+
+  if (path == "/popular.json") {
+    map<string, string> cgi;
+    cgiparse(query, &cgi);
+    unsigned int n = 256;
+    if (cgi["n"] != "")
+      n = strtoul(cgi["n"].c_str(), NULL, 0);
+
+    std::string json = "{";
+    unsigned int k = 0;
+    Zone *z = server->urb->zones[0];
+    z->popup();
+    auto pop_nom = z->pop_nom;
+    for (auto q = pop_nom.rbegin(); q != pop_nom.rend(); ++q) {
+      if (k > 0)
+        json += ",";
+      json += "\n";
+
+      char buf[256];
+      sprintf(buf, "  \"%s\": %u", q->second.c_str(), q->first);
+      json += buf;
+
+      if (++k >= n)
+        break;
+    }
+    json += "\n}\n";
+
+    this->printf("HTTP/1.1 200 OK\r\n");
+    this->printf("Connection: keep-alive\r\n");
+    this->printf("Content-Type: text/json\r\n");
+    this->printf("Content-Length: %lu\r\n", json.length());
+    this->printf("\r\n");
+    this->write(json);
+    return;
+  }
+  if (path == "/active.json") {
+    map<string, string> cgi;
+    cgiparse(query, &cgi);
+    unsigned int n = 256;
+    if (cgi["n"] != "")
+      n = strtoul(cgi["n"].c_str(), NULL, 0);
+
+    std::string json = "{";
+    unsigned int k = 0;
+    Zone *z = server->urb->zones[0];
+    z->actup();
+    auto act_nom = z->act_nom;
+    for (auto q = act_nom.rbegin(); q != act_nom.rend(); ++q) {
+      if (k > 0)
+        json += ",";
+      json += "\n";
+
+      char buf[256];
+      sprintf(buf, "  \"%s\": %lf", q->second.c_str(), q->first);
+      json += buf;
+
+      if (++k >= n)
+        break;
+    }
+    json += "\n}\n";
+
+    this->printf("HTTP/1.1 200 OK\r\n");
+    this->printf("Connection: keep-alive\r\n");
+    this->printf("Content-Type: text/json\r\n");
+    this->printf("Content-Length: %lu\r\n", json.length());
+    this->printf("\r\n");
+    this->write(json);
+    return;
+  }
+
+  if (path == "/online.json") {
+    double t = now();
+    map<string, string> cgi;
+    cgiparse(query, &cgi);
+    unsigned int n = 256;
+    if (cgi["n"] != "")
+      n = strtoul(cgi["n"].c_str(), NULL, 0);
+
+    std::string json = "{";
+    unsigned int k = 0;
+    Zone *z = server->urb->zones[0];
+    z->onlup();
+    auto onl_nom = z->onl_nom;
+    for (auto q = onl_nom.rbegin(); q != onl_nom.rend(); ++q) {
+      if (k > 0)
+        json += ",";
+      json += "\n";
+
+      char buf[256];
+      sprintf(buf, "  \"%s\": %lf", q->second.c_str(), t - q->first);
+      json += buf;
+
+      if (++k >= n)
+        break;
+    }
+    json += "\n}\n";
+
+    this->printf("HTTP/1.1 200 OK\r\n");
+    this->printf("Connection: keep-alive\r\n");
+    this->printf("Content-Type: text/json\r\n");
+    this->printf("Content-Length: %lu\r\n", json.length());
+    this->printf("\r\n");
+    this->write(json);
     return;
   }
 
@@ -1190,6 +1335,11 @@ valid.insert("goto.png");
       }
     } else if (op == "addfren") {
       std::string fren = cgi["fren"];
+      if (fren == "") {
+        Parson *q = server->urb->zones[0]->pick();
+        fren = q->nom;
+      }
+
       if (Parson::valid_nom(fren.c_str())) {
         parson->add_fren(fren.c_str());
 
@@ -1214,26 +1364,29 @@ valid.insert("goto.png");
 
 
   std::string nom;
-  if (path == "/") {
-#if 0
-    std::string html = makemore::slurp("index.html");
-
-    this->printf("HTTP/1.1 200 Ok\r\n");
-    this->printf("Connection: keep-alive\r\n");
-    this->printf("Content-Type: text/html\r\n");
-    this->printf("Content-Length: %lu\r\n", html.length());
-    this->printf("\r\n");
-    this->write(html);
-#else
-
+  if (path == "/new") {
     nom = Parson::gen_nom();
+
     this->printf("HTTP/1.1 302 Redirect\r\n");
     this->printf("Connection: keep-alive\r\n");
     this->printf("Content-Type: text/plain\r\n");
     this->printf("Content-Length: 0\r\n");
     this->printf("Location: /%s\r\n", nom.c_str());
     this->printf("\r\n", nom.c_str());
-#endif
+    return;
+  }
+
+  if (path == "/") {
+    Parson *prs = server->urb->zones[0]->pick();
+    // nom = Parson::gen_nom();
+    nom = prs->nom;
+
+    this->printf("HTTP/1.1 302 Redirect\r\n");
+    this->printf("Connection: keep-alive\r\n");
+    this->printf("Content-Type: text/plain\r\n");
+    this->printf("Content-Length: 0\r\n");
+    this->printf("Location: /%s\r\n", nom.c_str());
+    this->printf("\r\n", nom.c_str());
     return;
   }
 
@@ -1279,17 +1432,65 @@ valid.insert("goto.png");
     return;
   }
 
+  if (ext == "dat") {
+    map<string, string> cgi;
+    cgiparse(query, &cgi);
+    unsigned int off = strtoul(cgi["off"].c_str(), NULL, 0);
+
+    std::string convnom = func;
+    if (!Parson::valid_nom(convnom)) {
+      this->printf("HTTP/1.1 404 Not Found\r\n");
+      this->printf("Connection: keep-alive\r\n");
+      this->printf("Content-Type: text/plain\r\n");
+      this->printf("Content-Length: 0\r\n");
+      this->printf("\r\n");
+      return;
+    }
+
+    std::string fn = server->urb->dir + "/home/" + nom + "/" + convnom + ".dat";
+    FILE *fp = fopen(fn.c_str(), "r");
+    if (!fp) {
+      this->printf("HTTP/1.1 200 OK\r\n");
+      this->printf("Connection: keep-alive\r\n");
+      this->printf("Content-Type: application/octet-stream\r\n");
+      this->printf("Content-Length: 0\r\n");
+      this->printf("\r\n");
+      return;
+    }
+    std::string dat = makemore::slurp(fp);
+
+    this->printf("HTTP/1.1 200 OK\r\n");
+    this->printf("Connection: keep-alive\r\n");
+    this->printf("Content-Type: application/octet-stream\r\n");
+    this->printf("Content-Length: %lu\r\n", dat.length());
+    this->printf("\r\n");
+    this->write(dat);
+    return;
+  }
+
   if (ext == "html") {
-  if (func == "cam" || func == "file" || func == "fam" || func == "frens" || func == "xform" || func == "blend" || func == "mem" || func == "mob") {
+  if (func == "cam" || func == "file" || func == "fam" || func == "frens" || func == "xform" || func == "mem" || func == "mob" || func == "top" || func == "msg") {
     std::string html = makemore::slurp(func + ".html");
 
     std::string header = makemore::slurp("header.html");
+    std::string subhead = makemore::slurp("subhead.html");
     std::string url = "https://peaple.io/" + nom + "/" + func;
     std::string escurl = "https%3A%2F%2Fpeaple.io%2F" + nom + "%2F" + func;
     html = replacestr(html, "$HEADER", header);
-    html = replacestr(html, "$NOM", nom);
+    html = replacestr(html, "$SUBHEAD", subhead);
     html = replacestr(html, "$URL", url);
     html = replacestr(html, "$ESCURL", escurl);
+
+    html = replacestr(html, "$NOM", nom);
+
+    Parson *prs = server->urb->find(nom);
+    html = replacestr(html, "$LOCKED", prs && prs->has_pass() ? "1" : "0");
+
+    std::string hexpk;
+    if (prs && prs->has_pass())
+      hexpk = to_hex(std::string((char *)prs->pubkey, 128));
+    html = replacestr(html, "$HEXPUBKEY", hexpk);
+
 
     this->printf("HTTP/1.1 200 OK\r\n");
     this->printf("Connection: keep-alive\r\n");
@@ -1462,6 +1663,24 @@ genpar.warp(&showpar);
     this->printf("Content-Length: %lu\r\n", png.length());
     this->printf("\r\n");
     this->write(png);
+    return;
+  }
+
+  if (ext == "pubkey.dat") {
+    uint8_t pubkey[128];
+    memset(pubkey, 0, 128);
+    Parson *parson = server->urb->find(nom);
+    if (parson)
+      memcpy(pubkey, parson->pubkey, 128);
+
+    this->printf("HTTP/1.1 200 OK\r\n");
+    this->printf("Connection: keep-alive\r\n");
+    this->printf("Content-Type: application/octet-stream\r\n");
+    this->printf("Content-Length: %lu\r\n", 128);
+    this->printf("\r\n");
+
+    std::string spubkey((char *)pubkey, 128);
+    this->write(spubkey);
     return;
   }
 

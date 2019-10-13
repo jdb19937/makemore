@@ -77,13 +77,15 @@ function moretpdec(inbuf) {
       var b = parseInt(cmdwords[i].substr(1), 0);
       cmdwords[i] = inbuf.slice(off, off + b);
 
+if (1) {
       if (ispng(cmdwords[i])) {
         var blob = new Blob([cmdwords[i]], {'type': 'image/png'});
         var url = URL.createObjectURL(blob); 
         cmdwords[i] = [url]
       } else {
-        cmdwords[i] = dec.decode(cmdwords[i]);
+        // cmdwords[i] = dec.decode(cmdwords[i]);
       }
+}
 
       off += b;
     }
@@ -123,29 +125,52 @@ function waitForSocketConnection(socket, callback){
         }, 200);
 }
 
-
 function moretpclient(onc) {
-  this.inbuf = new Uint8Array(0)
-  this.socket = new WebSocket('wss://peaple.io:3333/', ['binary']);
-  this.socket.binaryType = 'arraybuffer';
-  this.socket.inbuffer = new Uint8Array(0)
+  this.onc = onc;
 
-  var cli = this;
-  this.socket.onmessage = function(m) {
-    cli.moretpmessage(m)
+  this.makesocket = function() {
+    this.inbuf = new Uint8Array(0)
+
+    this.socket = new WebSocket('wss://peaple.io:3333/', ['binary']);
+    this.socket.binaryType = 'arraybuffer';
+    this.socket.inbuffer = new Uint8Array(0)
+
+    var cli = this;
+    this.socket.onmessage = function(m) {
+      cli.moretpmessage(m)
+    };
+
+    if (!this.onc) { 
+      this.socket.onopen = function() { alert('ready'); }
+    } else {
+      this.socket.onopen = this.onc;
+    }
+
+    this.socket.onclose = function() {
+    };
   };
-
-  if (!onc) { 
-    this.socket.onopen = function() { alert('ready'); }
-  } else {
-    this.socket.onopen = onc;
-  }
+  this.makesocket();
 
   this.markmap = { };
   this.mark = 0;
   this.asynccb = null;
 
   this.moretpreq = function(words, argmat, cb) {
+    if (this.socket.readyState != 1) {
+if (0) {
+      if (this.socket.readyState == 2 || this.socket.readyState == 3) {
+        this.socket.close();
+        this.socket = null;
+        this.makesocket();
+      }
+      waitForSocketConnection(this.socket, function() {
+        this.moretpreq(words, argmat, cb);
+      });
+}
+      return;
+    }
+    
+
     var markstr = "";
     markstr += this.mark;
     var nwords = [ ];
@@ -182,8 +207,7 @@ nwords.push(";");
     this.markmap[markstr] = cb;
     this.mark++;
 
-//    sendMessage(this.socket, msg)
-this.socket.send(msg)
+    this.socket.send(msg);
   }
 
   this.moretpline = function(line) {

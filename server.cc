@@ -396,6 +396,18 @@ void Server::notify(const std::string &nom, const std::string &msg, const Agent 
         agent->write(msg + "\n");
   }
 }
+void Server::notify(const std::string &nom, const strvec &msg, const Agent *exclude) {
+  auto naip = nom_agent.equal_range(nom);
+
+  for (auto nai = naip.first; nai != naip.second; ++nai) {
+    const std::string &nom = nai->first;
+    Agent *agent = nai->second;
+
+    if (agent != exclude)
+      if (agent->proto == Agent::MORETP)
+        agent->write(msg);
+  }
+}
 
 
 void Server::wait() {

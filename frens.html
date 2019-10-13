@@ -14,8 +14,6 @@
 
 
 
-<script src="/gennom.js"></script>
-
 <script src="/autocomplete.js"></script>
 <link rel="stylesheet" type="text/css" href="/autocomplete.css">
 
@@ -29,6 +27,8 @@ function get_nom() {
   nom = nom.substr(0, slash);
   return nom;
 }
+
+window.nom = get_nom();
 
 function randstr() {
   return "" + Math.floor(Math.random() * 1000000000);
@@ -60,11 +60,10 @@ function reloadfrens() {
   });
 }
 
-var maxfrens = 13;
+var maxfrens = 12;
 var frencols = 4;
 
 function onload() {
-  window.nom = get_nom();
   window.frens = [ ];
 
   reloadpic();
@@ -128,8 +127,10 @@ function upfrenlist(frens) {
 }
 
 function addfren() {
-  if (!frenbuf.value)
-    frenbuf.value = gennom();
+//  if (!frenbuf.value)
+//    frenbuf.value = gennom();
+  var s =  ($LOCKED && window.usernom != window.nom);
+  if (s) { return; }
 
   var fren = frenbuf.value;
 
@@ -145,29 +146,35 @@ function addfren() {
 <body text="#ffffff" bgcolor="#000000" onload="onload()">
 
 $HEADER
+$SUBHEAD
+
+<script>
+</script>
 
 
 
 <table width=1280 cellpadding=0 cellspacing=0>
   <tr valign="top">
-    <td width=530>
+    <td width=512 align="center">
 
+<table><tr><td>
 
-
+<div id="addfrenform">
 
 <form autocomplete="off">
   <div class="autocomplete">
-    <input type="text" size="32" id="frenbuf" placeholder="nom" style='font-size: large'>
+    <input type="text" size="32" id="frenbuf" placeholder="nom" style='font-size: large; font-family: monospace'>
     <script>autocomplete(document.getElementById('frenbuf'), function() { addfren() });</script>
   </div>
 &nbsp;
-    <img align=center width=168 height=24 style="outline: 3px solid blue" src="/images/addfren.png"
+    <img id=addfrenbutton align=center width=72 height=24 style="outline: 3px solid blue" src="/images/add.png"
       onClick="addfren()" >
 <!--
   <input type="button" style='font-size: large' value="addfren" onClick="addfren()">
 -->
 </form>
-  <br/>
+
+</div>
 
 
 
@@ -177,9 +184,9 @@ $HEADER
       <span style="padding: 2px; background-color: gray"><img id="addfrenbutton" onClick="addfren()" src="/images/add_fren.png"></span>
       <img id="gennombutton" onClick="frenbuf.value = gennom()" src="/images/gen_nom.png">
 -->
-      <br/><br/>
 
       <!-- <img src="/images/frens.png"><br/><br/> -->
+</td></tr></table>
 
       <script>make_frenlist()</script>
     </td>
@@ -188,7 +195,7 @@ $HEADER
         <tr>
           <td colspan=4>
             <a id="piclink">
-              <img id="pic" width="512" height="512">
+              <img style="border: 3px solid blue" id="pic" width="512" height="512">
             </a>
           </td>
         </tr>
@@ -200,29 +207,86 @@ $HEADER
 
 <table><tr><td>
 <table>
-    <tr><td align=right height="36"><img onClick="clicktool('goto')" id="gotobutton" src="/images/goto.png"> </td></tr>
-    <tr><td align=right height="36"><img onClick="clicktool('bread')" id="breadbutton" src="/images/bread.png"> </td></tr>
+    <tr><td align=right height="36"><img width=96 height=24 onClick="clicktool('goto')" id="gotobutton" src="/images/goto.png"> </td></tr>
+    <tr><td align=right height="36"><img width=120 height=24 onClick="clicktool('bread')" id="breadbutton" src="/images/bread.png"> </td></tr>
 </table>
 
 
 
 <script>
+var s =  ($LOCKED && window.usernom != window.nom);
+addfrenbutton.style.outline = s ? '3px solid red' : '3px solid blue';
+breadbutton.style.outline = s ? '3px solid red' : '3px solid blue';
+
+window.onlogin.push(function() {
+  var s =  ($LOCKED && window.usernom != window.nom);
+  addfrenbutton.style.outline = s ? '3px solid red' : '3px solid blue';
+  breadbutton.style.outline = s ? '3px solid red' : '3px solid blue';
+})
+window.onlogout.push(function() {
+  var s = ($LOCKED && window.usernom != window.nom);
+  addfrenbutton.style.outline = s ? '3px solid red' : '3px solid blue';
+  breadbutton.style.outline = s ? '3px solid red' : '3px solid blue';
+})
+
 function clicktool(t) {
-  breadbutton.style.outline = "";
-  gotobutton.style.outline = "";
+  var s = ($LOCKED && window.usernom != window.nom);
+  breadbutton.style.outline = s ? '3px solid red' : '3px solid blue';
+  gotobutton.style.outline = "3px solid blue";
+
+  if (t == 'bread' && s) {
+    t = 'goto';
+  }
 
   var but = document.getElementById(t + "button");
   but.style.outline = "3px solid #00ff00";
   window.tool = t;
 }
 clicktool('goto');
+
+
+function shiftdown() {
+  if (window.tool == "goto") {
+    clicktool("bread");
+  }
+}
+function shiftup() {
+  if (window.tool == "bread") {
+    clicktool("goto");
+  }
+}
+
+var onkeydown = (function (ev) {
+  if (ev.which == 16) {
+    shiftdown();
+  }
+  if (0 && ev.which == 17) {
+    controldown();
+  }
+  if (0 && ev.which == 18) {
+    altdown();
+  }
+});
+
+var onkeyup = (function (ev) {
+  if (ev.which == 16) {
+    shiftup();
+  }
+  if (0 && ev.which == 17) {
+    controlup();
+  }
+  if (0 && ev.which == 18) {
+    altup();
+  }
+});
+
 </script>
 
 
 </td></tr>
 <tr><td height="16"></td></tr>
 <tr>
-<td valign="top" height="320" style="outline: 3px solid blue; color: white">
+<td valign="top" height="320" style="outline: 3px solid gray; color: white">
 /\/\/\/\/\/\/\/\/\/\/\/\/\/\ <br/>
 /\/\/\/\/\/\/\/\/\/\/\/\/\/\  <br/>
 /\/\/\/\/\/\/\/\/\/\/\/\/\/\ <br/>

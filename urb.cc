@@ -109,7 +109,7 @@ add_gen("anderson", "gena.anderson.proj");
   sort(srcimages.begin(), srcimages.end());
   assert(srcimages.size());
 
-  {
+  if (0) {
     std::string home = dir + "/home";
     int ret = ::mkdir(home.c_str(), 0700);
     assert(ret == 0 || ret == -1 && errno == EEXIST);
@@ -184,6 +184,7 @@ fprintf(stderr, "found %s\n", nom.c_str());
     parson.variations[k] = 1.0;
   }
 
+#if 0
   {
     std::vector<std::string> suf;
     nomsuffixes(parson.nom, &suf);
@@ -196,6 +197,7 @@ fprintf(stderr, "found %s\n", nom.c_str());
       }
     }
   }
+#endif
 
   parson.paren_noms(nom.c_str(), parson.parens[0], parson.parens[1]);
 
@@ -445,7 +447,7 @@ void Urb::deport(Parson *x) {
 }
 
 void Urb::_busout(const Parson &x) {
-  outgoing->add(x);
+  // outgoing->add(x);
 }
 
 Parson *Urb::make(const Parson &x, unsigned int tier) {

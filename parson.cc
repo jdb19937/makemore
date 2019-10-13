@@ -382,8 +382,7 @@ void Parson::initialize(const char *_nom, double mean, double dev) {
   last_activity = 0;
 
   generated = 0;
-  target_lock = 0;
-  control_lock = 0xFF;
+  acted = 0;
   memset(parens, 0, sizeof(parens));
   paren_noms(nom, parens[0], parens[1]);
   memset(frens, 0, sizeof(frens));

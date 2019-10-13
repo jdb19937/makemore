@@ -13,11 +13,10 @@
 <link rel='canonical' href='https://peaple.io/$NOM/xform'>
 
 
-<script src="/gennom.js"></script>
-
-
 <script src="/autocomplete.js"></script>
 <link rel="stylesheet" type="text/css" href="/autocomplete.css">
+
+<script src="/gennom.js"></script>
 
 
 <script>
@@ -264,68 +263,30 @@ function warpvar(x) {
   }
 
   return (x / (1 - x));
-
-if (0) {
-  x = x - 0.5;
-  x = x * 2;
-
-  if (x >= 1) {
-    return 1e12;
-  }
-  if (x <= -1) {
-    return 1e-12;
-  }
-
-  var sgn = x < 0 ? -1 : 1;
-  var y = sgn * (1 / (1 - x * sgn) - 1);
-  return Math.pow(2, y);
-}
 }
 
 function unwarpvar(y) {
-return (y / (1 + y));
-if (0) {
-  if (y >= 1e12) {
-    return 1;
-  }
-  if (y <= 1e-12) {
-    return 0;
-  }
-
-  var sgn = 1;
-  if (y < 1) {
-    sgn = -1;
-  }
-
-  y = Math.log(y) / Math.log(2);
-  y /= sgn;
-  y += 1;
-  y = 1 / y;
-  y = 1 - y;
-  y /= sgn;
-
-  y /= 2;
-  y += 0.5;
-
-  return y;
-}
+  return (y / (1 + y));
 }
 
-function addvec(vec) {
-  var mul = window.mul;
-  if (event.shiftKey)
-    mul = -mul;
-
+function doaddvec(vec, m) {
   var val = warpvar(window.nval);
 
-  httpget("/edit?op=addvec&nom=" + nom + "&vec=" + vec + "&mul=" + mul + "&val=" + val, function(txt) {
+  httpget("/edit?op=addvec&nom=" + nom + "&vec=" + vec + "&mul=" + m + "&val=" + val, function(txt) {
 
    
       window.nval = unwarpvar(txt*1);
-      sliderbar2.style.width = window.nval * (sw - 8);
+      sliderbar2.style.width = window.nval * sw;
 
     reloadpic();
   });
+}
+
+function addvec(vec) {
+  doaddvec(vec, window.mul);
+}
+function subvec(vec) {
+  doaddvec(vec, -window.mul);
 }
 
 function blendvec(vec) {
@@ -334,7 +295,7 @@ function blendvec(vec) {
   httpget("/edit?op=blend&nom=" + nom + "&vec=" + vec + "&mul=" + mul, function(txt) {
    
       window.nval = unwarpvar(txt*1);
-      sliderbar2.style.width = window.nval * (sw - 8);
+      sliderbar2.style.width = window.nval * sw;
 
     reloadpic();
   });
@@ -346,7 +307,7 @@ function domash(vec) {
   httpget("/edit?op=mash&nom=" + nom + "&vec=" + vec + "&mul=" + mul, function(txt) {
 
       window.nval = unwarpvar(txt*1);
-      sliderbar2.style.width = window.nval * (sw - 8);
+      sliderbar2.style.width = window.nval * sw;
 
     reloadpic();
   });
@@ -367,8 +328,10 @@ function addtvec(i) {
     domash( window.tags[i] );
   } else if (window.tool == "spawn") {
     pushrow( window.tags[i] );
-  } else if (window.tool == "plus") {
+  } else if (window.tool == "map") {
     addvec( window.tags[i] );
+  } else if (window.tool == "unmap") {
+    subvec( window.tags[i] );
   } else if (window.tool == "goto") {
     window.location = "/" + window.tags[i];
   } else if (window.tool == "blend") {
@@ -382,8 +345,10 @@ function addpvec(i) {
     domash( window.pals[i] );
   } else if (window.tool == "spawn") {
     pushrow( window.pals[i] );
-  } else if (window.tool == "plus") {
+  } else if (window.tool == "map") {
     addvec( window.pals[i] );
+  } else if (window.tool == "unmap") {
+    subvec( window.pals[i] );
   } else if (window.tool == "goto") {
     window.location = "/" + window.pals[i];
   } else if (window.tool == "blend") {
@@ -396,7 +361,7 @@ alert("unimplemented");
 function getnval() {
   httpget("/edit?op=addvec&nom=" + nom + "&mul=0", function(txt) {
     window.nval = unwarpvar(txt*1);
-    sliderbar2.style.width = window.nval * (sw - 8);
+    sliderbar2.style.width = window.nval * sw;
   });
 }
 
@@ -418,6 +383,7 @@ function onl() {
 <body text="#ffffff" bgcolor="#000000" onLoad="onl()">
 
 $HEADER
+$SUBHEAD
 
 <table width=1280>
 
@@ -436,7 +402,7 @@ $HEADER
       var sh = 40;
       function clickslider() {
         sliderbar.style.width = event.offsetX;
-        window.mul = event.offsetX / (sw - 8);
+        window.mul = event.offsetX / sw;
       }
     </script>
     <div id=slidewrap onClick="clickslider()" id="slider" style="border-style: solid; border-width: 4px; border-color: gray">
@@ -444,9 +410,9 @@ $HEADER
     <script>
       window.mul = 0.5;
       slidewrap.style.width = sw;
-      sliderbar.style.width = window.mul * (sw - 8);
+      sliderbar.style.width = window.mul * sw;
       slidewrap.style.height = sh;
-      sliderbar.style.height = sh - 8;
+      sliderbar.style.height = sh;
     </script>
     </div>
   </td></tr>
@@ -460,7 +426,7 @@ $HEADER
       var sh = 40;
       function clickslider2() {
         sliderbar2.style.width = event.offsetX;
-        window.nval = event.offsetX / (sw - 8);
+        window.nval = event.offsetX / sw;
         donorm();
       }
     </script>
@@ -468,10 +434,10 @@ $HEADER
     <div id="sliderbar2" style="width: 0; background-color: orange"></div>
     <script>
       window.nval = 0;
-      sliderbar2.style.width = window.nval * (sw - 8);
+      sliderbar2.style.width = window.nval * sw;
       slidewrap2.style.width = sw;
       slidewrap2.style.height = sh;
-      sliderbar2.style.height = sh - 8;
+      sliderbar2.style.height = sh;
     </script>
     </div>
   </td></tr>
@@ -489,7 +455,7 @@ $HEADER
 
 <tr><td>
       <div id="picdiv">
-        <a id="piclink"><img id="pic" width="512" height="512"></a>
+        <a id="piclink"><img style="border: 3px solid blue" id="pic" width="512" height="512"></a>
       </div>
 </td></tr>
 
@@ -510,21 +476,23 @@ $HEADER
 <br/>
   <table>
       
-<tr><td>
+<tr><td align="center">
+<table><tr><td>
+
 <form autocomplete="off">
   <div class="autocomplete">
-    <input type="text" size="32" id="tagbuf" placeholder="nom" style='font-size: large'>
+    <input type="text" size="32" id="tagbuf" placeholder="nom" style='font-family: monospace; font-size: large'>
     <script>autocomplete(tagbuf, function() { pushpals([tagbuf.value]) });</script>
   </div>
 
 &nbsp;
-    <img align=top width=168 height=24 style="outline: 3px solid blue" src="/images/pushnom.png"
+    <img align=top width=72 height=24 style="outline: 3px solid blue" src="/images/add.png"
 onClick="pushpals([tagbuf.value])" />
 </form>
+</td></tr></table>
 </td></tr>
 
 <tr><td>
-<br/>
       <div style="border-style: solid; border-color: black; border-width: 2">
         <script>make_pals()</script>
       </div>
@@ -543,39 +511,53 @@ onClick="pushpals([tagbuf.value])" />
     <td align=right>
 
 <table>
-    <tr><td align=right height="36"><img onClick="clicktool('plus')" id="plusbutton" src="/images/plus.png"> </td></tr>
-    <tr><td align=right height="36"><img onClick="clicktool('mash')" id="mashbutton" src="/images/mash.png"> </td></tr>
-    <tr><td align=right height="36"><img onClick="clicktool('blend')" id="blendbutton" src="/images/blend.png"> </td></tr>
-    <tr><td align=right height="36"><img onClick="clicktool('spawn')" id="spawnbutton" src="/images/spawn.png"> </td></tr>
-    <tr><td align=right height="36"><img onClick="clicktool('goto')" id="gotobutton" src="/images/goto.png"> </td></tr>
+    <tr><td align=right height="36"><img width=96 height=24 onClick="clicktool('map')" id="mapbutton" src="/images/more.png"> </td></tr>
+    <tr><td align=right height="36"><img width=96 height=24 onClick="clicktool('unmap')" id="unmapbutton" src="/images/less.png"> </td></tr>
+    <tr><td align=right height="36"><img width=96 height=24 onClick="clicktool('mash')" id="mashbutton" src="/images/mash.png"> </td></tr>
+    <tr><td align=right height="36"><img width=120 height=24 onClick="clicktool('blend')" id="blendbutton" src="/images/blend.png"> </td></tr>
+    <tr><td align=right height="36"><img width=120 height=24 onClick="clicktool('spawn')" id="spawnbutton" src="/images/spawn.png"> </td></tr>
+    <tr><td align=right height="36"><img width=96 height=24 onClick="clicktool('goto')" id="gotobutton" src="/images/goto.png"> </td></tr>
 </table>
 
 <script>
 function clicktool(t) {
-  plusbutton.style.outline = "";
-  mashbutton.style.outline = "";
-  blendbutton.style.outline = "";
-  spawnbutton.style.outline = "";
-  gotobutton.style.outline = "";
+  mapbutton.style.outline = "3px solid blue";
+  unmapbutton.style.outline = "3px solid blue";
+  mashbutton.style.outline = "3px solid blue";
+  blendbutton.style.outline = "3px solid blue";
+  spawnbutton.style.outline = "3px solid blue";
+  gotobutton.style.outline = "3px solid blue";
 
   var but = document.getElementById(t + "button");
   but.style.outline = "3px solid #00ff00";
   window.tool = t;
 }
-clicktool('plus');
+clicktool('map');
 
-if (0) {
 function shiftdown() {
-  if (window.tool == "plus") {
-    plusbutton.style.outline = "3px solid red";
+  if (window.tool == "map") {
+    clicktool("unmap");
+  } else if (window.tool == "unmap") {
+    clicktool("map");
   }
 }
 function shiftup() {
-  if (window.tool == "plus") {
-    plusbutton.style.outline = "3px solid green";
+  if (window.tool == "map") {
+    clicktool("unmap");
+  } else if (window.tool == "unmap") {
+    clicktool("map");
   }
 }
-shiftup();
+function controldown() {
+//  if (window.tool == "map") {
+//    clicktool("spawn");
+//  }
+}
+function controlup() {
+//  if (window.tool == "spawn") {
+//    clicktool("map");
+//  }
+}
 
 var onkeydown = (function (ev) {
   if (ev.which == 16) {
@@ -584,7 +566,7 @@ var onkeydown = (function (ev) {
   if (ev.which == 17) {
     controldown();
   }
-  if (ev.which == 18) {
+  if (0 && ev.which == 18) {
     altdown();
   }
 });
@@ -596,11 +578,10 @@ var onkeyup = (function (ev) {
   if (ev.which == 17) {
     controlup();
   }
-  if (ev.which == 18) {
+  if (0 && ev.which == 18) {
     altup();
   }
 });
-}
 
 </script>
 
@@ -608,11 +589,9 @@ var onkeyup = (function (ev) {
     </tr>
 <tr><td height="16"></td></tr>
 <tr>
-<td valign="top" height="320" style="outline: 3px solid blue; color: white">
+<td valign="top" height="320" style="outline: 3px solid gray; color: white">
 /\/\/\/\/\/\/\/\/\/\/\/\/\/\ <br/>
 /\/\/\/\/\/\/\/\/\/\/\/\/\/\  <br/>
-/\/\/\/\/\/\/\/\/\/\/\/\/\/\ <br/>
-/\/\/\/\/\/\/\/\/\/\/\/\/\/\ <br/>
 /\/\/\/\/\/\/\/\/\/\/\/\/\/\ <br/>
 /\/\/\/\/\/\/\/\/\/\/\/\/\/\ <br/>
 /\/\/\/\/\/\/\/\/\/\/\/\/\/\ <br/>

@@ -78,9 +78,7 @@ struct Parson {
 
   // 8
   uint32_t generated;
-  uint8_t target_lock;
-  uint8_t control_lock;
-  uint8_t _pad[2];
+  uint32_t acted;
 
   // 8
   uint64_t cents;
@@ -122,7 +120,8 @@ struct Parson {
 
   // 64 * 64 * 3
   double variations[ncontrols];
-  uint8_t ___pad[4096];
+  uint8_t pubkey[1024];
+  uint8_t ___pad[3072];
 
   // 2048
   Brief briefs[nbriefs];

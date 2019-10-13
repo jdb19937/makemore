@@ -13,7 +13,6 @@
 <link rel='canonical' href='https://peaple.io/$NOM'>
 
 
-<script src="/gennom.js"></script>
 
 <script src="/autocomplete.js"></script>
 <link rel="stylesheet" type="text/css" href="/autocomplete.css">
@@ -28,6 +27,8 @@ function get_nom() {
   }
   return nom;
 }
+
+window.nom = get_nom();
 
 function randstr() {
   return "" + Math.floor(Math.random() * 1000000000);
@@ -51,31 +52,54 @@ function reload() {
   mainpic.src = "/" + window.nom + ".png" + "?r=" + randstr();
 }
 
-function onload() {
-  window.nom = get_nom();
-  reload();
-}
-
 </script>
 </head>
 
-<body text="#ffffff" bgcolor="#000000" onload="onload()">
+<body text="#ffffff" bgcolor="#000000">
 
 $HEADER
-
-<script>
-var nom = get_nom();
-</script>
-
-
+$SUBHEAD
 
 <table width="1280"> <tr><td>
 
 <table cellspacing=0 cellpadding=0 align="center">
+<tr>
+  <td><a href="/$NOM/fam" id="mainlink"><img style="border: 3px solid blue" id="mainpic" width=512 height=512 src="/$NOM.png"></a></td>
+</tr>
+
+<tr height="16px"><td></td></tr>
+
 
 <tr>
-  <td><a id="mainlink"><img id="mainpic" width=512 height=512></a></td>
+<td align="center">
+<table><tr><td>
+
+
+  <script src="/autocomplete.js"></script>
+<script>
+function dogoto(who) {
+  location = "/" + who;
+}
+</script>
+  <link rel="stylesheet" type="text/css" href="/autocomplete.css">
+  <form autocomplete="off">
+    <div class="autocomplete">
+      <input type="text" style='font-family: monospace; font-size: large' onClick="this.value=''" value="$NOM" size="32" id="qnom" placeholder="nom">
+      <script>
+autocomplete(document.getElementById('qnom'), function() { dogoto(document.getElementById('qnom').value); });
+//qnom.focus();
+</script>
+    </div>
+&nbsp;
+    <img align="center" width=96 height=24 style="outline: 3px solid blue" src="/images/goto.png"
+      onClick="dogoto(document.getElementById('qnom').value)" >
+</form>
+
+</td></tr></table>
+
+</td>
 </tr>
+
 
 </table>
 

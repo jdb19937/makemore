@@ -46,7 +46,7 @@ Session::Session(Agent *_agent) {
     shell_out
   );
 
-  loadvars();
+  // loadvars();
 }
 
 void Session::loadvars() {

@@ -1,8 +1,19 @@
 <html>
 <head>
-<title>makemore peaple / terminal</title>
+<title>makemore peaple / sh</title>
 
-<script src="moretp.js"></script>
+<style type="text/css">
+//canvas, img {
+//    image-rendering: optimizeSpeed;
+//    image-rendering: -moz-crisp-edges;
+//    image-rendering: -webkit-optimize-contrast;
+//    image-rendering: optimize-contrast;
+//    image-rendering: pixelated;
+//    -ms-interpolation-mode: nearest-neighbor;
+//}
+</style>
+
+<script src="/moretp.js"></script>
 
 <script>
 function chop(x) {
@@ -157,10 +168,15 @@ var c = 32;
 var c = 32;
     termcanvas.putcat(32, window.curx, window.cury, window.curstate)
   }
+  window.setcurs = setcurs;
+  window.clearcurs = clearcurs;
 
   window.linebuf = '';
 
   window.addEventListener("keydown", event => {
+    if (document.activeElement.tagName != 'BODY') {
+      return;
+    }
     var ch = event.keyCode;
     if (ch == 8) {
       if (window.curx > 2) {
@@ -177,8 +193,7 @@ var c = 32;
     }
   });
 
-  window.addEventListener("keypress", event => {
-      var ch = event.which;
+  window.kp = function(ch) {
       if (ch > 255)
         ch = 255;
 
@@ -242,27 +257,53 @@ return;
         setcurs();
         return;
       } 
+  };
+  window.simput = function(txt) {
+    for (var i = 0; i < txt.length; ++i) {
+      var ch = txt.charCodeAt(i);
+      window.kp(ch);
+    }
+  }
+  window.addEventListener("keypress", function(e) {
+    if (document.activeElement.tagName != "BODY") {
+      return;
+    }
+    window.kp(e.which);
   });
 
-  window.cli = new moretpclient(function() {
-    termcanvas.puttext(
-      "Connected.",
-      0, 18
-    );
-    termcanvas.puttext(
-      "Welcome to Peaple.IO!\n\nType \"help\" for help.",
-      0, 20
-    );
+  window.firstconnect = true;
 
-    window.setInterval(function() {
-      window.curstate = 1 - window.curstate;
-      setcurs();
-    }, 256);
+  var oncli = function() {
+    if (window.firstconnect) {
+      termcanvas.puttext(
+        "Connected.",
+        0, 18
+      );
+      termcanvas.puttext(
+        "Welcome to Peaple.IO!\n\nTry some of the example commands below.",
+        0, 20
+      );
+      window.firstconnect = false;
 
     termcanvas.puttext(userprompt + ' ', 0, 24);
     window.curx = 2;
     setcurs()
-  })
+
+    if (window.usernom && window.session) {
+      window.simput("be " + window.usernom + " " + window.session + "\r");
+    }
+    }
+  };
+  window.cli = new moretpclient(oncli);
+
+    window.setInterval(function() {
+if (document.activeElement.tagName == "BODY") {
+      window.curstate = 1 - window.curstate;
+} else {
+      window.curstate = 1;
+}
+      setcurs();
+    }, 256);
 
   window.cli.asynccb = function(x) {
 if (0 && loading) {
@@ -280,18 +321,19 @@ window.setTimeout(function() { window.cli.asyncbb(x); }, 1);
 }
 
 
-</script>
+//window.onlogin = [function() {
+//  window.simput("be " + window.usernom + " " + window.session + "\r");
+//}];
 
-<meta property='og:title' content='sh'>
-<meta property='og:description' content='sh'>
-<meta property='og:url' content='https://peaple.io/sh'>
-<meta property='og:type' content='article'>
+</script>
 
 </head>
 
-<body text="#ffffff" bgcolor="#000000" onload="load()">
+<body id=bod text="#ffffff" bgcolor="#000000" onload="load()">
 
 $HEADER
+<br/>
+<script>headsh.style.outline = '3px solid #00ff00';</script>
 
 <table width="1280"><tr><td align="center">
 
@@ -300,7 +342,21 @@ $HEADER
 <canvas style="border: 3px solid green; image-rendering: pixelated" id="terminal" width=1280 height=600></canvas>
 </center>
 
-</td></tr></table>
+
+</td></tr>
+
+<tr><td>
+<input style='font-family: monospace; font-size: 10px' type="button" value="pick 50 | cols 10 | xargs show" onClick="window.simput(this.value + '\r');">
+<input style='font-family: monospace; font-size: 10px' type="button" value="yes | cols 10 | head 10" onClick="window.simput(this.value + '\r');">
+<input style='font-family: monospace; font-size: 10px' type="button" value="pick 1024 | grep ^dan | sort" onClick="window.simput(this.value + '\r');">
+<input style='font-family: monospace; font-size: 10px' type="button" value="ps" onClick="window.simput(this.value + '\r');">
+<input style='font-family: monospace; font-size: 10px' type="button" value="make bobby" onClick="window.simput(this.value + '\r');">
+<input style='font-family: monospace; font-size: 10px' type="button" value="show bobby" onClick="window.simput(this.value + '\r');">
+<input style='font-family: monospace; font-size: 10px' type="button" value="deport bobby" onClick="window.simput(this.value + '\r');">
+<input style='font-family: monospace; font-size: 10px' type="button" value="nomgen | xargs setword newnom ; make $newnom ; show $newnom" onClick="window.simput(this.value + '\r');">
+</td></tr>
+
+</table>
 
 </body>
 </html>

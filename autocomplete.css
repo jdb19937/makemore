@@ -1,13 +1,15 @@
-* { box-sizing: border-box; }
+/* * { box-sizing: border-box; } */
 
 
 .autocomplete {
   /*the container must be positioned relative:*/
   position: relative;
+font-family: monospace;
   display: inline-block;
 }
 .autocomplete-items {
   position: absolute;
+font-family: monospace;
   border: 1px solid #d4d4d4;
   border-bottom: none;
   border-top: none;

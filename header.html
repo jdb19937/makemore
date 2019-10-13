@@ -1,0 +1,276 @@
+<!--
+<div id="fb-root"></div>
+<script async defer crossorigin="anonymous" src="https://connect.facebook.net/en_US/sdk.js#xfbml=1&version=v4.0"></script>
+-->
+
+<table style="width: 1280px" cellpadding=0 cellspacing=0>
+  <tr>
+    <td style='font-size: 40px'>[
+      <a href="/"><img style="outline: 3px solid blue" id=headrand width=96 height=24 src="/images/rand.png"></a>
+      | <a href="/new"><img style="outline: 3px solid blue" id=headnew width=72 height=24 src="/images/new.png"></a>
+      | <a id="linktop" href="/top"><img style="outline: 3px solid blue" id=headtop width=72 height=24 src="/images/top.png"></a>
+      | <a href="/sh"><img style="outline: 3px solid blue" id=headsh width=48 height=24 src="/images/sh.png"></a>
+
+
+<!--
+
+<span id="fbspan">
+<style type="text/css">
+.fb-share-button {
+ top: 2px;
+}
+</style>
+|
+<div id="fb-root" style="display: none"></div>
+<script async defer crossorigin="anonymous" src="https://connect.facebook.net/en_US/sdk.js#xfbml=1&version=v4.0"></script>
+<span class="fb-share-button" data-href="$URL" data-layout="button_count" data-size="large"><a target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=$ESCURL&amp;src=sdkpreparse" class="fb-xfbml-parse-ignore"> </a></span>
+</span>
+
+
+
+-->
+
+
+
+
+
+    ]</td>
+
+    <td align="right" height="70">
+<div id="userbar" style="display: none">
+      <table>
+        <tr>
+          <td style="font-size: 40px">
+            [
+<a href="/buy"><img width=72 height=24 style="outline: 3px solid blue" id=buybutton src="/images/buy.png"></a>
+<span style="font-family: monospace; font-size: 32px; color: green">0</span>
+|
+
+<a href="/conf"><img height=24 width=96 style="outline: 3px solid blue" id=confbutton src="/images/conf.png"></a> |
+
+
+            <img width=144 height=24 onClick="logout()" style="outline: 3px solid blue" id=logoutbutton src="/images/logout.png">
+            ]
+
+<a id="userlink"><img align="center" style="border: 3px solid blue" id="userimg" width=64 height=64></a>
+
+</td>
+        </tr>
+      </table>
+</div>
+<div id="loginbar" style="display: none">
+      <table>
+        <tr>
+          <td rowspan="2" valign="center" style="font-size: 40px">
+            [
+          </td>
+
+          <td align="right"><img width=48 height=16 alt="nom" onClick="nomlogin.value=''; nomlogin.focus()" src="/images/small_nom.png"/></td>
+          <td> <input id="nomlogin" type="text" style="font-family: monospace; font-size: medium" size=32 maxlength=32 onClick="this.value=''" value=""/></td>
+<script>if ("$NOM" && "$NOM".substr(0, 1) != '$') { nomlogin.value = '$NOM'; }</script>
+
+          <td rowspan="2" valign="center" style="font-size: 40px">
+<script>
+function arrayBufferToString(buffer){
+    var arr = new Uint8Array(buffer);
+    var str = String.fromCharCode.apply(String, arr);
+    return str;
+}
+
+function badpass() {
+  nompass.value = '';
+  if (nomlogin.value == '') {
+    nomlogin.focus();
+  } else {
+    nompass.focus();
+  }
+
+  loginbutton.style.outline = "3px solid red";
+  window.loginsocket = null;
+
+  window.setTimeout(function() {
+    loginbutton.style.outline = "3px solid blue";
+  }, 1000);
+}
+
+function logout() {
+  sessionStorage.clear();
+  if (window.usernom) {
+    nomlogin.value = window.usernom;
+  }
+  nompass.value = '';
+
+  window.usernom = '';
+  window.session = '';
+  var lbar = document.getElementById('loginbar');
+  lbar.style.display = 'block';
+  var ubar = document.getElementById('userbar');
+  ubar.style.display = 'none';
+
+  loginbutton.style.outline = "3px solid blue";
+
+  var z = window.onlogout;
+  if (z) { if (Array.isArray(z)) { for (var w in z) { (z[w])(); } } else { z(); } }
+}
+
+function check_loginstate() {
+  var nom = sessionStorage.getItem('nom');
+  var session = sessionStorage.getItem('session');
+  if (!nom || !session) {
+    logout();
+    return;
+  }
+
+  window.usernom = nom;
+  window.session = session;
+
+  var lbar = document.getElementById('loginbar');
+  lbar.style.display = 'none';
+  var ubar = document.getElementById('userbar');
+  ubar.style.display = 'block';
+
+  userimg.src = "/" + window.usernom + ".png?dim=64";
+  userlink.href = "/" + window.usernom;
+
+  var z = window.onlogin;
+  if (z) { if (Array.isArray(z)) { for (var w in z) { (z[w])(); } } else { z(); } }
+}
+
+
+function getsession(username, password, pubkey, hexprivkey) {
+  var socket = new WebSocket('wss://peaple.io:3333/', ['binary']);
+  window.loginsocket = socket;
+  socket.binaryType = 'arraybuffer';
+  socket.onmessage = function(buf) {
+    var txt = arrayBufferToString(buf.data);
+    if (txt.substr(0, 8) == "session ") {
+      var ses = txt.substr(8);
+      var z = ses.indexOf('\n');
+      if (z > -1) { ses = ses.substr(0, z); }
+      sessionStorage.setItem('nom', username);
+      sessionStorage.setItem('session', ses);
+      sessionStorage.setItem("privkey", hexprivkey);
+      sessionStorage.setItem("pubkey", bufToBn(pubkey).toString(16));
+      window.loginsocket = null;
+      check_loginstate();
+    } else {
+      badpass();
+    }
+    socket.close();
+  };
+
+  socket.onclose = function() {
+    // badpass();
+  }
+
+  socket.onopen = function() {
+    var blob0 = new Blob([username], {type: 'text/plain'});
+    var blob1 = new Blob([password], {type: 'text/plain'});
+    var blob2 = new Blob([pubkey]);
+    var hdr = "be " + "<" + blob0.size + " <" + blob1.size + " <" + blob2.size + "\n";
+    var bhdr = new Blob([hdr], {type: 'text/plain'});
+    var sblob = new Blob([bhdr, blob0, blob1, blob2]);
+    socket.send(sblob);
+  };
+}
+
+function loadScript(url, callback)
+{
+   var head = document.getElementsByTagName('head')[0];
+   var script = document.createElement('script');
+   script.type = 'text/javascript';
+   script.src = url;
+   script.onreadystatechange = callback;
+   script.onload = callback;
+   head.appendChild(script);
+}
+
+
+function clicklogin() {
+  loginbutton.style.outline = "3px solid yellow";
+
+loadScript('/crypto.js', function() {
+
+var login = nomlogin.value;
+var seedpass = nompass.value;
+var password;
+if (seedpass == '') {
+  badpass();
+  return;
+} else {
+  password = sha256(sha256(login + "/" + seedpass) + "/" + seedpass);
+}
+
+
+var hexprivkey = sha256(sha256(login + "@" + seedpass) + "@" + seedpass);
+var privkey = BigInt("0x" + hexprivkey);
+var pubkey = modpow(egg, privkey, egp);
+var pubkeybuf = bnToBuf(pubkey, 128);
+
+getsession(login, password, pubkeybuf, hexprivkey)
+});
+
+}
+</script>
+            &nbsp; <img alt="login" width=120 height=24 id="loginbutton" onClick="clicklogin()" src="/images/login.png"/ style="outline: 3px solid blue"> ]
+          </td>
+        </tr>
+        <tr>
+          <td align="right"><img width=64 height=16 alt="pass" onClick="nompass.value=''; nompass.focus()" src="/images/small_pass.png"/></td>
+          <td><input id="nompass" onkeypress="if (event.which == 13) { clicklogin(); }" type="password" style="font-family: monospace; font-size: medium" size=32 maxlength=32 /></td>
+        </tr>
+      </table>
+    </div>
+
+<script>
+check_loginstate();
+</script>
+
+
+
+
+    </td>
+  </tr>
+
+
+
+
+  <tr>
+    <td colspan=2>
+      <div style="width: 1280px; height: 4px; background-color: #444444"></div>
+    </td>
+  </tr>
+  <tr>
+  <td> <img style="image-rendering: pixelated" width=640 height=48 src="/images/makemore.png"> </td>
+  <td valign="top" align="right">
+    <img style="image-rendering: pixelated" src="/images/createdby.png"><br/>
+    <a id=linkemail><img style="image-rendering: pixelated" src="/images/email.png"></a>
+
+<script>
+var z = 'mai';
+z += 'lto:';
+z += String.fromCharCode(0x6A);
+z += 'db1729';
+z += String.fromCharCode(z.charCodeAt(7) - 0x2A);
+z += 'gma';
+z += 'il.com';
+linkemail.href = z;
+</script>
+
+  </td>
+  </tr>
+
+  <tr>
+    <td colspan=2>
+      <div style="width: 1280px; height: 4px; background-color: #444444"></div>
+    </td>
+  </tr>
+
+
+
+
+<script>
+</script>
+
+</table>
+
