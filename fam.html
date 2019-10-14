@@ -60,6 +60,14 @@ function reload() {
     p0pic.src   = "/" + attrs.parens[0] + ".png";
     p1link.href = "/" + attrs.parens[1] + "/fam";
     p1pic.src   = "/" + attrs.parens[1] + ".png";
+
+    var kids = attrs['kids'];
+    for (var i in kids) {
+      var kid = kids[i];
+      kidrow.insertCell(i);
+      var kidcell = kidrow.cells[i];
+      kidcell.innerHTML = '<a href="/' + kid + '/fam"><img width=128 height=128 src="/' + kid + '.png?dim=128"></a>';
+    }
   });
 }
 
@@ -116,8 +124,13 @@ $SUBHEAD
   <td><a id="gp3link"><img id="gp3pic" width=128 height=128></a></td>
 </tr>
 
+</table>
 
+<br/>
+<br/>
 
+<table id="kidtab" cellspacing=0 cellpadding=0 align="center">
+<tr id="kidrow"></tr>
 </table>
 
 </td></tr></table>

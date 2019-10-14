@@ -107,6 +107,8 @@ spawn.png:
 	echo 'spawn' | ../morktxt --height 3 --width 10 | pnmcut -top 1 | pnmscale 12 | pnmtopng > $@
 claim.png:
 	echo 'claim' | ../morktxt --height 3 --width 10 | pnmcut -top 1 | pnmscale 12 | pnmtopng > $@
+comms.png:
+	echo 'comms' | ../morktxt --height 3 --width 10 | pnmcut -top 1 | pnmscale 12 | pnmtopng > $@
 bread.png:
 	echo 'bread' | ../morktxt --height 3 --width 10 | pnmcut -top 1 | pnmscale 12 | pnmtopng > $@
 goto.png:

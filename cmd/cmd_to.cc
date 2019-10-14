@@ -99,6 +99,13 @@ void mainmore(
   }
   fclose(fp);
 
+  // touch atime
+  fp = fopen(ufromfn.c_str(), "r");
+  char c;
+  fread(&c, 1, 1, fp);
+  if (fp)
+    fclose(fp);
+
   if (uto.nom != ufrom.nom) {
     uto.make_home_dir();
     string utofn = urb->dir + "/home/" + uto.nom + "/" + ufrom.nom + ".dat";
@@ -119,6 +126,8 @@ void mainmore(
       return;
     }
     fclose(fp);
+
+    to->newcomms = 1;
   }
 
   {

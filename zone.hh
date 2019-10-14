@@ -4,6 +4,8 @@
 #include "parson.hh"
 #include "autocompleter.hh"
 
+#include <list>
+
 namespace makemore {
 
 struct Zone {
@@ -56,6 +58,8 @@ struct Zone {
     long off = p - db;
     return (off >= 0 && off < n);
   }
+
+  void scan_kids(const std::string &nom, std::list<Parson*> *, int m = -1);
 };
 
 }

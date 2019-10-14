@@ -82,6 +82,8 @@ struct Agent {
   void flush();
   void command(const std::vector<std::string> &line);
 
+  void http_notfound();
+  void http_denied();
   void handle_http();
 };
 

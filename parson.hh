@@ -113,7 +113,7 @@ struct Parson {
   double rmark_err;
 
   uint32_t skid;
-  uint32_t ummmmpad;
+  uint32_t newcomms;
   double tone;
   uint8_t pad1[2486];
   uint8_t pad2[4096];

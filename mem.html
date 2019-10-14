@@ -88,7 +88,10 @@ function onc(im) {
     }
 
     var vdev = warpvar(window.mul);
-    document.getElementById('img' + i).src = "/" + window.nom + ".png" + "?dim=192&vdev=" + vdev + "&r=" + window.cells[i];
+    var im = document.getElementById('img' + i);
+    var td = im.parentElement;
+    td.style.borderColor = 'yellow';
+    im.src = "/" + window.nom + ".png" + "?dim=192&vdev=" + vdev + "&r=" + window.cells[i];
     window.state = 1;
     window.prev = i;
     return;
@@ -99,8 +102,16 @@ function onc(im) {
       return;
 
     var vdev = warpvar(window.mul);
-    document.getElementById('img' + i).src = "/" + window.nom + ".png" + "?dim=192&vdev=" + vdev + "&r=" + window.cells[i];
+    var im = document.getElementById('img' + i);
+    im.src = "/" + window.nom + ".png" + "?dim=192&vdev=" + vdev + "&r=" + window.cells[i];
+    var td = im.parentElement;
+
     if (window.cells[i] == window.cells[window.prev]) {
+      td.style.borderColor = 'green';
+      var imprev = document.getElementById('img' + window.prev);
+      var tdprev = imprev.parentElement;
+      tdprev.style.borderColor = 'green';
+
       ++window.nsolved;
 //if (window.nsolved == 18) { window.location = '/' + window.nom + '/cam'; }
 //if (window.nsolved == 18) { alert('great job'); }
@@ -109,9 +120,17 @@ function onc(im) {
       window.state = 0;
       window.prev = -1;
     } else {
+      td.style.borderColor = 'red';
+      var imprev = document.getElementById('img' + window.prev);
+      var tdprev = imprev.parentElement;
+      tdprev.style.borderColor = 'red';
+
       window.setTimeout(function() {
-        document.getElementById('img' + i).src = "/mandelbrot.png";
-        document.getElementById('img' + window.prev).src = "/mandelbrot.png";
+        td.style.borderColor = 'blue';
+        tdprev.style.borderColor = 'blue';
+
+        document.getElementById('img' + i).src = "/julia.png?vdev=1&r=$RAND";
+        document.getElementById('img' + window.prev).src = "/julia.png?vdev=1&r=$RAND";
         window.state = 0;
         window.prev = -1;
       }, 1000)
@@ -178,54 +197,54 @@ $SUBHEAD
 
 <tr><td align=center>
 
-<table cellpadding=0 cellspacing=1>
+<table cellpadding=0 cellspacing=0>
 <tr>
-  <td><img onclick="onc(this)" width="192px" src="/mandelbrot.png" id="img0"></td>
-  <td><img onclick="onc(this)" width="192px" src="/mandelbrot.png" id="img1"></td>
-  <td><img onclick="onc(this)" width="192px" src="/mandelbrot.png" id="img2"></td>
-  <td><img onclick="onc(this)" width="192px" src="/mandelbrot.png" id="img3"></td>
-  <td><img onclick="onc(this)" width="192px" src="/mandelbrot.png" id="img4"></td>
-  <td><img onclick="onc(this)" width="192px" src="/mandelbrot.png" id="img5"></td>
+  <td style="border: 1px solid blue"><img onclick="onc(this)" width="192px" src="/julia.png?vdev=1&r=$RAND" id="img0"></td>
+  <td style="border: 1px solid blue"><img onclick="onc(this)" width="192px" src="/julia.png?vdev=1&r=$RAND" id="img1"></td>
+  <td style="border: 1px solid blue"><img onclick="onc(this)" width="192px" src="/julia.png?vdev=1&r=$RAND" id="img2"></td>
+  <td style="border: 1px solid blue"><img onclick="onc(this)" width="192px" src="/julia.png?vdev=1&r=$RAND" id="img3"></td>
+  <td style="border: 1px solid blue"><img onclick="onc(this)" width="192px" src="/julia.png?vdev=1&r=$RAND" id="img4"></td>
+  <td style="border: 1px solid blue"><img onclick="onc(this)" width="192px" src="/julia.png?vdev=1&r=$RAND" id="img5"></td>
 </tr>
 <tr>
-  <td><img onclick="onc(this)" width="192px" src="/mandelbrot.png" id="img6"></td>
-  <td><img onclick="onc(this)" width="192px" src="/mandelbrot.png" id="img7"></td>
-  <td><img onclick="onc(this)" width="192px" src="/mandelbrot.png" id="img8"></td>
-  <td><img onclick="onc(this)" width="192px" src="/mandelbrot.png" id="img9"></td>
-  <td><img onclick="onc(this)" width="192px" src="/mandelbrot.png" id="img10"></td>
-  <td><img onclick="onc(this)" width="192px" src="/mandelbrot.png" id="img11"></td>
+  <td style="border: 1px solid blue"><img onclick="onc(this)" width="192px" src="/julia.png?vdev=1&r=$RAND" id="img6"></td>
+  <td style="border: 1px solid blue"><img onclick="onc(this)" width="192px" src="/julia.png?vdev=1&r=$RAND" id="img7"></td>
+  <td style="border: 1px solid blue"><img onclick="onc(this)" width="192px" src="/julia.png?vdev=1&r=$RAND" id="img8"></td>
+  <td style="border: 1px solid blue"><img onclick="onc(this)" width="192px" src="/julia.png?vdev=1&r=$RAND" id="img9"></td>
+  <td style="border: 1px solid blue"><img onclick="onc(this)" width="192px" src="/julia.png?vdev=1&r=$RAND" id="img10"></td>
+  <td style="border: 1px solid blue"><img onclick="onc(this)" width="192px" src="/julia.png?vdev=1&r=$RAND" id="img11"></td>
 </tr>
 <tr>
-  <td><img onclick="onc(this)" width="192px" src="/mandelbrot.png" id="img12"></td>
-  <td><img onclick="onc(this)" width="192px" src="/mandelbrot.png" id="img13"></td>
-  <td><img onclick="onc(this)" width="192px" src="/mandelbrot.png" id="img14"></td>
-  <td><img onclick="onc(this)" width="192px" src="/mandelbrot.png" id="img15"></td>
-  <td><img onclick="onc(this)" width="192px" src="/mandelbrot.png" id="img16"></td>
-  <td><img onclick="onc(this)" width="192px" src="/mandelbrot.png" id="img17"></td>
+  <td style="border: 1px solid blue"><img onclick="onc(this)" width="192px" src="/julia.png?vdev=1&r=$RAND" id="img12"></td>
+  <td style="border: 1px solid blue"><img onclick="onc(this)" width="192px" src="/julia.png?vdev=1&r=$RAND" id="img13"></td>
+  <td style="border: 1px solid blue"><img onclick="onc(this)" width="192px" src="/julia.png?vdev=1&r=$RAND" id="img14"></td>
+  <td style="border: 1px solid blue"><img onclick="onc(this)" width="192px" src="/julia.png?vdev=1&r=$RAND" id="img15"></td>
+  <td style="border: 1px solid blue"><img onclick="onc(this)" width="192px" src="/julia.png?vdev=1&r=$RAND" id="img16"></td>
+  <td style="border: 1px solid blue"><img onclick="onc(this)" width="192px" src="/julia.png?vdev=1&r=$RAND" id="img17"></td>
 </tr>
 <tr>
-  <td><img onclick="onc(this)" width="192px" src="/mandelbrot.png" id="img18"></td>
-  <td><img onclick="onc(this)" width="192px" src="/mandelbrot.png" id="img19"></td>
-  <td><img onclick="onc(this)" width="192px" src="/mandelbrot.png" id="img20"></td>
-  <td><img onclick="onc(this)" width="192px" src="/mandelbrot.png" id="img21"></td>
-  <td><img onclick="onc(this)" width="192px" src="/mandelbrot.png" id="img22"></td>
-  <td><img onclick="onc(this)" width="192px" src="/mandelbrot.png" id="img23"></td>
+  <td style="border: 1px solid blue"><img onclick="onc(this)" width="192px" src="/julia.png?vdev=1&r=$RAND" id="img18"></td>
+  <td style="border: 1px solid blue"><img onclick="onc(this)" width="192px" src="/julia.png?vdev=1&r=$RAND" id="img19"></td>
+  <td style="border: 1px solid blue"><img onclick="onc(this)" width="192px" src="/julia.png?vdev=1&r=$RAND" id="img20"></td>
+  <td style="border: 1px solid blue"><img onclick="onc(this)" width="192px" src="/julia.png?vdev=1&r=$RAND" id="img21"></td>
+  <td style="border: 1px solid blue"><img onclick="onc(this)" width="192px" src="/julia.png?vdev=1&r=$RAND" id="img22"></td>
+  <td style="border: 1px solid blue"><img onclick="onc(this)" width="192px" src="/julia.png?vdev=1&r=$RAND" id="img23"></td>
 </tr>
 <tr>
-  <td><img onclick="onc(this)" width="192px" src="/mandelbrot.png" id="img24"></td>
-  <td><img onclick="onc(this)" width="192px" src="/mandelbrot.png" id="img25"></td>
-  <td><img onclick="onc(this)" width="192px" src="/mandelbrot.png" id="img26"></td>
-  <td><img onclick="onc(this)" width="192px" src="/mandelbrot.png" id="img27"></td>
-  <td><img onclick="onc(this)" width="192px" src="/mandelbrot.png" id="img28"></td>
-  <td><img onclick="onc(this)" width="192px" src="/mandelbrot.png" id="img29"></td>
+  <td style="border: 1px solid blue"><img onclick="onc(this)" width="192px" src="/julia.png?vdev=1&r=$RAND" id="img24"></td>
+  <td style="border: 1px solid blue"><img onclick="onc(this)" width="192px" src="/julia.png?vdev=1&r=$RAND" id="img25"></td>
+  <td style="border: 1px solid blue"><img onclick="onc(this)" width="192px" src="/julia.png?vdev=1&r=$RAND" id="img26"></td>
+  <td style="border: 1px solid blue"><img onclick="onc(this)" width="192px" src="/julia.png?vdev=1&r=$RAND" id="img27"></td>
+  <td style="border: 1px solid blue"><img onclick="onc(this)" width="192px" src="/julia.png?vdev=1&r=$RAND" id="img28"></td>
+  <td style="border: 1px solid blue"><img onclick="onc(this)" width="192px" src="/julia.png?vdev=1&r=$RAND" id="img29"></td>
 </tr>
 <tr>
-  <td><img onclick="onc(this)" width="192px" src="/mandelbrot.png" id="img30"></td>
-  <td><img onclick="onc(this)" width="192px" src="/mandelbrot.png" id="img31"></td>
-  <td><img onclick="onc(this)" width="192px" src="/mandelbrot.png" id="img32"></td>
-  <td><img onclick="onc(this)" width="192px" src="/mandelbrot.png" id="img33"></td>
-  <td><img onclick="onc(this)" width="192px" src="/mandelbrot.png" id="img34"></td>
-  <td><img onclick="onc(this)" width="192px" src="/mandelbrot.png" id="img35"></td>
+  <td style="border: 1px solid blue"><img onclick="onc(this)" width="192px" src="/julia.png?vdev=1&r=$RAND" id="img30"></td>
+  <td style="border: 1px solid blue"><img onclick="onc(this)" width="192px" src="/julia.png?vdev=1&r=$RAND" id="img31"></td>
+  <td style="border: 1px solid blue"><img onclick="onc(this)" width="192px" src="/julia.png?vdev=1&r=$RAND" id="img32"></td>
+  <td style="border: 1px solid blue"><img onclick="onc(this)" width="192px" src="/julia.png?vdev=1&r=$RAND" id="img33"></td>
+  <td style="border: 1px solid blue"><img onclick="onc(this)" width="192px" src="/julia.png?vdev=1&r=$RAND" id="img34"></td>
+  <td style="border: 1px solid blue"><img onclick="onc(this)" width="192px" src="/julia.png?vdev=1&r=$RAND" id="img35"></td>
 </tr>
 </table>
 

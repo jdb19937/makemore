@@ -9,6 +9,7 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <netinet/in.h>
+#include <dirent.h>
 
 #include <openssl/ssl.h>
 
@@ -524,6 +525,22 @@ static std::string htmlpe(const std::string &nom, unsigned int dim) {
   return buf;
 }
 
+void Agent::http_notfound() {
+  this->printf("HTTP/1.1 404 Not Found\r\n");
+  this->printf("Connection: keep-alive\r\n");
+  this->printf("Content-Type: text/plain\r\n");
+  this->printf("Content-Length: 0\r\n");
+  this->printf("\r\n");
+}
+
+void Agent::http_denied() {
+  this->printf("HTTP/1.1 403 Permission Denied\r\n");
+  this->printf("Connection: keep-alive\r\n");
+  this->printf("Content-Type: text/plain\r\n");
+  this->printf("Content-Length: 0\r\n");
+  this->printf("\r\n");
+}
+
 void Agent::handle_http() {
   std::string req = httpbuf[0];
   strvec reqwords;
@@ -591,9 +608,13 @@ fprintf(stderr, "req=[%s]\n", req.c_str());
     if (cgi["r"] != "")
       r = strtoul(cgi["r"].c_str(), NULL, 0);
 
+    double vdev = 0.0;
+    if (cgi["vdev"] != "")
+      vdev = strtod(cgi["vdev"].c_str(), NULL);
+
     seedrand(r);
-    double ca = randgauss();
-    double cb = randgauss();
+    double ca = randgauss() * vdev;
+    double cb = randgauss() * vdev;
 
     Partrait jprt(256, 256);
     julia(jprt.rgb, ca, cb);
@@ -626,11 +647,7 @@ fprintf(stderr, "req=[%s]\n", req.c_str());
     int which = atoi(query.c_str());
 
     if (which < 0) {
-      this->printf("HTTP/1.1 404 Not Found\r\n");
-      this->printf("Connection: keep-alive\r\n");
-      this->printf("Content-Type: text/plain\r\n");
-      this->printf("Content-Length: 0\r\n");
-      this->printf("\r\n");
+      http_notfound();
       return;
     }
 
@@ -677,11 +694,7 @@ fprintf(stderr, "req=[%s]\n", req.c_str());
     }
 
     if (which < 0) {
-      this->printf("HTTP/1.1 404 Not Found\r\n");
-      this->printf("Connection: keep-alive\r\n");
-      this->printf("Content-Type: text/plain\r\n");
-      this->printf("Content-Length: 0\r\n");
-      this->printf("\r\n");
+      http_notfound();
       return;
     }
 
@@ -716,11 +729,7 @@ fprintf(stderr, "req=[%s]\n", req.c_str());
   if (path == "/get_tags.txt") {
     int which = atoi(query.c_str());
     if (which < 0) {
-      this->printf("HTTP/1.1 404 Not Found\r\n");
-      this->printf("Connection: keep-alive\r\n");
-      this->printf("Content-Type: text/plain\r\n");
-      this->printf("Content-Length: 0\r\n");
-      this->printf("\r\n");
+      http_notfound();
       return;
     }
 
@@ -799,6 +808,7 @@ valid.insert("unmap.png");
 valid.insert("minus.png");
 valid.insert("spawn.png");
 valid.insert("bread.png");
+valid.insert("comms.png");
 valid.insert("claim.png");
 valid.insert("mash.png");
 valid.insert("blend.png");
@@ -835,11 +845,7 @@ valid.insert("goto.png");
 
     std::string imagefn = path.c_str() + 8;
     if (!valid.count(imagefn)) {
-      this->printf("HTTP/1.1 404 Not Found\r\n");
-      this->printf("Connection: keep-alive\r\n");
-      this->printf("Content-Type: text/plain\r\n");
-      this->printf("Content-Length: 0\r\n");
-      this->printf("\r\n");
+      http_notfound();
     } else {
       string png = makemore::slurp(std::string("images/") + imagefn);
 
@@ -873,7 +879,7 @@ valid.insert("goto.png");
   }
 
   // if (path == "/tagger.html" || path == "/cam.html" || path == "/edit.html" || path == "/memory.html" || path == "/autocomplete.html" || path == "/terminal.html") {
-  if (path == "/sh" || path == "/popular" || path == "/active" || path == "/conf" || path == "/buy" || path == "/who" || path == "/online" || path == "/top" || path == "/top/" || path == "/top/active" || path == "/top/online" || path == "/top/popular") {
+  if (path == "/sh" || path == "/popular" || path == "/active" || path == "/conf" || path == "/buy" || path == "/who" || path == "/online" || path == "/top" || path == "/top/" || path == "/top/active" || path == "/top/online" || path == "/top/popular" || path == "/comms") {
     strvec pathparts;
     split(path, '/', &pathparts);
     std::string html = makemore::slurp(pathparts[0] + ".html");
@@ -1066,6 +1072,103 @@ valid.insert("goto.png");
     return;
   }
 
+  if (path == "/newcomms.txt") {
+    map<string, string> cgi;
+    cgiparse(query, &cgi);
+
+    string nom = cgi["nom"];
+    if (!Parson::valid_nom(nom)) {
+      http_notfound();
+      return;
+    }
+    Parson *parson = server->urb->find(nom);
+    if (!parson) {
+      http_notfound();
+      return;
+    }
+    string session = cgi["session"];
+    if (!server->check_session(nom, session)) {
+      http_denied();
+      return;
+    }
+
+    char buf[16];
+    sprintf(buf, "%d", parson->newcomms ? 1 : 0);
+    std::string txt = buf;
+
+    this->printf("HTTP/1.1 200 OK\r\n");
+    this->printf("Connection: keep-alive\r\n");
+    this->printf("Content-Type: text/plain\r\n");
+    this->printf("Content-Length: %lu\r\n", txt.length());
+    this->printf("\r\n");
+    this->write(txt);
+    return;
+  }
+
+
+  if (path == "/comms.json") {
+    map<string, string> cgi;
+    cgiparse(query, &cgi);
+
+    string nom = cgi["nom"];
+    if (!Parson::valid_nom(nom)) {
+      http_notfound();
+      return;
+    }
+    Parson *parson = server->urb->find(nom);
+    if (!parson) {
+      http_notfound();
+      return;
+    }
+    string session = cgi["session"];
+    if (!server->check_session(nom, session)) {
+      http_denied();
+      return;
+    }
+
+    parson->newcomms = 0;
+
+    std::string json = "{";
+    std::string home = server->urb->dir + "/home/" + nom;
+    if (DIR *dp = opendir(home.c_str())) {
+      int i = 0;
+      struct dirent *de;
+      while ((de = readdir(dp))) {
+        const char *fn = de->d_name;
+        const char *ext = strrchr(fn, '.');
+        if (!ext || strcmp(ext, ".dat"))
+          continue;
+
+        std::string qnom(fn, ext - fn);
+        if (!Parson::valid_nom(qnom))
+          continue;
+        if (!server->urb->find(qnom))
+          continue;
+
+        struct stat st;
+        int ret = ::stat((home + "/" + fn).c_str(), &st);
+        if (ret != 0)
+          continue;
+
+        char buf[256];
+        sprintf(buf, "%s\n  \"%s\": [%lu, %lu]",
+          i ? "," : "", qnom.c_str(), st.st_mtime, st.st_atime);
+        json += buf;
+        ++i;
+      }
+      closedir(dp);
+    }
+    json += "\n}";
+
+    this->printf("HTTP/1.1 200 OK\r\n");
+    this->printf("Connection: keep-alive\r\n");
+    this->printf("Content-Type: text/json\r\n");
+    this->printf("Content-Length: %lu\r\n", json.length());
+    this->printf("\r\n");
+    this->write(json);
+    return;
+  }
+
 
   if (path == "/edit") {
     map<string, string> cgi;
@@ -1090,22 +1193,14 @@ valid.insert("goto.png");
     }
 
     if (!Parson::valid_nom(nom)) {
-      this->printf("HTTP/1.1 404 Not Found\r\n");
-      this->printf("Connection: keep-alive\r\n");
-      this->printf("Content-Type: text/plain\r\n");
-      this->printf("Content-Length: 0\r\n");
-      this->printf("\r\n");
+      http_notfound();
       return;
     }
 
 
     Parson *parson = server->urb->make(nom, 0, 2);
     if (!parson) {
-      this->printf("HTTP/1.1 404 Not Found\r\n");
-      this->printf("Connection: keep-alive\r\n");
-      this->printf("Content-Type: text/plain\r\n");
-      this->printf("Content-Length: 0\r\n");
-      this->printf("\r\n");
+      http_notfound();
       return;
     }
 
@@ -1434,11 +1529,7 @@ valid.insert("goto.png");
 //fprintf(stderr, "nom=[%s] is_png=%d\n", 
 
   if (!Parson::valid_nom(nom)) {
-    this->printf("HTTP/1.1 404 Not Found\r\n");
-    this->printf("Connection: keep-alive\r\n");
-    this->printf("Content-Type: text/plain\r\n");
-    this->printf("Content-Length: 0\r\n");
-    this->printf("\r\n");
+    http_notfound();
     return;
   }
 
@@ -1467,11 +1558,7 @@ valid.insert("goto.png");
 
     std::string convnom = func;
     if (!Parson::valid_nom(convnom)) {
-      this->printf("HTTP/1.1 404 Not Found\r\n");
-      this->printf("Connection: keep-alive\r\n");
-      this->printf("Content-Type: text/plain\r\n");
-      this->printf("Content-Length: 0\r\n");
-      this->printf("\r\n");
+      http_notfound();
       return;
     }
 
@@ -1508,8 +1595,12 @@ valid.insert("goto.png");
     html = replacestr(html, "$SUBHEAD", subhead);
     html = replacestr(html, "$URL", url);
     html = replacestr(html, "$ESCURL", escurl);
-
     html = replacestr(html, "$NOM", nom);
+
+    unsigned int r = randuint();
+    char rbuf[256];
+    sprintf(rbuf, "%u", r);
+    html = replacestr(html, "$RAND", rbuf);
 
     Parson *prs = server->urb->find(nom);
     html = replacestr(html, "$LOCKED", prs && prs->has_pass() ? "1" : "0");
@@ -1555,6 +1646,18 @@ dev = sqrt(dev);
     char numstr[256];
     sprintf(numstr, "%lf", dev);
     json += string("  \"tone\": ") + numstr + ",\n";
+
+    std::list<Parson*> kids;
+    server->urb->zones[0]->scan_kids(parson->nom, &kids, 7);
+    json += string("  \"kids\": [");
+    int j = 0;
+    for (auto kid : kids) {
+      if (j)
+        json += ", ";
+      json += string("\"") + kid->nom + string("\"");
+      ++j;
+    }
+    json += "],\n";
 
     json += string("  \"parens\": [");
     for (unsigned int j = 0; j < 2; ++j) {
