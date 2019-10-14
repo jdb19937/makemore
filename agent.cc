@@ -25,6 +25,7 @@
 #include "partrait.hh"
 #include "autocompleter.hh"
 #include "mob.hh"
+#include "julia.hh"
 
 namespace makemore {
 
@@ -581,6 +582,33 @@ fprintf(stderr, "req=[%s]\n", req.c_str());
     return;
   }
 #endif
+
+  if (path == "/julia.png") {
+    map<string, string> cgi;
+    cgiparse(query, &cgi);
+
+    unsigned int r = randuint();
+    if (cgi["r"] != "")
+      r = strtoul(cgi["r"].c_str(), NULL, 0);
+
+    seedrand(r);
+    double ca = randgauss();
+    double cb = randgauss();
+
+    Partrait jprt(256, 256);
+    julia(jprt.rgb, ca, cb);
+
+    std::string png;
+    jprt.to_png(&png);
+
+    this->printf("HTTP/1.1 200 OK\r\n");
+    this->printf("Connection: keep-alive\r\n");
+    this->printf("Content-Type: image/png\r\n");
+    this->printf("Content-Length: %lu\r\n", png.length());
+    this->printf("\r\n");
+    this->write(png);
+    return;
+  }
 
   if (path == "/test.png" || path == "/mandelbrot.png") {
     std::string png = makemore::slurp(std::string(".") + path);
