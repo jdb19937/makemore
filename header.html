@@ -147,6 +147,11 @@ function check_loginstate() {
       var txt = this.responseText;
       if (txt == "1") {
         headcomms.style.outline = '3px solid orange';
+var i = 0;
+window.setInterval(function() {
+  headcomms.style.outline = (i % 2) ? '3px solid orange' : '3px solid blue';
+  ++i;
+}, 500);
       }
     }
     i.send();

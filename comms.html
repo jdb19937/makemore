@@ -54,8 +54,19 @@ httpget("/comms.json?nom=" + window.usernom + "&session=" + window.session, func
 
     cell.innerHTML =
       "<a href='/" + k[i] + "/msg'>" + 
-        "<img width=256 height=256 style='border: 3px solid " + bc + "' src='/" + k[i] + ".png'>" +
-      "</a>"
+        "<img id='pic" + i + "' width=256 height=256 style='border: 3px solid " + bc + "' src='/" + k[i] + ".png'>" +
+      "</a>";
+
+    if (bc == 'orange') {
+      (function(k) {
+        var c = 0;
+        var el = document.getElementById("pic" + k);
+        window.setInterval(function() {
+          el.style.border = (c % 2) ? '3px solid orange' : '3px solid blue';
+          ++c;
+        }, 500);
+      })(i)
+    }
   }
   
   //json.innerHTML = "<pre>" + txt + "</pre>";
