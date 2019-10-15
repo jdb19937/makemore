@@ -85,9 +85,27 @@ httpget("/" + func + ".json", function(txt) {
     var u = unit[func];
     var v = Math.floor(ar[k]);
 
-    if (u == "s" && v >= 10000) {
-      v = Math.floor(v / 1024);
-      u = "k" + u;
+    if (u == "s") {
+      if (v >= 10000) {
+        v = v / 1024;
+        u = "ks";
+      }
+      if (v >= 10000) {
+        v = v / 1024;
+        u = "Ms";
+      }
+      v = Math.floor(v);
+    }
+    if (u == "&mu;Hz") {
+      if (v >= 10000) {
+        v = v / 1024;
+        u = "mHz";
+      }
+      if (v >= 10000) {
+        v = v / 1024;
+        u = "Hz";
+      }
+      v = Math.floor(v);
     }
 
     var freq = v + "&nbsp;" + u;

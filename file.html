@@ -132,7 +132,19 @@ crspan.innerHTML = when.toISOString().substr(0, 19) + "Z";
 </div>
 <script>
 if ($ONLINE > 0) {
-  onlspan.innerHTML = (Math.floor(Date.now()/1000) - $ONLINE) + "&nbsp;s"
+  var u = 's';
+  var v = Math.floor((Date.now()/1000) - $ONLINE);
+  if (v >= 10000) {
+    v = v / 1024;
+    u = "k" + u;
+  }
+  if (v >= 10000) {
+    v = v / 1024;
+    u = "M" + u.substr(1);
+  }
+  v = Math.floor(v);
+
+  onlspan.innerHTML = v + "&nbsp" + u;
   onldiv.style = "display: block";
 }
 </script>
