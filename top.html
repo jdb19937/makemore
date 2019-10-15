@@ -82,7 +82,15 @@ httpget("/" + func + ".json", function(txt) {
   for (var k in ar) {
     if (n % cols == 0) { html += "<tr>"; }
 
-    var freq = Math.floor(ar[k]) + "&nbsp;" + unit[func];
+    var u = unit[func];
+    var v = Math.floor(ar[k]);
+
+    if (u == "s" && v >= 10000) {
+      v = Math.floor(v / 1024);
+      u = "k" + u;
+    }
+
+    var freq = v + "&nbsp;" + u;
     html += (
       "<td class='topcell'><table width=256 cellpadding=0 cellspacing=0><tr>" +
 //      "<td width=128 style='background-color: #222222; font-size: 12px; font-family: monospace' align='center'>#" + rank + "</td>" + "<td></td></tr><tr>" +
