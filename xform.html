@@ -314,13 +314,20 @@ function domash(vec) {
 }
 
 function pushrow(who) {
-    var tags = window.tags;
-    var ntags = new Array(4);
-    for (var j = 0; j < 4; ++j) {
-      ntags[j] = genfnom() + "_" + who;
-      if (ntags[j].length > 31) { ntags[j] = who; } 
-    }
-    pushpals(ntags);
+  for (var c = 0; c < 1; ++c) {
+    httpget("/new/" + who + ".txt", function(newnom) {
+      pushpals([newnom]);
+    });
+  }
+ 
+//    var tags = window.tags;
+//    var ntags = new Array(4);
+//    for (var j = 0; j < 4; ++j) {
+//      ntags[j] = genfnom() + "_" + who;
+//      if (ntags[j].length > 31) { ntags[j] = who; } 
+//    }
+//    pushpals(ntags);
+
 }
 
 function addtvec(i) {
@@ -358,13 +365,6 @@ alert("unimplemented");
   }
 }
 
-function getnval() {
-  httpget("/edit?op=addvec&nom=" + nom + "&mul=0", function(txt) {
-    window.nval = unwarpvar(txt*1);
-    sliderbar2.style.width = window.nval * sw;
-  });
-}
-
 function donorm() {
   var q = warpvar(window.nval);
   httpget("/edit?op=norm&nom=" + nom + "&val=" + q, function(txt) {
@@ -373,7 +373,6 @@ function donorm() {
 }
 
 function onl() {
-  getnval();
 }
   
 
@@ -433,7 +432,7 @@ $SUBHEAD
     <div id=slidewrap2 onClick="clickslider2()" id="slider2" style="border-style: solid; border-width: 4px; border-color: gray">
     <div id="sliderbar2" style="width: 0; background-color: orange"></div>
     <script>
-      window.nval = 0;
+      window.nval = unwarpvar($DEV);
       sliderbar2.style.width = window.nval * sw;
       slidewrap2.style.width = sw;
       slidewrap2.style.height = sh;
@@ -534,18 +533,23 @@ function clicktool(t) {
 }
 clicktool('map');
 
+var shifted = 0;
 function shiftdown() {
   if (window.tool == "map") {
     clicktool("unmap");
-  } else if (window.tool == "unmap") {
-    clicktool("map");
+    shifted = 1;
   }
+  //else if (window.tool == "unmap") {
+  //  clicktool("map");
+  //}
 }
 function shiftup() {
-  if (window.tool == "map") {
-    clicktool("unmap");
-  } else if (window.tool == "unmap") {
+  //if (window.tool == "map") {
+  //  clicktool("unmap");
+  //} else
+  if (shifted && window.tool == "unmap") {
     clicktool("map");
+    shifted = 0;
   }
 }
 function controldown() {
@@ -589,6 +593,7 @@ var onkeyup = (function (ev) {
     </tr>
 <tr><td height="16"></td></tr>
 <tr>
+<!--
 <td valign="top" height="320" style="outline: 3px solid gray; color: white">
 /\/\/\/\/\/\/\/\/\/\/\/\/\/\ <br/>
 /\/\/\/\/\/\/\/\/\/\/\/\/\/\  <br/>
@@ -610,6 +615,7 @@ var onkeyup = (function (ev) {
 /\/\/\/\/\/\/\/\/\/\/\/\/\/\ <br/>
 /\/\/\/\/\/\/\/\/\/\/\/\/\/\ <br/>
 </td>
+-->
 </tr>
 </table>
 </td>

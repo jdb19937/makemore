@@ -384,8 +384,9 @@ void Server::renom(Agent *agent, const std::string &newnom) {
   nom_agent.insert(make_pair(who->nom, agent));
 }
 
-void Server::notify(const std::string &nom, const std::string &msg, const Agent *exclude) {
+bool Server::notify(const std::string &nom, const std::string &msg, const Agent *exclude) {
   auto naip = nom_agent.equal_range(nom);
+  bool found = false;
 
   for (auto nai = naip.first; nai != naip.second; ++nai) {
     const std::string &nom = nai->first;
@@ -393,11 +394,15 @@ void Server::notify(const std::string &nom, const std::string &msg, const Agent 
 
     if (agent != exclude)
       if (agent->proto == Agent::MORETP)
-        agent->write(msg + "\n");
+        if (agent->write(msg + "\n"))
+          found = true;
   }
+
+  return found;
 }
-void Server::notify(const std::string &nom, const strvec &msg, const Agent *exclude) {
+bool Server::notify(const std::string &nom, const strvec &msg, const Agent *exclude) {
   auto naip = nom_agent.equal_range(nom);
+  bool found = false;
 
   for (auto nai = naip.first; nai != naip.second; ++nai) {
     const std::string &nom = nai->first;
@@ -405,8 +410,11 @@ void Server::notify(const std::string &nom, const strvec &msg, const Agent *excl
 
     if (agent != exclude)
       if (agent->proto == Agent::MORETP)
-        agent->write(msg);
+        if (agent->write(msg))
+          found = true;
   }
+
+  return found;
 }
 
 
@@ -580,8 +588,7 @@ fprintf(stderr, "flushing %d\n", agent->s);
       }
     }
 
-#if 0
-    for (unsigned int i = 0; i < 2048; ++i) {
+    for (unsigned int i = 0; i < 64; ++i) {
       Parson *parson = urb->zones[0]->pick();
       if (!parson)
          continue;
@@ -592,24 +599,73 @@ fprintf(stderr, "flushing %d\n", agent->s);
       string req(reqstr);
       memset(reqstr, 0, Parson::briefsize);
 
+      fprintf(stderr, "wake nom=[%s] reqstr=[%s]\n", parson->nom, req.c_str());
+
       vector<string> reqwords;
       splitwords(req, &reqwords);
 
-      Agent agent(this, -1, 0x0100007F);
-      agent.command(reqwords);
+      if (reqwords[0] == "fakeresp") {
+        if (*parson->owner)
+          continue;
+        const char *tonom = reqwords[1].c_str();
+        if (!Parson::valid_nom(tonom))
+          continue;
+        Parson *to = urb->find(tonom);
+        if (!to)
+          continue;
 
+        const char *fromnom = parson->nom;
+        char msg[1024];
+        memset(msg, 0, 1024);
+        memcpy(msg, fromnom, 32);
+        memcpy(msg + 32, tonom, strlen(tonom));
+        time_t t = time(NULL);
+        memcpy(msg + 64, (char *)&t, sizeof(time_t));
+
+        std::string tofn = urb->dir + "/home/" + std::string(tonom) + "/" + std::string(fromnom) + ".dat";
+        FILE *fp = fopen(tofn.c_str(), "a");
+        if (!fp)
+          continue;
+        (void) fwrite(msg, 1, 1024, fp);
+        fclose(fp);
+
+        strvec nt;
+        nt.resize(3);
+        nt[0] = "from";
+        nt[1] = fromnom;
+        nt[2] = std::string(msg, 1024);
+        if (notify(tonom, nt)) {
+          fp = fopen(tofn.c_str(), "r");
+          char c = getc(fp);
+          if (fp)
+            fclose(fp);
+        } else {
+          to->newcomms = 1;
+        }
+
+        std::string fromfn = urb->dir + "/home/" + std::string(fromnom) + "/" + std::string(tonom) + ".dat";
+        fp = fopen(fromfn.c_str(), "a");
+        if (!fp)
+          continue;
+        (void) fwrite(msg, 1, 1024, fp);
+        fclose(fp);
+      }
+
+#if 0
+      agent.command(reqwords);
       if (!agent.outbufn)
         continue;
       string rspstr = string(agent.outbuf, agent.outbufn);
 fprintf(stderr, "rspstr=%s\n", rspstr.c_str());
+
       vector<string> rsps;
       splitlines(rspstr, &rsps);
 
       for (auto rspi = rsps.rbegin(); rspi != rsps.rend(); ++rspi) {
         parson->pushbrief(*rspi + " | " + req);
       }
-    }
 #endif
+    }
 
 
     for (auto agent : agents) {

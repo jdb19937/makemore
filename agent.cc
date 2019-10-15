@@ -26,7 +26,7 @@
 #include "partrait.hh"
 #include "autocompleter.hh"
 #include "mob.hh"
-#include "julia.hh"
+#include "fractals.hh"
 
 namespace makemore {
 
@@ -426,6 +426,8 @@ void Agent::command(const strvec &cmd) {
   assert(shell);
   assert(shell->itab[0]->can_put());
 
+fprintf(stderr, "agent command %s\n", cmd[0].c_str());
+
   unsigned int wn = cmd.size();
   Line *wp = new Line(wn);
   Line &wr = *wp;
@@ -547,15 +549,38 @@ void Agent::handle_http() {
   splitwords(req, &reqwords);
 
   std::string host;
+  std::string cookie;
 
   for (auto kv : httpbuf) {
     if (strbegins(kv, "Cookie: ")) {
       std::string v = kv.c_str() + 8;
+      cookie = v;
     } else if (strbegins(kv, "Host: ")) {
       std::string v = kv.c_str() + 6;
       host = v;
     }
   }
+
+#if 0
+  std::string usernom, session;
+  if (cookie.length()) {
+    std::vector<std::string> kv;
+    split(cookie, ';', &kv);
+    for (auto k : kv) {
+      const char *p = k.c_str();
+      while (isspace(*p))
+        ++p;
+      if (!strncmp(p, "usernom=", 8)) {
+        usernom = p + 8;
+      } else if (!strncmp(p, "session=", 8)) {
+        session = p + 8;
+      }
+    }
+  }
+fprintf(stderr, "cookie=[%s] usernom=[%s] session=[%s]\n", cookie.c_str(), usernom.c_str(), session.c_str());
+#endif
+
+
 
 fprintf(stderr, "host=[%s]\n", host.c_str());
 
@@ -608,7 +633,7 @@ fprintf(stderr, "req=[%s]\n", req.c_str());
     if (cgi["r"] != "")
       r = strtoul(cgi["r"].c_str(), NULL, 0);
 
-    double vdev = 0.0;
+    double vdev = 1.0;
     if (cgi["vdev"] != "")
       vdev = strtod(cgi["vdev"].c_str(), NULL);
 
@@ -618,6 +643,42 @@ fprintf(stderr, "req=[%s]\n", req.c_str());
 
     Partrait jprt(256, 256);
     julia(jprt.rgb, ca, cb);
+
+    std::string png;
+    jprt.to_png(&png);
+
+    this->printf("HTTP/1.1 200 OK\r\n");
+    this->printf("Connection: keep-alive\r\n");
+    this->printf("Content-Type: image/png\r\n");
+    this->printf("Content-Length: %lu\r\n", png.length());
+    this->printf("\r\n");
+    this->write(png);
+    return;
+  }
+  if (path == "/mandelbrot.png") {
+    map<string, string> cgi;
+    cgiparse(query, &cgi);
+
+    Partrait jprt(256, 256);
+    mandelbrot(jprt.rgb);
+
+    std::string png;
+    jprt.to_png(&png);
+
+    this->printf("HTTP/1.1 200 OK\r\n");
+    this->printf("Connection: keep-alive\r\n");
+    this->printf("Content-Type: image/png\r\n");
+    this->printf("Content-Length: %lu\r\n", png.length());
+    this->printf("\r\n");
+    this->write(png);
+    return;
+  }
+  if (path == "/burning_ship.png") {
+    map<string, string> cgi;
+    cgiparse(query, &cgi);
+
+    Partrait jprt(256, 256);
+    burnship(jprt.rgb);
 
     std::string png;
     jprt.to_png(&png);
@@ -797,7 +858,9 @@ valid.insert("pass2.png");
 valid.insert("login.png");
 valid.insert("logout.png");
 valid.insert("active.png");
+valid.insert("activity.png");
 valid.insert("online.png");
+valid.insert("created.png");
 valid.insert("popular.png");
 valid.insert("more.png");
 valid.insert("more.png");
@@ -808,11 +871,23 @@ valid.insert("unmap.png");
 valid.insert("minus.png");
 valid.insert("spawn.png");
 valid.insert("bread.png");
+valid.insert("score.png");
+valid.insert("owner.png");
+valid.insert("owner.png");
 valid.insert("comms.png");
 valid.insert("claim.png");
 valid.insert("mash.png");
 valid.insert("blend.png");
 valid.insert("goto.png");
+
+    valid.insert("wtf1.png");
+    valid.insert("wtf2.png");
+    valid.insert("wtf3.png");
+    valid.insert("wtf4.png");
+    valid.insert("wtf5.png");
+    valid.insert("wtf6.png");
+    valid.insert("wtf7.png");
+    valid.insert("wtf8.png");
 
     valid.insert("rand.png");
     valid.insert("file.png");
@@ -879,7 +954,7 @@ valid.insert("goto.png");
   }
 
   // if (path == "/tagger.html" || path == "/cam.html" || path == "/edit.html" || path == "/memory.html" || path == "/autocomplete.html" || path == "/terminal.html") {
-  if (path == "/sh" || path == "/popular" || path == "/active" || path == "/conf" || path == "/buy" || path == "/who" || path == "/online" || path == "/top" || path == "/top/" || path == "/top/active" || path == "/top/online" || path == "/top/popular" || path == "/comms") {
+  if (path == "/sh" || path == "/popular" || path == "/active" || path == "/conf" || path == "/buy" || path == "/who" || path == "/online" || path == "/top" || path == "/top/" || path == "/top/active" || path == "/top/online" || path == "/top/popular" || path == "/top/score" || path == "/comms") {
     strvec pathparts;
     split(path, '/', &pathparts);
     std::string html = makemore::slurp(pathparts[0] + ".html");
@@ -967,7 +1042,7 @@ valid.insert("goto.png");
   }
 
 
-  if (path == "/popular.json") {
+  if (path == "/score.json") {
     map<string, string> cgi;
     cgiparse(query, &cgi);
     unsigned int n = 256;
@@ -977,9 +1052,12 @@ valid.insert("goto.png");
     std::string json = "{";
     unsigned int k = 0;
     Zone *z = server->urb->zones[0];
-    z->popup();
-    auto pop_nom = z->pop_nom;
-    for (auto q = pop_nom.rbegin(); q != pop_nom.rend(); ++q) {
+    z->scrup();
+    auto scr_nom = z->scr_nom;
+    for (auto q = scr_nom.rbegin(); q != scr_nom.rend(); ++q) {
+      if (q->first == 0)
+        break;
+
       if (k > 0)
         json += ",";
       json += "\n";
@@ -1105,6 +1183,57 @@ valid.insert("goto.png");
     return;
   }
 
+  if (path == "/claim.txt") {
+    map<string, string> cgi;
+    cgiparse(query, &cgi);
+
+    string usernom = cgi["usernom"];
+    string session = cgi["session"];
+    if (!server->check_session(usernom, session)) {
+      http_denied();
+      return;
+    }
+    Parson *user = server->urb->find(usernom);
+    if (!user) {
+      http_denied();
+      return;
+    }
+    if (!*user->owner) {
+      http_denied();
+      return;
+    }
+
+    user->acted = time(NULL);
+
+    string nom = cgi["nom"];
+    if (!Parson::valid_nom(nom)) {
+      http_notfound();
+      return;
+    }
+    Parson *parson = server->urb->find(nom);
+    if (!parson) {
+      http_notfound();
+      return;
+    }
+
+    if (*parson->owner && strcmp(user->owner, parson->owner)) {
+      http_denied();
+      return;
+    }
+
+    strcpy(parson->owner, user->owner);
+    parson->pass[0] = '*';
+    parson->pubkey[0] = '*';
+
+    std::string txt = "ok";
+    this->printf("HTTP/1.1 200 OK\r\n");
+    this->printf("Connection: keep-alive\r\n");
+    this->printf("Content-Type: text/plain\r\n");
+    this->printf("Content-Length: %lu\r\n", txt.length());
+    this->printf("\r\n");
+    this->write(txt);
+    return;
+  }
 
   if (path == "/comms.json") {
     map<string, string> cgi;
@@ -1126,6 +1255,7 @@ valid.insert("goto.png");
       return;
     }
 
+    parson->acted = time(NULL);
     parson->newcomms = 0;
 
     std::string json = "{";
@@ -1499,6 +1629,66 @@ valid.insert("goto.png");
     return;
   }
 
+  if (strbegins(path, "/new/")) {
+    const char *p = path.c_str() + 5;
+    const char *ext = strrchr(p, '.');
+    std::string tplnom = ext ? std::string(p, ext - p) : p;
+    if (!ext)
+      ext = "html";
+    else
+      ++ext;
+
+    if (strcmp(ext, "txt") && strcmp(ext, "html")) {
+      this->http_notfound();
+      return;
+    }
+
+    if (!Parson::valid_nom(tplnom)) {
+      this->http_notfound();
+      return;
+    }
+    Parson *tpl = server->urb->find(tplnom);
+    if (!tpl) {
+      this->http_notfound();
+      return;
+    }
+
+    Parson *prs = NULL;
+    std::string newnom;
+    do {
+      newnom = Parson::gen_nom();
+      prs = server->urb->find(newnom);
+    } while (prs);
+
+    prs = server->urb->make(newnom, 0);
+    if (!prs) {
+      this->http_notfound();
+      return;
+    }
+
+    for (unsigned int j = 0; j < Parson::ncontrols; ++j) {
+      prs->variations[j] = tpl->variations[j];
+      prs->controls[j] = tpl->controls[j] + randgauss() * sqrt(tpl->variations[j]);
+    }
+
+    if (!strcmp(ext, "html")) {
+      this->printf("HTTP/1.1 302 Redirect\r\n");
+      this->printf("Connection: keep-alive\r\n");
+      this->printf("Content-Type: text/plain\r\n");
+      this->printf("Content-Length: 0\r\n");
+      this->printf("Location: /%s\r\n", newnom.c_str());
+      this->printf("\r\n", newnom.c_str());
+    } else if (!strcmp(ext, "txt")) {
+      this->printf("HTTP/1.1 200 OK\r\n");
+      this->printf("Connection: keep-alive\r\n");
+      this->printf("Content-Type: text/plain\r\n");
+      this->printf("Content-Length: %lu\r\n", newnom.length());
+      this->printf("\r\n");
+      this->printf("%s", newnom.c_str());
+    }
+    return;
+  }
+
   if (path == "/") {
     Parson *prs = server->urb->zones[0]->pick();
     // nom = Parson::gen_nom();
@@ -1606,10 +1796,42 @@ valid.insert("goto.png");
     html = replacestr(html, "$LOCKED", prs && prs->has_pass() ? "1" : "0");
 
     std::string hexpk;
-    if (prs && prs->has_pass())
+    if (prs)
       hexpk = to_hex(std::string((char *)prs->pubkey, 128));
     html = replacestr(html, "$HEXPUBKEY", hexpk);
 
+    std::string owner = "";
+    if (prs && Parson::valid_nom(prs->owner))
+      owner = prs->owner;
+    html = replacestr(html, "$MAKER", owner);
+
+    char sbuf[256];
+    sprintf(sbuf, "%llu", prs ? prs->score : 0ULL);
+    html = replacestr(html, "$SCORE", sbuf);
+
+    char abuf[256];
+    sprintf(abuf, "%lf", prs ? prs->activity() : 0.0);
+    html = replacestr(html, "$ACTIVITY", abuf);
+
+    char obuf[256];
+    sprintf(obuf, "%u", prs && !strcmp(prs->owner, prs->nom) ? prs->acted : 0);
+    html = replacestr(html, "$ONLINE", obuf);
+
+    char tbuf[256];
+    sprintf(tbuf, "%u", prs ? prs->created : (unsigned int)time(NULL));
+    html = replacestr(html, "$CREATED", tbuf);
+
+    char nvbuf[256];
+    strcpy(nvbuf, "0.0");
+    if (prs) {
+      double z = 0;
+      for (unsigned int j = 0; j < Parson::ncontrols; ++j)
+        z += prs->controls[j] * prs->controls[j];
+      z /= (double)Parson::ncontrols;
+      z = sqrt(z);
+      sprintf(nvbuf, "%lf", z);
+    }
+    html = replacestr(html, "$DEV", nvbuf);
 
     this->printf("HTTP/1.1 200 OK\r\n");
     this->printf("Connection: keep-alive\r\n");
@@ -1749,6 +1971,11 @@ dev = sqrt(dev);
     Parson *parson = server->urb->make(nom, 0);
 
 parson->visit(1);
+if (*parson->owner) {
+  if (Parson *m = server->urb->find(parson->owner)) {
+    ++m->score;
+  }
+}
 
 
 //fprintf(stderr, "[%lf %lf %lf]\n", pose.angle, pose.stretch, pose.skew);

@@ -99,6 +99,9 @@ fprintf(stderr, "newpubkeylen=%lu\n", newpubkey.length());
 
       unsigned long duration = 86400;
       session = server->make_session(newnom, duration);
+
+      if (!*parson->maker)
+        strcpy(parson->maker, parson->nom);
     }
   } else {
     session = sespass;
@@ -113,6 +116,7 @@ fprintf(stderr, "newpubkeylen=%lu\n", newpubkey.length());
       std::string newpass = sespass;
       parson->set_pass(newpass);
       memcpy(parson->pubkey, newpubkey.data(), newpubkey.length());
+      strcpy(parson->maker, parson->nom);
       
       unsigned long duration = 1UL << 48;
       session = server->make_session(newnom, duration);

@@ -20,14 +20,6 @@ function httpget(url, cb) {
 <style type="text/css">
 .topcell {
   background-color: #333333;
-}
-.topcell_online {
-  border: 2px solid #555555;
-}
-.topcell_active {
-  border: 2px solid #555555;
-}
-.topcell_popular {
   border: 2px solid #555555;
 }
 </style>
@@ -44,8 +36,8 @@ $HEADER
 <tr><td align="center">
 <tr><td style='font-size: 40px'>[
       <a href="/top/online"><img style="outline: 3px solid blue" id=headonline width=144 height=24 src="/images/online.png"></a> |
-      <a href="/top/active"><img style="outline: 3px solid blue" id=headactive width=144 height=24 src="/images/active.png"></a> |
-      <a href="/top/popular"><img style="outline: 3px solid blue" id=headpopular width=168 height=24 src="/images/popular.png"></a>
+      <a href="/top/score"><img style="outline: 3px solid blue" id=headscore width=120 height=24 src="/images/score.png"></a> |
+      <a href="/top/active"><img style="outline: 3px solid blue" id=headactive width=192 height=24 src="/images/activity.png"></a>
 ]</td></tr></table>
 <br/>
 
@@ -60,12 +52,17 @@ var func = pathparts[2];
 var valid = { };
 valid['online'] = 1;
 valid['active'] = 1;
-valid['popular'] = 1;
+valid['score'] = 1;
 if (!valid[func]) { func = 'online'; }
 var unit = {
   'active': '&mu;Hz',
-  'popular': '<br>frens&nbsp;',
+  'score': '',
   'online': 's',
+};
+var sty = {
+  'active': 'font-size: 24px; font-family: monospace',
+  'score': 'font-size: 24px; font-family: monospace; color: green',
+  'online': 'font-size: 24px; font-family: monospace'
 };
 linktop.href = '/top/' + func;
 
@@ -87,10 +84,10 @@ httpget("/" + func + ".json", function(txt) {
 
     var freq = Math.floor(ar[k]) + "&nbsp;" + unit[func];
     html += (
-      "<td class='topcell topcell_" + func + "'><table width=256 cellpadding=0 cellspacing=0><tr>" +
-      "<td width=128 style='background-color: #222222; font-size: 12px; font-family: monospace' align='center'>#" + rank + "</td>" + "<td></td></tr><tr>" +
+      "<td class='topcell'><table width=256 cellpadding=0 cellspacing=0><tr>" +
+//      "<td width=128 style='background-color: #222222; font-size: 12px; font-family: monospace' align='center'>#" + rank + "</td>" + "<td></td></tr><tr>" +
       "<td width=128><a href='/" + k + "'><img width=128 height=128 src='/" + k + ".png?dim=128'></a></td>" +
-      "<td style='font-size: 24px; font-family: monospace' align='right'>" + freq + "</td>" +
+      "<td style='" + sty[func] + "' align='right'>&nbsp;" + freq + "</td>" +
       "</tr></table></td>"
     );
 

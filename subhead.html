@@ -52,20 +52,11 @@ alert(txt);
 }
 
 msgdiv.style.display = window.usernom ? 'inline' : 'none';
+
+if (0) {
 headxform.style.outline = ($LOCKED && window.hdrnom != window.usernom) ? '3px solid red' : '3px solid blue';
 headcam.style.outline = ($LOCKED && window.hdrnom != window.usernom) ? '3px solid red' : '3px solid blue';
-
-window.onlogin = [function() {
-  msgdiv.style.display = window.usernom ? 'inline' : 'none';
-  headxform.style.outline = ($LOCKED && window.hdrnom != window.usernom) ? '3px solid red' : '3px solid blue';
-  headcam.style.outline = ($LOCKED && window.hdrnom != window.usernom) ? '3px solid red' : '3px solid blue';
-}];
-
-window.onlogout = [function() {
-  msgdiv.style.display = window.usernom ? 'inline' : 'none';
-  headxform.style.outline = ($LOCKED && window.hdrnom != window.usernom) ? '3px solid red' : '3px solid blue';
-  headcam.style.outline = ($LOCKED && window.hdrnom != window.usernom) ? '3px solid red' : '3px solid blue';
-}];
+}
 
 (function() {
   var ll = window.location + "";

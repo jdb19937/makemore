@@ -47,8 +47,12 @@ sh.png:
 	echo sh | ../morktxt --height 3 --width 4 | pnmcut -top 1 |pnmscale 12 | pnmtopng > $@
 send.png:
 	echo send | ../morktxt --height 3 --width 8 | pnmcut -top 1 |pnmscale 16 | pnmtopng > $@
+created.png:
+	echo created | ../morktxt --height 3 --width 14 | pnmcut -top 1 |pnmscale 12 | pnmtopng > $@
 online.png:
 	echo online | ../morktxt --height 3 --width 12 | pnmcut -top 1 |pnmscale 12 | pnmtopng > $@
+activity.png:
+	echo activity | ../morktxt --height 3 --width 16 | pnmcut -top 1 |pnmscale 12 | pnmtopng > $@
 active.png:
 	echo active | ../morktxt --height 3 --width 12 | pnmcut -top 1 |pnmscale 12 | pnmtopng > $@
 popular.png:
@@ -109,7 +113,31 @@ claim.png:
 	echo 'claim' | ../morktxt --height 3 --width 10 | pnmcut -top 1 | pnmscale 12 | pnmtopng > $@
 comms.png:
 	echo 'comms' | ../morktxt --height 3 --width 10 | pnmcut -top 1 | pnmscale 12 | pnmtopng > $@
+owner.png:
+	echo 'owner' | ../morktxt --height 3 --width 10 | pnmcut -top 1 | pnmscale -nomix 12 | pnmtopng > $@
+maker.png:
+	echo 'maker' | ../morktxt --height 3 --width 10 | pnmcut -top 1 | pnmscale -nomix 12 | pnmtopng > $@
+score.png:
+	echo 'score' | ../morktxt --height 3 --width 10 | pnmcut -top 1 | pnmscale 12 | pnmtopng > $@
 bread.png:
 	echo 'bread' | ../morktxt --height 3 --width 10 | pnmcut -top 1 | pnmscale 12 | pnmtopng > $@
 goto.png:
 	echo 'goto' | ../morktxt --height 3 --width 8 | pnmcut -top 1 | pnmscale 12 | pnmtopng > $@
+
+
+wtf1.png:
+	echo "Sorry, I can't read that!" | ../morktxt --height 3 --width 50 | pnmscale 12 | pnmtopng -transparent black > $@
+wtf2.png:
+	echo "Go to my file and click \"claim\"." | ../morktxt --height 3 --width 64 | pnmscale 12 | pnmtopng -transparent black > $@
+wtf3.png:
+	echo "What language is that?" | ../morktxt --height 3 --width 44 | pnmscale 12 | pnmtopng -transparent black > $@
+wtf4.png:
+	echo "I'm pleased to meet you." | ../morktxt --height 3 --width 48 | pnmscale 12 | pnmtopng -transparent black > $@
+wtf5.png:
+	echo "o rly" | ../morktxt --height 3 --width 10 | pnmscale 12 | pnmtopng -transparent black > $@
+wtf6.png:
+	echo "These are all stock responses." | ../morktxt --height 3 --width 60 | pnmscale 12 | pnmtopng -transparent black > $@
+wtf7.png:
+	echo "Let's be frens." | ../morktxt --height 3 --width 30 | pnmscale 12 | pnmtopng -transparent black > $@
+wtf8.png:
+	echo "Okay? Okay." | ../morktxt --height 3 --width 22 | pnmscale 12 | pnmtopng -transparent black > $@

@@ -1,0 +1,138 @@
+<html>
+<head>
+<title>makemore peaple / cam $NOM</title>
+
+<meta property='og:title' content='$NOM camera import'>
+<meta property='og:description' content='$NOM camera import'>
+<meta property='og:image' content='https://peaple.io/$NOM.png'>
+<meta property='og:image:type' content='image/png'>
+<meta property='og:image:width' content='256'>
+<meta property='og:image:height' content='256'>
+<meta property='og:url' content='https://peaple.io/$NOM/cam'>
+<meta property='og:type' content='article'>
+<link rel='canonical' href='https://peaple.io/$NOM/cam'>
+
+
+
+<script>
+
+u = new URL(window.location);
+if (u.protocol != 'https:') {
+  u.protocol = 'https:';
+  if (window.location != u) {
+    window.location = u;
+  }
+}
+
+function got_media(mediaStream) {
+  window.mediaStream = mediaStream
+  window.mediaStreamTrack = mediaStream.getVideoTracks()[0];
+  window.imageCapture = new ImageCapture(window.mediaStreamTrack);
+  // console.log(window.imageCapture);
+  window.camera_enabled = 1
+}
+
+function ask_camera() {
+  navigator.mediaDevices.getUserMedia({video: true})
+  .then(got_media)
+  .catch(error => console.error('getUserMedia() error:', error));
+}
+
+function capture() {
+  if (!window.camera_enabled) {
+    ask_camera()
+    return;
+  }
+
+  window.imageCapture.takePhoto().then(blob => {
+    var socket = new WebSocket('wss://peaple.io:3333/', ['binary']);
+    socket.binaryType = 'arraybuffer';
+    socket.onmessage = function() {
+      socket.close();
+      reloadpic();
+    };
+
+    socket.onopen = function() {
+      socket.send("upload " + window.nom + " <" + blob.size + "\n");
+      socket.send(blob);
+    };
+
+
+//    var img = new Image()
+//    img.src = URL.createObjectURL(blob);
+//    img.onload = () => { URL.revokeObjectURL(this.src);
+
+//    var canvas = document.createElement('canvas');
+//    var context = canvas.getContext('2d');
+//    context.drawImage(img, 0, 0 );
+//    var theData = context.getImageData(0, 0, img.width, img.height);
+//    canvas.toBlob(function(b) { alert(b); }, 'image/png');
+//    }
+
+
+
+
+
+  })
+  .catch(error => console.error('takePhoto() error:', error));
+}
+
+function get_nom() {
+  var nom = window.location.pathname;
+  nom = nom.substr(1);
+  var slash = nom.indexOf('/');
+  nom = nom.substr(0, slash);
+  return nom;
+}
+
+function randstr() {
+  return "" + Math.floor(Math.random() * 1000000000);
+}
+
+function httpget(url, cb) {
+  var i = new XMLHttpRequest;
+  i.open('GET', url);
+  i.overrideMimeType("text/plain");
+  i.onload = function(e) {
+    if (!(this.readyState == 4 && this.status == 200)) {
+      return;
+    }
+    cb(this.responseText);
+  }
+  i.send();
+}
+
+function reloadpic() {
+  pic.src = "/" + window.nom + ".png" + "?r=" + randstr();
+}
+
+function onload() {
+  window.nom = get_nom();
+
+  ask_camera();
+  reloadpic();
+}
+
+</script>
+</head>
+
+<body text="#ffffff" bgcolor="#000000" onload="onload()">
+
+$HEADER
+$SUBHEAD
+
+<table width=1280>
+  <tr valign="top">
+    <td align=center>
+      <img style="outline: 3px solid blue" id="pic" onClick="capture()" width="512" height="512">
+<br/>
+<br/>
+<img src="/images/capture.png" style="outline: 3px solid blue" onClick="capture()" />
+    </td>
+  </tr>
+</table>
+
+<br/>
+
+</body>
+</html>

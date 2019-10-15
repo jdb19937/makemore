@@ -129,8 +129,9 @@ function onc(im) {
         td.style.borderColor = 'blue';
         tdprev.style.borderColor = 'blue';
 
-        document.getElementById('img' + i).src = "/julia.png?vdev=1&r=$RAND";
-        document.getElementById('img' + window.prev).src = "/julia.png?vdev=1&r=$RAND";
+        var vdev = warpvar(window.mul);
+        document.getElementById('img' + i).src = "/julia.png?vdev=" + vdev + "&r=$RAND";
+        document.getElementById('img' + window.prev).src = "/julia.png?vdev=" + vdev + "&r=$RAND";
         window.state = 0;
         window.prev = -1;
       }, 1000)
@@ -172,11 +173,19 @@ $SUBHEAD
       function clickslider() {
         sliderbar.style.width = event.offsetX;
         window.mul = event.offsetX / sw;
+        var vdev = warpvar(window.mul);
 
         if (window.state == 1) {
           var i = window.prev;
-          var vdev = warpvar(window.mul);
           document.getElementById('img' + i).src = "/" + window.nom + ".png" + "?dim=192&vdev=" + vdev + "&r=" + window.cells[i];
+        }
+
+        for (var i = 0; i < 36; ++i) {
+          if (window.solved[i] || i == window.prev && window.state == 1) {
+            continue;
+          }
+          im = document.getElementById('img' + i);
+          im.src = "/julia.png?vdev=" + vdev + "&r=$RAND";
         }
       }
     </script>

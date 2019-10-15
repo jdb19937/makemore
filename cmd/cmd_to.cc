@@ -44,6 +44,8 @@ void mainmore(
   }
   std::string fromnom = from->nom;
 
+  from->acted = time(NULL);
+
   string tonom = process->args[0];
   Parson *to = urb->find(tonom);
   if (!to) {
@@ -106,9 +108,9 @@ void mainmore(
   if (fp)
     fclose(fp);
 
+  string utofn = urb->dir + "/home/" + uto.nom + "/" + ufrom.nom + ".dat";
   if (uto.nom != ufrom.nom) {
     uto.make_home_dir();
-    string utofn = urb->dir + "/home/" + uto.nom + "/" + ufrom.nom + ".dat";
     fp = fopen(utofn.c_str(), "a");
     if (!fp) {
       strvec outvec;
@@ -127,7 +129,10 @@ void mainmore(
     }
     fclose(fp);
 
-    to->newcomms = 1;
+    if (!*to->owner) {
+      std::string br = "fakeresp " + ufrom.nom;
+      to->pushbrief(br);
+    }
   }
 
   {
@@ -136,7 +141,15 @@ void mainmore(
     notify[0] = "from";
     notify[1] = ufrom.nom;
     notify[2] = msg0;
-    server->notify(uto.nom, notify);
+
+    if (server->notify(uto.nom, notify)) {
+      FILE *fp = fopen(utofn.c_str(), "r");
+      char c = getc(fp);
+      if (fp)
+        fclose(fp);
+    } else {
+      to->newcomms = 1;
+    }
   }
 
   strvec outvec;

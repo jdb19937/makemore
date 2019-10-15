@@ -77,8 +77,8 @@ struct Server {
   void select();
 
   void renom(Agent *agent, const std::string &nom);
-  void notify(const std::string &nom, const std::string &msg, const Agent *exclude = NULL);
-  void notify(const std::string &nom, const strvec &msg, const Agent *exclude = NULL);
+  bool notify(const std::string &nom, const std::string &msg, const Agent *exclude = NULL);
+  bool notify(const std::string &nom, const strvec &msg, const Agent *exclude = NULL);
 
   void websockify(uint16_t ws_port, const char *keydir);
 

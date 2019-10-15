@@ -18,14 +18,28 @@ function httpget(url, cb) {
 
 </script>
 
+<script src="/autocomplete.js"></script>
+<link rel="stylesheet" type="text/css" href="/autocomplete.css">
+
 </head>
 
 <body text="#ffffff" bgcolor="#000000">
 
 $HEADER
+
+<script>
+if (window.usernom == '') {
+  window.location = "/";
+}
+</script>
+
 <script>headcomms.style.outline = '3px solid #00ff00';</script>
 
 <br/>
+
+
+
+
 
 <script>
 function pushcom() {
@@ -49,8 +63,7 @@ httpget("/comms.json?nom=" + window.usernom + "&session=" + window.session, func
     }
     var row = commstab.rows[pos];
     var cell = row.insertCell(i % cols);
-
-    var bc = (c[k[i]][0] >= c[k[i]][1]) ? 'orange' : 'blue';
+    var bc = (c[k[i]][0] > c[k[i]][1]) ? 'orange' : 'blue';
 
     cell.innerHTML =
       "<a href='/" + k[i] + "/msg'>" + 
@@ -68,12 +81,38 @@ httpget("/comms.json?nom=" + window.usernom + "&session=" + window.session, func
       })(i)
     }
   }
+
+  if (k.length % cols) {
+    var pos = Math.floor(k.length / cols);
+    var row = commstab.rows[pos];
+    for (var i = k.length % cols; i < cols; ++i) {
+      var cell = row.insertCell(i);
+      cell.style.width = '256px';
+    }
+  }
   
   //json.innerHTML = "<pre>" + txt + "</pre>";
 });
 </script>
 
 <table width="1280"><tr><td align="center">
+
+<table cellpadding=4 cellspacing=4>
+<tr><td>
+<form autocomplete="off">
+  <div class="autocomplete">
+    <input type="text" size="32" id="buf" placeholder="nom" style='font-size: large; font-family: monospace'>
+    <script>autocomplete(document.getElementById('buf'), function() { location = "/" + document.getElementById('buf').value + "/msg" });</script>
+  </div>
+&nbsp;
+    <img id=msgbutton align=center width=72 height=24 style="outline: 3px solid blue" src="/images/msg.png"
+      onClick="location = '/' + document.getElementById('buf').value + '/msg'" >
+</form>
+</td></tr>
+</table>
+
+</td></tr><tr><td>
+
 
 <table width="1024" cellpadding=4 cellspacing=4 id="commstab">
 </table>

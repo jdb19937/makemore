@@ -1,40 +1,54 @@
-<!--
-<div id="fb-root"></div>
-<script async defer crossorigin="anonymous" src="https://connect.facebook.net/en_US/sdk.js#xfbml=1&version=v4.0"></script>
--->
+
 
 <table width=1280 cellpadding=0 cellspacing=0>
   <tr>
     <td width=512 style='font-size: 40px'>[
       <a href="/"><img style="outline: 3px solid blue" id=headrand width=96 height=24 src="/images/rand.png"></a>
       | <a href="/new"><img style="outline: 3px solid blue" id=headnew width=72 height=24 src="/images/new.png"></a>
+<!--
+  <a href="/new/male"><img style="outline: 3px solid blue" width=24 height=24 src="/male.png?dev=2"></a>
+  <a href="/new/female"><img style="outline: 3px solid blue" width=24 height=24 src="/female.png?dev=2"></a>
+  <a href="/new/cat"><img style="outline: 3px solid blue" width=24 height=24 src="/cat.png?dev=2"></a>
+  <a href="/new/dog"><img style="outline: 3px solid blue" width=24 height=24 src="/dog.png?dev=2"></a>
+-->
       | <a id="linktop" href="/top"><img style="outline: 3px solid blue" id=headtop width=72 height=24 src="/images/top.png"></a>
       | <a href="/sh"><img style="outline: 3px solid blue" id=headsh width=48 height=24 src="/images/sh.png"></a>
 
 
 <!--
-
-<span id="fbspan">
-<style type="text/css">
-.fb-share-button {
- top: 2px;
-}
-</style>
 |
-<div id="fb-root" style="display: none"></div>
-<script async defer crossorigin="anonymous" src="https://connect.facebook.net/en_US/sdk.js#xfbml=1&version=v4.0"></script>
-<span class="fb-share-button" data-href="$URL" data-layout="button_count" data-size="large"><a target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=$ESCURL&amp;src=sdkpreparse" class="fb-xfbml-parse-ignore"> </a></span>
-</span>
-
-
-
+<div style="display: inline; width: 300px">
+  <span id="fb-root"></span>
+  <script>(function(d, s, id) {
+    var js, fjs = d.getElementsByTagName(s)[0];
+    if (d.getElementById(id)) return;
+    js = d.createElement(s); js.id = id;
+    js.async = true;
+    js.src = "https://connect.facebook.net/en_US/sdk.js#xfbml=1&version=v3.0";
+    fjs.parentNode.insertBefore(js, fjs);
+  }(document, 'script', 'facebook-jssdk'));</script>
+  <style type="text/css">
+    .fb-share-fix {
+      top: 3px;
+    }
+  </style>
+  <span class="fb-share-button fb-share-fix"
+    data-href="$URL"
+    data-size="large"
+    data-layout="button_count">
+  </span>
+</div>
 -->
 
 
 
-
-
     ]</td>
+
+
+
+
+
+
 
     <td align="right" height="70">
 <div id="userbar" style="display: none">
@@ -42,9 +56,15 @@
         <tr>
           <td style="font-size: 40px">
             [
-<a href="/buy"><img width=72 height=24 style="outline: 3px solid blue" id=buybutton src="/images/buy.png"></a>
-<span style="font-family: monospace; font-size: 32px; color: green">0</span>
+<!--
+<a href="/buy"><img width=72 height=24 style="outline: 3px solid blue" id=buybutton src="/images/buy.png"></a> |
+-->
+
+<!--
+<img width=120 height=24 src="/images/score.png">
+<span style="font-family: monospace; font-size: 32px; color: green">$SCORE</span>
 |
+-->
 
 <a href="/comms"><img height=24 width=120 style="outline: 3px solid blue" id=headcomms src="/images/comms.png"></a> |
 
@@ -67,7 +87,9 @@
 
           <td align="right"><img width=48 height=16 alt="nom" onClick="nomlogin.value=''; nomlogin.focus()" src="/images/small_nom.png"/></td>
           <td> <input id="nomlogin" type="text" style="font-family: monospace; font-size: medium" size=32 maxlength=32 onClick="this.value=''" value=""/></td>
+
 <script>if ("$NOM" && "$NOM".substr(0, 1) != '$') { nomlogin.value = '$NOM'; }</script>
+
 
           <td rowspan="2" valign="center" style="font-size: 40px">
 <script>
@@ -95,34 +117,45 @@ function badpass() {
 
 function logout() {
   sessionStorage.clear();
-  if (window.usernom) {
-    nomlogin.value = window.usernom;
-  }
-  nompass.value = '';
-
-  window.usernom = '';
-  window.session = '';
-  var lbar = document.getElementById('loginbar');
-  lbar.style.display = 'block';
-  var ubar = document.getElementById('userbar');
-  ubar.style.display = 'none';
-
-  loginbutton.style.outline = "3px solid blue";
-
-  var z = window.onlogout;
-  if (z) { if (Array.isArray(z)) { for (var w in z) { (z[w])(); } } else { z(); } }
+  location.reload();
+  return;
 }
+
+//function delcookie(n) {
+//  var cookie_date = new Date();
+//  cookie_date.setTime(cookie_date.getTime() - 1);
+//  document.cookie = n + "=; path=/; expires=" + cookie_date.toGMTString();
+//}
+//function setcookie(n, v) {
+//  var cookie_date = new Date();
+//  cookie_date.setTime(cookie_date.getTime() + 86400);
+//  document.cookie = n + "=" + v + "; path=/; expires=" + cookie_date.toGMTString();
+//}
 
 function check_loginstate() {
   var nom = sessionStorage.getItem('nom');
   var session = sessionStorage.getItem('session');
   if (!nom || !session) {
-    logout();
+    window.usernom = '';
+    window.session = '';
+    sessionStorage.clear();
+
+    var lbar = document.getElementById('loginbar');
+    lbar.style.display = 'block';
+    var ubar = document.getElementById('userbar');
+    ubar.style.display = 'none';
+
+    loginbutton.style.outline = "3px solid blue";
+
+    // logout();
     return;
   }
 
   window.usernom = nom;
   window.session = session;
+
+//  setcookie('usernom', window.usernom);
+//  setcookie('session', window.session);
 
   var lbar = document.getElementById('loginbar');
   lbar.style.display = 'none';
@@ -132,8 +165,8 @@ function check_loginstate() {
   userimg.src = "/" + window.usernom + ".png?dim=64";
   userlink.href = "/" + window.usernom;
 
-  var z = window.onlogin;
-  if (z) { if (Array.isArray(z)) { for (var w in z) { (z[w])(); } } else { z(); } }
+  //var z = window.onlogin;
+  //if (z) { if (Array.isArray(z)) { for (var w in z) { (z[w])(); } } else { z(); } }
 
 
   if (window.location.pathname != '/comms') {
@@ -173,8 +206,9 @@ function getsession(username, password, pubkey, hexprivkey) {
       sessionStorage.setItem('session', ses);
       sessionStorage.setItem("privkey", hexprivkey);
       sessionStorage.setItem("pubkey", bufToBn(pubkey).toString(16));
-      window.loginsocket = null;
-      check_loginstate();
+      window.location.reload();
+      // window.loginsocket = null;
+      // check_loginstate();
     } else {
       badpass();
     }

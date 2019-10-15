@@ -21,10 +21,10 @@ struct Zone {
   Autocompleter *ac;
 
   std::multimap<double, std::string> act_nom;
-  std::multimap<unsigned int, std::string> pop_nom;
+  std::multimap<unsigned int, std::string> scr_nom;
   std::multimap<double, std::string> onl_nom;
   void actup();
-  void popup();
+  void scrup();
   void onlup();
 
   static void create(const char *_fn, unsigned int _n);

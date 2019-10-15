@@ -129,8 +129,10 @@ function upfrenlist(frens) {
 function addfren() {
 //  if (!frenbuf.value)
 //    frenbuf.value = gennom();
+if (0) {
   var s =  ($LOCKED && window.usernom != window.nom);
   if (s) { return; }
+}
 
   var fren = frenbuf.value;
 
@@ -214,22 +216,14 @@ $SUBHEAD
 
 
 <script>
+if (0) {
 var s =  ($LOCKED && window.usernom != window.nom);
 addfrenbutton.style.outline = s ? '3px solid red' : '3px solid blue';
 breadbutton.style.outline = s ? '3px solid red' : '3px solid blue';
-
-window.onlogin.push(function() {
-  var s =  ($LOCKED && window.usernom != window.nom);
-  addfrenbutton.style.outline = s ? '3px solid red' : '3px solid blue';
-  breadbutton.style.outline = s ? '3px solid red' : '3px solid blue';
-})
-window.onlogout.push(function() {
-  var s = ($LOCKED && window.usernom != window.nom);
-  addfrenbutton.style.outline = s ? '3px solid red' : '3px solid blue';
-  breadbutton.style.outline = s ? '3px solid red' : '3px solid blue';
-})
+}
 
 function clicktool(t) {
+if (0) {
   var s = ($LOCKED && window.usernom != window.nom);
   breadbutton.style.outline = s ? '3px solid red' : '3px solid blue';
   gotobutton.style.outline = "3px solid blue";
@@ -237,6 +231,9 @@ function clicktool(t) {
   if (t == 'bread' && s) {
     t = 'goto';
   }
+}
+  breadbutton.style.outline = '3px solid blue';
+  gotobutton.style.outline = "3px solid blue";
 
   var but = document.getElementById(t + "button");
   but.style.outline = "3px solid #00ff00";
@@ -245,34 +242,28 @@ function clicktool(t) {
 clicktool('goto');
 
 
-function shiftdown() {
+var cdown = 0;
+function controldown() {
   if (window.tool == "goto") {
     clicktool("bread");
+    cdown = 1;
   }
 }
-function shiftup() {
-  if (window.tool == "bread") {
+function controlup() {
+  if (cdown && window.tool == "bread") {
     clicktool("goto");
+    cdown = 0;
   }
 }
 
 var onkeydown = (function (ev) {
-  if (ev.which == 16) {
-    shiftdown();
-  }
-  if (0 && ev.which == 17) {
+  if (ev.which == 17) {
     controldown();
-  }
-  if (0 && ev.which == 18) {
-    altdown();
   }
 });
 
 var onkeyup = (function (ev) {
-  if (ev.which == 16) {
-    shiftup();
-  }
-  if (0 && ev.which == 17) {
+  if (ev.which == 17) {
     controlup();
   }
   if (0 && ev.which == 18) {
@@ -286,6 +277,7 @@ var onkeyup = (function (ev) {
 </td></tr>
 <tr><td height="16"></td></tr>
 <tr>
+<!--
 <td valign="top" height="320" style="outline: 3px solid gray; color: white">
 /\/\/\/\/\/\/\/\/\/\/\/\/\/\ <br/>
 /\/\/\/\/\/\/\/\/\/\/\/\/\/\  <br/>
@@ -310,6 +302,7 @@ var onkeyup = (function (ev) {
 /\/\/\/\/\/\/\/\/\/\/\/\/\/\ <br/>
 /\/\/\/\/\/\/\/\/\/\/\/\/\/\ <br/>
 </td>
+-->
 </tr>
 </table>
 

@@ -103,6 +103,8 @@ void mainmore(
     process->write(outvec);
   }
   fclose(fp);
+
+  to->acted = time(NULL);  
 }
 
 }

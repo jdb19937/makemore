@@ -81,7 +81,7 @@ struct Parson {
   uint32_t acted;
 
   // 8
-  uint64_t cents;
+  uint64_t score;
 
   // 8
   uint8_t briefptr;
@@ -115,7 +115,15 @@ struct Parson {
   uint32_t skid;
   uint32_t newcomms;
   double tone;
-  uint8_t pad1[2486];
+
+  const static uint32_t
+    FLAG_EDITLOCK	= (1 << 0),
+    FLAG_SUPER		= (1 << 1),
+    FLAG_HIDETOP	= (1 << 2);
+  uint32_t flags;
+
+  Nom owner;
+  uint8_t pad1[2450];
   uint8_t pad2[4096];
 
   // 64 * 64 * 3

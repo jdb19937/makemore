@@ -196,6 +196,13 @@ std::string urldecode(const std::string &str);
 
 std::string replacestr(const std::string &x, const std::string &pat, const std::string &rep);
 
+inline void rtrim(std::string &x) {
+  unsigned int n = x.length();
+  while (n > 0 && isspace(x[n - 1]))
+    --n;
+  x.resize(n);
+}
+
 }
 
 #endif

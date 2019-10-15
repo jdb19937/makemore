@@ -34,12 +34,12 @@ function randstr() {
   return "" + Math.floor(Math.random() * 1000000000);
 }
 
-function httpget(url, cb) {
+function myhttpget(url, cb) {
   var i = new XMLHttpRequest;
   i.open('GET', url);
   i.overrideMimeType("text/plain");
   i.onload = function(e) {
-    if (!(this.readyState == 4 && this.status == 200)) {
+    if (!(this.readyState == 4)) {
       return;
     }
     cb(this.responseText);
@@ -99,11 +99,113 @@ autocomplete(document.getElementById('qnom'), function() { dogoto(document.getEl
 
 </td>
 </tr>
-
-
 </table>
 
-</td></tr></table>
+</td>
+
+<td width="256" align="right" valign="bottom">
+
+<br/>
+
+<!--
+
+<div id="crdiv">
+<img width=168 height=24 src="/images/created.png"><br/>
+<span id="crspan" style="font-family: monospace; font-size: 24px; color: white"></span>
+<br/>
+<br/>
+<br/>
+</div>
+<script>
+var when = new Date($CREATED * 1000);
+crspan.innerHTML = when.toISOString().substr(0, 19) + "Z";
+</script>
+
+-->
+
+
+<div id="onldiv" style="display: none">
+<img width=144 height=24 src="/images/online.png"><br/>
+<span id="onlspan" style="font-family: monospace; font-size: 24px; color: white"></span>
+<br/>
+<br/>
+</div>
+<script>
+if ($ONLINE > 0) {
+  onlspan.innerHTML = (Math.floor(Date.now()/1000) - $ONLINE) + "&nbsp;s"
+  onldiv.style = "display: block";
+}
+</script>
+
+
+<div id="actdiv" style="display: none">
+<!-- <img width=144 height=24 src="/images/active.png"> -->
+<img width=192 height=24 src="/images/activity.png"><br/>
+<span id="actspan" style="font-family: monospace; font-size: 24px; color: white"></span>
+<br/>
+<br/>
+</div>
+<script>
+actspan.innerHTML = Math.floor($ACTIVITY) + "&nbsp;&mu;Hz";
+actdiv.style = "display: block";
+</script>
+
+<div id="ownerdiv" style="display: none">
+<img width=120 height=24 src="/images/owner.png"><br/>
+<div style="height: 4px"></div>
+<a id=ownerlink><img id=ownerpic width=128 height=128 style="border: 3px solid blue"></a>
+</div>
+
+<div id="claimdiv" style="display: none; color: white">
+<img width=120 height=24 id=claimbutton onClick="doclaim()" style="border: 3px solid blue" src="/images/claim.png">
+</div>
+
+<div id="scorediv" style="display: none">
+<img width=120 height=24 src="/images/score.png"><br/>
+<span id=scorespan style="font-size: 24px; color: green; font-family: monospace">
+$SCORE
+</span>
+</div>
+
+
+</td>
+</tr></table>
+
+<script>
+if ("$MAKER" == "") {
+  if (window.usernom != '') {
+    claimdiv.style.display = "block";
+  }
+} else {
+  if ("$MAKER" == window.nom) {
+    scorediv.style.display = "block";
+  } else {
+    ownerpic.src = "/$MAKER.png?dim=128";
+    ownerlink.href = "/$MAKER";
+    ownerdiv.style.display = "block";
+  }
+}
+
+function doclaim() {
+  if (window.usernom == '' || window.session == '') {
+    return;
+  }
+  myhttpget("/claim.txt?usernom=" + window.usernom + "&session=" + window.session + "&nom=" + window.nom, function(txt) {
+    if (txt == "ok") {
+      claimdiv.style.display = "none";
+      ownerpic.src = "/" + window.usernom + ".png?dim=128";
+      ownerlink.href = "/" + window.usernom;
+      ownerdiv.style.display = "block";
+    } else {
+      claimbutton.style.border = "3px solid red";
+      window.setTimeout(function() {
+        claimbutton.style.border = "3px solid blue";
+      }, 500);
+    }
+  });
+}
+
+</script>
 
 </body>
 </html>
