@@ -54,7 +54,13 @@ fprintf(stderr, "arg2=%lu\n", arg[2].length());
   assert(urb);
 
   std::string newnom = arg[0];
-  Parson *parson = urb->find(newnom);
+  if (!Parson::valid_nom(newnom)) {
+    strvec errvec;
+    splitwords("error bad nom", &errvec);
+    process->write(errvec);
+    return;
+  }
+  Parson *parson = urb->make(newnom, 0);
   if (!parson) {
     strvec errvec;
     splitwords("error bad nom", &errvec);
@@ -100,8 +106,8 @@ fprintf(stderr, "newpubkeylen=%lu\n", newpubkey.length());
       unsigned long duration = 86400;
       session = server->make_session(newnom, duration);
 
-      if (!*parson->maker)
-        strcpy(parson->maker, parson->nom);
+      if (!*parson->owner)
+        strcpy(parson->owner, parson->nom);
     }
   } else {
     session = sespass;
@@ -116,7 +122,7 @@ fprintf(stderr, "newpubkeylen=%lu\n", newpubkey.length());
       std::string newpass = sespass;
       parson->set_pass(newpass);
       memcpy(parson->pubkey, newpubkey.data(), newpubkey.length());
-      strcpy(parson->maker, parson->nom);
+      strcpy(parson->owner, parson->nom);
       
       unsigned long duration = 1UL << 48;
       session = server->make_session(newnom, duration);
