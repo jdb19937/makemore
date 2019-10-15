@@ -1,0 +1,454 @@
+<html>
+<head>
+<title>makemore peaple / conversation with $NOM</title>
+
+<meta property='og:title' content='conversation with $NOM'>
+<meta property='og:description' content='$NOM message'>
+<meta property='og:image' content='https://peaple.io/$NOM.png'>
+<meta property='og:image:type' content='image/png'>
+<meta property='og:image:width' content='256'>
+<meta property='og:image:height' content='256'>
+<meta property='og:url' content='https://peaple.io/$NOM/msg'>
+<meta property='og:type' content='article'>
+<link rel='canonical' href='https://peaple.io/$NOM/msg'>
+
+
+
+<script src="/gennom.js"></script>
+<script src="/crypto.js"></script>
+
+<script src="/moretp.js"></script>
+
+<script>
+
+function get_nom() {
+  var nom = window.location.pathname;
+  nom = nom.substr(1);
+  var slash = nom.indexOf('/');
+  nom = nom.substr(0, slash);
+  return nom;
+}
+
+window.nom = get_nom();
+
+function randstr() {
+  return "" + Math.floor(Math.random() * 1000000000);
+}
+
+function onload() {
+}
+
+var socket;
+
+var inbuf = new Uint8Array(0);
+
+function socketmsg(m) {
+  var x = new Uint8Array(m.data);
+
+  inbuf = concat(inbuf, x);
+
+    while (1) {
+      var ret = moretpdec(inbuf);
+      if (!ret) {
+        break;
+      }
+
+      var msg = ret[0];
+
+      if (msg[0] == "from" && msg[1] == window.nom) {
+        putblob(msg[2]);
+      }
+
+      var off = ret[1];
+      inbuf = inbuf.slice(off, inbuf.length)
+    }
+}
+
+
+
+
+
+
+function oldsocketmsg(buf) {
+
+
+  var ar = new Uint8Array(buf.data);
+  var cmd = '';
+  var i;
+  for (i = 0; i < ar.length; ++i) {
+    if (ar[i] == 10) {
+      ++i;
+      break;
+    }
+    cmd += String.fromCharCode(ar[i]);
+  }
+  ar = ar.subarray(i, ar.length);
+
+  if (cmd == "ok") {
+    return;
+  }
+
+  if (cmd == "from " + window.nom + " <1024") {
+    putblob(ar);
+    return;
+  }
+
+  alert("[" + cmd + "]");
+
+  // var txt = arrayBufferToString(buf.data);
+}
+
+function sendmsg(txt) {
+  var tonom = window.nom;
+  var fromnom = window.usernom;
+  var fromprivkey = BigInt("0x" + sessionStorage.getItem("privkey"));
+  var frompubkey = BigInt("0x" +  sessionStorage.getItem("pubkey"));
+
+  var topubkey = localStorage.getItem(window.nom + ".pubkey");
+  if (!topubkey) {
+    topubkey = "$HEXPUBKEY";
+    if (BigInt("0x" + topubkey) > 0n) {
+      localStorage.setItem(window.nom + ".pubkey", topubkey);
+    }
+  }
+  topubkey = BigInt("0x" + topubkey);
+
+  var etxt0 = mmenc(txt, fromprivkey, topubkey);
+  if (etxt0.length != 960) {
+    return;
+  }
+  var etxt1 = mmenc(txt, fromprivkey, frompubkey);
+  if (etxt1.length != 960) {
+    return;
+  }
+
+  if (!window.seenmsg) {
+    window.seenmsg = { };
+  }
+  var seenhash = sha256(etxt1);
+  window.seenmsg[seenhash] = 1;
+
+  var b0 = new Blob(["to $NOM <960 <960\n"]);
+  var b1 = new Blob([etxt0]);
+  var b2 = new Blob([etxt1]);
+  var bb = new Blob([b0, b1, b2]);
+
+  socket.onmessage = socketmsg;
+  socket.send(bb);
+}
+
+
+function esctxt(txt) {
+  var newtxt = txt;
+  newtxt = newtxt.replace(/[\u00A0-\u9999<>\&]/gim, function(i) {
+    return '&#'+i.charCodeAt(0)+';';
+  });
+
+  newtxt = newtxt.replace(/[\n\r]/gm, '<br>');
+
+  return newtxt;
+}
+
+function dodec(c, pubkey, privkey) {
+  var txt = mmdec(c, pubkey, privkey);
+  if (!txt) {
+    var hh = eval('0x' + sha256(c).substr(0, 2));
+    var i = 1 + (hh % 8);
+    return "<img src='/images/wtf" + i + ".png'/>";
+  }
+  return esctxt(txt);
+}
+
+function putblob(ar) {
+    for (var off = 0; off < ar.length; off += 1024) {
+      var msg = ar.subarray(off, off + 1024);
+      var fromnom = '';
+      for (var i = 0; i < 31 && msg[i] > 0; ++i) {
+        fromnom += String.fromCharCode(msg[i]);
+      }
+      var tonom = '';
+      for (var i = 32; i < 63 && msg[i] > 0; ++i) {
+        tonom += String.fromCharCode(msg[i]);
+      }
+
+      var c = ar.subarray(off + 64, off + 1024);
+      var seenkey = sha256(c);
+      if (!window.seenmsg) {
+        window.seenmsg = { };
+      }
+      if (window.seenmsg[seenkey]) {
+        continue;
+      }
+      window.seenmsg[seenkey] = 1;
+
+      if (tonom == window.nom && fromnom == window.usernom) {
+        var pubkey = BigInt("0x" + sessionStorage.getItem("pubkey"));
+        var privkey = BigInt("0x" + sessionStorage.getItem("privkey"));
+        var txt = dodec(c, pubkey, privkey);
+        putmsgfrom(txt);
+      }
+      if (tonom == window.usernom && fromnom == window.nom) {
+        var pubkey = localStorage.getItem(window.nom + ".pubkey");
+        if (!pubkey) {
+          pubkey = "$HEXPUBKEY";
+          if (BigInt("0x" + pubkey) > 0n) {
+            localStorage.setItem(window.nom + ".pubkey", pubkey);
+          }
+        }
+        pubkey = BigInt("0x" + pubkey);
+
+        var privkey = BigInt("0x" + sessionStorage.getItem("privkey"));
+        var txt = dodec(c, pubkey, privkey);
+        putmsgto(txt);
+      }
+    }
+ //   newmsg.scrollIntoView();
+    newmsg.focus();
+}
+
+function putmsgfrom(txt) {
+  var pos = 0;
+
+  convotab.insertRow(pos);
+  var nrow = convotab.rows[pos];
+  nrow.style.height = '16px';
+
+  convotab.insertRow(pos);
+  nrow = convotab.rows[pos];
+  nrow.innerHTML = 
+    '<td><table style="border: 1px solid gray; background-color: darkblue" width="100%" cellspacing=0 cellpadding=0><tr>' +
+    '<td align="right" style="padding: 8px; color: white; font-size: xx-large; font-family: monospace">' +
+    '<span>' + txt + '</span>' +
+'</td><td width=128>' +
+    '<img align="right" src="/' + window.usernom + '.png?dim=128" width=128 height=128>' +
+    '</td>' +
+    '</tr></table></td>'
+}
+
+function putmsgto(txt) {
+  var pos = 0;
+
+  convotab.insertRow(pos);
+  var nrow = convotab.rows[pos];
+  nrow.style.height = '16px';
+
+  convotab.insertRow(pos);
+  nrow = convotab.rows[pos];
+  nrow.innerHTML = 
+    '<td><table style="border: 1px solid gray; background-color: black" width="100%" cellspacing=0 cellpadding=0><tr>' +
+    '<td width=128>' +
+    '<img align="left" src="/' + window.nom + '.png?dim=128" width=128 height=128>' +
+    '</td>' +
+    '<td align="left" style="padding: 4px; color: black; color: white; font-size: xx-large; font-family: monospace">' +
+    '<span>' + txt + '</span>' +
+    '</td>' +
+    '</tr></table></td>'
+}
+
+function clicksend() {
+  if (newmsg.value == '') {
+    return;
+  }
+  if (!window.socketready) {
+    return;
+  }
+
+  if (window.nom != window.usernom) {
+    putmsgfrom(esctxt(newmsg.value));
+  }
+  sendmsg(newmsg.value);
+
+  newmsg.value = '';
+//  newmsg.scrollIntoView();
+  newmsg.focus();
+}
+
+
+</script>
+</head>
+
+<body text="#ffffff" bgcolor="#000000" onload="onload()">
+
+$HEADER
+$SUBHEAD
+
+<script>
+if (window.usernom == '') {
+  window.location = "/" + window.nom;
+}
+</script>
+
+<div id="msgbox" style="display: none">
+
+<table cellpadding=0 cellspacing=0 width=1280>
+
+<tr><td align="center">
+
+<table><tr>
+<td>
+<a id="fromlink"><img id="frompic" width=256 height=256></a>
+<script>
+  frompic.src = "/" + window.usernom + ".png";
+  fromlink.href = "/" + window.usernom;
+</script>
+</td>
+
+<td valign="center" style="font-size: 128px; color: orange">
+&#x21e8;
+</td>
+
+<td>
+<a href="/$NOM">
+<img width="256" height="256" id="topic" width=256 height=256 src="/$NOM.png" />
+</a>
+</td>
+</tr>
+</table>
+</td></tr>
+
+<tr height=16></tr>
+
+
+<tr><td align="center"><table width="1024">
+<tr><td align="left" style="width: 896px; background-color: darkblue">
+<textarea autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" rows=1 onKeyDown="onkd()" onKeyPress="onkp()" id=newmsg maxlength="512" style="background-color: darkblue; color: white; font-size: xx-large; width: 100%; height: auto; overflow: hidden; padding: 2px; display: block; resize: none"></textarea>
+</td>
+
+<td width=8></td>
+
+<td valign="center">
+<!--
+  <img id=mypic width=128 height=128><br/>
+-->
+<script>
+function onkp() {
+  if (event.which == 13 && !event.shiftKey) {
+    event.preventDefault();
+    clicksend();
+  }
+}
+
+function onkd() {
+  setTimeout(function() {
+    newmsg.style.height = 'auto';
+    newmsg.style.height = (newmsg.scrollHeight + 2) + 'px';
+  }, 0);
+}
+
+//if (window.usernom) { mypic.src = "/" + window.usernom + ".png?dim=128" }
+</script>
+  <img onClick="clicksend()" style="outline: 3px solid blue" src="/images/send.png" width=128 height=32>
+</td>
+</tr>
+</table></td></tr>
+
+
+  
+
+
+<tr><td><form><table cellpadding=0 cellspacing=0 width=1024 align="center">
+<tr height="16"></tr>
+<tr><td><table cellpadding=0 cellspacing=0 id="convotab" width=1024 align="center">
+</table></td></tr>
+</table></form></td></tr>
+
+
+
+</table>
+
+</div>
+
+<script>
+msgbox.style.display = "block";
+newmsg.focus();
+// newmsg.scrollIntoView()
+</script>
+
+
+<script>
+
+function opensock() {
+  socket = new WebSocket('wss://peaple.io:3333/', ['binary']);
+  window.loginsocket = socket;
+  socket.binaryType = 'arraybuffer';
+  socket.onopen = function() {
+    socket.send("be " + window.usernom + " " + window.session + "\n");
+  };
+
+  socket.onmessage = function(buf) {
+    var txt = arrayBufferToString(buf.data);
+    if (txt.substr(0, 8) == "session ") {
+      window.socketready = 1;
+      socket.onmessage = socketmsg;
+      socket.send("from " + window.nom + "\n");
+    } else {
+      window.socketready = 0;
+      socket.close();
+    }
+  };
+
+  socket.onclose = function() {
+    window.socketready = 0;
+  }
+}
+
+opensock();
+
+function httpget(url, cb) {
+  var i = new XMLHttpRequest;
+  i.responseType = 'arraybuffer';
+  i.open('GET', url);
+  i.overrideMimeType("application/octet-stream");
+  i.onload = function(e) {
+    if (!(this.readyState == 4 && this.status == 200)) {
+      return;
+    }
+    cb(this.response);
+  }
+  i.send();
+}
+
+if (0) {
+if (window.usernom) {
+  httpget("/" + window.usernom + "/" + window.nom + ".dat", function(msgs) {
+    var ar = new Uint8Array(msgs);
+    putblob(ar);
+  })
+}
+}
+
+
+var prophidden, visibilityChange; 
+if (typeof document.hidden !== "undefined") {
+  prophidden = "hidden";
+  visibilityChange = "visibilitychange";
+} else if (typeof document.msHidden !== "undefined") {
+  prophidden = "msHidden";
+  visibilityChange = "msvisibilitychange";
+} else if (typeof document.webkitHidden !== "undefined") {
+  prophidden = "webkitHidden";
+  visibilityChange = "webkitvisibilitychange";
+}
+ 
+// If the page is hidden, pause the video;
+// if the page is shown, play the video
+function handleVisibilityChange() {
+  if (document[prophidden]) {
+    window.ishidden = true;
+  } else {
+    window.ishidden = false;
+
+    if (!window.socketready) {
+      opensock();
+    }
+  }
+}
+
+{
+  document.addEventListener(visibilityChange, handleVisibilityChange, false);
+}
+
+</script>
+
+</body>
+</html>
