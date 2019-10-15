@@ -529,7 +529,7 @@ void Server::main() {
     auto ai = agents.begin();
     while (ai != agents.end()) {
       Agent *agent = *ai;
-      if (agent->idle() > 30)
+      if (agent->idle() > 300)
         agent->close();
 
       if (agent->s < 0) {

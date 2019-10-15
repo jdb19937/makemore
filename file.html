@@ -158,7 +158,18 @@ if ($ONLINE > 0) {
 <br/>
 </div>
 <script>
-actspan.innerHTML = Math.floor($ACTIVITY) + "&nbsp;&mu;Hz";
+var v = $ACTIVITY;
+var u = "&mu;Hz";
+if (v >= 10000) {
+  v /= 1024;
+  u = "mHz";
+}
+if (v >= 10000) {
+  v /= 1024;
+  u = "Hz";
+}
+v = Math.floor(v);
+actspan.innerHTML = v + "&nbsp;" + u;
 actdiv.style = "display: block";
 </script>
 

@@ -1,6 +1,6 @@
 <html>
 <head>
-<title>makemore peaple / active</title>
+<title>makemore peaple / activity</title>
 
 <script> 
 function httpget(url, cb) {
@@ -37,7 +37,7 @@ $HEADER
 <tr><td style='font-size: 40px'>[
       <a href="/top/online"><img style="outline: 3px solid blue" id=headonline width=144 height=24 src="/images/online.png"></a> |
       <a href="/top/score"><img style="outline: 3px solid blue" id=headscore width=120 height=24 src="/images/score.png"></a> |
-      <a href="/top/active"><img style="outline: 3px solid blue" id=headactive width=192 height=24 src="/images/activity.png"></a>
+      <a href="/top/activity"><img style="outline: 3px solid blue" id=headactivity width=192 height=24 src="/images/activity.png"></a>
 ]</td></tr></table>
 <br/>
 
@@ -51,16 +51,16 @@ var pathparts = window.location.pathname.split('/');
 var func = pathparts[2];
 var valid = { };
 valid['online'] = 1;
-valid['active'] = 1;
+valid['activity'] = 1;
 valid['score'] = 1;
 if (!valid[func]) { func = 'online'; }
 var unit = {
-  'active': '&mu;Hz',
+  'activity': '&mu;Hz',
   'score': '',
   'online': 's',
 };
 var sty = {
-  'active': 'font-size: 24px; font-family: monospace',
+  'activity': 'font-size: 24px; font-family: monospace',
   'score': 'font-size: 24px; font-family: monospace; color: green',
   'online': 'font-size: 24px; font-family: monospace'
 };
