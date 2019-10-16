@@ -12,6 +12,8 @@ pass.png:
 	echo pass | ../morktxt --height 3 --width 8 | pnmcut -top 1 |pnmscale 12 | pnmtopng > $@
 pass2.png:
 	echo pass | ../morktxt --height 3 --width 8 | pnmcut -top 1 |pnmscale 12 | ppmtopgm |pnmtopng > $@
+encode.png:
+	echo encode | ../morktxt --height 3 --width 12 | pnmcut -top 1 |pnmscale 12 | pnmtopng > $@
 upload.png:
 	echo upload | ../morktxt --height 3 --width 12 | pnmcut -top 1 |pnmscale 12 | pnmtopng > $@
 logout.png:
@@ -92,6 +94,15 @@ makemore.png:
 
 
 
+
+auto.png:
+	echo 'auto' | ../morktxt --height 3 --width 8 | pnmcut -top 1 | pnmscale 12 | pnmtopng > $@
+p.png:
+	echo 'p' | ../morktxt --height 3 --width 2 | pnmcut -top 1 | pnmscale 12 | pnmtopng > $@
+q.png:
+	echo 'q' | ../morktxt --height 3 --width 2 | pnmcut -top 1 | pnmscale 12 | pnmtopng > $@
+r.png:
+	echo 'r' | ../morktxt --height 3 --width 2 | pnmcut -top 1 | pnmscale 12 | pnmtopng > $@
 
 map.png:
 	echo 'map' | ../morktxt --height 3 --width 6 | pnmcut -top 1 | pnmscale 12 | pnmtopng > $@

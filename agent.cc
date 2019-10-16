@@ -858,6 +858,7 @@ valid.insert("pass2.png");
 valid.insert("login.png");
 valid.insert("logout.png");
 valid.insert("upload.png");
+valid.insert("encode.png");
 valid.insert("active.png");
 valid.insert("activity.png");
 valid.insert("online.png");
@@ -903,6 +904,10 @@ valid.insert("goto.png");
     valid.insert("msg.png");
     valid.insert("top.png");
     valid.insert("mob.png");
+    valid.insert("auto.png");
+    valid.insert("p.png");
+    valid.insert("q.png");
+    valid.insert("r.png");
     valid.insert("send.png");
     valid.insert("buy.png");
     valid.insert("email.png");
@@ -1869,7 +1874,7 @@ valid.insert("goto.png");
   }
 
   if (ext == "html") {
-  if (func == "cam" || func == "file" || func == "fam" || func == "frens" || func == "xform" || func == "mem" || func == "mob" || func == "top" || func == "msg") {
+  if (func == "encode" || func == "file" || func == "fam" || func == "frens" || func == "xform" || func == "mem" || func == "mob" || func == "top" || func == "msg") {
     std::string html = makemore::slurp(func + ".html");
 
     std::string header = makemore::slurp("header.html");
