@@ -96,10 +96,11 @@ void mainmore(
     }
 
     strvec outvec;
-    outvec.resize(3);
+    outvec.resize(4);
     outvec[0] = "from";
     outvec[1] = ufrom.nom;
-    outvec[2] = std::string((char *)buf, 1024);
+    outvec[2] = uto.nom;
+    outvec[3] = std::string((char *)buf, 1024);
     process->write(outvec);
   }
   fclose(fp);

@@ -137,10 +137,11 @@ void mainmore(
 
   {
     strvec notify;
-    notify.resize(3);
+    notify.resize(4);
     notify[0] = "from";
     notify[1] = ufrom.nom;
-    notify[2] = msg0;
+    notify[2] = uto.nom;
+    notify[3] = msg0;
 
     if (server->notify(uto.nom, notify)) {
       FILE *fp = fopen(utofn.c_str(), "r");
@@ -149,6 +150,10 @@ void mainmore(
         fclose(fp);
     } else {
       to->newcomms = 1;
+    }
+
+    if (*to->owner && strcmp(to->owner, to->nom)) {
+      server->notify(to->owner, notify);
     }
   }
 

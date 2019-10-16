@@ -642,10 +642,11 @@ fprintf(stderr, "flushing %d\n", agent->s);
         fclose(fp);
 
         strvec nt;
-        nt.resize(3);
+        nt.resize(4);
         nt[0] = "from";
         nt[1] = fromnom;
-        nt[2] = std::string(msg, 1024);
+        nt[2] = tonom;
+        nt[3] = std::string(msg, 1024);
         if (notify(tonom, nt)) {
           fp = fopen(tofn.c_str(), "r");
           char c = getc(fp);
@@ -653,6 +654,10 @@ fprintf(stderr, "flushing %d\n", agent->s);
             fclose(fp);
         } else {
           to->newcomms = 1;
+        }
+
+        if (*to->owner && strcmp(to->nom, to->owner)) {
+          notify(to->owner, nt);
         }
 
         std::string fromfn = urb->dir + "/home/" + std::string(fromnom) + "/" + std::string(tonom) + ".dat";

@@ -872,6 +872,7 @@ valid.insert("score.png");
 valid.insert("owner.png");
 valid.insert("owner.png");
 valid.insert("comms.png");
+valid.insert("tribe.png");
 valid.insert("claim.png");
 valid.insert("switch.png");
 valid.insert("mash.png");
@@ -956,7 +957,7 @@ valid.insert("goto.png");
   }
 
   // if (path == "/tagger.html" || path == "/cam.html" || path == "/edit.html" || path == "/memory.html" || path == "/autocomplete.html" || path == "/terminal.html") {
-  if (path == "/sh" || path == "/popular" || path == "/active" || path == "/conf" || path == "/buy" || path == "/who" || path == "/online" || path == "/top" || path == "/top/" || path == "/top/activity" || path == "/top/online" || path == "/top/popular" || path == "/top/score" || path == "/comms") {
+  if (path == "/sh" || path == "/popular" || path == "/active" || path == "/conf" || path == "/buy" || path == "/who" || path == "/online" || path == "/top" || path == "/top/" || path == "/top/activity" || path == "/top/online" || path == "/top/popular" || path == "/top/score" || path == "/comms" || path == "/tribe") {
     strvec pathparts;
     split(path, '/', &pathparts);
     std::string html = makemore::slurp(pathparts[0] + ".html");

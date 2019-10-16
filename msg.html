@@ -55,8 +55,12 @@ function socketmsg(m) {
 
       var msg = ret[0];
 
-      if (msg[0] == "from" && msg[1] == window.nom) {
-        putblob(msg[2]);
+      if (msg[0] == "from") {
+        if (msg[1] == window.nom && msg[2] == window.usernom) {
+          putblob(msg[3]);
+        } else {
+          // alert('subacct notify');
+        }
       }
 
       var off = ret[1];
@@ -68,35 +72,6 @@ function socketmsg(m) {
 
 
 
-
-function oldsocketmsg(buf) {
-
-
-  var ar = new Uint8Array(buf.data);
-  var cmd = '';
-  var i;
-  for (i = 0; i < ar.length; ++i) {
-    if (ar[i] == 10) {
-      ++i;
-      break;
-    }
-    cmd += String.fromCharCode(ar[i]);
-  }
-  ar = ar.subarray(i, ar.length);
-
-  if (cmd == "ok") {
-    return;
-  }
-
-  if (cmd == "from " + window.nom + " <1024") {
-    putblob(ar);
-    return;
-  }
-
-  alert("[" + cmd + "]");
-
-  // var txt = arrayBufferToString(buf.data);
-}
 
 function sendmsg(txt) {
   var tonom = window.nom;
