@@ -133,6 +133,7 @@ Zone::Zone(const std::string &_fn) {
   actup();
   scrup();
   onlup();
+  crwup();
 }
 
 void Zone::actup() {
@@ -156,6 +157,36 @@ void Zone::onlup() {
     if (!*prs->owner)
       continue;
     onl_nom.insert(std::pair<double,std::string>(prs->acted, prs->nom));
+  }
+}
+
+void Zone::crwup() {
+  std::map<std::string, unsigned int> nom_crw;
+  for (unsigned int i = 0; i < n; ++i) {
+    Parson *prs = db + i;
+    if (!prs->revised)
+      continue;
+    if (prs->flags & Parson::FLAG_HIDETOP)
+      continue;
+    if (!*prs->owner)
+      continue;
+    ++nom_crw[prs->owner];
+  }
+
+  for (unsigned int i = 0; i < n; ++i) {
+    Parson *prs = db + i;
+    if (!prs->revised)
+      continue;
+    if (prs->flags & Parson::FLAG_HIDETOP)
+      continue;
+    if (strcmp(prs->nom, prs->owner))
+      continue;
+    prs->ncrew = nom_crw[prs->nom];
+  }
+
+  crw_nom.clear();
+  for (auto kv : nom_crw) {
+    crw_nom.insert(std::make_pair(kv.second, kv.first));
   }
 }
 

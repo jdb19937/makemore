@@ -16,10 +16,27 @@ encode.png:
 	echo encode | ../morktxt --height 3 --width 12 | pnmcut -top 1 |pnmscale 12 | pnmtopng > $@
 upload.png:
 	echo upload | ../morktxt --height 3 --width 12 | pnmcut -top 1 |pnmscale 12 | pnmtopng > $@
+load.png:
+	echo load | ../morktxt --height 3 --width 8 | pnmcut -top 1 |pnmscale 12 | pnmtopng > $@
+save.png:
+	echo save | ../morktxt --height 3 --width 8 | pnmcut -top 1 |pnmscale 12 | pnmtopng > $@
+boss.png:
+	echo boss | ../morktxt --height 3 --width 8 | pnmcut -top 1 |pnmscale 12 | pnmtopng > $@
+crew.png:
+	echo crew | ../morktxt --height 3 --width 8 | pnmcut -top 1 |pnmscale 12 | pnmtopng > $@
 logout.png:
 	echo logout | ../morktxt --height 3 --width 12 | pnmcut -top 1 |pnmscale 12 | pnmtopng > $@
 login.png:
 	echo login | ../morktxt --height 3 --width 10 | pnmcut -top 1 |pnmscale 12 | pnmtopng > $@
+
+clear.png:
+	echo clear | ../morktxt --height 3 --width 10 | pnmcut -top 1 |pnmscale 12 | pnmtopng > $@
+close.png:
+	echo close | ../morktxt --height 3 --width 10 | pnmcut -top 1 |pnmscale 12 | pnmtopng > $@
+go.png:
+	echo go | ../morktxt --height 3 --width 4 | pnmcut -top 1 |pnmscale 12 | pnmtopng > $@
+stop.png:
+	echo stop | ../morktxt --height 3 --width 8 | pnmcut -top 1 |pnmscale 12 | pnmtopng > $@
 
 fam.png:
 	echo fam | ../morktxt --height 3 --width 6 | pnmcut -top 1 |pnmscale 12 | pnmtopng > $@
@@ -124,10 +141,14 @@ mash.png:
 	echo 'mash' | ../morktxt --height 3 --width 8 | pnmcut -top 1 | pnmscale 12 | pnmtopng > $@
 spawn.png:
 	echo 'spawn' | ../morktxt --height 3 --width 10 | pnmcut -top 1 | pnmscale 12 | pnmtopng > $@
+induct.png:
+	echo 'induct' | ../morktxt --height 3 --width 12 | pnmcut -top 1 | pnmscale 12 | pnmtopng > $@
 claim.png:
 	echo 'claim' | ../morktxt --height 3 --width 10 | pnmcut -top 1 | pnmscale 12 | pnmtopng > $@
 tribe.png:
 	echo 'tribe' | ../morktxt --height 3 --width 10 | pnmcut -top 1 | pnmscale 12 | pnmtopng > $@
+script.png:
+	echo 'script' | ../morktxt --height 3 --width 12 | pnmcut -top 1 | pnmscale 12 | pnmtopng > $@
 comms.png:
 	echo 'comms' | ../morktxt --height 3 --width 10 | pnmcut -top 1 | pnmscale 12 | pnmtopng > $@
 owner.png:

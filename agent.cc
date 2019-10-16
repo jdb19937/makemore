@@ -840,6 +840,10 @@ fprintf(stderr, "req=[%s]\n", req.c_str());
   if (!strncmp(path.c_str(), "/images/", 8)) {
     std::set<std::string> valid;
     valid.insert("conf.png");
+    valid.insert("close.png");
+    valid.insert("clear.png");
+    valid.insert("stop.png");
+    valid.insert("go.png");
     valid.insert("makemore.png");
     valid.insert("mork.png");
     valid.insert("slashfam.png");
@@ -853,6 +857,10 @@ valid.insert("pass2.png");
 valid.insert("login.png");
 valid.insert("logout.png");
 valid.insert("upload.png");
+valid.insert("load.png");
+valid.insert("save.png");
+valid.insert("crew.png");
+valid.insert("boss.png");
 valid.insert("encode.png");
 valid.insert("active.png");
 valid.insert("activity.png");
@@ -872,8 +880,10 @@ valid.insert("score.png");
 valid.insert("owner.png");
 valid.insert("owner.png");
 valid.insert("comms.png");
+valid.insert("script.png");
 valid.insert("tribe.png");
 valid.insert("claim.png");
+valid.insert("induct.png");
 valid.insert("switch.png");
 valid.insert("mash.png");
 valid.insert("blend.png");
@@ -957,7 +967,7 @@ valid.insert("goto.png");
   }
 
   // if (path == "/tagger.html" || path == "/cam.html" || path == "/edit.html" || path == "/memory.html" || path == "/autocomplete.html" || path == "/terminal.html") {
-  if (path == "/sh" || path == "/popular" || path == "/active" || path == "/conf" || path == "/buy" || path == "/who" || path == "/online" || path == "/top" || path == "/top/" || path == "/top/activity" || path == "/top/online" || path == "/top/popular" || path == "/top/score" || path == "/comms" || path == "/tribe") {
+  if (path == "/sh" || path == "/popular" || path == "/active" || path == "/conf" || path == "/buy" || path == "/who" || path == "/online" || path == "/top" || path == "/top/" || path == "/top/activity" || path == "/top/online" || path == "/top/popular" || path == "/top/score" || path == "/top/crew" || path == "/comms" || path == "/script") {
     strvec pathparts;
     split(path, '/', &pathparts);
     std::string html = makemore::slurp(pathparts[0] + ".html");
@@ -1045,6 +1055,43 @@ valid.insert("goto.png");
   }
 
 
+  if (path == "/crew.json") {
+    map<string, string> cgi;
+    cgiparse(query, &cgi);
+    unsigned int n = 256;
+    if (cgi["n"] != "")
+      n = strtoul(cgi["n"].c_str(), NULL, 0);
+
+    std::string json = "{";
+    unsigned int k = 0;
+    Zone *z = server->urb->zones[0];
+    z->scrup();
+    auto crw_nom = z->crw_nom;
+    for (auto q = crw_nom.rbegin(); q != crw_nom.rend(); ++q) {
+      if (q->first == 0)
+        break;
+
+      if (k > 0)
+        json += ",";
+      json += "\n";
+
+      char buf[256];
+      sprintf(buf, "  \"%s\": %u", q->second.c_str(), q->first);
+      json += buf;
+
+      if (++k >= n)
+        break;
+    }
+    json += "\n}\n";
+
+    this->printf("HTTP/1.1 200 OK\r\n");
+    this->printf("Connection: keep-alive\r\n");
+    this->printf("Content-Type: text/json\r\n");
+    this->printf("Content-Length: %lu\r\n", json.length());
+    this->printf("\r\n");
+    this->write(json);
+    return;
+  }
   if (path == "/score.json") {
     map<string, string> cgi;
     cgiparse(query, &cgi);
@@ -1225,6 +1272,14 @@ valid.insert("goto.png");
     }
 
     strcpy(parson->owner, user->owner);
+    if (!strcmp(user->owner, user->nom)) {
+      ++user->ncrew;
+    } else {
+      if (Parson *uo = server->urb->find(user->owner)) {
+        ++uo->ncrew;
+      }
+    }
+
     parson->pass[0] = '*';
     memcpy(parson->pubkey, user->pubkey, sizeof(Parson::pubkey));
 
@@ -1905,6 +1960,8 @@ valid.insert("goto.png");
     char sbuf[256];
     sprintf(sbuf, "%llu", prs ? prs->score : 0ULL);
     html = replacestr(html, "$SCORE", sbuf);
+    sprintf(sbuf, "%llu", prs ? prs->ncrew : 0ULL);
+    html = replacestr(html, "$NCREW", sbuf);
 
     char abuf[256];
     sprintf(abuf, "%lf", prs ? prs->activity() : 0.0);

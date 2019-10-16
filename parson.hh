@@ -91,8 +91,10 @@ struct Parson {
   uint8_t pass[32];
   char salt[32];
 
-  // 808
-  uint8_t _fill[808];
+  uint64_t ncrew;
+
+  // 800
+  uint8_t _fill[800];
 
   // 256
   char srcfn[256];

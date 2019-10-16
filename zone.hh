@@ -22,10 +22,12 @@ struct Zone {
 
   std::multimap<double, std::string> act_nom;
   std::multimap<unsigned int, std::string> scr_nom;
+  std::multimap<unsigned int, std::string> crw_nom;
   std::multimap<double, std::string> onl_nom;
   void actup();
   void scrup();
   void onlup();
+  void crwup();
 
   static void create(const char *_fn, unsigned int _n);
   void fill_fam(const char *nom, Parson::Nom *);
