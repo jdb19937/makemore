@@ -85,8 +85,8 @@ function socketmsg(m) {
 
 
 function gotmsg(fromnom, tonom, txt) {
-  var f = new Function('from', 'to', 'txt', window.scrtxt.value);
-  var rsp = f(fromnom, tonom, txt);
+  var f = new Function('from', 'to', 'master', 'txt', window.scrtxt.value);
+  var rsp = f(fromnom, tonom, window.master, txt);
   if (rsp.constructor == Object) {
     for (var i in rsp) {
       sendmsg(tonom, i, rsp[i]);
@@ -122,8 +122,6 @@ function sendmsg(fromnom, tonom, txt) {
     return 0;
   }
 
-  socket.send("be " + fromnom + " " + window.session + "\n");
-
   var b0 = new Blob(["be " + fromnom + " " + window.session + " ; to " + tonom + " <960 <960 ; be " + window.master + " " + window.session + "\n"]);
   var b1 = new Blob([etxt0]);
   var b2 = new Blob([etxt1]);
@@ -157,6 +155,14 @@ function opensock() {
   }
 }
 
+function upfile() {
+  var reader = new FileReader();
+  reader.onload = function(f) {
+    scrtxt.value = f.target.result
+  }
+  reader.readAsText(fileupload.files[0]);
+}
+
 </script>
 
 </head>
@@ -178,9 +184,19 @@ opensock();
 
 
 <table width=1280 cellpadding=4 cellspacing=4>
+
+<tr><td align="center">
+<label id=uplab for="fileupload" style="border: 3px solid blue; display: inline-block; cursor: pointer">
+    <i></i> <img width=144 height=24 src="/images/upload.png"/>
+</label>
+<input id="fileupload" style="display: none" type="file" onChange="upfile()"/>
+</td></tr>
+
 <tr><td align="center">
 <textarea autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" rows=16 id=scrtxt style="background-color: darkblue; color: white; font-size: xx-large; width: 100%; height: auto; overflow: hidden; padding: 2px; display: block; resize: none">
+// function(from, to, master, txt) {
 return 'hi ' + from;
+// }
 </textarea>
 </td></tr>
 
