@@ -51,6 +51,8 @@ sh.png:
 	echo sh | ../morktxt --height 3 --width 4 | pnmcut -top 1 |pnmscale 12 | pnmtopng > $@
 send.png:
 	echo send | ../morktxt --height 3 --width 8 | pnmcut -top 1 |pnmscale 16 | pnmtopng > $@
+switch.png:
+	echo switch | ../morktxt --height 3 --width 12 | pnmcut -top 1 |pnmscale 12 | pnmtopng > $@
 created.png:
 	echo created | ../morktxt --height 3 --width 14 | pnmcut -top 1 |pnmscale 12 | pnmtopng > $@
 online.png:

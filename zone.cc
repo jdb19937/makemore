@@ -153,7 +153,7 @@ void Zone::onlup() {
     Parson *prs = db + i;
     if (!prs->acted)
       continue;
-    if (strcmp(prs->owner, prs->nom))
+    if (!*prs->owner)
       continue;
     onl_nom.insert(std::pair<double,std::string>(prs->acted, prs->nom));
   }

@@ -873,6 +873,7 @@ valid.insert("owner.png");
 valid.insert("owner.png");
 valid.insert("comms.png");
 valid.insert("claim.png");
+valid.insert("switch.png");
 valid.insert("mash.png");
 valid.insert("blend.png");
 valid.insert("goto.png");
@@ -1224,7 +1225,7 @@ valid.insert("goto.png");
 
     strcpy(parson->owner, user->owner);
     parson->pass[0] = '*';
-    parson->pubkey[0] = '*';
+    memcpy(parson->pubkey, user->pubkey, sizeof(Parson::pubkey));
 
     std::string txt = "ok";
     this->printf("HTTP/1.1 200 OK\r\n");

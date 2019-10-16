@@ -103,11 +103,11 @@ fprintf(stderr, "newpubkeylen=%lu\n", newpubkey.length());
         return;
       }
 
-      unsigned long duration = 86400;
-      session = server->make_session(newnom, duration);
-
       if (!*parson->owner)
         strcpy(parson->owner, parson->nom);
+
+      unsigned long duration = 86400;
+      session = server->make_session(newnom, duration);
     }
   } else {
     session = sespass;

@@ -60,7 +60,7 @@ function reload() {
 $HEADER
 $SUBHEAD
 
-<table width="1280"> <tr><td>
+<table width="1280"> <tr><td rowspan=2>
 
 <table cellspacing=0 cellpadding=0 align="center">
 <tr>
@@ -73,8 +73,6 @@ $SUBHEAD
 <tr>
 <td align="center">
 <table><tr><td>
-
-
   <script src="/autocomplete.js"></script>
 <script>
 function dogoto(who) {
@@ -94,14 +92,21 @@ autocomplete(document.getElementById('qnom'), function() { dogoto(document.getEl
     <img align="center" width=96 height=24 style="outline: 3px solid blue" src="/images/goto.png"
       onClick="dogoto(document.getElementById('qnom').value)" >
 </form>
-
 </td></tr></table>
-
 </td>
 </tr>
+
+
 </table>
 
 </td>
+
+<td width="256" align="right" valign="top">
+<div id="swdiv" style="display: none">
+<img id="switchbutton" width=144 height=24 style="border: 3px solid blue" src="/images/switch.png" onClick="doswitch()">
+</div>
+</td>
+</tr><tr>
 
 <td width="256" align="right" valign="bottom">
 
@@ -207,18 +212,36 @@ if ("$MAKER" == "") {
     ownerlink.href = "/$MAKER";
     ownerdiv.style.display = "block";
   }
+
+  if ("$MAKER" == window.master && window.nom != window.usernom) {
+    swdiv.style.display = 'block';
+    swdiv.style.cursor = 'pointer';
+  }
+}
+
+function doswitch() {
+  if (window.usernom == '' || window.session == '' || ("$MAKER" && "$MAKER" != window.master) || window.nom == window.usernom) {
+    return;
+  }
+  sessionStorage.setItem('nom', window.nom);
+  window.location.reload();
 }
 
 function doclaim() {
-  if (window.usernom == '' || window.session == '') {
+  if (window.usernom == '' || window.session == '' || window.master == '') {
     return;
   }
   myhttpget("/claim.txt?usernom=" + window.usernom + "&session=" + window.session + "&nom=" + window.nom, function(txt) {
     if (txt == "ok") {
       claimdiv.style.display = "none";
-      ownerpic.src = "/" + window.usernom + ".png?dim=128";
-      ownerlink.href = "/" + window.usernom;
+      ownerpic.src = "/" + window.master + ".png?dim=128";
+      ownerlink.href = "/" + window.master;
       ownerdiv.style.display = "block";
+
+      if (window.nom != window.usernom) {
+        swdiv.style.display = 'block';
+        swdiv.style.cursor = 'pointer';
+      }
     } else {
       claimbutton.style.border = "3px solid red";
       window.setTimeout(function() {

@@ -135,7 +135,9 @@ function logout() {
 function check_loginstate() {
   var nom = sessionStorage.getItem('nom');
   var session = sessionStorage.getItem('session');
-  if (!nom || !session) {
+  var master = sessionStorage.getItem('master');
+  if (!nom || !session || !master) {
+    window.master = '';
     window.usernom = '';
     window.session = '';
     sessionStorage.clear();
@@ -152,6 +154,7 @@ function check_loginstate() {
   }
 
   window.usernom = nom;
+  window.master = master;
   window.session = session;
 
 //  setcookie('usernom', window.usernom);
@@ -204,6 +207,7 @@ function getsession(username, password, pubkey, hexprivkey) {
       if (z > -1) { ses = ses.substr(0, z); }
       sessionStorage.setItem('nom', username);
       sessionStorage.setItem('session', ses);
+      sessionStorage.setItem('master', username);
       sessionStorage.setItem("privkey", hexprivkey);
       sessionStorage.setItem("pubkey", bufToBn(pubkey).toString(16));
       window.location.reload();

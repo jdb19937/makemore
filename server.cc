@@ -132,12 +132,24 @@ bool Server::check_session(const std::string &nom, const std::string &session) {
   if (!parson)
     return false;
 
+  std::string onom = parson->owner;
+  if (!onom.length())
+    return false;
+  Parson *oparson;
+  if (onom == nom) {
+    oparson = parson;
+  } else {
+    oparson = urb->find(onom);
+    if (!oparson)
+      return false;
+  }
+
   uint8_t rehashbin[32];
   SHA256_CTX sha;
   SHA256_Init(&sha);
   SHA256_Update(&sha, (const uint8_t *)session_key.data(), session_key.length() + 1);
-  SHA256_Update(&sha, (uint8_t *)parson->pass, sizeof(Parson::pass));
-  SHA256_Update(&sha, (const uint8_t *)nom.data(), nom.length() + 1);
+  SHA256_Update(&sha, (uint8_t *)oparson->pass, sizeof(Parson::pass));
+  SHA256_Update(&sha, (const uint8_t *)onom.data(), onom.length() + 1);
   SHA256_Update(&sha, (const uint8_t *)nonce.data(), nonce.length() + 1);
   SHA256_Update(&sha, (const uint8_t *)&expires, sizeof(expires));
   SHA256_Final(rehashbin, &sha);
