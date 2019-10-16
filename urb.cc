@@ -168,8 +168,10 @@ fprintf(stderr, "found %s\n", nom.c_str());
   strcpy(parson.nom, nom.c_str());
 
   double dev = 1.0;
+#if 0
   if (strstr(parson.nom, "norm"))
     dev = 0;
+#endif
 
   std::string seednom = nom;
   while (!strncmp(seednom.c_str(), "anti", 4)) {

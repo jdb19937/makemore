@@ -142,8 +142,9 @@ __global__ void gpu_burnship(double *buf) {
   if (n < m) {
     q += 1.0 - log(log(d2) / log(4.0));
   }
+  q *= 255.0 / m;
 
-  buf[i] = q;
+  buf[i] = 255 - q;
 }
 
 void burnship(uint8_t *rgb) {
