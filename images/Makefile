@@ -12,6 +12,8 @@ pass.png:
 	echo pass | ../morktxt --height 3 --width 8 | pnmcut -top 1 |pnmscale 12 | pnmtopng > $@
 pass2.png:
 	echo pass | ../morktxt --height 3 --width 8 | pnmcut -top 1 |pnmscale 12 | ppmtopgm |pnmtopng > $@
+upload.png:
+	echo upload | ../morktxt --height 3 --width 12 | pnmcut -top 1 |pnmscale 12 | pnmtopng > $@
 logout.png:
 	echo logout | ../morktxt --height 3 --width 12 | pnmcut -top 1 |pnmscale 12 | pnmtopng > $@
 login.png:

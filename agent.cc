@@ -857,6 +857,7 @@ valid.insert("pass.png");
 valid.insert("pass2.png");
 valid.insert("login.png");
 valid.insert("logout.png");
+valid.insert("upload.png");
 valid.insert("active.png");
 valid.insert("activity.png");
 valid.insert("online.png");
@@ -1770,6 +1771,100 @@ valid.insert("goto.png");
     this->printf("Content-Length: %lu\r\n", dat.length());
     this->printf("\r\n");
     this->write(dat);
+    return;
+  }
+
+  if (ext == "json" && func == "source") {
+    map<string, string> cgi;
+    cgiparse(query, &cgi);
+
+    Parson *prs = server->urb->find(nom);
+    if (!prs) {
+      this->http_notfound();
+      return;
+    }
+
+    if (!*prs->srcfn) {
+      this->http_notfound();
+      return;
+    }
+
+    FILE *fp = fopen(prs->srcfn, "r");
+    if (!fp) {
+      this->http_notfound();
+      return;
+    }
+    Partrait prt;
+    prt.load(fp);
+    fclose(fp);
+ 
+    Triangle tri = prt.get_mark();
+    Triangle tribak = tri;
+
+    bool changed = false;
+    if (cgi["px"] != "") { changed = true; tri.p.x = strtod(cgi["px"].c_str(), NULL); }
+    if (cgi["py"] != "") { changed = true; tri.p.y = strtod(cgi["py"].c_str(), NULL); }
+    if (cgi["qx"] != "") { changed = true; tri.q.x = strtod(cgi["qx"].c_str(), NULL); }
+    if (cgi["qy"] != "") { changed = true; tri.q.y = strtod(cgi["qy"].c_str(), NULL); }
+    if (cgi["rx"] != "") { changed = true; tri.r.x = strtod(cgi["rx"].c_str(), NULL); }
+    if (cgi["ry"] != "") { changed = true; tri.r.y = strtod(cgi["ry"].c_str(), NULL); }
+    if (changed) {
+      prt.set_mark(tri);
+      prt.save(prs->srcfn);
+
+      Partrait stdprt(256, 256);
+      stdprt.set_pose(Pose::STANDARD);
+      prt.warp(&stdprt);
+
+      Styler *sty = server->urb->get_sty(prs->sty);
+      assert(sty);
+      server->urb->enc->encode(stdprt, prs->controls);
+      sty->encode(prs->controls, prs);
+    }
+
+    std::string json;
+    char jbuf[256];
+    json += "{\n";
+    sprintf(jbuf, "  \"p\": [%d, %d],\n", (int)tri.p.x, (int)tri.p.y); json += jbuf;
+    sprintf(jbuf, "  \"q\": [%d, %d],\n", (int)tri.q.x, (int)tri.q.y); json += jbuf;
+    sprintf(jbuf, "  \"r\": [%d, %d]\n", (int)tri.r.x, (int)tri.r.y); json += jbuf;
+    json += "}\n";
+
+    this->printf("HTTP/1.1 200 OK\r\n");
+    this->printf("Connection: keep-alive\r\n");
+    this->printf("Content-Type: text/json\r\n");
+    this->printf("Content-Length: %lu\r\n", json.length());
+    this->printf("\r\n");
+    this->write(json);
+    return;
+  }
+
+  if (ext == "png" && func == "source") {
+    Parson *prs = server->urb->find(nom);
+    if (!prs) {
+      this->http_notfound();
+      return;
+    }
+
+    if (!*prs->srcfn) {
+      this->http_notfound();
+      return;
+    }
+
+    FILE *fp = fopen(prs->srcfn, "r");
+    if (!fp) {
+      this->http_notfound();
+      return;
+    }
+    std::string png = makemore::slurp(fp);
+    fclose(fp);
+
+    this->printf("HTTP/1.1 200 OK\r\n");
+    this->printf("Connection: keep-alive\r\n");
+    this->printf("Content-Type: image/png\r\n");
+    this->printf("Content-Length: %lu\r\n", png.length());
+    this->printf("\r\n");
+    this->write(png);
     return;
   }
 

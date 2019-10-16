@@ -36,7 +36,7 @@ void mainmore(
     PPM ppm;
     ppm.read_jpeg(png);
 
-ppm.rotl();
+//ppm.rotl();
 
     prt.w = ppm.w;
     prt.h = ppm.h;
@@ -46,7 +46,7 @@ ppm.rotl();
     ppm.h = 0;
   }
   
-  prt.reflect();
+  // prt.reflect();
 
 fprintf(stderr, "got png %u %u\n", prt.w, prt.h);
   if (ap) {
@@ -63,6 +63,13 @@ curpose.scale = prt.w / 8.0;
   } else {
     prt.set_pose(Pose::STANDARD);
   }
+
+  Urbite who(nom, urb, prs);
+  who.make_home_dir();
+  std::string srcfn = who.home_dir() + "/source.png";
+  assert(srcfn.length() < 255);
+  prt.save(srcfn);
+  strcpy(prs->srcfn, srcfn.c_str());
 
   Triangle curmark = prt.get_mark();
   if (curmark.p.x < 0) curmark.p.x = 0;
@@ -87,6 +94,9 @@ curpose.scale = prt.w / 8.0;
   assert(sty);
   urb->enc->encode(stdprt, prs->controls);
   sty->encode(prs->controls, prs);
+
+  for (unsigned int j = 0; j < Parson::ncontrols; ++j)
+    prs->variations[j] = 1.0;
 
   // Pose pp = prt.get_pose();
   // prs->angle = pp.angle * 0.5;

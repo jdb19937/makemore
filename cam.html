@@ -28,8 +28,8 @@ function got_media(mediaStream) {
   window.mediaStream = mediaStream
   window.mediaStreamTrack = mediaStream.getVideoTracks()[0];
   window.imageCapture = new ImageCapture(window.mediaStreamTrack);
-  // console.log(window.imageCapture);
   window.camera_enabled = 1
+  vid.srcObject = mediaStream;
 }
 
 function ask_camera() {
@@ -38,44 +38,93 @@ function ask_camera() {
   .catch(error => console.error('getUserMedia() error:', error));
 }
 
-function capture() {
-  if (!window.camera_enabled) {
-    ask_camera()
+function upfile() {
+  var f = fileupload.files[0];
+  if (f.type != 'image/jpeg' && f.type != 'image/png' || f.size > 4096*4096) {
+    uplab.style.border = "3px solid red";
+    window.setTimeout(function() {
+      uplab.style.border = "3px solid blue";
+    }, 500);
     return;
   }
+  uplab.style.border = "3px solid yellow";
 
-  window.imageCapture.takePhoto().then(blob => {
+  var img = new Image();
+  img.onload = function() {
+    upcan.height = Math.floor(512 * this.height / this.width);
+    upcan.getContext('2d').drawImage(this, 0, 0, upcan.width, upcan.height);
+    window.saved = upcan.getContext('2d').getImageData(0, 0, upcan.width, upcan.height);
+
+    upcandiv.style.display = 'block';
+    viddiv.style.display = 'none';
+    capbutton.onclick = function() { startvid() };
+    capbutton.style.border = "3px solid blue";
+
+    upcan.toBlob(function(bl) {
+      var socket = new WebSocket('wss://peaple.io:3333/', ['binary']);
+      socket.binaryType = 'arraybuffer';
+      socket.onmessage = function() {
+        uplab.style.border = "3px solid blue";
+        socket.close();
+        reloadpic();
+    
+        httpget("/" + window.nom + "/source.json", function(j) {
+          upcan.getContext('2d').imageSmoothingEnabled = false;
+          var tri = JSON.parse(j);
+          var c;
+          c = 0x70; upcan.getContext('2d').drawImage(mork, (c % 16) * 2, Math.floor(c / 16) * 3 + 1, 2, 2, tri.p[0] - 8, tri.p[1] - 8, 2 * 8, 2 * 8);
+          c = 0x71; upcan.getContext('2d').drawImage(mork, (c % 16) * 2, Math.floor(c / 16) * 3 + 1, 2, 2, tri.q[0] - 8, tri.q[1] - 8, 2 * 8, 2 * 8);
+          c = 0x72; upcan.getContext('2d').drawImage(mork, (c % 16) * 2, Math.floor(c / 16) * 3 + 1, 2, 2, tri.r[0] - 8, tri.r[1] - 8, 2 * 8, 2 * 8);
+          window.pqr = [tri.p, tri.q, tri.r];
+        });
+      };
+
+      socket.onopen = function() {
+        socket.send("upload " + window.nom + " <" + bl.size + "\n");
+        socket.send(bl);
+      };
+    }, 'image/jpeg', 0.95);
+  };
+
+  img.src = URL.createObjectURL(f);
+}
+
+function capcam() {
+  upcandiv.style.display = 'block';
+  upcan.height = Math.floor(vid.videoHeight * 512 / vid.videoWidth);
+  upcan.getContext('2d').drawImage(vid, 0, 0, upcan.width, upcan.height);
+  window.saved = upcan.getContext('2d').getImageData(0, 0, upcan.width, upcan.height);
+
+  viddiv.style.display = 'none';
+  capbutton.onclick = function() { startvid() };
+  capbutton.style.border = "3px solid blue";
+
+  upcan.toBlob(function(blob) {
     var socket = new WebSocket('wss://peaple.io:3333/', ['binary']);
     socket.binaryType = 'arraybuffer';
     socket.onmessage = function() {
       socket.close();
+
+        httpget("/" + window.nom + "/source.json", function(j) {
+          upcan.getContext('2d').imageSmoothingEnabled = false;
+          var tri = JSON.parse(j);
+          var c;
+          c = 0x70; upcan.getContext('2d').drawImage(mork, (c % 16) * 2, Math.floor(c / 16) * 3 + 1, 2, 2, tri.p[0] - 8, tri.p[1] - 8, 2 * 8, 2 * 8);
+          c = 0x71; upcan.getContext('2d').drawImage(mork, (c % 16) * 2, Math.floor(c / 16) * 3 + 1, 2, 2, tri.q[0] - 8, tri.q[1] - 8, 2 * 8, 2 * 8);
+          c = 0x72; upcan.getContext('2d').drawImage(mork, (c % 16) * 2, Math.floor(c / 16) * 3 + 1, 2, 2, tri.r[0] - 8, tri.r[1] - 8, 2 * 8, 2 * 8);
+          window.pqr = [tri.p, tri.q, tri.r];
+
       reloadpic();
+        });
     };
 
     socket.onopen = function() {
       socket.send("upload " + window.nom + " <" + blob.size + "\n");
       socket.send(blob);
     };
-
-
-//    var img = new Image()
-//    img.src = URL.createObjectURL(blob);
-//    img.onload = () => { URL.revokeObjectURL(this.src);
-
-//    var canvas = document.createElement('canvas');
-//    var context = canvas.getContext('2d');
-//    context.drawImage(img, 0, 0 );
-//    var theData = context.getImageData(0, 0, img.width, img.height);
-//    canvas.toBlob(function(b) { alert(b); }, 'image/png');
-//    }
-
-
-
-
-
-  })
-  .catch(error => console.error('takePhoto() error:', error));
+  });
 }
+
 
 function get_nom() {
   var nom = window.location.pathname;
@@ -84,6 +133,7 @@ function get_nom() {
   nom = nom.substr(0, slash);
   return nom;
 }
+window.nom = get_nom();
 
 function randstr() {
   return "" + Math.floor(Math.random() * 1000000000);
@@ -106,30 +156,121 @@ function reloadpic() {
   pic.src = "/" + window.nom + ".png" + "?r=" + randstr();
 }
 
-function onload() {
-  window.nom = get_nom();
-
+function startvid() {
   ask_camera();
-  reloadpic();
+  viddiv.style.display = 'block';
+  capbutton.onclick = function() { stopvid() };
+  capbutton.style.border = "3px solid green";
+  upcandiv.style.display = 'none';
+}
+
+function stopvid() {
+  window.mediaStream.getTracks().forEach(function(track) {
+    track.stop();
+  });
+  capbutton.onclick = function() { startvid() };
+  capbutton.style.border = "3px solid blue";
+  viddiv.style.display = 'none';
+  upcandiv.style.display = 'none';
+}
+
+function canclick() {
+  if (!window.pqr) {
+    return;
+  }
+
+  var x = event.offsetX;
+  var y = event.offsetY;
+
+  var i = 0;
+  var d = Math.pow(x - window.pqr[0][0], 2) + Math.pow(y - window.pqr[0][1], 2);
+
+  var f = Math.pow(x - window.pqr[1][0], 2) + Math.pow(y - window.pqr[1][1], 2);
+  if (f < d) {
+    i = 1;
+    d = f;
+  }
+  var f = Math.pow(x - window.pqr[2][0], 2) + Math.pow(y - window.pqr[2][1], 2);
+  if (f < d) {
+    i = 2;
+    d = f;
+  }
+
+  var which = ['p', 'q', 'r'][i];
+
+  httpget("/" + window.nom + "/source.json?" + which + "x=" + x + "&" + which + "y=" + y, function(j) {
+    upcan.getContext('2d').putImageData(window.saved, 0, 0);
+
+    var tri = JSON.parse(j);
+    var c;
+    c = 0x70; upcan.getContext('2d').drawImage(mork, (c % 16) * 2, Math.floor(c / 16) * 3 + 1, 2, 2, tri.p[0] - 8, tri.p[1] - 8, 2 * 8, 2 * 8);
+    c = 0x71; upcan.getContext('2d').drawImage(mork, (c % 16) * 2, Math.floor(c / 16) * 3 + 1, 2, 2, tri.q[0] - 8, tri.q[1] - 8, 2 * 8, 2 * 8);
+    c = 0x72; upcan.getContext('2d').drawImage(mork, (c % 16) * 2, Math.floor(c / 16) * 3 + 1, 2, 2, tri.r[0] - 8, tri.r[1] - 8, 2 * 8, 2 * 8);
+    window.pqr = [tri.p, tri.q, tri.r];
+
+    reloadpic();
+  });
 }
 
 </script>
+
 </head>
 
-<body text="#ffffff" bgcolor="#000000" onload="onload()">
+<body text="#ffffff" bgcolor="#000000">
 
 $HEADER
 $SUBHEAD
 
+<img id="mork" style="display: none" src="/images/mork.png" width=256 height=384>
+
 <table width=1280>
-  <tr valign="top">
-    <td align=center>
-      <img style="outline: 3px solid blue" id="pic" onClick="capture()" width="512" height="512">
-<br/>
-<br/>
-<img src="/images/capture.png" style="outline: 3px solid blue" onClick="capture()" />
+
+  <tr>
+    <td align="center">
+
+
     </td>
   </tr>
+
+  <tr>
+    <td align="center" valign="top" width=768>
+
+<table><tr>
+<td><img id="capbutton" width=168 height=24 src="/images/capture.png" style="cursor: pointer; border: 3px solid blue" onClick="startvid()" /></td>
+<td>
+<label id=uplab for="fileupload" style="border: 3px solid blue; display: inline-block; cursor: pointer">
+    <i></i> <img width=144 height=24 src="/images/upload.png"/>
+</label>
+<input id="fileupload" style="display: none" type="file" onChange="upfile()"/>
+</td>
+</tr></table>
+<br/>
+
+      <div id="viddiv" style="width: 512px; box-sizing: border-box; border: 3px solid blue; overflow: hidden; display: none">
+        <video id="vid" width=512 style="" autoplay onClick="capcam()"></video>
+      </div>
+      <div id="upcandiv" style="width: 512px; box-sizing: border-box; border: 3px solid green; overflow: hidden; display: block">
+        <canvas id="upcan" width=512 onClick="canclick()"></canvas>
+      </div>
+
+<script>
+startvid();
+</script>
+    </td>
+
+<!--
+  </tr>
+  <tr>
+-->
+    <td align="center" valign="top" width=512>
+       <img style="outline: 3px solid blue" id="pic" src="/$NOM.png" width="512" height="512">
+    </td>
+  </tr>
+  <tr height=32></tr>
+
+<tr><td align="center">
+
+</td></tr>
 </table>
 
 <br/>
