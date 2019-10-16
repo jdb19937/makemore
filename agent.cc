@@ -637,12 +637,19 @@ fprintf(stderr, "req=[%s]\n", req.c_str());
     if (cgi["vdev"] != "")
       vdev = strtod(cgi["vdev"].c_str(), NULL);
 
+    double tone = 0.5;
+    if (cgi["tone"] != "")
+      tone = strtod(cgi["tone"].c_str(), NULL);
+
     seedrand(r);
     double ca = randgauss() * vdev;
     double cb = randgauss() * vdev;
 
     Partrait jprt(256, 256);
     julia(jprt.rgb, ca, cb);
+
+    for (unsigned int j = 0; j < 256 * 256 * 3; ++j)
+      jprt.rgb[j] *= tone;
 
     std::string png;
     jprt.to_png(&png);
@@ -682,18 +689,6 @@ fprintf(stderr, "req=[%s]\n", req.c_str());
 
     std::string png;
     jprt.to_png(&png);
-
-    this->printf("HTTP/1.1 200 OK\r\n");
-    this->printf("Connection: keep-alive\r\n");
-    this->printf("Content-Type: image/png\r\n");
-    this->printf("Content-Length: %lu\r\n", png.length());
-    this->printf("\r\n");
-    this->write(png);
-    return;
-  }
-
-  if (path == "/test.png" || path == "/mandelbrot.png") {
-    std::string png = makemore::slurp(std::string(".") + path);
 
     this->printf("HTTP/1.1 200 OK\r\n");
     this->printf("Connection: keep-alive\r\n");

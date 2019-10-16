@@ -51,7 +51,7 @@ function upfile() {
 
   var img = new Image();
   img.onload = function() {
-    upcan.height = Math.floor(512 * this.height / this.width);
+    upcan.height = Math.floor(640 * this.height / this.width);
     upcan.getContext('2d').drawImage(this, 0, 0, upcan.width, upcan.height);
     window.saved = upcan.getContext('2d').getImageData(0, 0, upcan.width, upcan.height);
 
@@ -89,7 +89,7 @@ function upfile() {
 }
 
 function capcam() {
-  upcan.height = Math.floor(vid.videoHeight * 512 / vid.videoWidth);
+  upcan.height = Math.floor(vid.videoHeight * 640 / vid.videoWidth);
   upcan.getContext('2d').drawImage(vid, 0, 0, upcan.width, upcan.height);
   window.saved = upcan.getContext('2d').getImageData(0, 0, upcan.width, upcan.height);
 
@@ -327,11 +327,11 @@ $SUBHEAD
 </td>
 </tr></table>
 
-      <div id="viddiv" style="width: 512px; border: 3px solid blue; display: none">
-        <video id="vid" width=512 style="" autoplay onClick="capcam()"></video>
+      <div id="viddiv" style="width: 640px; border: 3px solid blue; display: none">
+        <video id="vid" width=640 style="" autoplay onClick="capcam()"></video>
       </div>
-      <div id="upcandiv" style="width: 512px; border: 3px solid green; width: 512px; display: none">
-        <canvas id="upcan" width=512 onMouseMove="canhigh()" onMouseOut="canhighout()" onClick="canclick()"></canvas>
+      <div id="upcandiv" style="width: 640px; border: 3px solid green; display: none">
+        <canvas id="upcan" width=640 onMouseMove="canhigh()" onMouseOut="canhighout()" onClick="canclick()"></canvas>
       </div>
 
       <div id="pqrdiv" style="display: none">

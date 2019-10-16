@@ -2,11 +2,51 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdint.h>
+#include <stdlib.h>
 
 #include "cudamem.hh"
 #include "fractals.hh"
 
 namespace makemore {
+
+struct xent {
+  double q;
+  unsigned int i;
+};
+
+static int xcmp(const void *av, const void *bv) {
+  const struct xent *a = (const struct xent *)av;
+  const struct xent *b = (const struct xent *)bv;
+  if (b->q > a->q) {
+    return -1;
+  } else if (b->q < a->q) {
+    return 1;
+  } else {
+    return 0;
+  }
+};
+
+
+void fracrgb(const double *buf, uint8_t *rgb) {
+  struct xent *xbuf = new struct xent[65536];
+  for (unsigned int i = 0; i < 65536; ++i) {
+    xbuf[i].i = i;
+    xbuf[i].q = buf[i];
+  }
+  qsort(xbuf, 65536, sizeof(struct xent), xcmp);
+
+  for (unsigned int i = 0; i < 65536; ++i) {
+    int v = i / 256;
+    int j = xbuf[i].i;
+    
+    rgb[3 * j + 0] = v;
+    rgb[3 * j + 1] = v;
+    rgb[3 * j + 2] = v;
+  }
+
+  delete[] xbuf;
+}
+
 
 __global__ void gpu_julia(double *buf, double ca, double cb) {
   int i = blockIdx.x * blockDim.x + threadIdx.x;
@@ -17,10 +57,10 @@ __global__ void gpu_julia(double *buf, double ca, double cb) {
   int y = i / 256;
 
   double za, zb;
-  za = 2 * (((double)x / 128.0) - 1.0);
-  zb = 2 * (((double)y / 128.0) - 1.0);
+  za = 1 * (((double)x / 128.0) - 1.0);
+  zb = 1 * (((double)y / 128.0) - 1.0);
 
-  unsigned int m = 255;
+  unsigned int m = 512;
   unsigned int n = 0;
   double d2 = za * za + zb * zb;
   double wa, wb;
@@ -41,6 +81,7 @@ __global__ void gpu_julia(double *buf, double ca, double cb) {
   if (n < m) {
     q += 1.0 - log(log(d2) / log(4.0));
   }
+  q *= 255.0 / m;
 
   buf[i] = q;
 }
@@ -57,20 +98,7 @@ void julia(uint8_t *rgb, double ca, double cb) {
   decude(cubuf, 65536, buf);
   cufree(cubuf);
 
-  double m0 = -1;
-  double m1 = -1;
-  for (unsigned int i = 0; i < 65536; ++i) {
-    if (m0 < 0 || buf[i] < m0)
-      m0 = buf[i];
-    if (m1 < 0 || buf[i] > m1)
-      m1 = buf[i];
-  }
-
-  for (unsigned int i = 0; i < 65536; ++i) {
-    rgb[3 * i + 0] = (uint8_t)(255.0 * (buf[i] - m0) / (m1 - m0));
-    rgb[3 * i + 1] = (uint8_t)(255.0 * (buf[i] - m0) / (m1 - m0));
-    rgb[3 * i + 2] = (uint8_t)(255.0 * (buf[i] - m0) / (m1 - m0));
-  }
+  fracrgb(buf, rgb);
 
   delete[] buf;
 }
@@ -86,8 +114,8 @@ __global__ void gpu_burnship(double *buf) {
   double za = 0, zb = 0;
 
   double ca, cb;
-  ca = 2 * (((double)x / 128.0) - 1.0);
-  cb = 2 * (((double)y / 128.0) - 1.0);
+  ca = -0.5 + 1 * (((double)x / 128.0) - 1.0);
+  cb = -0.5 + 1 * (((double)y / 128.0) - 1.0);
 
   unsigned int m = 255;
   unsigned int n = 0;
@@ -130,20 +158,7 @@ void burnship(uint8_t *rgb) {
   decude(cubuf, 65536, buf);
   cufree(cubuf);
 
-  double m0 = -1;
-  double m1 = -1;
-  for (unsigned int i = 0; i < 65536; ++i) {
-    if (m0 < 0 || buf[i] < m0)
-      m0 = buf[i];
-    if (m1 < 0 || buf[i] > m1)
-      m1 = buf[i];
-  }
-
-  for (unsigned int i = 0; i < 65536; ++i) {
-    rgb[3 * i + 0] = (uint8_t)(255.0 * (buf[i] - m0) / (m1 - m0));
-    rgb[3 * i + 1] = (uint8_t)(255.0 * (buf[i] - m0) / (m1 - m0));
-    rgb[3 * i + 2] = (uint8_t)(255.0 * (buf[i] - m0) / (m1 - m0));
-  }
+  fracrgb(buf, rgb);
 
   delete[] buf;
 }
@@ -159,8 +174,8 @@ __global__ void gpu_mandelbrot(double *buf) {
   double za = 0, zb = 0;
 
   double ca, cb;
-  ca = 2 * (((double)x / 128.0) - 1.0);
-  cb = 2 * (((double)y / 128.0) - 1.0);
+  ca = -0.5 + 1 * (((double)y / 128.0) - 1.0);
+  cb = 1 * (((double)x / 128.0) - 1.0);
 
   unsigned int m = 255;
   unsigned int n = 0;
@@ -199,20 +214,7 @@ void mandelbrot(uint8_t *rgb) {
   decude(cubuf, 65536, buf);
   cufree(cubuf);
 
-  double m0 = -1;
-  double m1 = -1;
-  for (unsigned int i = 0; i < 65536; ++i) {
-    if (m0 < 0 || buf[i] < m0)
-      m0 = buf[i];
-    if (m1 < 0 || buf[i] > m1)
-      m1 = buf[i];
-  }
-
-  for (unsigned int i = 0; i < 65536; ++i) {
-    rgb[3 * i + 0] = (uint8_t)(255.0 * (buf[i] - m0) / (m1 - m0));
-    rgb[3 * i + 1] = (uint8_t)(255.0 * (buf[i] - m0) / (m1 - m0));
-    rgb[3 * i + 2] = (uint8_t)(255.0 * (buf[i] - m0) / (m1 - m0));
-  }
+  fracrgb(buf, rgb);
 
   delete[] buf;
 }
