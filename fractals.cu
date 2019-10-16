@@ -114,8 +114,8 @@ __global__ void gpu_burnship(double *buf) {
   double za = 0, zb = 0;
 
   double ca, cb;
-  ca = -0.5 + 1 * (((double)x / 128.0) - 1.0);
-  cb = -0.5 + 1 * (((double)y / 128.0) - 1.0);
+  ca = -1.760 + 5e-2 * (((double)x / 128.0) - 1.0);
+  cb = -0.029 + 5e-2 * (((double)y / 128.0) - 1.0);
 
   unsigned int m = 255;
   unsigned int n = 0;
