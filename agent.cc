@@ -911,6 +911,7 @@ valid.insert("goto.png");
     valid.insert("msg.png");
     valid.insert("top.png");
     valid.insert("mob.png");
+    valid.insert("don.png");
     valid.insert("auto.png");
     valid.insert("p.png");
     valid.insert("q.png");

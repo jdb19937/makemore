@@ -50,6 +50,8 @@ gen_nom.png:
 	echo 'gen nom' | ../morktxt --height 3 --width 14 | pnmscale 12 | pnmtopng > $@
 doc.png:
 	echo doc | ../morktxt --height 3 --width 6 | pnmscale 12 | pnmtopng > $@
+don.png:
+	echo don | ../morktxt --height 3 --width 6 | pnmcut -top 1 | pnmscale 12 | pnmtopng > $@
 xform.png:
 	echo xform | ../morktxt --height 3 --width 10 | pnmcut -top 1 |pnmscale 12 | pnmtopng > $@
 cam.png:
