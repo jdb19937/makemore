@@ -63,6 +63,9 @@ function socketmsg(m) {
       var off = ret[1];
       inbuf = inbuf.slice(off, inbuf.length)
 
+      if (msg[0] == 'keepalive') {
+        // log("<font color='#00ff00'>Pong.</font>");
+      }
       if (msg[0] != "from") {
         continue;
       }
@@ -160,12 +163,21 @@ function sendmsg(fromnom, tonom, txt) {
   return 1;
 }
 
+function log(x, col) {
+  if (col) { x = "<span style='color: " + col + "'>" + x + "</span>"; }
+  //consdiv.innerHTML += "<span style='color: gray'>" + (new Date()).toISOString() + "</span> " + x + "<br/>\n";
+  consdiv.innerHTML +=  x + "<br/>\n";
+  consdiv.scrollTop = consdiv.scrollHeight;
+}
+
 function opensock() {
   window.socketready = 0;
   if (window.socket) {
     socket.close();
     socket = null;
   }
+  // log("Connecting...", 'yellow');
+  window.socketready = 1;
   scrtd.style.borderColor = 'yellow';
   stopbutton.style.borderColor = 'blue';
   gobutton.style.borderColor = 'blue';
@@ -174,6 +186,7 @@ function opensock() {
   socket = new WebSocket('wss://peaple.io:3333/', ['binary']);
   socket.binaryType = 'arraybuffer';
   socket.onopen = function() {
+    // log("Connected.", '#00ff00');
     socket.send("be " + window.master + " " + window.session + "\n");
   };
 
@@ -182,19 +195,22 @@ function opensock() {
     if (txt.substr(0, 8) == "session ") {
       scrtd.style.borderColor = '#00ff00';
       gobutton.style.borderColor = '#00ff00';
-      window.socketready = 1;
+      window.socketready = 2;
       socket.onmessage = socketmsg;
+      // log("Authenticated.", '#00ff00');
     } else {
       window.socketready = 0;
       socket.close();
       scrtd.style.borderColor = 'red';
       gobutton.style.borderColor = 'blue';
       stopbutton.style.borderColor = '#00ff00';
+      // log("Disconnected.", 'red');
     }
   };
 
   socket.onclose = function() {
     if (window.socketready && socket == this) {
+      // log("Disconnected.", 'red');
       window.socketready = 0;
       scrtd.style.borderColor = 'red';
       gobutton.style.borderColor = 'blue';
@@ -229,14 +245,15 @@ function clicksave() {
 }
 
 function clickstop() {
+  window.socketready = 0;
   if (socket) {
     socket.close(); 
   }
   socket = null;
-  window.socketready = 0;
   scrtd.style.borderColor = 'red';
   stopbutton.style.borderColor = '#00ff00';
   gobutton.style.borderColor = 'blue';
+  // log("Disconnected.", 'red');
 }
 
 
@@ -285,6 +302,11 @@ function respond(from, to, don, txt) {
   response[don] =
     'received message from ' + from +
     ': "' + txt + '"';
+
+  log(from + " -&gt; " + to, 'white');
+  log(to + " -&gt; " + from, 'blue');
+  log(to + " -&gt; " + don, 'blue');
+  
   return response;</textarea>
 }
 <script>
@@ -309,6 +331,8 @@ scrtxt.addEventListener('keydown', function() {
 </script>
 </td></tr>
 
+<tr height=16></tr>
+<tr><td id="constd" valign="bottom"><div id="consdiv" style="height: 268px; overflow-y: auto; overflow-x: hidden; border: 3px solid gray; font-size: 16px; font-family: monospace; color: orange; background-color: black"></div></td></tr>
 
 </table>
 
@@ -323,9 +347,10 @@ if (window.usernom == '' || window.master == '') {
 var kpi = 0;
 if (1) {
 window.setInterval(function() {
-  if (window.socketready) {
+  if (window.socketready == 2) {
     ++kpi;
     socket.send("echo keepalive " + kpi + "\n");
+    // log("<font color='#00ff00'>Ping...</font>");
   }
 }, 1000 * 60);
 }

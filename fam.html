@@ -66,7 +66,7 @@ function reload() {
       var kid = kids[i];
       kidrow.insertCell(i);
       var kidcell = kidrow.cells[i];
-      kidcell.innerHTML = '<a href="/' + kid + '/fam"><img width=128 height=128 src="/' + kid + '.png?dim=128"></a>';
+      kidcell.innerHTML = '<a href="/' + kid + '/fam"><img class="fampic" width=128 height=128 src="/' + kid + '.png?dim=128"></a>';
     }
   });
 }
@@ -78,6 +78,12 @@ function onload() {
 
 </script>
 
+<style type="text/css">
+.fampic {
+  box-sizing: border-box;
+  border: 2px solid blue;
+}
+</style>
 </head>
 
 <body text="#ffffff" bgcolor="#000000" onload="onload()">
@@ -91,37 +97,37 @@ $SUBHEAD
 
 <!--
 <tr>
-  <td colspan=4><a id="mainlink"><img id="mainpic" width=512 height=512></a></td>
+  <td colspan=4><a id="mainlink"><img class=fampic id="mainpic" width=512 height=512></a></td>
 </tr>
 
 <tr>
-  <td colspan=2><a id="p0link"><img style='box-sizing: border-box' id="p0pic" width=256 height=256></a></td>
-  <td colspan=2><a id="p1link"><img style='box-sizing: border-box' id="p1pic" width=256 height=256></a></td>
+  <td colspan=2><a id="p0link"><img class=fampic id="p0pic" width=256 height=256></a></td>
+  <td colspan=2><a id="p1link"><img class=fampic id="p1pic" width=256 height=256></a></td>
 </tr>
 
 
 <tr>
-  <td><a id="gp0link"><img style='box-sizing: border-box' id="gp0pic" width=128 height=128></a></td>
-  <td><a id="gp1link"><img style='box-sizing: border-box' id="gp1pic" width=128 height=128></a></td>
-  <td><a id="gp2link"><img style='box-sizing: border-box' id="gp2pic" width=128 height=128></a></td>
-  <td><a id="gp3link"><img style='box-sizing: border-box' id="gp3pic" width=128 height=128></a></td>
+  <td><a id="gp0link"><img class=fampic id="gp0pic" width=128 height=128></a></td>
+  <td><a id="gp1link"><img class=fampic id="gp1pic" width=128 height=128></a></td>
+  <td><a id="gp2link"><img class=fampic id="gp2pic" width=128 height=128></a></td>
+  <td><a id="gp3link"><img class=fampic id="gp3pic" width=128 height=128></a></td>
 </tr>
 -->
 
 <tr>
-  <td><a id="gp0link"><img id="gp0pic" width=128 height=128></a></td>
-  <td rowspan=2><a id="p0link"><img style='box-sizing: border-box' id="p0pic" width=256 height=256></a></td>
-  <td rowspan=4><a id="mainlink"><img style="box-sizing: border-box; border: 3px solid blue" id="mainpic" width=512 height=512></a></td>
+  <td><a id="gp0link"><img class=fampic id="gp0pic" width=128 height=128></a></td>
+  <td rowspan=2><a id="p0link"><img class=fampic id="p0pic" width=256 height=256></a></td>
+  <td rowspan=4><a id="mainlink"><img class=fampic id="mainpic" width=512 height=512></a></td>
 </tr>
 <tr>
-  <td><a id="gp1link"><img id="gp1pic" width=128 height=128></a></td>
+  <td><a id="gp1link"><img class=fampic id="gp1pic" width=128 height=128></a></td>
 </tr>
 <tr>
-  <td><a id="gp2link"><img id="gp2pic" width=128 height=128></a></td>
-  <td rowspan=2><a id="p1link"><img id="p1pic" width=256 height=256></a></td>
+  <td><a id="gp2link"><img class=fampic id="gp2pic" width=128 height=128></a></td>
+  <td rowspan=2><a id="p1link"><img class=fampic id="p1pic" width=256 height=256></a></td>
 </tr>
 <tr>
-  <td><a id="gp3link"><img id="gp3pic" width=128 height=128></a></td>
+  <td><a id="gp3link"><img class=fampic id="gp3pic" width=128 height=128></a></td>
 </tr>
 
 </table>
