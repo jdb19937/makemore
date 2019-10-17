@@ -684,8 +684,22 @@ fprintf(stderr, "req=[%s]\n", req.c_str());
     map<string, string> cgi;
     cgiparse(query, &cgi);
 
+    unsigned int r = randuint();
+    if (cgi["r"] != "")
+      r = strtoul(cgi["r"].c_str(), NULL, 0);
+
+    double vdev = 0.0;
+    if (cgi["vdev"] != "")
+      vdev = strtod(cgi["vdev"].c_str(), NULL);
+
+    vdev /= 12.0;
+
+    seedrand(r);
+    double ra = randgauss() * vdev;
+    double rb = randgauss() * vdev;
+
     Partrait jprt(256, 256);
-    burnship(jprt.rgb);
+    burnship(jprt.rgb, ra, rb);
 
     std::string png;
     jprt.to_png(&png);

@@ -103,7 +103,7 @@ void julia(uint8_t *rgb, double ca, double cb) {
   delete[] buf;
 }
 
-__global__ void gpu_burnship(double *buf) {
+__global__ void gpu_burnship(double *buf, double ra, double rb) {
   int i = blockIdx.x * blockDim.x + threadIdx.x;
   if (i < 0 || i >= 65536)
     return;
@@ -129,6 +129,8 @@ __global__ void gpu_burnship(double *buf) {
       zb = -zb;
     wa = za * za - zb * zb;
     wb = 2.0 * zb * za;
+    wa += ra * za;
+    wb += rb * zb;
     wa += ca;
     wb += cb;
     za = wa;
@@ -147,13 +149,13 @@ __global__ void gpu_burnship(double *buf) {
   buf[i] = 255 - q;
 }
 
-void burnship(uint8_t *rgb) {
+void burnship(uint8_t *rgb, double ra, double rb) {
   double *cubuf;
   cumake(&cubuf, 65536);
 
   int bs = 256;
   int gs = 256;
-  gpu_burnship<<<gs, bs>>>(cubuf);
+  gpu_burnship<<<gs, bs>>>(cubuf, ra, rb);
 
   double *buf = new double[65536];
   decude(cubuf, 65536, buf);
