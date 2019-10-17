@@ -24,6 +24,8 @@ boss.png:
 	echo boss | ../morktxt --height 3 --width 8 | pnmcut -top 1 |pnmscale 12 | pnmtopng > $@
 crew.png:
 	echo crew | ../morktxt --height 3 --width 8 | pnmcut -top 1 |pnmscale 12 | pnmtopng > $@
+crewsize.png:
+	echo crewsize | ../morktxt --height 3 --width 16 | pnmcut -top 1 |pnmscale 12 | pnmtopng > $@
 logout.png:
 	echo logout | ../morktxt --height 3 --width 12 | pnmcut -top 1 |pnmscale 12 | pnmtopng > $@
 login.png:

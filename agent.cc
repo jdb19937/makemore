@@ -860,6 +860,7 @@ valid.insert("upload.png");
 valid.insert("load.png");
 valid.insert("save.png");
 valid.insert("crew.png");
+valid.insert("crewsize.png");
 valid.insert("boss.png");
 valid.insert("encode.png");
 valid.insert("active.png");
@@ -968,7 +969,7 @@ valid.insert("goto.png");
   }
 
   // if (path == "/tagger.html" || path == "/cam.html" || path == "/edit.html" || path == "/memory.html" || path == "/autocomplete.html" || path == "/terminal.html") {
-  if (path == "/sh" || path == "/popular" || path == "/active" || path == "/conf" || path == "/buy" || path == "/who" || path == "/online" || path == "/top" || path == "/top/" || path == "/top/activity" || path == "/top/online" || path == "/top/popular" || path == "/top/score" || path == "/top/crew" || path == "/comms" || path == "/script") {
+  if (path == "/sh" || path == "/popular" || path == "/active" || path == "/conf" || path == "/buy" || path == "/who" || path == "/online" || path == "/top" || path == "/top/" || path == "/top/activity" || path == "/top/online" || path == "/top/popular" || path == "/top/score" || path == "/top/crewsize" || path == "/comms" || path == "/script") {
     strvec pathparts;
     split(path, '/', &pathparts);
     std::string html = makemore::slurp(pathparts[0] + ".html");
