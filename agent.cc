@@ -1752,6 +1752,8 @@ valid.insert("goto.png");
       prs->controls[j] = tpl->controls[j] + randgauss() * sqrt(tpl->variations[j]);
     }
 
+    prs->set_parens(tpl->nom, tpl->nom);
+
     if (!strcmp(ext, "html")) {
       this->printf("HTTP/1.1 302 Redirect\r\n");
       this->printf("Connection: keep-alive\r\n");
@@ -2070,7 +2072,7 @@ dev = sqrt(dev);
     sprintf(numstr, "%lf", dev);
     json += string("  \"tone\": ") + numstr + ",\n";
 
-    std::list<Parson*> kids;
+    std::vector<Parson*> kids;
     server->urb->zones[0]->scan_kids(parson->nom, &kids, 7);
     json += string("  \"kids\": [");
     int j = 0;

@@ -5,7 +5,7 @@
 #include "autocompleter.hh"
 #include "strutils.hh"
 
-#include <list>
+#include <vector>
 
 namespace makemore {
 
@@ -63,7 +63,7 @@ struct Zone {
     return (off >= 0 && off < n);
   }
 
-  void scan_kids(const std::string &nom, std::list<Parson*> *, int m = -1);
+  void scan_kids(const std::string &nom, std::vector<Parson*> *, int m = -1);
 };
 
 }

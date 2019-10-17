@@ -8,8 +8,9 @@
 #include <sys/types.h>
 #include <sys/mman.h>
 
+#include <algorithm>
 #include <set>
-#include <list>
+#include <vector>
 
 #include "tmutils.hh"
 #include "random.hh"
@@ -354,17 +355,26 @@ Parson *Zone::make(const Parson &x, bool *evicted, Parson *evictee) {
   return p;
 }
 
-void Zone::scan_kids(const std::string &nom, std::list<Parson*> *kids, int m) {
+void Zone::scan_kids(const std::string &nom, std::vector<Parson*> *kids, int m) {
   int k = 0;
   for (unsigned int i = 0; i < n; ++i) {
     Parson *prs = db + i;
     if (nom == prs->parens[0] || nom == prs->parens[1]) {
       kids->push_back(prs);
       ++k;
-      if (k >= m)
-        break;
     }
   }
+
+  struct CmpByCreated {
+    int operator()(const Parson *p, const Parson *q) {
+      return q->created < p->created;
+    }
+  } _cmp;
+ 
+  std::sort(kids->begin(), kids->end(), _cmp);
+
+  if (kids->size() > m)
+    kids->resize(m);
 }
 
 }

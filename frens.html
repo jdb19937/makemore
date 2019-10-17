@@ -126,16 +126,7 @@ function upfrenlist(frens) {
   }
 }
 
-function addfren() {
-//  if (!frenbuf.value)
-//    frenbuf.value = gennom();
-if (0) {
-  var s =  ($LOCKED && window.usernom != window.nom);
-  if (s) { return; }
-}
-
-  var fren = frenbuf.value;
-
+function addfren(fren) {
   httpget("/edit?op=addfren&nom=" + window.nom + "&fren=" + fren, function(txt) {
     reloadfrens();
     frenbuf.value = '';
@@ -166,13 +157,13 @@ $SUBHEAD
 <form autocomplete="off">
   <div class="autocomplete">
     <input type="text" size="32" id="frenbuf" placeholder="nom" style='font-size: large; font-family: monospace'>
-    <script>autocomplete(document.getElementById('frenbuf'), function() { addfren() });</script>
+    <script>autocomplete(document.getElementById('frenbuf'), function() { addfren(frenbuf.value) });</script>
   </div>
 &nbsp;
     <img id=addfrenbutton align=center width=72 height=24 style="outline: 3px solid blue; cursor: pointer" src="/images/add.png"
-      onClick="addfren()" >
+      onClick="addfren(frenbuf.value)" >
 <!--
-  <input type="button" style='font-size: large' value="addfren" onClick="addfren()">
+  <input type="button" style='font-size: large' value="addfren" onClick="addfren(frenbuf.value)">
 -->
 </form>
 
@@ -183,7 +174,7 @@ $SUBHEAD
 
 
 <!--
-      <span style="padding: 2px; background-color: gray"><img id="addfrenbutton" onClick="addfren()" src="/images/add_fren.png"></span>
+      <span style="padding: 2px; background-color: gray"><img id="addfrenbutton" onClick="addfren(frenbuf.value)" src="/images/add_fren.png"></span>
       <img id="gennombutton" onClick="frenbuf.value = gennom()" src="/images/gen_nom.png">
 -->
 
@@ -216,22 +207,7 @@ $SUBHEAD
 
 
 <script>
-if (0) {
-var s =  ($LOCKED && window.usernom != window.nom);
-addfrenbutton.style.outline = s ? '3px solid red' : '3px solid blue';
-breadbutton.style.outline = s ? '3px solid red' : '3px solid blue';
-}
-
 function clicktool(t) {
-if (0) {
-  var s = ($LOCKED && window.usernom != window.nom);
-  breadbutton.style.outline = s ? '3px solid red' : '3px solid blue';
-  gotobutton.style.outline = "3px solid blue";
-
-  if (t == 'bread' && s) {
-    t = 'goto';
-  }
-}
   breadbutton.style.outline = '3px solid blue';
   gotobutton.style.outline = "3px solid blue";
 

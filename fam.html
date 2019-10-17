@@ -40,6 +40,16 @@ function httpget(url, cb) {
   i.send();
 }
 
+function addkid(kid) {
+    while (kidrow.cells.length >= 7) {
+      kidrow.deleteCell(kidrow.cells.length - 1);
+    }
+      
+    kidrow.insertCell(0);
+    var kidcell = kidrow.cells[0];
+    kidcell.innerHTML = '<a href="/' + kid + '/fam"><img class="fampic" width=128 height=128 src="/' + kid + '.png?dim=128"></a>';
+}
+
 function reload() {
   mainlink.href = "https://peaple.io/" + window.nom + "/frens";
   mainpic.src = "/" + window.nom + ".png" + "?r=" + randstr();
@@ -62,12 +72,16 @@ function reload() {
     p1pic.src   = "/" + attrs.parens[1] + ".png";
 
     var kids = attrs['kids'];
-    for (var i in kids) {
+    for (var i in kids.reverse()) {
       var kid = kids[i];
-      kidrow.insertCell(i);
-      var kidcell = kidrow.cells[i];
-      kidcell.innerHTML = '<a href="/' + kid + '/fam"><img class="fampic" width=128 height=128 src="/' + kid + '.png?dim=128"></a>';
+      addkid(kid);
     }
+  });
+}
+
+function spawn() {
+  httpget("/new/" + window.nom + ".txt", function(newnom) {
+    addkid(newnom);
   });
 }
 
@@ -139,7 +153,11 @@ $SUBHEAD
 <tr id="kidrow"></tr>
 </table>
 
-</td></tr></table>
+</td>
+
+<td valign="top" align=right height="36"><img style='border: 3px solid blue; cursor: pointer' width=120 height=24 onClick="spawn()" id="spawnbutton" src="/images/spawn.png"> </td>
+
+</tr></table>
 
 </body>
 </html>
