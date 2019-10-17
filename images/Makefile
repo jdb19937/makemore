@@ -68,6 +68,8 @@ who.png:
 	echo who | ../morktxt --height 3 --width 6 | pnmcut -top 1 |pnmscale 12 | pnmtopng > $@
 new.png:
 	echo new | ../morktxt --height 3 --width 6 | pnmcut -top 1 |pnmscale 12 | pnmtopng > $@
+enc.png:
+	echo enc | ../morktxt --height 3 --width 6 | pnmcut -top 1 |pnmscale 12 | pnmtopng > $@
 mem.png:
 	echo mem | ../morktxt --height 3 --width 6 | pnmcut -top 1 |pnmscale 12 | pnmtopng > $@
 conf.png:
