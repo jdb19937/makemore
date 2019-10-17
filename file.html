@@ -82,7 +82,7 @@ function dogoto(who) {
   <link rel="stylesheet" type="text/css" href="/autocomplete.css">
   <form autocomplete="off">
     <div class="autocomplete">
-      <input type="text" style='font-family: monospace; font-size: large' onClick="this.value=''" value="$NOM" size="32" id="qnom" placeholder="nom">
+      <input type="text" style='font-family: monospace; font-size: 16px' onClick="this.value=''" value="$NOM" size="32" id="qnom" placeholder="nom">
       <script>
 autocomplete(document.getElementById('qnom'), function() { dogoto(document.getElementById('qnom').value); });
 //qnom.focus();
@@ -182,17 +182,18 @@ actdiv.style = "display: block";
 </script>
 
 <div id="ownerdiv" style="display: none">
-<img width=72 height=24 src="/images/don.png"><br/>
+<img width=96 height=24 src="/images/head.png">
 <div style="height: 4px"></div>
 <a id=ownerlink><img id=ownerpic width=128 height=128 style="border: 3px solid blue"></a>
 </div>
 
 
 <div id="scorediv" style="display: none">
-<img width=192 height=24 src="/images/crewsize.png"><br/>
-<span id=crewspan style="font-size: 24px; color: orange; font-family: monospace">$NCREW</span><br/><br/>
-<img width=120 height=24 src="/images/score.png"><br/>
+<img width=120 height=24 src="/images/score.png"> <div style="height: 4px"></div>
 <span id=scorespan style="font-size: 24px; color: green; font-family: monospace">$SCORE</span>
+<div style="height: 16px"></div>
+<img width=168 height=24 src="/images/minions.png"> <div style="height: 4px"></div>
+<span id=crewspan style="font-size: 24px; color: orange; font-family: monospace">$NCREW</span>
 </div>
 
 
@@ -201,12 +202,10 @@ actdiv.style = "display: block";
 </tr>
 
 
-<tr height=24></tr>
 <tr>
 <td colspan=1 align="center">
 <table id="crewtab" cellpadding=0 cellspacing=0><tr id="crewrow"></tr></table>
 </td>
-<td></td>
 </tr>
 
 </table>

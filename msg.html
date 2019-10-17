@@ -112,11 +112,13 @@ function sendmsg(txt) {
   socket.send(bb);
 }
 
-
 function esctxt(txt) {
   var newtxt = txt;
   newtxt = newtxt.replace(/[\u00A0-\u9999<>\&]/gim, function(i) {
     return '&#'+i.charCodeAt(0)+';';
+  });
+  newtxt = newtxt.replace(/\@([a-z0-9_][a-z0-9_]+)/gim, function(x, nom) {
+    return "<a href='/" + nom + "'><img style='border: 3px solid blue' src='/" + nom + ".png?dim=64' width=64 height=64 align='center'></a>";
   });
 
   newtxt = newtxt.replace(/[\n\r]/gm, '<br>');
@@ -192,9 +194,9 @@ function putmsgfrom(txt) {
   nrow = convotab.rows[pos];
   nrow.innerHTML = 
     '<td><table style="border: 1px solid gray; background-color: darkblue" width="100%" cellspacing=0 cellpadding=0><tr>' +
-    '<td align="right" style="padding: 8px; color: white; font-size: xx-large; font-family: monospace">' +
-    '<span>' + txt + '</span>' +
-'</td><td width=128>' +
+    '<td align="right" valign="center">' +
+    '<div style="padding: 8px; color: white; font-size: 36px; font-family: monospace; width: 800px; max-width: 800px; overflow-x: hidden">' + txt + '</div>' +
+'</td><td width=128 valign=top>' +
     '<img align="right" src="/' + window.usernom + '.png?dim=128" width=128 height=128>' +
     '</td>' +
     '</tr></table></td>'
@@ -211,11 +213,11 @@ function putmsgto(txt) {
   nrow = convotab.rows[pos];
   nrow.innerHTML = 
     '<td><table style="border: 1px solid gray; background-color: black" width="100%" cellspacing=0 cellpadding=0><tr>' +
-    '<td width=128>' +
+    '<td width=128 valign=top>' +
     '<img align="left" src="/' + window.nom + '.png?dim=128" width=128 height=128>' +
     '</td>' +
-    '<td align="left" style="padding: 4px; color: black; color: white; font-size: xx-large; font-family: monospace">' +
-    '<span>' + txt + '</span>' +
+    '<td align="left">' +
+    '<div style="max-width: 800; overflow-x: hidden; padding: 8px; color: black; color: white; font-size: 36px; font-family: monospace">' + txt + '</div>' +
     '</td>' +
     '</tr></table></td>'
 }
@@ -286,12 +288,12 @@ if (window.usernom == '') {
 
 <tr><td align="center"><table width="1024">
 <tr><td align="left" style="width: 896px; background-color: darkblue">
-<textarea autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" rows=1 onKeyDown="onkd()" onKeyPress="onkp()" id=newmsg maxlength="512" style="background-color: darkblue; color: white; font-size: xx-large; width: 100%; height: auto; overflow: hidden; padding: 2px; display: block; resize: none"></textarea>
+<textarea autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" rows=1 onKeyDown="onkd()" onKeyPress="onkp()" id=newmsg maxlength="512" style="background-color: darkblue; color: white; font-size: 36px; width: 100%; height: auto; overflow: hidden; padding: 0px; display: block; resize: none"></textarea>
 </td>
 
 <td width=8></td>
 
-<td valign="center">
+<td valign="bottom" style="padding: 3px">
 <!--
   <img id=mypic width=128 height=128><br/>
 -->

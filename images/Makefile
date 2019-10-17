@@ -20,10 +20,14 @@ load.png:
 	echo load | ../morktxt --height 3 --width 8 | pnmcut -top 1 |pnmscale 12 | pnmtopng > $@
 save.png:
 	echo save | ../morktxt --height 3 --width 8 | pnmcut -top 1 |pnmscale 12 | pnmtopng > $@
+head.png:
+	echo head | ../morktxt --height 3 --width 8 | pnmcut -top 1 |pnmscale 12 | pnmtopng > $@
 boss.png:
 	echo boss | ../morktxt --height 3 --width 8 | pnmcut -top 1 |pnmscale 12 | pnmtopng > $@
 crew.png:
 	echo crew | ../morktxt --height 3 --width 8 | pnmcut -top 1 |pnmscale 12 | pnmtopng > $@
+minions.png:
+	echo minions | ../morktxt --height 3 --width 14 | pnmcut -top 1 |pnmscale 12 | pnmtopng > $@
 crewsize.png:
 	echo crewsize | ../morktxt --height 3 --width 16 | pnmcut -top 1 |pnmscale 12 | pnmtopng > $@
 logout.png:
@@ -151,6 +155,8 @@ claim.png:
 	echo 'claim' | ../morktxt --height 3 --width 10 | pnmcut -top 1 | pnmscale 12 | pnmtopng > $@
 tribe.png:
 	echo 'tribe' | ../morktxt --height 3 --width 10 | pnmcut -top 1 | pnmscale 12 | pnmtopng > $@
+prime.png:
+	echo 'prime' | ../morktxt --height 3 --width 10 | pnmcut -top 1 | pnmscale 12 | pnmtopng > $@
 script.png:
 	echo 'script' | ../morktxt --height 3 --width 12 | pnmcut -top 1 | pnmscale 12 | pnmtopng > $@
 comms.png:

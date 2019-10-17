@@ -37,7 +37,7 @@ $HEADER
 <tr><td align="center" style='font-size: 40px'>[
       <a href="/top/online"><img style="outline: 3px solid blue" id=subheadonline width=144 height=24 src="/images/online.png"></a> |
       <a href="/top/score"><img style="outline: 3px solid blue" id=subheadscore width=120 height=24 src="/images/score.png"></a> |
-      <a href="/top/crewsize"><img style="outline: 3px solid blue" id=subheadcrewsize width=192 height=24 src="/images/crewsize.png"></a> |
+      <a href="/top/minions"><img style="outline: 3px solid blue" id=subheadminions width=168 height=24 src="/images/minions.png"></a> |
       <a href="/top/activity"><img style="outline: 3px solid blue" id=subheadactivity width=192 height=24 src="/images/activity.png"></a>
 ]</td></tr></table>
 
@@ -53,18 +53,18 @@ var valid = { };
 valid['online'] = 1;
 valid['activity'] = 1;
 valid['score'] = 1;
-valid['crewsize'] = 1;
+valid['minions'] = 1;
 if (!valid[func]) { func = 'online'; }
 var unit = {
   'activity': '&mu;Hz',
   'score': '',
-  'crewsize': '',
+  'minions': '',
   'online': 's',
 };
 var sty = {
   'activity': 'font-size: 24px; font-family: monospace',
   'score': 'font-size: 24px; font-family: monospace; color: green',
-  'crewsize': 'font-size: 24px; font-family: monospace; color: orange',
+  'minions': 'font-size: 24px; font-family: monospace; color: orange',
   'online': 'font-size: 24px; font-family: monospace'
 };
 linktop.href = '/top/' + func;

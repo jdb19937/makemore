@@ -633,11 +633,12 @@ fprintf(stderr, "req=[%s]\n", req.c_str());
     if (cgi["r"] != "")
       r = strtoul(cgi["r"].c_str(), NULL, 0);
 
-    double vdev = 1.0;
+    double vdev = 0;
     if (cgi["vdev"] != "")
       vdev = strtod(cgi["vdev"].c_str(), NULL);
+    vdev *= 0.75;
 
-    double tone = 0.5;
+    double tone = 0.75;
     if (cgi["tone"] != "")
       tone = strtod(cgi["tone"].c_str(), NULL);
 
@@ -874,8 +875,10 @@ valid.insert("upload.png");
 valid.insert("load.png");
 valid.insert("save.png");
 valid.insert("crew.png");
-valid.insert("crewsize.png");
+valid.insert("minions.png");
+valid.insert("minions.png");
 valid.insert("boss.png");
+valid.insert("head.png");
 valid.insert("encode.png");
 valid.insert("active.png");
 valid.insert("activity.png");
@@ -897,6 +900,7 @@ valid.insert("owner.png");
 valid.insert("comms.png");
 valid.insert("script.png");
 valid.insert("tribe.png");
+valid.insert("prime.png");
 valid.insert("claim.png");
 valid.insert("induct.png");
 valid.insert("switch.png");
@@ -983,7 +987,7 @@ valid.insert("goto.png");
   }
 
   // if (path == "/tagger.html" || path == "/cam.html" || path == "/edit.html" || path == "/memory.html" || path == "/autocomplete.html" || path == "/terminal.html") {
-  if (path == "/sh" || path == "/popular" || path == "/active" || path == "/conf" || path == "/buy" || path == "/who" || path == "/online" || path == "/top" || path == "/top/" || path == "/top/activity" || path == "/top/online" || path == "/top/popular" || path == "/top/score" || path == "/top/crewsize" || path == "/comms" || path == "/script") {
+  if (path == "/sh" || path == "/popular" || path == "/active" || path == "/conf" || path == "/buy" || path == "/who" || path == "/online" || path == "/top" || path == "/top/" || path == "/top/activity" || path == "/top/online" || path == "/top/popular" || path == "/top/score" || path == "/top/minions" || path == "/comms" || path == "/script") {
     strvec pathparts;
     split(path, '/', &pathparts);
     std::string html = makemore::slurp(pathparts[0] + ".html");
@@ -1071,7 +1075,7 @@ valid.insert("goto.png");
   }
 
 
-  if (path == "/top/crewsize.json") {
+  if (path == "/top/minions.json") {
     map<string, string> cgi;
     cgiparse(query, &cgi);
     unsigned int n = 256;
