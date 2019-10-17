@@ -1057,7 +1057,7 @@ valid.insert("goto.png");
   }
 
 
-  if (path == "/top/crew.json") {
+  if (path == "/top/crewsize.json") {
     map<string, string> cgi;
     cgiparse(query, &cgi);
     unsigned int n = 256;
