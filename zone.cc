@@ -161,16 +161,20 @@ void Zone::onlup() {
 }
 
 void Zone::crwup() {
+  crewmap.clear();
+
   std::map<std::string, unsigned int> nom_crw;
   for (unsigned int i = 0; i < n; ++i) {
     Parson *prs = db + i;
     if (!prs->revised)
       continue;
-    if (prs->flags & Parson::FLAG_HIDETOP)
-      continue;
     if (!*prs->owner)
       continue;
+    if (prs->flags & Parson::FLAG_HIDETOP)
+      continue;
     ++nom_crw[prs->owner];
+
+    crewmap[prs->owner].push_back(prs->nom);
   }
 
   for (unsigned int i = 0; i < n; ++i) {

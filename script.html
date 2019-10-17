@@ -9,6 +9,18 @@
 function httpget(url, cb) {
   var i = new XMLHttpRequest;
   i.open('GET', url);
+  i.overrideMimeType("text/plain");
+  i.onload = function(e) {
+    if (!(this.readyState == 4 && this.status == 200)) {
+      return;
+    }
+    cb(this.responseText);
+  }
+  i.send();
+}
+function httpgetbin(url, cb) {
+  var i = new XMLHttpRequest;
+  i.open('GET', url);
   i.responseType = 'arraybuffer';
   i.onload = function(e) {
     if (!(this.readyState == 4 && this.status == 200)) {
@@ -88,7 +100,7 @@ function socketmsg(m) {
           pubkey = BigInt("0x" + pubkey);
           nxt();
         } else {
-          httpget("/" + fromnom + ".pubkey.dat", function(dat) {
+          httpgetbin("/" + fromnom + ".pubkey.dat", function(dat) {
             pubkey = bufferToHex(dat);
             localStorage.setItem(fromnom + ".pubkey", pubkey);
             pubkey = BigInt("0x" + pubkey);
@@ -102,7 +114,7 @@ function socketmsg(m) {
 
 
 function gotmsg(fromnom, tonom, txt) {
-  var f = new Function('from', 'to', 'master', 'txt', scrtxt.value);
+  var f = new Function('from', 'to', 'boss', 'txt', scrtxt.value);
   var rsp = f(fromnom, tonom, window.master, txt);
   if (rsp.constructor == Object) {
     for (var i in rsp) {
@@ -240,7 +252,7 @@ $HEADER
   <tr height=8></tr>
   <tr>
     <td style='font-size: 40px' align="center">[
-<label id=uplab for="fileupload" style="border: 3px solid blue; display: inline-block; cursor: pointer; transform: translateY(-2px)">
+<label id=uplab for="fileupload" style="border: 3px solid blue; display: inline-block; cursor: pointer; transform: translateY(-3px)">
     <img width=96 height=24 src="/images/load.png"/>
 </label><input id="fileupload" style="display: none" type="file" onChange="upfile()"/>
 |
@@ -250,18 +262,27 @@ $HEADER
 <img id=gobutton width=48 height=24 src="/images/go.png" style="border: 3px solid #00ff00; cursor: pointer" onClick="clickgo()"/>
 ]
 </td></tr></table>
-
 <script>headscript.style.outline = '3px solid #00ff00';</script>
+
+
+
+<br/>
+<table width=1280 cellpadding=0 cellspacing=0>
+<tr><td align="center">
+<table id="crewtab" cellpadding=0 cellspacing=0><tr id="crewrow"></tr></table>
+</td></tr>
+</table>
+<br/>
 
 
 <table width=1280>
 <tr><td id="scrtd" style="border: 3px solid yellow; font-size: 32px; font-family: monospace; color: white; background-color: black">
-function respond(from, to, master, txt) {
+function respond(from, to, boss, txt) {
 <textarea autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" rows=1; wrap="off" id=scrtxt style="border: 0; background-color: black; color: white; font-size: 32px; width: 100%; min-height: 38px; height: 38px; overflow-y: hidden; overflow-x: auto; padding: 0px; display: block; resize: vertical">  var response = { };
   response[from] =
     'greetings comrade ' + from +
     ', pleased to meet you.';
-  response[master] =
+  response[boss] =
     'received message from ' + from +
     ': "' + txt + '"';
   return response;</textarea>
@@ -288,9 +309,9 @@ scrtxt.addEventListener('keydown', function() {
 </script>
 </td></tr>
 
-<tr><td align="center">
-</td></tr>
+
 </table>
+
 
 
 <script>
@@ -309,6 +330,50 @@ window.setInterval(function() {
   }
 }, 1000 * 60);
 }
+
+function shuffle(array) {
+  var currentIndex = array.length, temporaryValue, randomIndex;
+
+  // While there remain elements to shuffle...
+  while (0 !== currentIndex) {
+
+    // Pick a remaining element...
+    randomIndex = Math.floor(Math.random() * currentIndex);
+    currentIndex -= 1;
+
+    // And swap it with the current element.
+    temporaryValue = array[currentIndex];
+    array[currentIndex] = array[randomIndex];
+    array[randomIndex] = temporaryValue;
+  }
+
+  return array;
+}
+
+  httpget("/" + window.master + "/crew.json", function(j) {
+    var cols = 20;
+    var crew = JSON.parse(j);
+    if (!crew) {
+      return;
+    }
+    crew = shuffle(crew);
+    for (var i in crew) {
+      if (i >= cols) {
+        break;
+      }
+      var c = crew[i];
+      if (c == window.nom) {
+        continue;
+      }
+      var im = new Image();
+      im.src = "/" + c + ".png?dim=64";
+      var cell = crewrow.insertCell(i);
+      var link = document.createElement('a'); 
+      link.href = '/' + c;
+      link.appendChild(im);
+      cell.appendChild(link);
+    }
+  });
 
 </script>
 

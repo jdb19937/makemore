@@ -3,6 +3,7 @@
 
 #include "parson.hh"
 #include "autocompleter.hh"
+#include "strutils.hh"
 
 #include <list>
 
@@ -24,6 +25,7 @@ struct Zone {
   std::multimap<unsigned int, std::string> scr_nom;
   std::multimap<unsigned int, std::string> crw_nom;
   std::multimap<double, std::string> onl_nom;
+  std::map<std::string, strvec> crewmap;
   void actup();
   void scrup();
   void onlup();

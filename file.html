@@ -197,7 +197,18 @@ actdiv.style = "display: block";
 
 
 </td>
-</tr></table>
+</tr>
+
+
+<tr height=24></tr>
+<tr>
+<td colspan=1 align="center">
+<table id="crewtab" cellpadding=0 cellspacing=0><tr id="crewrow"></tr></table>
+</td>
+<td></td>
+</tr>
+
+</table>
 
 <script>
 if ("$MAKER" == "") {
@@ -247,6 +258,52 @@ function doclaim() {
       window.setTimeout(function() {
         claimbutton.style.border = "3px solid blue";
       }, 500);
+    }
+  });
+}
+
+function shuffle(array) {
+  var currentIndex = array.length, temporaryValue, randomIndex;
+
+  // While there remain elements to shuffle...
+  while (0 !== currentIndex) {
+
+    // Pick a remaining element...
+    randomIndex = Math.floor(Math.random() * currentIndex);
+    currentIndex -= 1;
+
+    // And swap it with the current element.
+    temporaryValue = array[currentIndex];
+    array[currentIndex] = array[randomIndex];
+    array[randomIndex] = temporaryValue;
+  }
+
+  return array;
+}
+
+if ($NCREW > 0) {
+  myhttpget("/" + window.nom + "/crew.json", function(j) {
+    var cols = 12;
+    var crew = JSON.parse(j);
+    if (!crew) {
+      return;
+    }
+    crew = shuffle(crew);
+    for (var i in crew) {
+      if (i >= cols) {
+        break;
+      }
+      var c = crew[i];
+      if (c == window.nom) {
+        continue;
+      }
+      var im = new Image();
+      im.src = "/" + c + ".png?dim=64";
+      var cell = crewrow.insertCell(0);
+      var link = document.createElement('a'); 
+      link.href = '/' + c;
+      link.appendChild(im);
+      cell.appendChild(link);
     }
   });
 }

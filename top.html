@@ -74,7 +74,7 @@ linktop.href = '/top/' + func;
 var elem = document.getElementById('subhead' + func);
 elem.style = 'outline: 3px solid #00ff00';
 
-httpget("/" + func + ".json", function(txt) {
+httpget("/top/" + func + ".json", function(txt) {
   var ar = JSON.parse(txt);
   var n = 0;
   var rank = 1;

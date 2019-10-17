@@ -1055,7 +1055,7 @@ valid.insert("goto.png");
   }
 
 
-  if (path == "/crew.json") {
+  if (path == "/top/crew.json") {
     map<string, string> cgi;
     cgiparse(query, &cgi);
     unsigned int n = 256;
@@ -1092,7 +1092,7 @@ valid.insert("goto.png");
     this->write(json);
     return;
   }
-  if (path == "/score.json") {
+  if (path == "/top/score.json") {
     map<string, string> cgi;
     cgiparse(query, &cgi);
     unsigned int n = 256;
@@ -1129,7 +1129,7 @@ valid.insert("goto.png");
     this->write(json);
     return;
   }
-  if (path == "/activity.json") {
+  if (path == "/top/activity.json") {
     map<string, string> cgi;
     cgiparse(query, &cgi);
     unsigned int n = 256;
@@ -1164,7 +1164,7 @@ valid.insert("goto.png");
     return;
   }
 
-  if (path == "/online.json") {
+  if (path == "/top/online.json") {
     double t = now();
     map<string, string> cgi;
     cgiparse(query, &cgi);
@@ -1292,6 +1292,8 @@ valid.insert("goto.png");
     this->write(txt);
     return;
   }
+
+
 
   if (path == "/comms.json") {
     map<string, string> cgi;
@@ -1828,6 +1830,30 @@ valid.insert("goto.png");
     this->printf("Content-Length: %lu\r\n", dat.length());
     this->printf("\r\n");
     this->write(dat);
+    return;
+  }
+
+  if (ext == "json" && func == "crew") {
+    server->urb->zones[0]->crwup();
+    auto crewmap = server->urb->zones[0]->crewmap[nom];
+
+    char buf[256];
+    std::string json = "[";
+    for (unsigned int i = 0; i < crewmap.size(); ++i) {
+      if (i > 0)
+        json += ",";
+      json += "\n";
+      sprintf(buf, "  \"%s\"", crewmap[i].c_str());
+      json += buf;
+    }
+    json += "\n]\n";
+
+    this->printf("HTTP/1.1 200 OK\r\n");
+    this->printf("Connection: keep-alive\r\n");
+    this->printf("Content-Type: text/json\r\n");
+    this->printf("Content-Length: %lu\r\n", json.length());
+    this->printf("\r\n");
+    this->write(json);
     return;
   }
 
