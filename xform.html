@@ -146,7 +146,7 @@ function make_pals() {
     }
     document.write(
       "<td id='paltd" + i + "'>" + 
-          "<img width=128 height=128 " + 
+          "<img style='cursor: pointer' width=128 height=128 " + 
             "id='pal" + i + "' " +
             "src='/" + pals[i] + ".png?dim=128' " +
             "onClick='addpvec(" + '' + i + '' + ")' " +
@@ -223,7 +223,7 @@ function make_taglist() {
     }
     document.write(
       "<td id='tagtd" + i + "'>" + 
-          "<img width=128 height=128 " + 
+          "<img style='cursor: pointer' width=128 height=128 " + 
             "id='tag" + i + "' " +
             "src='/" + tags[i] + ".png?dev=2&dim=128' " +
             "onClick='addtvec(" + '' + i + '' + ")' " +
@@ -404,7 +404,7 @@ $SUBHEAD
         window.mul = event.offsetX / sw;
       }
     </script>
-    <div id=slidewrap onClick="clickslider()" id="slider" style="border-style: solid; border-width: 4px; border-color: gray">
+    <div id=slidewrap onClick="clickslider()" id="slider" style="cursor: pointer; border-style: solid; border-width: 4px; border-color: gray">
     <div id="sliderbar" style="background-color: blue"></div>
     <script>
       window.mul = 0.5;
@@ -429,7 +429,7 @@ $SUBHEAD
         donorm();
       }
     </script>
-    <div id=slidewrap2 onClick="clickslider2()" id="slider2" style="border-style: solid; border-width: 4px; border-color: gray">
+    <div id=slidewrap2 onClick="clickslider2()" id="slider2" style="cursor: pointer; border-style: solid; border-width: 4px; border-color: gray">
     <div id="sliderbar2" style="width: 0; background-color: orange"></div>
     <script>
       window.nval = unwarpvar($DEV);
@@ -485,7 +485,7 @@ $SUBHEAD
   </div>
 
 &nbsp;
-    <img align=top width=72 height=24 style="outline: 3px solid blue" src="/images/add.png"
+    <img align=top width=72 height=24 style="outline: 3px solid blue; cursor: pointer" src="/images/add.png"
 onClick="pushpals([tagbuf.value])" />
 </form>
 </td></tr></table>
@@ -510,12 +510,12 @@ onClick="pushpals([tagbuf.value])" />
     <td align=right>
 
 <table>
-    <tr><td align=right height="36"><img width=96 height=24 onClick="clicktool('map')" id="mapbutton" src="/images/more.png"> </td></tr>
-    <tr><td align=right height="36"><img width=96 height=24 onClick="clicktool('unmap')" id="unmapbutton" src="/images/less.png"> </td></tr>
-    <tr><td align=right height="36"><img width=96 height=24 onClick="clicktool('mash')" id="mashbutton" src="/images/mash.png"> </td></tr>
-    <tr><td align=right height="36"><img width=120 height=24 onClick="clicktool('blend')" id="blendbutton" src="/images/blend.png"> </td></tr>
-    <tr><td align=right height="36"><img width=120 height=24 onClick="clicktool('spawn')" id="spawnbutton" src="/images/spawn.png"> </td></tr>
-    <tr><td align=right height="36"><img width=96 height=24 onClick="clicktool('goto')" id="gotobutton" src="/images/goto.png"> </td></tr>
+    <tr><td align=right height="36"><img style="cursor: pointer" width=96 height=24 onClick="clicktool('map')" id="mapbutton" src="/images/more.png"> </td></tr>
+    <tr><td align=right height="36"><img style="cursor: pointer" width=96 height=24 onClick="clicktool('unmap')" id="unmapbutton" src="/images/less.png"> </td></tr>
+    <tr><td align=right height="36"><img style="cursor: pointer" width=96 height=24 onClick="clicktool('mash')" id="mashbutton" src="/images/mash.png"> </td></tr>
+    <tr><td align=right height="36"><img style="cursor: pointer" width=120 height=24 onClick="clicktool('blend')" id="blendbutton" src="/images/blend.png"> </td></tr>
+    <tr><td align=right height="36"><img style="cursor: pointer" width=120 height=24 onClick="clicktool('spawn')" id="spawnbutton" src="/images/spawn.png"> </td></tr>
+    <tr><td align=right height="36"><img style="cursor: pointer" width=96 height=24 onClick="clicktool('goto')" id="gotobutton" src="/images/goto.png"> </td></tr>
 </table>
 
 <script>

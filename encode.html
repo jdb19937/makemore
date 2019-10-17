@@ -90,8 +90,8 @@ function upfile() {
 
 function capcam() {
   upcan.height = Math.floor(vid.videoHeight * 640 / vid.videoWidth);
-  upcan.getContext('2d').translate(upcan.width, 0);
-  upcan.getContext('2d').scale(-1, 1);
+//  upcan.getContext('2d').translate(upcan.width, 0);
+//  upcan.getContext('2d').scale(-1, 1);
   upcan.getContext('2d').drawImage(vid, 0, 0, upcan.width, upcan.height);
   window.saved = upcan.getContext('2d').getImageData(0, 0, upcan.width, upcan.height);
 
@@ -330,7 +330,7 @@ $SUBHEAD
 </tr></table>
 
       <div id="viddiv" style="width: 640px; border: 3px solid blue; display: none">
-        <video id="vid" width=640 style="transform: rotateY(180deg)" autoplay onClick="capcam()"></video>
+        <video id="vid" width=640 style="cursor: pointer" autoplay onClick="capcam()"></video>
       </div>
       <div id="upcandiv" style="width: 640px; border: 3px solid green; display: none">
         <canvas id="upcan" width=640 onMouseMove="canhigh()" onMouseOut="canhighout()" onClick="canclick()"></canvas>

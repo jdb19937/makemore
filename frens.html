@@ -94,7 +94,7 @@ function make_frenlist() {
 
     document.write(
       "<td id='frentd" + i + "'>" + 
-          "<img width=128 height=128 onClick='onc(" + i + ")' id='fren" + i + "' " +
+          "<img style='cursor: pointer' width=128 height=128 onClick='onc(" + i + ")' id='fren" + i + "' " +
           ">" +
       "</td>"
     );
@@ -169,7 +169,7 @@ $SUBHEAD
     <script>autocomplete(document.getElementById('frenbuf'), function() { addfren() });</script>
   </div>
 &nbsp;
-    <img id=addfrenbutton align=center width=72 height=24 style="outline: 3px solid blue" src="/images/add.png"
+    <img id=addfrenbutton align=center width=72 height=24 style="outline: 3px solid blue; cursor: pointer" src="/images/add.png"
       onClick="addfren()" >
 <!--
   <input type="button" style='font-size: large' value="addfren" onClick="addfren()">
@@ -209,8 +209,8 @@ $SUBHEAD
 
 <table><tr><td>
 <table>
-    <tr><td align=right height="36"><img width=96 height=24 onClick="clicktool('goto')" id="gotobutton" src="/images/goto.png"> </td></tr>
-    <tr><td align=right height="36"><img width=120 height=24 onClick="clicktool('bread')" id="breadbutton" src="/images/bread.png"> </td></tr>
+    <tr><td align=right height="36"><img style='cursor: pointer' width=96 height=24 onClick="clicktool('goto')" id="gotobutton" src="/images/goto.png"> </td></tr>
+    <tr><td align=right height="36"><img style='cursor: pointer' width=120 height=24 onClick="clicktool('bread')" id="breadbutton" src="/images/bread.png"> </td></tr>
 </table>
 
 

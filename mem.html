@@ -91,6 +91,7 @@ function onc(im) {
     var im = document.getElementById('img' + i);
     var td = im.parentElement;
     td.style.borderColor = 'yellow';
+    td.style.cursor = 'default';
     im.src = "/" + window.nom + ".png" + "?dim=192&vdev=" + vdev + "&r=" + window.cells[i];
     window.state = 1;
     window.prev = i;
@@ -108,9 +109,11 @@ function onc(im) {
 
     if (window.cells[i] == window.cells[window.prev]) {
       td.style.borderColor = 'green';
+      td.style.cursor = 'default';
       var imprev = document.getElementById('img' + window.prev);
       var tdprev = imprev.parentElement;
       tdprev.style.borderColor = 'green';
+      tdprev.style.cursor = 'default';
 
       ++window.nsolved;
 //if (window.nsolved == 18) { window.location = '/' + window.nom + '/cam'; }
@@ -121,13 +124,16 @@ function onc(im) {
       window.prev = -1;
     } else {
       td.style.borderColor = 'red';
+      td.style.cursor = 'default';
       var imprev = document.getElementById('img' + window.prev);
       var tdprev = imprev.parentElement;
       tdprev.style.borderColor = 'red';
 
       window.setTimeout(function() {
         td.style.borderColor = 'blue';
+        td.style.cursor = 'pointer';
         tdprev.style.borderColor = 'blue';
+        tdprev.style.cursor = 'pointer';
 
         var vdev = warpvar(window.mul);
         document.getElementById('img' + i).src = "/julia.png?vdev=" + vdev + "&r=$RAND";
@@ -208,52 +214,52 @@ $SUBHEAD
 
 <table cellpadding=0 cellspacing=0>
 <tr>
-  <td style="border: 1px solid blue"><img onclick="onc(this)" width="192px" src="/julia.png?vdev=1&r=$RAND" id="img0"></td>
-  <td style="border: 1px solid blue"><img onclick="onc(this)" width="192px" src="/julia.png?vdev=1&r=$RAND" id="img1"></td>
-  <td style="border: 1px solid blue"><img onclick="onc(this)" width="192px" src="/julia.png?vdev=1&r=$RAND" id="img2"></td>
-  <td style="border: 1px solid blue"><img onclick="onc(this)" width="192px" src="/julia.png?vdev=1&r=$RAND" id="img3"></td>
-  <td style="border: 1px solid blue"><img onclick="onc(this)" width="192px" src="/julia.png?vdev=1&r=$RAND" id="img4"></td>
-  <td style="border: 1px solid blue"><img onclick="onc(this)" width="192px" src="/julia.png?vdev=1&r=$RAND" id="img5"></td>
+  <td style="cursor: pointer; border: 2px solid blue"><img onclick="onc(this)" width="192px" src="/julia.png?vdev=1&r=$RAND" id="img0"></td>
+  <td style="cursor: pointer; border: 2px solid blue"><img onclick="onc(this)" width="192px" src="/julia.png?vdev=1&r=$RAND" id="img1"></td>
+  <td style="cursor: pointer; border: 2px solid blue"><img onclick="onc(this)" width="192px" src="/julia.png?vdev=1&r=$RAND" id="img2"></td>
+  <td style="cursor: pointer; border: 2px solid blue"><img onclick="onc(this)" width="192px" src="/julia.png?vdev=1&r=$RAND" id="img3"></td>
+  <td style="cursor: pointer; border: 2px solid blue"><img onclick="onc(this)" width="192px" src="/julia.png?vdev=1&r=$RAND" id="img4"></td>
+  <td style="cursor: pointer; border: 2px solid blue"><img onclick="onc(this)" width="192px" src="/julia.png?vdev=1&r=$RAND" id="img5"></td>
 </tr>
 <tr>
-  <td style="border: 1px solid blue"><img onclick="onc(this)" width="192px" src="/julia.png?vdev=1&r=$RAND" id="img6"></td>
-  <td style="border: 1px solid blue"><img onclick="onc(this)" width="192px" src="/julia.png?vdev=1&r=$RAND" id="img7"></td>
-  <td style="border: 1px solid blue"><img onclick="onc(this)" width="192px" src="/julia.png?vdev=1&r=$RAND" id="img8"></td>
-  <td style="border: 1px solid blue"><img onclick="onc(this)" width="192px" src="/julia.png?vdev=1&r=$RAND" id="img9"></td>
-  <td style="border: 1px solid blue"><img onclick="onc(this)" width="192px" src="/julia.png?vdev=1&r=$RAND" id="img10"></td>
-  <td style="border: 1px solid blue"><img onclick="onc(this)" width="192px" src="/julia.png?vdev=1&r=$RAND" id="img11"></td>
+  <td style="cursor: pointer; border: 2px solid blue"><img onclick="onc(this)" width="192px" src="/julia.png?vdev=1&r=$RAND" id="img6"></td>
+  <td style="cursor: pointer; border: 2px solid blue"><img onclick="onc(this)" width="192px" src="/julia.png?vdev=1&r=$RAND" id="img7"></td>
+  <td style="cursor: pointer; border: 2px solid blue"><img onclick="onc(this)" width="192px" src="/julia.png?vdev=1&r=$RAND" id="img8"></td>
+  <td style="cursor: pointer; border: 2px solid blue"><img onclick="onc(this)" width="192px" src="/julia.png?vdev=1&r=$RAND" id="img9"></td>
+  <td style="cursor: pointer; border: 2px solid blue"><img onclick="onc(this)" width="192px" src="/julia.png?vdev=1&r=$RAND" id="img10"></td>
+  <td style="cursor: pointer; border: 2px solid blue"><img onclick="onc(this)" width="192px" src="/julia.png?vdev=1&r=$RAND" id="img11"></td>
 </tr>
 <tr>
-  <td style="border: 1px solid blue"><img onclick="onc(this)" width="192px" src="/julia.png?vdev=1&r=$RAND" id="img12"></td>
-  <td style="border: 1px solid blue"><img onclick="onc(this)" width="192px" src="/julia.png?vdev=1&r=$RAND" id="img13"></td>
-  <td style="border: 1px solid blue"><img onclick="onc(this)" width="192px" src="/julia.png?vdev=1&r=$RAND" id="img14"></td>
-  <td style="border: 1px solid blue"><img onclick="onc(this)" width="192px" src="/julia.png?vdev=1&r=$RAND" id="img15"></td>
-  <td style="border: 1px solid blue"><img onclick="onc(this)" width="192px" src="/julia.png?vdev=1&r=$RAND" id="img16"></td>
-  <td style="border: 1px solid blue"><img onclick="onc(this)" width="192px" src="/julia.png?vdev=1&r=$RAND" id="img17"></td>
+  <td style="cursor: pointer; border: 2px solid blue"><img onclick="onc(this)" width="192px" src="/julia.png?vdev=1&r=$RAND" id="img12"></td>
+  <td style="cursor: pointer; border: 2px solid blue"><img onclick="onc(this)" width="192px" src="/julia.png?vdev=1&r=$RAND" id="img13"></td>
+  <td style="cursor: pointer; border: 2px solid blue"><img onclick="onc(this)" width="192px" src="/julia.png?vdev=1&r=$RAND" id="img14"></td>
+  <td style="cursor: pointer; border: 2px solid blue"><img onclick="onc(this)" width="192px" src="/julia.png?vdev=1&r=$RAND" id="img15"></td>
+  <td style="cursor: pointer; border: 2px solid blue"><img onclick="onc(this)" width="192px" src="/julia.png?vdev=1&r=$RAND" id="img16"></td>
+  <td style="cursor: pointer; border: 2px solid blue"><img onclick="onc(this)" width="192px" src="/julia.png?vdev=1&r=$RAND" id="img17"></td>
 </tr>
 <tr>
-  <td style="border: 1px solid blue"><img onclick="onc(this)" width="192px" src="/julia.png?vdev=1&r=$RAND" id="img18"></td>
-  <td style="border: 1px solid blue"><img onclick="onc(this)" width="192px" src="/julia.png?vdev=1&r=$RAND" id="img19"></td>
-  <td style="border: 1px solid blue"><img onclick="onc(this)" width="192px" src="/julia.png?vdev=1&r=$RAND" id="img20"></td>
-  <td style="border: 1px solid blue"><img onclick="onc(this)" width="192px" src="/julia.png?vdev=1&r=$RAND" id="img21"></td>
-  <td style="border: 1px solid blue"><img onclick="onc(this)" width="192px" src="/julia.png?vdev=1&r=$RAND" id="img22"></td>
-  <td style="border: 1px solid blue"><img onclick="onc(this)" width="192px" src="/julia.png?vdev=1&r=$RAND" id="img23"></td>
+  <td style="cursor: pointer; border: 2px solid blue"><img onclick="onc(this)" width="192px" src="/julia.png?vdev=1&r=$RAND" id="img18"></td>
+  <td style="cursor: pointer; border: 2px solid blue"><img onclick="onc(this)" width="192px" src="/julia.png?vdev=1&r=$RAND" id="img19"></td>
+  <td style="cursor: pointer; border: 2px solid blue"><img onclick="onc(this)" width="192px" src="/julia.png?vdev=1&r=$RAND" id="img20"></td>
+  <td style="cursor: pointer; border: 2px solid blue"><img onclick="onc(this)" width="192px" src="/julia.png?vdev=1&r=$RAND" id="img21"></td>
+  <td style="cursor: pointer; border: 2px solid blue"><img onclick="onc(this)" width="192px" src="/julia.png?vdev=1&r=$RAND" id="img22"></td>
+  <td style="cursor: pointer; border: 2px solid blue"><img onclick="onc(this)" width="192px" src="/julia.png?vdev=1&r=$RAND" id="img23"></td>
 </tr>
 <tr>
-  <td style="border: 1px solid blue"><img onclick="onc(this)" width="192px" src="/julia.png?vdev=1&r=$RAND" id="img24"></td>
-  <td style="border: 1px solid blue"><img onclick="onc(this)" width="192px" src="/julia.png?vdev=1&r=$RAND" id="img25"></td>
-  <td style="border: 1px solid blue"><img onclick="onc(this)" width="192px" src="/julia.png?vdev=1&r=$RAND" id="img26"></td>
-  <td style="border: 1px solid blue"><img onclick="onc(this)" width="192px" src="/julia.png?vdev=1&r=$RAND" id="img27"></td>
-  <td style="border: 1px solid blue"><img onclick="onc(this)" width="192px" src="/julia.png?vdev=1&r=$RAND" id="img28"></td>
-  <td style="border: 1px solid blue"><img onclick="onc(this)" width="192px" src="/julia.png?vdev=1&r=$RAND" id="img29"></td>
+  <td style="cursor: pointer; border: 2px solid blue"><img onclick="onc(this)" width="192px" src="/julia.png?vdev=1&r=$RAND" id="img24"></td>
+  <td style="cursor: pointer; border: 2px solid blue"><img onclick="onc(this)" width="192px" src="/julia.png?vdev=1&r=$RAND" id="img25"></td>
+  <td style="cursor: pointer; border: 2px solid blue"><img onclick="onc(this)" width="192px" src="/julia.png?vdev=1&r=$RAND" id="img26"></td>
+  <td style="cursor: pointer; border: 2px solid blue"><img onclick="onc(this)" width="192px" src="/julia.png?vdev=1&r=$RAND" id="img27"></td>
+  <td style="cursor: pointer; border: 2px solid blue"><img onclick="onc(this)" width="192px" src="/julia.png?vdev=1&r=$RAND" id="img28"></td>
+  <td style="cursor: pointer; border: 2px solid blue"><img onclick="onc(this)" width="192px" src="/julia.png?vdev=1&r=$RAND" id="img29"></td>
 </tr>
 <tr>
-  <td style="border: 1px solid blue"><img onclick="onc(this)" width="192px" src="/julia.png?vdev=1&r=$RAND" id="img30"></td>
-  <td style="border: 1px solid blue"><img onclick="onc(this)" width="192px" src="/julia.png?vdev=1&r=$RAND" id="img31"></td>
-  <td style="border: 1px solid blue"><img onclick="onc(this)" width="192px" src="/julia.png?vdev=1&r=$RAND" id="img32"></td>
-  <td style="border: 1px solid blue"><img onclick="onc(this)" width="192px" src="/julia.png?vdev=1&r=$RAND" id="img33"></td>
-  <td style="border: 1px solid blue"><img onclick="onc(this)" width="192px" src="/julia.png?vdev=1&r=$RAND" id="img34"></td>
-  <td style="border: 1px solid blue"><img onclick="onc(this)" width="192px" src="/julia.png?vdev=1&r=$RAND" id="img35"></td>
+  <td style="cursor: pointer; border: 2px solid blue"><img onclick="onc(this)" width="192px" src="/julia.png?vdev=1&r=$RAND" id="img30"></td>
+  <td style="cursor: pointer; border: 2px solid blue"><img onclick="onc(this)" width="192px" src="/julia.png?vdev=1&r=$RAND" id="img31"></td>
+  <td style="cursor: pointer; border: 2px solid blue"><img onclick="onc(this)" width="192px" src="/julia.png?vdev=1&r=$RAND" id="img32"></td>
+  <td style="cursor: pointer; border: 2px solid blue"><img onclick="onc(this)" width="192px" src="/julia.png?vdev=1&r=$RAND" id="img33"></td>
+  <td style="cursor: pointer; border: 2px solid blue"><img onclick="onc(this)" width="192px" src="/julia.png?vdev=1&r=$RAND" id="img34"></td>
+  <td style="cursor: pointer; border: 2px solid blue"><img onclick="onc(this)" width="192px" src="/julia.png?vdev=1&r=$RAND" id="img35"></td>
 </tr>
 </table>
 
