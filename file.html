@@ -115,21 +115,37 @@ autocomplete(document.getElementById('qnom'), function() { dogoto(document.getEl
 
 <br/>
 
-<!--
 
 <div id="crdiv">
 <img width=168 height=24 src="/images/created.png"><br/>
 <span id="crspan" style="font-family: monospace; font-size: 24px; color: white"></span>
 <br/>
 <br/>
-<br/>
 </div>
 <script>
+var now = new Date();
 var when = new Date($CREATED * 1000);
-crspan.innerHTML = when.toISOString().substr(0, 19) + "Z";
+var t = now - when;
+var u = 'ms';
+if (t > 10000) {
+  t /= 1000;
+  u = 's';
+}
+if (t > 10000) {
+  t /= 1000;
+  u = 'ks';
+}
+if (t > 10000) {
+  t /= 1000;
+  u = 'Ms';
+}
+if (t < 0) {
+  t = 0;
+}
+t = Math.floor(t);
+crspan.innerHTML = t + '&nbsp;' + u;
 </script>
 
--->
 
 
 <div id="onldiv" style="display: none">
