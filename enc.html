@@ -38,6 +38,48 @@ function ask_camera() {
   .catch(error => console.error('getUserMedia() error:', error));
 }
 
+function loadimg() {
+  upcan.height = Math.floor(640 * this.height / this.width);
+  upcan.getContext('2d').drawImage(this, 0, 0, upcan.width, upcan.height);
+  window.saved = upcan.getContext('2d').getImageData(0, 0, upcan.width, upcan.height);
+
+  stopvid();
+  upcandiv.style.display = 'block';
+  pqrdiv.style.display = 'block';
+
+  upcan.toBlob(function(bl) {
+    var socket = new WebSocket('wss://peaple.io:3333/', ['binary']);
+    socket.binaryType = 'arraybuffer';
+    socket.onmessage = function() {
+      uplab.style.border = "3px solid blue";
+      getbutton.style.border = "3px solid blue";
+      socket.close();
+      reloadpic();
+  
+      httpget("/" + window.nom + "/source.json", function(j) {
+        upcan.getContext('2d').imageSmoothingEnabled = false;
+        var tri = JSON.parse(j);
+        var c;
+        c = 0x70; upcan.getContext('2d').drawImage(mork, (c % 16) * 2, Math.floor(c / 16) * 3 + 1, 2, 2, tri.p[0] - 8, tri.p[1] - 8, 2 * 8, 2 * 8);
+        c = 0x71; upcan.getContext('2d').drawImage(mork, (c % 16) * 2, Math.floor(c / 16) * 3 + 1, 2, 2, tri.q[0] - 8, tri.q[1] - 8, 2 * 8, 2 * 8);
+        c = 0x72; upcan.getContext('2d').drawImage(mork, (c % 16) * 2, Math.floor(c / 16) * 3 + 1, 2, 2, tri.r[0] - 8, tri.r[1] - 8, 2 * 8, 2 * 8);
+        window.pqr = [tri.p, tri.q, tri.r];
+      });
+    };
+
+    socket.onopen = function() {
+      socket.send("upload " + window.nom + " <" + bl.size + "\n");
+      socket.send(bl);
+    };
+  }, 'image/jpeg', 0.95);
+}
+
+function geturl(url) {
+  var im = new Image();
+  im.onload = loadimg;
+  im.src = url;
+}
+
 function upfile() {
   var f = fileupload.files[0];
   if (f.type != 'image/jpeg' && f.type != 'image/png' || f.size > 4096*4096) {
@@ -50,41 +92,7 @@ function upfile() {
   uplab.style.border = "3px solid yellow";
 
   var img = new Image();
-  img.onload = function() {
-    upcan.height = Math.floor(640 * this.height / this.width);
-    upcan.getContext('2d').drawImage(this, 0, 0, upcan.width, upcan.height);
-    window.saved = upcan.getContext('2d').getImageData(0, 0, upcan.width, upcan.height);
-
-    stopvid();
-    upcandiv.style.display = 'block';
-    pqrdiv.style.display = 'block';
-
-    upcan.toBlob(function(bl) {
-      var socket = new WebSocket('wss://peaple.io:3333/', ['binary']);
-      socket.binaryType = 'arraybuffer';
-      socket.onmessage = function() {
-        uplab.style.border = "3px solid blue";
-        socket.close();
-        reloadpic();
-    
-        httpget("/" + window.nom + "/source.json", function(j) {
-          upcan.getContext('2d').imageSmoothingEnabled = false;
-          var tri = JSON.parse(j);
-          var c;
-          c = 0x70; upcan.getContext('2d').drawImage(mork, (c % 16) * 2, Math.floor(c / 16) * 3 + 1, 2, 2, tri.p[0] - 8, tri.p[1] - 8, 2 * 8, 2 * 8);
-          c = 0x71; upcan.getContext('2d').drawImage(mork, (c % 16) * 2, Math.floor(c / 16) * 3 + 1, 2, 2, tri.q[0] - 8, tri.q[1] - 8, 2 * 8, 2 * 8);
-          c = 0x72; upcan.getContext('2d').drawImage(mork, (c % 16) * 2, Math.floor(c / 16) * 3 + 1, 2, 2, tri.r[0] - 8, tri.r[1] - 8, 2 * 8, 2 * 8);
-          window.pqr = [tri.p, tri.q, tri.r];
-        });
-      };
-
-      socket.onopen = function() {
-        socket.send("upload " + window.nom + " <" + bl.size + "\n");
-        socket.send(bl);
-      };
-    }, 'image/jpeg', 0.95);
-  };
-
+  img.onload = loadimg;
   img.src = URL.createObjectURL(f);
 }
 
@@ -327,7 +335,11 @@ $SUBHEAD
 </label>
 <input id="fileupload" style="display: none" type="file" onChange="upfile()"/>
 </td>
-</tr></table>
+
+</tr>
+
+
+</table>
 
       <div id="viddiv" style="width: 640px; border: 3px solid blue; display: none">
         <video id="vid" width=640 style="cursor: pointer" autoplay onClick="capcam()"></video>
@@ -347,6 +359,20 @@ $SUBHEAD
 <script>window.posetool = 'auto';</script>
       </div>
 
+
+<!--
+<br/>
+<table cellpadding=4 cellspacing=4><tr>
+<td>
+<input placeholder="http://" id="urlinput" style="font-size: large; font-family: monospace" type="text" size="48" onChange="geturl(urlinput.value)">
+</td>
+<td>
+<img id="getbutton" style="border: 3px solid blue; cursor: pointer" onClick="geturl(urlinput.value)" src="/images/get.png">
+</td>
+</tr>
+</table>
+-->
+
 </td>
 
 
@@ -354,12 +380,14 @@ $SUBHEAD
        <a href="/$NOM/mob"><img id="pic" src="/$NOM.png" width="512" height="512"></a>
     </td>
   </tr>
+<tr>
+
 
 <tr><td colspan=2>
 <br/><br/>
 <hr align="left" color="#444444" width=1280>
 <span style="color: #666666; font-family: monospace; font-size: 12px">
-Permission is granted to Dan Brumleve to use uploaded images for any purpose.
+Data uploaded may be retained indefinitely and used for any purpose.
 </span>
 </td></tr>
 </table>

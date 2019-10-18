@@ -908,6 +908,7 @@ valid.insert("switch.png");
 valid.insert("mash.png");
 valid.insert("blend.png");
 valid.insert("goto.png");
+valid.insert("link.png");
 
     valid.insert("wtf1.png");
     valid.insert("wtf2.png");
@@ -925,6 +926,7 @@ valid.insert("goto.png");
     valid.insert("doc.png");
     valid.insert("sh.png");
     valid.insert("cam.png");
+    valid.insert("get.png");
     valid.insert("mem.png");
     valid.insert("new.png");
     valid.insert("who.png");

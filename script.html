@@ -117,7 +117,7 @@ function socketmsg(m) {
 
 
 function gotmsg(fromnom, tonom, txt) {
-  var f = new Function('from', 'to', 'don', 'txt', scrtxt.value);
+  var f = new Function('from', 'to', 'head', 'text', scrtxt.value);
   var rsp = f(fromnom, tonom, window.master, txt);
   if (rsp.constructor == Object) {
     for (var i in rsp) {
@@ -294,18 +294,18 @@ $HEADER
 
 <table width=1280>
 <tr><td id="scrtd" style="border: 3px solid red; font-size: 32px; font-family: monospace; color: white; background-color: black">
-function respond(from, to, don, txt) {
+function respond(from, to, head, text) {
 <textarea autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" rows=1; wrap="off" id=scrtxt style="border: 0; background-color: black; color: white; font-size: 32px; width: 100%; min-height: 38px; height: 38px; overflow-y: hidden; overflow-x: auto; padding: 0px; display: block; resize: vertical">  var response = { };
   response[from] =
     'greetings comrade ' + from +
     ', i am ' + to + ', pleased to meet you.';
-  response[don] =
+  response[head] =
     'received message from ' + from +
-    ': "' + txt + '"';
+    ': "' + text + '"';
 
   log(from + " -&gt; " + to, 'white');
   log(to + " -&gt; " + from, 'blue');
-  log(to + " -&gt; " + don, 'blue');
+  log(to + " -&gt; " + head, 'blue');
   
   return response;</textarea>
 }

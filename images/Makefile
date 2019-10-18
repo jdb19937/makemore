@@ -60,6 +60,8 @@ don.png:
 	echo don | ../morktxt --height 3 --width 6 | pnmcut -top 1 | pnmscale 12 | pnmtopng > $@
 xform.png:
 	echo xform | ../morktxt --height 3 --width 10 | pnmcut -top 1 |pnmscale 12 | pnmtopng > $@
+get.png:
+	echo get | ../morktxt --height 3 --width 6 | pnmcut -top 1 |pnmscale 12 | pnmtopng > $@
 cam.png:
 	echo cam | ../morktxt --height 3 --width 6 | pnmcut -top 1 |pnmscale 12 | pnmtopng > $@
 msg.png:
@@ -171,6 +173,8 @@ score.png:
 	echo 'score' | ../morktxt --height 3 --width 10 | pnmcut -top 1 | pnmscale 12 | pnmtopng > $@
 bread.png:
 	echo 'bread' | ../morktxt --height 3 --width 10 | pnmcut -top 1 | pnmscale 12 | pnmtopng > $@
+link.png:
+	echo 'link' | ../morktxt --height 3 --width 8 | pnmcut -top 1 | pnmscale 12 | pnmtopng > $@
 goto.png:
 	echo 'goto' | ../morktxt --height 3 --width 8 | pnmcut -top 1 | pnmscale 12 | pnmtopng > $@
 
