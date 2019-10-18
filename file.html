@@ -126,17 +126,18 @@ autocomplete(document.getElementById('qnom'), function() { dogoto(document.getEl
 var now = new Date();
 var when = new Date($CREATED * 1000);
 var t = now - when;
+t = t * 1000 / 1024;
 var u = 'ms';
-if (t > 10000) {
-  t /= 1000;
+if (t >= 10000) {
+  t /= 1024;
   u = 's';
 }
-if (t > 10000) {
-  t /= 1000;
+if (t >= 10000) {
+  t /= 1024;
   u = 'ks';
 }
-if (t > 10000) {
-  t /= 1000;
+if (t >= 10000) {
+  t /= 1024;
   u = 'Ms';
 }
 if (t < 0) {
