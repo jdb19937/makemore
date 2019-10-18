@@ -2,7 +2,7 @@
 
 <table width=1280 cellpadding=0 cellspacing=0>
   <tr>
-    <td width=512 style='font-size: 40px'>[
+    <td style='font-size: 40px'>[
       <a href="/"><img style="outline: 3px solid blue" id=headrand width=96 height=24 src="/images/rand.png"></a>
       | <a href="/new"><img style="outline: 3px solid blue" id=headnew width=72 height=24 src="/images/new.png"></a>
 <!--
@@ -13,6 +13,12 @@
 -->
       | <a id="linktop" href="/top"><img style="outline: 3px solid blue" id=headtop width=72 height=24 src="/images/top.png"></a>
       | <a href="/sh"><img style="outline: 3px solid blue" id=headsh width=48 height=24 src="/images/sh.png"></a>
+
+<script>
+if (localStorage.length > 0 || window.location.pathname == '/keys') {
+ document.write('| <a href="/keys"><img height=24 width=120 style="outline: 3px solid blue" id=headkeys src="/images/keys.png"></a>');
+}
+</script>
 
 
 <!--

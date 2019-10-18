@@ -112,6 +112,8 @@ add.png:
 	echo 'add' | ../morktxt --height 3 --width 6 | pnmcut -top 1 | pnmscale 12 | pnmtopng > $@
 addfren.png:
 	echo 'addfren' | ../morktxt --height 3 --width 14 | pnmcut -top 1 | pnmscale 12 | pnmtopng > $@
+keys.png:
+	echo 'keys' | ../morktxt --height 3 --width 8 | pnmcut -top 1 | pnmscale 12 | pnmtopng > $@
 fren.png:
 	echo 'fren' | ../morktxt --height 3 --width 8 | pnmcut -top 1 | pnmscale 12 | pnmtopng > $@
 pushfam.png:

@@ -1,0 +1,42 @@
+<html>
+<head>
+<title>makemore peaple / keys</title>
+</head>
+
+<body text="#ffffff" bgcolor="#000000">
+$HEADER
+<script>headkeys.style.outline = '3px solid #00ff00';</script>
+
+<br/>
+
+
+<table width=1280 cellpadding=0 cellspacing=0>
+<tr>
+
+<td align="center">
+<input type="button" value="localStorage.clear()" style="font-family: monospace; font-size: 24px" onClick="localStorage.clear(); upstorage()">
+</td>
+</tr>
+<tr>
+<td>
+<div id="json" style="font-family: monospace; font-color: #444444; font-size: 12px; white-space: pre; overflow-x: hidden; max-width: 1280">
+</div>
+</td>
+</tr></table>
+
+
+<script>
+function upstorage() {
+  var dict = { };
+  for (var i = 0; i < localStorage.length; i++) {
+    var k = localStorage.key(i);
+    var v = localStorage.getItem(k);
+    dict[k] = v;
+  }
+  json.innerHTML = JSON.stringify(dict, null, 2);
+}
+upstorage();
+</script>
+
+</body>
+</html>
