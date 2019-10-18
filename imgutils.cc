@@ -619,7 +619,7 @@ bool rgbpng(
 
   png_set_IHDR(
     png_ptr, info_ptr, w, h,
-    8, alpha ? PNG_COLOR_TYPE_RGBA : PNG_COLOR_TYPE_RGB, PNG_INTERLACE_NONE,
+    8, alpha ? PNG_COLOR_TYPE_RGBA : PNG_COLOR_TYPE_RGB, PNG_INTERLACE_ADAM7,
     PNG_COMPRESSION_TYPE_BASE, PNG_FILTER_TYPE_BASE
   );
 
