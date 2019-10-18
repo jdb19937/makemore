@@ -89,6 +89,15 @@ httpget("/top/" + func + ".json", function(txt) {
     var v = Math.floor(ar[k]);
 
     if (u == "s") {
+      v *= 1024;
+      u = "ms";
+    }
+
+    if (u == "ms") {
+      if (v >= 10000) {
+        v = v / 1024;
+        u = "s";
+      }
       if (v >= 10000) {
         v = v / 1024;
         u = "ks";

@@ -157,17 +157,24 @@ crspan.innerHTML = t + '&nbsp;' + u;
 </div>
 <script>
 if ($ONLINE > 0) {
-  var u = 's';
-  var v = Math.floor((Date.now()/1000) - $ONLINE);
+  var u = 'ms';
+  var v = 1024 * (Date.now()/1000.0 - $ONLINE);
   if (v >= 10000) {
     v = v / 1024;
-    u = "k" + u;
+    u = 's';
   }
   if (v >= 10000) {
     v = v / 1024;
-    u = "M" + u.substr(1);
+    u = "ks";
+  }
+  if (v >= 10000) {
+    v = v / 1024;
+    u = "Ms";
   }
   v = Math.floor(v);
+  if (v < 0) {
+    v = 0;
+  }
 
   onlspan.innerHTML = v + "&nbsp" + u;
   onldiv.style = "display: block";
