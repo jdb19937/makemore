@@ -128,6 +128,12 @@ makemore.png:
 	echo 'MakeMore Peaple v1.0' |../morktxt --height 3 --width 40 |pnmscale 16 |pnmtopng > $@
 
 
+# favicon.ico:
+# 	echo make |../morktxt --height 3 --width 8 |pnmcut -top 1 |pnmscale 4 > tmp.make.ppm;
+# 	echo more |../morktxt --height 3 --width 8 |pnmcut -top 1 |pnmscale 4 > tmp.more.ppm;
+# 	pnmcat -tb tmp.make.ppm tmp.more.ppm |pnmtopng > $@
+
+
 
 
 auto.png:

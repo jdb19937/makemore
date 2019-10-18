@@ -1074,7 +1074,8 @@ valid.insert("link.png");
   }
 
   if (path == "/favicon.ico") {
-    std::string fn = server->urb->dir + "/favicon.ico";
+    // std::string fn = server->urb->dir + "/favicon.ico";
+    std::string fn = "images/favicon.ico";
     std::string favicon = makemore::slurp(fn);
     
     this->printf("HTTP/1.1 200 OK\r\n");
