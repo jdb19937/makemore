@@ -27,9 +27,17 @@ if (u.protocol != 'https:') {
 function got_media(mediaStream) {
   window.mediaStream = mediaStream
   window.mediaStreamTrack = mediaStream.getVideoTracks()[0];
+
   window.imageCapture = new ImageCapture(window.mediaStreamTrack);
   window.camera_enabled = 1
   vid.srcObject = mediaStream;
+
+  vid.onloadedmetadata = function() {
+    var w = this.videoWidth;
+    var h = this.videoHeight;
+    vid.style.width = w;
+    vid.style.height = h;
+  }
 }
 
 function ask_camera() {
@@ -342,7 +350,7 @@ $SUBHEAD
 </table>
 
       <div id="viddiv" style="width: 640px; border: 3px solid blue; display: none">
-        <video id="vid" width=640 style="cursor: pointer" autoplay onClick="capcam()"></video>
+        <video id="vid" style="width: 640; height: 480; cursor: pointer" autoplay onClick="capcam()"></video>
       </div>
 
       <div id="upcandiv" style="width: 640px; border: 3px solid green; display: none">
