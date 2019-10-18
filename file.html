@@ -241,17 +241,25 @@ if ("$MAKER" == "") {
     ownerdiv.style.display = "block";
   }
 
-  if ("$MAKER" == window.master && window.nom != window.usernom) {
+  if ("$MAKER" == window.master) // && window.nom != window.usernom) {
     swdiv.style.display = 'block';
     swdiv.style.cursor = 'pointer';
   }
 }
 
 function doswitch() {
-  if (window.usernom == '' || window.session == '' || ("$MAKER" && "$MAKER" != window.master) || window.nom == window.usernom) {
+  if (window.usernom == '' || window.session == '' || window.master == '') {
     return;
   }
-  sessionStorage.setItem('nom', window.nom);
+  if ("$MAKER" != window.master) {
+    return;
+  }
+
+  if (window.nom == window.usernom) {
+    sessionStorage.setItem('nom', window.master);
+  } else {
+    sessionStorage.setItem('nom', window.nom);
+  }
   window.location.reload();
 }
 
@@ -266,10 +274,10 @@ function doclaim() {
       ownerlink.href = "/" + window.master;
       ownerdiv.style.display = "block";
 
-      if (window.nom != window.usernom) {
+      //if (window.nom != window.usernom) {
         swdiv.style.display = 'block';
         swdiv.style.cursor = 'pointer';
-      }
+      //}
     } else {
       claimbutton.style.border = "3px solid red";
       window.setTimeout(function() {
