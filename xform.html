@@ -554,14 +554,24 @@ function shiftup() {
   }
 }
 function controldown() {
-//  if (window.tool == "map") {
-//    clicktool("spawn");
-//  }
+  if (window.tool == "map") {
+    clicktool("spawn");
+  }
 }
 function controlup() {
-//  if (window.tool == "spawn") {
-//    clicktool("map");
-//  }
+  if (window.tool == "spawn") {
+    clicktool("map");
+  }
+}
+function altdown() {
+  if (window.tool == "map") {
+    clicktool("goto");
+  }
+}
+function altup() {
+  if (window.tool == "goto") {
+    clicktool("map");
+  }
 }
 
 var onkeydown = (function (ev) {
@@ -571,7 +581,7 @@ var onkeydown = (function (ev) {
   if (ev.which == 17) {
     controldown();
   }
-  if (0 && ev.which == 18) {
+  if (ev.which == 18) {
     altdown();
   }
 });
@@ -583,7 +593,7 @@ var onkeyup = (function (ev) {
   if (ev.which == 17) {
     controlup();
   }
-  if (0 && ev.which == 18) {
+  if (ev.which == 18) {
     altup();
   }
 });

@@ -18,9 +18,9 @@
       <a href="/$NOM/mem"><img style="outline: 3px solid blue" id=headmem width=72 height=24 src="/images/mem.png"></a>
     ]</td>
 
-    <td align="right"><div id='msgdiv' style="display: none; font-size: 40px">[
+    <td align="right"><div id='meepdiv' style="display: none; font-size: 40px">[
       <img style="outline: 3px solid blue; cursor: pointer" onClick="headaddfren()" id=headfren width=144 height=24 src="/images/befren.png">  |
-      <a href="/$NOM/msg"><img style="outline: 3px solid blue" id=headmsg width=72 height=24 src="/images/msg.png"></a>
+      <a href="/$NOM/meep"><img style="outline: 3px solid blue" id=headmeep width=96 height=24 src="/images/meep.png"></a>
     ]</div></td>
 
   </tr>
@@ -51,7 +51,7 @@ alert(txt);
   i.send();
 }
 
-msgdiv.style.display = window.usernom ? 'inline' : 'none';
+meepdiv.style.display = window.usernom ? 'inline' : 'none';
 
 if (0) {
 headxform.style.outline = ($LOCKED && window.hdrnom != window.usernom) ? '3px solid red' : '3px solid blue';

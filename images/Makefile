@@ -143,6 +143,8 @@ map.png:
 	echo 'map' | ../morktxt --height 3 --width 6 | pnmcut -top 1 | pnmscale 12 | pnmtopng > $@
 unmap.png:
 	echo 'unmap' | ../morktxt --height 3 --width 10 | pnmcut -top 1 | pnmscale 12 | pnmtopng > $@
+meep.png:
+	echo 'meep' | ../morktxt --height 3 --width 8 | pnmcut -top 1 | pnmscale 12 | pnmtopng > $@
 more.png:
 	echo 'more' | ../morktxt --height 3 --width 8 | pnmcut -top 1 | pnmscale 12 | pnmtopng > $@
 less.png:
