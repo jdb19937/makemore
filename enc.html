@@ -37,6 +37,10 @@ function got_media(mediaStream) {
     var h = this.videoHeight;
     vid.style.width = w;
     vid.style.height = h;
+
+    capbutton.style.border = "3px solid #00ff00";
+    viddiv.style.display = 'block';
+    capbutton.onclick = function() { stopvid() };
   }
 }
 
@@ -177,11 +181,11 @@ function reloadpic() {
 
 function startvid() {
   ask_camera();
-  viddiv.style.display = 'block';
-  capbutton.onclick = function() { stopvid() };
-  capbutton.style.border = "3px solid green";
+  capbutton.style.border = "3px solid yellow";
   upcandiv.style.display = 'none';
   pqrdiv.style.display = 'none';
+  viddiv.style.display = 'none';
+
 }
 
 function stopvid() {
@@ -350,7 +354,7 @@ $SUBHEAD
 </table>
 
       <div id="viddiv" style="width: 640px; border: 3px solid blue; display: none">
-        <video id="vid" style="width: 640; height: 480; cursor: pointer" autoplay onClick="capcam()"></video>
+        <video id="vid" style="width: 640; cursor: pointer" autoplay onClick="capcam()"></video>
       </div>
 
       <div id="upcandiv" style="width: 640px; border: 3px solid green; display: none">
