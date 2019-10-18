@@ -138,29 +138,38 @@ function gotmsg(fromnom, tonom, txt) {
 function sendmsg(fromnom, tonom, txt) {
   var fromprivkey = BigInt("0x" + sessionStorage.getItem("privkey"));
   var frompubkey = BigInt("0x" +  sessionStorage.getItem("pubkey"));
-
   var topubkey = localStorage.getItem(tonom + ".pubkey");
-  if (!topubkey) {
-    return 0;
-  }
-  topubkey = BigInt("0x" + topubkey);
 
-  var etxt0 = mmenc(txt, fromprivkey, topubkey);
-  if (etxt0.length != 960) {
-    return 0;
-  }
-  var etxt1 = mmenc(txt, fromprivkey, frompubkey);
-  if (etxt1.length != 960) {
-    return 0;
-  }
+  var nxt = function() {
+    var etxt0 = mmenc(txt, fromprivkey, topubkey);
+    if (etxt0.length != 960) {
+      return 0;
+    }
+    var etxt1 = mmenc(txt, fromprivkey, frompubkey);
+    if (etxt1.length != 960) {
+      return 0;
+    }
 
-  var b0 = new Blob(["be " + fromnom + " " + window.session + " ; to " + tonom + " <960 <960 ; be " + window.master + " " + window.session + "\n"]);
-  var b1 = new Blob([etxt0]);
-  var b2 = new Blob([etxt1]);
-  var bb = new Blob([b0, b1, b2]);
+    var b0 = new Blob(["be " + fromnom + " " + window.session + " ; to " + tonom + " <960 <960 ; be " + window.master + " " + window.session + "\n"]);
+    var b1 = new Blob([etxt0]);
+    var b2 = new Blob([etxt1]);
+    var bb = new Blob([b0, b1, b2]);
 
-  socket.send(bb);
-  return 1;
+    socket.send(bb);
+    return 1;
+  };
+
+  if (topubkey) {
+    topubkey = BigInt("0x" + topubkey);
+    nxt();
+  } else {
+    httpgetbin("/" + tonom + ".pubkey.dat", function(dat) {
+      topubkey = bufferToHex(dat);
+      localStorage.setItem(tonom + ".pubkey", topubkey);
+      topubkey = BigInt("0x" + topubkey);
+      nxt();
+    });
+  }
 }
 
 function log(x, col) {
@@ -291,17 +300,12 @@ $HEADER
 <tr><td id="scrtd" style="border: 3px solid red; font-size: 32px; font-family: monospace; color: white; background-color: black">
 function respond(from, to, head, text) {
 <textarea autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" rows=1; wrap="off" id=scrtxt style="border: 0; background-color: black; color: white; font-size: 32px; width: 100%; min-height: 38px; height: 38px; overflow-y: hidden; overflow-x: auto; padding: 0px; display: block; resize: vertical">  var response = { };
-  response[from] =
-    'greetings comrade ' + from +
-    ', i am ' + to + ', pleased to meet you.';
-  response[head] =
-    'received message from ' + from +
-    ': "' + text + '"';
 
-  console.log(from + " -&gt; " + to);
-  console.log(to + " -&gt; " + from);
-  console.log(to + " -&gt; " + head);
-  
+  response[from] =
+    `hello ${from}, i am ${to}, pleased to meet you.`;
+  response[head] =
+    `received message from ${from}: ${text}`;
+
   return response;</textarea>
 }
 <script>
