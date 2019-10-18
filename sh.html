@@ -328,14 +328,26 @@ window.setTimeout(function() { window.cli.asyncbb(x); }, 1);
 <body id=bod text="#ffffff" bgcolor="#000000" onload="load()">
 
 $HEADER
-<br/>
 <script>headsh.style.outline = '3px solid #00ff00';</script>
 
-<table width="1280"><tr><td align="center">
+<table width="1280" cellpadding=0 cellspacing=0>
+  <tr height=16></tr>
+<!--
+  <tr>
+    <td style='font-size: 40px' align="center">[
+<img id=stopbutton width=96 height=24 src="/images/stop.png" style="border: 3px solid #00ff00; cursor: pointer" onClick="clickstop()"/> |
+<img id=gobutton width=48 height=24 src="/images/go.png" style="border: 3px solid blue; cursor: pointer" onClick="clickgo()"/>
+    ]
+    </td>
+  </tr>
+-->
+
+
+<tr><td align="center">
 
 <img id="fontimg" style="display: none" src="/images/mork.png" width=256 height=384>
 <center>
-<canvas style="border: 3px solid green; image-rendering: pixelated" id="terminal" width=1280 height=600></canvas>
+<canvas style="border: 3px solid teal; image-rendering: pixelated" id="terminal" width=1280 height=600></canvas>
 </center>
 
 

@@ -659,6 +659,7 @@ fprintf(stderr, "req=[%s]\n", req.c_str());
     this->printf("Connection: keep-alive\r\n");
     this->printf("Content-Type: image/png\r\n");
     this->printf("Content-Length: %lu\r\n", png.length());
+    this->printf("Cache-Control: public, max-age=%u\r\n", 31536000);
     this->printf("\r\n");
     this->write(png);
     return;
@@ -677,6 +678,7 @@ fprintf(stderr, "req=[%s]\n", req.c_str());
     this->printf("Connection: keep-alive\r\n");
     this->printf("Content-Type: image/png\r\n");
     this->printf("Content-Length: %lu\r\n", png.length());
+    this->printf("Cache-Control: public, max-age=%u\r\n", 31536000);
     this->printf("\r\n");
     this->write(png);
     return;
@@ -709,6 +711,7 @@ fprintf(stderr, "req=[%s]\n", req.c_str());
     this->printf("Connection: keep-alive\r\n");
     this->printf("Content-Type: image/png\r\n");
     this->printf("Content-Length: %lu\r\n", png.length());
+    this->printf("Cache-Control: public, max-age=%u\r\n", 31536000);
     this->printf("\r\n");
     this->write(png);
     return;
@@ -879,6 +882,7 @@ valid.insert("minions.png");
 valid.insert("minions.png");
 valid.insert("boss.png");
 valid.insert("head.png");
+valid.insert("grid.png");
 valid.insert("encode.png");
 valid.insert("enc.png");
 valid.insert("active.png");
@@ -1981,7 +1985,7 @@ valid.insert("link.png");
   }
 
   if (ext == "html") {
-  if (func == "enc" || func == "file" || func == "fam" || func == "frens" || func == "xform" || func == "mem" || func == "mob" || func == "top" || func == "msg") {
+  if (func == "enc" || func == "file" || func == "fam" || func == "frens" || func == "xform" || func == "mem" || func == "grid" || func == "top" || func == "msg") {
     std::string html = makemore::slurp(func + ".html");
 
     std::string header = makemore::slurp("header.html");
@@ -2177,6 +2181,10 @@ dev = sqrt(dev);
     if (dim < 32)
       dim = 32;
 
+    unsigned int cache = 0;
+    if (cgi["cache"] != "")
+      cache = strtoul(cgi["cache"].c_str(), NULL, 0);
+
     Parson *parson = server->urb->make(nom, 0);
 
 parson->visit(1);
@@ -2228,6 +2236,8 @@ genpar.warp(&showpar);
     this->printf("Connection: keep-alive\r\n");
     this->printf("Content-Type: image/png\r\n");
     this->printf("Content-Length: %lu\r\n", png.length());
+    if (cache)
+      this->printf("Cache-Control: public, max-age=%u\r\n", cache);
     this->printf("\r\n");
     this->write(png);
     return;

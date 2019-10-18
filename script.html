@@ -166,8 +166,8 @@ function sendmsg(fromnom, tonom, txt) {
 function log(x, col) {
   if (col) { x = "<span style='color: " + col + "'>" + x + "</span>"; }
   //consdiv.innerHTML += "<span style='color: gray'>" + (new Date()).toISOString() + "</span> " + x + "<br/>\n";
-  consdiv.innerHTML +=  x + "<br/>\n";
-  consdiv.scrollTop = consdiv.scrollHeight;
+  //consdiv.innerHTML +=  x + "<br/>\n";
+  //consdiv.scrollTop = consdiv.scrollHeight;
 }
 
 function opensock() {
@@ -264,6 +264,7 @@ function clickstop() {
 <body text="#ffffff" bgcolor="#000000">
 
 $HEADER
+<script>headscript.style.outline = '3px solid #00ff00';</script>
 
 <table width=1280 cellpadding=0 cellspacing=0>
   <tr height=8></tr>
@@ -278,18 +279,12 @@ $HEADER
 <img id=stopbutton width=96 height=24 src="/images/stop.png" style="border: 3px solid #00ff00; cursor: pointer" onClick="clickstop()"/> |
 <img id=gobutton width=48 height=24 src="/images/go.png" style="border: 3px solid blue; cursor: pointer" onClick="clickgo()"/>
 ]
-</td></tr></table>
-<script>headscript.style.outline = '3px solid #00ff00';</script>
-
-
-
-<br/>
-<table width=1280 cellpadding=0 cellspacing=0>
-<tr><td align="center">
-<table id="crewtab" cellpadding=0 cellspacing=0><tr id="crewrow"></tr></table>
 </td></tr>
+  <tr height=8></tr>
 </table>
-<br/>
+
+
+
 
 
 <table width=1280>
@@ -303,9 +298,9 @@ function respond(from, to, head, text) {
     'received message from ' + from +
     ': "' + text + '"';
 
-  log(from + " -&gt; " + to, 'white');
-  log(to + " -&gt; " + from, 'blue');
-  log(to + " -&gt; " + head, 'blue');
+  console.log(from + " -&gt; " + to, 'white');
+  console.log(to + " -&gt; " + from, 'blue');
+  console.log(to + " -&gt; " + head, 'blue');
   
   return response;</textarea>
 }
@@ -330,11 +325,20 @@ scrtxt.addEventListener('keydown', function() {
       scrtxt.style.height = scrtxt.scrollHeight + 'px';
 </script>
 </td></tr>
-
-<tr height=16></tr>
-<tr><td id="constd" valign="bottom"><div id="consdiv" style="height: 268px; overflow-y: auto; overflow-x: hidden; border: 3px solid gray; font-size: 16px; font-family: monospace; color: orange; background-color: black"></div></td></tr>
-
 </table>
+<br/>
+
+<table width=1280 cellpadding=0 cellspacing=0>
+<tr><td align="center">
+<table id="crewtab" cellpadding=0 cellspacing=0><tr id="crewrow"></tr></table>
+</td></tr>
+</table>
+
+<!--
+<tr height=16></tr>
+<tr><td id="constd" valign="bottom"><div id="consdiv" style="height: 268px; overflow-y: auto; overflow-x: hidden; border: 3px solid gray; font-size: 16px; font-family: monospace; color: orange; background-color: black; display: none"></div></td></tr>
+-->
+
 
 
 

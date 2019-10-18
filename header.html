@@ -185,10 +185,14 @@ function check_loginstate() {
       if (txt == "1") {
         headcomms.style.outline = '3px solid orange';
 var i = 0;
-window.setInterval(function() {
+var blinker = window.setInterval(function() {
   headcomms.style.outline = (i % 2) ? '3px solid orange' : '3px solid blue';
   ++i;
 }, 500);
+//        headcomms.addEventListener('mouseover', function() {
+//          window.clearInterval(blinker);
+//          headcomms.style.outline = '3px solid blue';
+//        });
       }
     }
     i.send();

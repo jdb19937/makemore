@@ -20,6 +20,8 @@ load.png:
 	echo load | ../morktxt --height 3 --width 8 | pnmcut -top 1 |pnmscale 12 | pnmtopng > $@
 save.png:
 	echo save | ../morktxt --height 3 --width 8 | pnmcut -top 1 |pnmscale 12 | pnmtopng > $@
+grid.png:
+	echo grid | ../morktxt --height 3 --width 8 | pnmcut -top 1 |pnmscale 12 | pnmtopng > $@
 head.png:
 	echo head | ../morktxt --height 3 --width 8 | pnmcut -top 1 |pnmscale 12 | pnmtopng > $@
 boss.png:
