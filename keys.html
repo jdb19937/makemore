@@ -28,12 +28,21 @@ $HEADER
 <script>
 function upstorage() {
   var dict = { };
+  var str = '{';
   for (var i = 0; i < localStorage.length; i++) {
+    if (i > 0)
+      str += ",";
+    str += "\n";
+
     var k = localStorage.key(i);
     var v = localStorage.getItem(k);
-    dict[k] = v;
+    var kj = JSON.stringify(k); 
+    var vj = JSON.stringify(v); 
+
+    str += "  <span style='cursor: pointer' onClick='localStorage.removeItem(" + kj + "); upstorage()'>" + kj + ": " + vj + "</span>";
   }
-  json.innerHTML = JSON.stringify(dict, null, 2);
+  str += "\n}\n";
+  json.innerHTML = str;
 }
 upstorage();
 </script>
