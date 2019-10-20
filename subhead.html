@@ -16,7 +16,7 @@
 
     <td align="right"><div id='meepdiv' style="display: none; font-size: 40px">[
 
-<script>make_button('befren', 'headaddfren()')</script> |
+<script>make_button('befren', 'headaddfren()', 'befrenbutton')</script> |
 
       <a href="/$NOM/meep"><script>make_button('meep');</script></a>
     ]</div></td>
@@ -32,6 +32,7 @@ function headaddfren() {
   if (!window.usernom || !window.nom) {
     return;
   }
+  befrenbutton.style.outlineColor = 'yellow';
   var i = new XMLHttpRequest;
   i.open('GET', '/edit?op=addfren&nom=' + window.usernom + "&fren=" + window.nom);
   i.overrideMimeType("text/plain");
@@ -41,9 +42,11 @@ function headaddfren() {
     }
     var txt = this.responseText;
     if (txt.substr(0, 2) == "ok") {
-      window.location = "/" + window.usernom + "/frens";
+      befrenbutton.style.outlineColor = 'green';
+      window.location = "/" + window.nom + "/frens";
     } else {
-alert(txt);
+      befrenbutton.style.outlineColor = 'red';
+//alert(txt);
     }
   }
   i.send();

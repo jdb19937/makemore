@@ -101,6 +101,12 @@ if ($c >= ord('A') && $c <= ord('Z') || $c >= ord('0') && $c <= ord('9')) {
 if ($c == ord(' ') || $c == ord("\t")) {
   @map = (0) x 35;
 }
+if ($c == ord('<')) {
+  @map = (0, 0, 1, 1, 0) x 7;
+}
+if ($c == ord('>')) {
+  @map = (0, 1, 1, 0, 0) x 7;
+}
 
 print chr(0) x 48;
 for my $y (0 .. 20) {

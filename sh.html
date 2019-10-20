@@ -275,6 +275,7 @@ return;
 
   var oncli = function() {
     if (window.firstconnect) {
+terminal.style.borderColor = '#00ff00';
 //      termcanvas.puttext(
 //        "Connected.",
 //        0, 20
@@ -304,6 +305,10 @@ if (document.activeElement.tagName == "BODY") {
 }
       setcurs();
     }, 256);
+
+  window.cli.socket.onclose = function() {
+    terminal.style.borderColor = 'red';
+  }
 
   window.cli.asynccb = function(x) {
 if (0 && loading) {
@@ -347,7 +352,7 @@ $HEADER
 
 <img id="fontimg" style="display: none" src="/images/mork.png" width=256 height=384>
 <center>
-<canvas style="border: 3px solid teal; image-rendering: pixelated" id="terminal" width=1280 height=600></canvas>
+<canvas style="border: 3px solid yellow; image-rendering: pixelated" id="terminal" width=1280 height=600></canvas>
 </center>
 
 
