@@ -1,26 +1,23 @@
 
+<script>headrand.style.outlineColor = '#00ff00';</script>
 <table width=1280 cellpadding=0 cellspacing=0>
 
   <tr height=8></tr>
 
   <tr>
     <td style='font-size: 40px'>[
-      <a href="/$NOM"><img style="outline: 3px solid blue" id=headfile width=96 height=24 src="/images/file.png"></a> |
-      <a href="/$NOM/fam"><img style="outline: 3px solid blue" id=headfam width=72 height=24 src="/images/fam.png"></a> |
-      <a href="/$NOM/frens"><img style="outline: 3px solid blue" id=headfrens width=120 height=24 src="/images/frens.png"></a> |
-
-      <a id='xformlink' href="/$NOM/xform"><img style="outline: 3px solid blue" id=headxform width=120 height=24 src="/images/xform.png"></a> |
-      <a id="enclink" href="https://peaple.io/$NOM/enc"><img style="outline: 3px solid blue" id=headenc width=72 height=24 src="/images/enc.png"></a> |
-
-
-
-      <a href="/$NOM/grid"><img style="outline: 3px solid blue" id=headgrid width=96 height=24 src="/images/grid.png"></a> |
-      <a href="/$NOM/mem"><img style="outline: 3px solid blue" id=headmem width=72 height=24 src="/images/mem.png"></a>
+      <a href="/$NOM"><script>make_button('file');</script></a> |
+      <a href="/$NOM/fam"><script>make_button('fam');</script></a> |
+      <a href="/$NOM/frens"><script>make_button('frens');</script></a> |
+      <a href="/$NOM/xform"><script>make_button('xform');</script></a> |
+      <a href="https://peaple.io/$NOM/enc"><script>make_button('enc');</script></a> |
+      <a href="/$NOM/grid"><script>make_button('grid');</script></a> |
+      <a href="/$NOM/mem"><script>make_button('mem');</script></a>
     ]</td>
 
     <td align="right"><div id='meepdiv' style="display: none; font-size: 40px">[
       <img style="outline: 3px solid blue; cursor: pointer" onClick="headaddfren()" id=headfren width=144 height=24 src="/images/befren.png">  |
-      <a href="/$NOM/meep"><img style="outline: 3px solid blue" id=headmeep width=96 height=24 src="/images/meep.png"></a>
+      <a href="/$NOM/meep"><script>make_button('meep');</script></a>
     ]</div></td>
 
   </tr>

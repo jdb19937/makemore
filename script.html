@@ -188,8 +188,8 @@ function opensock() {
   // log("Connecting...", 'yellow');
   window.socketready = 1;
   scrtd.style.borderColor = 'yellow';
-  stopbutton.style.borderColor = 'blue';
-  gobutton.style.borderColor = 'blue';
+  stopbutton.style.outlineColor = 'blue';
+  gobutton.style.outlineColor = 'blue';
 
   inbuf = new Uint8Array(0);
   socket = new WebSocket('wss://peaple.io:3333/', ['binary']);
@@ -203,7 +203,7 @@ function opensock() {
     var txt = arrayBufferToString(buf.data);
     if (txt.substr(0, 8) == "session ") {
       scrtd.style.borderColor = '#00ff00';
-      gobutton.style.borderColor = '#00ff00';
+      gobutton.style.outlineColor = '#00ff00';
       window.socketready = 2;
       socket.onmessage = socketmsg;
       // log("Authenticated.", '#00ff00');
@@ -211,8 +211,8 @@ function opensock() {
       window.socketready = 0;
       socket.close();
       scrtd.style.borderColor = 'red';
-      gobutton.style.borderColor = 'blue';
-      stopbutton.style.borderColor = '#00ff00';
+      gobutton.style.outlineColor = 'blue';
+      stopbutton.style.outlineColor = '#00ff00';
       // log("Disconnected.", 'red');
     }
   };
@@ -222,8 +222,8 @@ function opensock() {
       // log("Disconnected.", 'red');
       window.socketready = 0;
       scrtd.style.borderColor = 'red';
-      gobutton.style.borderColor = 'blue';
-      stopbutton.style.borderColor = '#00ff00';
+      gobutton.style.outlineColor = 'blue';
+      stopbutton.style.outlineColor = '#00ff00';
     }
   }
 }
@@ -260,8 +260,8 @@ function clickstop() {
   }
   socket = null;
   scrtd.style.borderColor = 'red';
-  stopbutton.style.borderColor = '#00ff00';
-  gobutton.style.borderColor = 'blue';
+  stopbutton.style.outlineColor = '#00ff00';
+  gobutton.style.outlineColor = 'blue';
   // log("Disconnected.", 'red');
 }
 
@@ -280,13 +280,13 @@ $HEADER
   <tr>
     <td style='font-size: 40px' align="center">[
 <label id=uplab for="fileupload" style="border: 3px solid blue; display: inline-block; cursor: pointer; transform: translateY(-3px)">
-    <img width=96 height=24 src="/images/load.png"/>
+    <script>make_button('load')</script>
 </label><input id="fileupload" style="display: none" type="file" onChange="upfile()"/>
 |
-<img width=96 height=24 src="/images/save.png" style="border: 3px solid blue; cursor: pointer" onClick="clicksave()"/> |
-<img width=96 height=24 src="/images/clear.png" style="border: 3px solid blue; cursor: pointer" onClick="scrtxt.value = ''"/> |
-<img id=stopbutton width=96 height=24 src="/images/stop.png" style="border: 3px solid #00ff00; cursor: pointer" onClick="clickstop()"/> |
-<img id=gobutton width=48 height=24 src="/images/go.png" style="border: 3px solid blue; cursor: pointer" onClick="clickgo()"/>
+<script>make_button('save', 'clicksave()');</script> |
+<script>make_button('clear', 'scrtxt.value = ""');</script> |
+<script>make_button('stop', 'clickstop()', 'stopbutton');</script> |
+<script>make_button('go', 'clickgo()', 'gobutton');</script>
 ]
 </td></tr>
   <tr height=8></tr>

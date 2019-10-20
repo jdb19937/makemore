@@ -511,12 +511,12 @@ onClick="pushpals([tagbuf.value])" />
     <td align=right>
 
 <table>
-    <tr><td align=right height="36"><img style="cursor: pointer" width=96 height=24 onClick="clicktool('map')" id="mapbutton" src="/images/more.png"> </td></tr>
-    <tr><td align=right height="36"><img style="cursor: pointer" width=96 height=24 onClick="clicktool('unmap')" id="unmapbutton" src="/images/less.png"> </td></tr>
-    <tr><td align=right height="36"><img style="cursor: pointer" width=96 height=24 onClick="clicktool('mash')" id="mashbutton" src="/images/mash.png"> </td></tr>
-    <tr><td align=right height="36"><img style="cursor: pointer" width=120 height=24 onClick="clicktool('blend')" id="blendbutton" src="/images/blend.png"> </td></tr>
-    <tr><td align=right height="36"><img style="cursor: pointer" width=120 height=24 onClick="clicktool('spawn')" id="spawnbutton" src="/images/spawn.png"> </td></tr>
-    <tr><td align=right height="36"><img style="cursor: pointer" width=96 height=24 onClick="clicktool('goto')" id="gotobutton" src="/images/goto.png"> </td></tr>
+    <tr><td align=right height="36"><script>make_button('more', 'clicktool("map")', 'mapbutton')</script></td></tr>
+    <tr><td align=right height="36"><script>make_button('less', 'clicktool("unmap")', 'unmapbutton')</script></td></tr>
+    <tr><td align=right height="36"><script>make_button('mash', 'clicktool("mash")', 'mashbutton')</script></td></tr>
+    <tr><td align=right height="36"><script>make_button('blend', 'clicktool("blend")', 'blendbutton')</script></td></tr>
+    <tr><td align=right height="36"><script>make_button('spawn', 'clicktool("spawn")', 'spawnbutton')</script></td></tr>
+    <tr><td align=right height="36"><script>make_button('goto', 'clicktool("goto")', 'gotobutton')</script></td></tr>
 </table>
 
 <script>

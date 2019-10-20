@@ -38,7 +38,7 @@ function got_media(mediaStream) {
     vid.style.width = w;
     vid.style.height = h;
 
-    capbutton.style.border = "3px solid #00ff00";
+    capbutton.style.outline = "3px solid #00ff00";
     viddiv.style.display = 'block';
     capbutton.onclick = function() { stopvid() };
   }
@@ -63,7 +63,7 @@ function loadimg() {
     var socket = new WebSocket('wss://peaple.io:3333/', ['binary']);
     socket.binaryType = 'arraybuffer';
     socket.onmessage = function() {
-      uplab.style.border = "3px solid blue";
+      uplab.style.outline = "3px solid blue";
       //getbutton.style.border = "3px solid blue";
       socket.close();
       reloadpic();
@@ -95,13 +95,13 @@ function geturl(url) {
 function upfile() {
   var f = fileupload.files[0];
   if (f.type != 'image/jpeg' && f.type != 'image/png' || f.size > 4096*4096) {
-    uplab.style.border = "3px solid red";
+    uplab.style.outline = "3px solid red";
     window.setTimeout(function() {
-      uplab.style.border = "3px solid blue";
+      uplab.style.outline = "3px solid blue";
     }, 500);
     return;
   }
-  uplab.style.border = "3px solid yellow";
+  uplab.style.outline = "3px solid yellow";
 
   var img = new Image();
   img.onload = loadimg;
@@ -120,7 +120,7 @@ function capcam() {
 
   viddiv.style.display = 'none';
   capbutton.onclick = function() { startvid() };
-  capbutton.style.border = "3px solid blue";
+  capbutton.style.outline = "3px solid blue";
 
   upcan.toBlob(function(blob) {
     var socket = new WebSocket('wss://peaple.io:3333/', ['binary']);
@@ -181,7 +181,7 @@ function reloadpic() {
 
 function startvid() {
   ask_camera();
-  capbutton.style.border = "3px solid yellow";
+  capbutton.style.outline = "3px solid yellow";
   upcandiv.style.display = 'none';
   pqrdiv.style.display = 'none';
   viddiv.style.display = 'none';
@@ -193,7 +193,7 @@ function stopvid() {
     track.stop();
   });
   capbutton.onclick = function() { startvid() };
-  capbutton.style.border = "3px solid blue";
+  capbutton.style.outline = "3px solid blue";
   viddiv.style.display = 'none';
   upcandiv.style.display = 'none';
   pqrdiv.style.display = 'none';
@@ -201,7 +201,7 @@ function stopvid() {
 
 function clickauto() {
   window.posetool = 'auto';
-  document.getElementById('pbutton').style.border = '3px solid blue';
+  document.getElementById('pbutton').style.borrder = '3px solid blue';
   document.getElementById('qbutton').style.border = '3px solid blue';
   document.getElementById('rbutton').style.border = '3px solid blue';
   document.getElementById('autobutton').style.border = '3px solid green';
@@ -340,10 +340,10 @@ $SUBHEAD
     <td align="center" valign="top" width=768>
 
 <table cellspacing=4 cellpadding=4><tr>
-<td><img id="capbutton" width=168 height=24 src="/images/capture.png" style="cursor: pointer; border: 3px solid blue" onClick="startvid()" /></td>
+<td><script>make_button('capture', 'startvid()', 'capbutton')</script></td>
 <td>
 <label id=uplab for="fileupload" style="border: 3px solid blue; display: inline-block; cursor: pointer">
-    <i></i> <img width=144 height=24 src="/images/upload.png"/>
+    <i></i> <script>make_button('upload')</script>
 </label>
 <input id="fileupload" style="display: none" type="file" onChange="upfile()"/>
 </td>

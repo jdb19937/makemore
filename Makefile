@@ -542,6 +542,12 @@ moregasm.tsv: dumpbranetxt
 
 mork.png: mork.pl
 	./mork.pl | pnmtopng > $@
+mork_8.png: mork.png
+	pngtopnm $^ | pnmscale 8 | pnmtopng > $@
+mork_12.png: mork.png
+	pngtopnm $^ | pnmscale 12 | pnmtopng > $@
+mork_16.png: mork.png
+	pngtopnm $^ | pnmscale 16 | pnmtopng > $@
 
-mork.cc: mork.cc.pl
-	./mork.cc.pl > mork.cc
+# mork.cc: mork.cc.pl
+# 	./mork.cc.pl > mork.cc

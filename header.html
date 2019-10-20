@@ -1,22 +1,117 @@
 
+<style type="text/css">
+.button {
+  outline: 3px solid blue;
+  cursor: pointer
+}
+</style>
+
+<script>
+var theme = sessionStorage.getItem('theme') || 'mork';
+
+function make_label(txt, dim, nochop) {
+  var etxt = escape(txt);
+  dim = dim || 12;
+  var nochop = nochop || 0;
+  var chop = !nochop ? 1 : 0;
+
+  var id = 'head' + txt;
+  var w = 2 * dim * txt.length;
+  var h = (chop ? 2 : 3) * dim * 1;
+
+  var u = "/button.png?txt=" + etxt + "&theme=" + theme + "&dim=" + dim + "&chop=" + chop;
+  document.write(
+    "<img id='" + id + "' src='" +  u + "' " +
+    "width=" + w + " height=" + h +
+    ">"
+  );
+}
+function make_button(txt, onc, id) {
+  var etxt = escape(txt);
+  dim = 12;
+  var chop = 1;
+
+  if (!id)
+    id = 'head' + txt;
+  var w = 2 * dim * txt.length;
+  var h = (chop ? 2 : 3) * dim * 1;
+
+  onc = onc || '';
+  if (onc) {
+    onc = " onClick='" + onc + "'";
+  }
+
+  var u = "/button.png?txt=" + etxt + "&theme=" + theme + "&dim=" + dim + "&chop=" + chop;
+  document.write(
+    "<img id='" + id + "' src='" +  u + "' class='button' " +
+    "width=" + w + " height=" + h + onc +
+    ">"
+  );
+}
+
+function switchtheme() {
+  var ntheme;
+  if (theme == 'mork') { ntheme = 'ahoy'; }
+  if (theme == 'ahoy') { ntheme = 'mork'; }
+
+  sessionStorage.setItem('theme', ntheme);
+  window.location.reload();
+}
+
+function make_themeswitcher() {
+  var ntheme;
+  if (theme == 'mork') { ntheme = 'ahoy'; }
+  if (theme == 'ahoy') { ntheme = 'mork'; }
+
+  var txt = ntheme;
+  var etxt = escape(txt);
+  var dim = 12
+  var chop = 1;
+
+  var w = 2 * dim * txt.length;
+  var h = (chop ? 2 : 3) * dim * 1;
+
+  var u = "/button.png?txt=" + etxt + "&theme=" + ntheme + "&dim=" + dim + "&chop=" + chop;
+  document.write(
+    "<img class='button' src='" +  u + "' width=" + w + " height=" + h +
+    " onClick='switchtheme()'>"
+  );
+}
+
+function make_logo() {
+  var txt = 'MakeMore Peaple v1.0';
+  var etxt = escape(txt);
+  var dim = 16
+  var chop = 0;
+
+  var w = 2 * dim * txt.length;
+  var h = (chop ? 2 : 3) * dim * 1;
+
+  var u = "/button.png?txt=" + etxt + "&theme=" + theme + "&dim=" + dim + "&chop=" + chop;
+  document.write(
+    "<img src='" +  u + "' width=" + w + " height=" + h +
+    ">"
+  );
+}
+
+</script>
+
 
 <table width=1280 cellpadding=0 cellspacing=0>
   <tr>
     <td style='vertical-align: center; font-size: 40px'>[
-      <a href="/"><img style="outline: 3px solid blue" id=headrand width=96 height=24 src="/images/rand.png"></a>
-      | <a href="/new"><img style="outline: 3px solid blue" id=headnew width=72 height=24 src="/images/new.png"></a>
-<!--
-  <a href="/new/male"><img style="outline: 3px solid blue" width=24 height=24 src="/male.png?dev=2"></a>
-  <a href="/new/female"><img style="outline: 3px solid blue" width=24 height=24 src="/female.png?dev=2"></a>
-  <a href="/new/cat"><img style="outline: 3px solid blue" width=24 height=24 src="/cat.png?dev=2"></a>
-  <a href="/new/dog"><img style="outline: 3px solid blue" width=24 height=24 src="/dog.png?dev=2"></a>
--->
-      | <a id="linktop" href="/top"><img style="outline: 3px solid blue" id=headtop width=72 height=24 src="/images/top.png"></a>
-      | <a href="/sh"><img style="outline: 3px solid blue" id=headsh width=48 height=24 src="/images/sh.png"></a>
+
+      <a href="/"><script>make_button('rand')</script></a>
+      | <a href="/new"><script>make_button('new')</script></a>
+      | <a id="linktop" href="/top"><script>make_button('top')</script></a>
+      | <a href="/sh"><script>make_button('sh')</script></a>
+      | <script>make_themeswitcher()</script></a>
 
 <script>
 if (0 && localStorage.length > 0 || window.location.pathname == '/keys') {
- document.write('| <a href="/keys"><img height=24 width=96 style="outline: 3px solid blue" id=headkeys src="/images/keys.png"></a>');
+  document.write('| <a href="/keys">');
+  make_button('keys');
+  document.write('</a>');
 }
 </script>
 
@@ -62,21 +157,11 @@ if (0 && localStorage.length > 0 || window.location.pathname == '/keys') {
         <tr>
           <td style="font-size: 40px">
             [
-<!--
-<a href="/buy"><img width=72 height=24 style="outline: 3px solid blue" id=buybutton src="/images/buy.png"></a> |
--->
 
-<!--
-<img width=120 height=24 src="/images/score.png">
-<span style="font-family: monospace; font-size: 32px; color: green">$SCORE</span>
-|
--->
+<a href="/comms"><script>make_button('comms')</script></a> |
+<a href="/script"><script>make_button('script')</script></a> |
 
-<a href="/comms"><img height=24 width=120 style="outline: 3px solid blue" id=headcomms src="/images/comms.png"></a> |
-<a href="/script"><img height=24 width=144 style="outline: 3px solid blue" id=headscript src="/images/script.png"></a> |
-
-
-            <img width=144 height=24 onClick="logout()" style="cursor: pointer; outline: 3px solid blue" id=logoutbutton src="/images/logout.png">
+      <script>make_button('logout', 'logout()')</script>
             ]
 
 <a id="userlink"><img align="center" style="border: 3px solid blue" id="userimg" width=64 height=64></a>
@@ -92,7 +177,7 @@ if (0 && localStorage.length > 0 || window.location.pathname == '/keys') {
             [
           </td>
 
-          <td align="right"><img width=48 height=16 alt="nom" onClick="nomlogin.value=''; nomlogin.focus()" src="/images/small_nom.png"/></td>
+          <td align="right"><script>make_label('nom', 8)</script></td>
           <td> <input id="nomlogin" type="text" style="font-family: monospace; font-size: medium" size=32 maxlength=32 onClick="this.value=''" value=""/></td>
 
 <script>if ("$NOM" && "$NOM".substr(0, 1) != '$') { nomlogin.value = '$NOM'; }</script>
@@ -114,16 +199,18 @@ function badpass() {
     nompass.focus();
   }
 
-  loginbutton.style.outline = "3px solid red";
+  headlogin.style.outline = "3px solid red";
   window.loginsocket = null;
 
   window.setTimeout(function() {
-    loginbutton.style.outline = "3px solid blue";
+    headlogin.style.outline = "3px solid blue";
   }, 1000);
 }
 
 function logout() {
-  sessionStorage.clear();
+  sessionStorage.removeItem('nom');
+  sessionStorage.removeItem('session');
+  sessionStorage.removeItem('master');
   location.reload();
   return;
 }
@@ -147,14 +234,16 @@ function check_loginstate() {
     window.master = '';
     window.usernom = '';
     window.session = '';
-    sessionStorage.clear();
+    sessionStorage.removeItem('nom');
+    sessionStorage.removeItem('session');
+    sessionStorage.removeItem('master');
 
     var lbar = document.getElementById('loginbar');
     lbar.style.display = 'block';
     var ubar = document.getElementById('userbar');
     ubar.style.display = 'none';
 
-    loginbutton.style.outline = "3px solid blue";
+    headlogin.style.outline = "3px solid blue";
 
     // logout();
     return;
@@ -258,7 +347,7 @@ function loadScript(url, callback)
 
 
 function clicklogin() {
-  loginbutton.style.outline = "3px solid yellow";
+  headlogin.style.outline = "3px solid yellow";
 
 loadScript('/crypto.js', function() {
 
@@ -283,11 +372,14 @@ getsession(login, password, pubkeybuf, hexprivkey)
 
 }
 </script>
-            &nbsp; <img alt="login" width=120 height=24 id="loginbutton" onClick="clicklogin()" src="/images/login.png"/ style="cursor: pointer; outline: 3px solid blue"> ]
+            &nbsp;
+            <script>make_button('login', 'clicklogin()');</script>
+            ]
           </td>
         </tr>
         <tr>
-          <td align="right"><img width=64 height=16 alt="pass" onClick="nompass.value=''; nompass.focus()" src="/images/small_pass.png"/></td>
+          <td align="right">
+<script>make_label('pass', 8);</script>
           <td><input id="nompass" onkeypress="if (event.which == 13) { clicklogin(); }" type="password" style="font-family: monospace; font-size: medium" size=32 maxlength=32 /></td>
         </tr>
       </table>
@@ -312,10 +404,14 @@ check_loginstate();
     </td>
   </tr>
   <tr>
-  <td> <img style="image-rendering: pixelated" width=640 height=48 src="/images/makemore.png"> </td>
+  <td> 
+
+<script>make_logo()</script>
+
+</td>
   <td valign="top" align="right">
-    <img style="image-rendering: pixelated" width=368 height=24 src="/images/createdby.png"><br/>
-    <a id=linkemail><img style="image-rendering: pixelated" width=304 height=24 src="/images/email.png"></a>
+    <script>make_label('created by Dan Brumleve', 8, 1);</script><br/>
+    <a id=linkemail><script>make_label('<jdb1729@gmail.com>', 8, 1);</script></a>
 
 <script>
 var z = 'mai';

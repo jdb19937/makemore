@@ -15,6 +15,7 @@
 #include "supergen.hh"
 #include "styler.hh"
 #include "autoposer.hh"
+#include "mork.hh"
 
 #include <map>
 #include <string>
@@ -24,6 +25,8 @@ namespace makemore {
 struct Urb {
   unsigned int mbn;
   std::string dir;
+
+  std::map<std::string, Mork *> themes;
 
   std::vector<Zone*> zones;
   Zone *sks0, *sks1;

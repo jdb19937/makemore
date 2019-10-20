@@ -173,12 +173,7 @@ $SUBHEAD
 
 
 
-<!--
-      <span style="padding: 2px; background-color: gray"><img id="addfrenbutton" onClick="addfren(frenbuf.value)" src="/images/add_fren.png"></span>
-      <img id="gennombutton" onClick="frenbuf.value = gennom()" src="/images/gen_nom.png">
--->
 
-      <!-- <img src="/images/frens.png"><br/><br/> -->
 </td></tr></table>
 
       <script>make_frenlist()</script>
@@ -200,8 +195,8 @@ $SUBHEAD
 
 <table><tr><td>
 <table>
-    <tr><td align=right height="36"><img style='cursor: pointer' width=96 height=24 onClick="clicktool('goto')" id="gotobutton" src="/images/goto.png"> </td></tr>
-    <tr><td align=right height="36"><img style='cursor: pointer' width=120 height=24 onClick="clicktool('bread')" id="breadbutton" src="/images/bread.png"> </td></tr>
+    <tr><td align=right height="36"><script>make_button('goto', 'clicktool("goto")', 'gotobutton');</script></td></tr>
+    <tr><td align=right height="36"><script>make_button('bread', 'clicktool("bread")', 'breadbutton');</script></td></tr>
 </table>
 
 

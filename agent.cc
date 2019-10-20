@@ -27,6 +27,7 @@
 #include "autocompleter.hh"
 #include "mob.hh"
 #include "fractals.hh"
+#include "mork.hh"
 
 namespace makemore {
 
@@ -624,6 +625,54 @@ fprintf(stderr, "req=[%s]\n", req.c_str());
     return;
   }
 #endif
+
+  if (path == "/button.png") {
+    map<string, string> cgi;
+    cgiparse(query, &cgi);
+
+    std::string txt = cgi["txt"];
+    if (txt == "") {
+      http_notfound();
+      return;
+    }
+
+    std::string theme = cgi["theme"];
+    if (theme == "") {
+      theme = "mork";
+    }
+
+    bool chop = 1;
+    if (cgi["chop"] != "")
+      chop = strtoul(cgi["chop"].c_str(), NULL, 0);
+
+    unsigned int dim = strtoul(cgi["dim"].c_str(), NULL, 0);
+    if (dim == 0)
+      dim = 12;
+    char sdim[16];
+    sprintf(sdim, "_%u", dim);
+
+    Mork *mork = server->urb->themes[theme + sdim];
+    if (!mork) {
+      http_notfound();
+      return;
+    }
+
+
+    Partrait prt;
+    mork->print(txt, &prt, chop);
+    std::string png;
+    prt.to_png(&png);
+
+    this->printf("HTTP/1.1 200 OK\r\n");
+    this->printf("Connection: keep-alive\r\n");
+    this->printf("Content-Type: image/png\r\n");
+    this->printf("Content-Length: %lu\r\n", png.length());
+    // this->printf("Cache-Control: public, max-age=%u\r\n", 31536000);
+    this->printf("Cache-Control: public, max-age=%u\r\n", 86400);
+    this->printf("\r\n");
+    this->write(png);
+    return;
+  }
 
   if (path == "/julia.png") {
     map<string, string> cgi;

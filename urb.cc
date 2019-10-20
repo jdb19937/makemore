@@ -114,6 +114,14 @@ add_gen("anderson", "gena.anderson.proj");
     int ret = ::mkdir(home.c_str(), 0700);
     assert(ret == 0 || ret == -1 && errno == EEXIST);
   }
+
+
+  themes["ahoy_8"] = new Mork(dir + "/ahoy_8.png", 8);
+  themes["ahoy_12"] = new Mork(dir + "/ahoy_12.png", 12);
+  themes["ahoy_16"] = new Mork(dir + "/ahoy_16.png", 16);
+  themes["mork_8"] = new Mork(dir + "/mork_8.png", 8);
+  themes["mork_12"] = new Mork(dir + "/mork_12.png", 12);
+  themes["mork_16"] = new Mork(dir + "/mork_16.png", 16);
 }
 
 Urb::~Urb() {

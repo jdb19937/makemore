@@ -89,6 +89,8 @@ autocomplete(document.getElementById('qnom'), function() { dogoto(document.getEl
 </script>
     </div>
 &nbsp;
+
+
     <img align="center" width=96 height=24 style="outline: 3px solid blue; cursor: pointer" src="/images/goto.png"
       onClick="dogoto(document.getElementById('qnom').value)" >
 </form>
@@ -103,10 +105,11 @@ autocomplete(document.getElementById('qnom'), function() { dogoto(document.getEl
 
 <td width="256" align="right" valign="top">
 <div id="swdiv" style="display: none">
-<img id="switchbutton" width=144 height=24 style="border: 3px solid blue" src="/images/switch.png" onClick="doswitch()">
+<script>make_button('switch', 'doswitch()');</script>
 </div>
+
 <div id="claimdiv" style="display: none; color: white">
-<img width=96 height=24 id=claimbutton onClick="doclaim()" style="border: 3px solid blue; cursor: pointer" src="/images/link.png">
+<script>make_button('link', 'doclaim()');</script>
 </div>
 </td>
 </tr><tr>
@@ -117,7 +120,7 @@ autocomplete(document.getElementById('qnom'), function() { dogoto(document.getEl
 
 
 <div id="crdiv">
-<img width=168 height=24 src="/images/created.png"><br/>
+<script>make_label('created')</script><br/>
 <span id="crspan" style="font-family: monospace; font-size: 24px; color: white"></span>
 <br/>
 <br/>
@@ -150,7 +153,7 @@ crspan.innerHTML = t + '&nbsp;' + u;
 
 
 <div id="onldiv" style="display: none">
-<img width=144 height=24 src="/images/online.png"><br/>
+<script>make_label('online');</script><br/>
 <span id="onlspan" style="font-family: monospace; font-size: 24px; color: white"></span>
 <br/>
 <br/>
@@ -183,8 +186,7 @@ if ($ONLINE > 0) {
 
 
 <div id="actdiv" style="display: none">
-<!-- <img width=144 height=24 src="/images/active.png"> -->
-<img width=192 height=24 src="/images/activity.png"><br/>
+<script>make_label('activity');</script><br/>
 <span id="actspan" style="font-family: monospace; font-size: 24px; color: white"></span>
 <br/>
 <br/>
@@ -206,17 +208,19 @@ actdiv.style = "display: block";
 </script>
 
 <div id="ownerdiv" style="display: none">
-<img width=96 height=24 src="/images/head.png">
+<script>make_label('head');</script>
 <div style="height: 4px"></div>
 <a id=ownerlink><img id=ownerpic width=128 height=128 style="border: 3px solid blue"></a>
 </div>
 
 
 <div id="scorediv" style="display: none">
-<img width=120 height=24 src="/images/score.png"> <div style="height: 4px"></div>
+<script>make_label('score');</script>
+<div style="height: 4px"></div>
 <span id=scorespan style="font-size: 24px; color: green; font-family: monospace">$SCORE</span>
 <div style="height: 16px"></div>
-<img width=168 height=24 src="/images/minions.png"> <div style="height: 4px"></div>
+<script>make_label('minions');</script>
+<div style="height: 4px"></div>
 <span id=crewspan style="font-size: 24px; color: orange; font-family: monospace">$NCREW</span>
 </div>
 
