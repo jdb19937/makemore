@@ -7,6 +7,15 @@
 </style>
 
 <script>
+var qarr = window.location.search.substr(1).split('&').filter(function(x) {
+  return x.substr(0, 6) == "theme=";
+}).map(function(x) {
+  return x.substr(6);
+});
+if (qarr.length > 0) {
+  sessionStorage.setItem('theme', qarr[0]);
+}
+
 var theme = sessionStorage.getItem('theme') || 'mork';
 
 function make_label(txt, dim, nochop) {
