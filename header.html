@@ -18,10 +18,24 @@ if (qarr.length > 0) {
 
 var theme = sessionStorage.getItem('theme') || 'mork';
 
+function make_emlabel() {
+  var etxt = escape('[email]');
+  var dim = 8;
+
+  var w = 2 * dim * 17;
+  var h = 3 * dim * 1;
+
+  var u = "/button.png?txt=" + etxt + "&theme=" + theme + "&dim=" + dim + "&chop=0";
+  document.write(
+    "<img src='" +  u + "' " +
+    "width=" + w + " height=" + h +
+    ">"
+  );
+}
 function make_label(txt, dim, nochop) {
   var etxt = escape(txt);
   dim = dim || 12;
-  var nochop = nochop || 0;
+  nochop = nochop || 0;
   var chop = !nochop ? 1 : 0;
 
   var id = 'head' + txt;
@@ -433,7 +447,7 @@ check_loginstate();
 </td>
   <td valign="top" align="right">
     <script>make_label('created by Dan Brumleve', 8, 1);</script><br/>
-    <a id=linkemail><script>make_label('<jdb1729@gmail.com>', 8, 1);</script></a>
+    <a id=linkemail><script>make_emlabel();</script></a>
 
 <script>
 var z = 'mai';

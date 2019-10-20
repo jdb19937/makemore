@@ -635,6 +635,9 @@ fprintf(stderr, "req=[%s]\n", req.c_str());
       http_notfound();
       return;
     }
+    if (txt == "[email]") {
+      txt = "<jdb1729@gmail.com>";
+    }
 
     std::string theme = cgi["theme"];
     if (theme == "") {
