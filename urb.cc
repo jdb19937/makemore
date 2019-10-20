@@ -125,6 +125,9 @@ add_gen("anderson", "gena.anderson.proj");
   themes["alfa_8"] = new Mork(dir + "/alfa_8.png", 8);
   themes["alfa_12"] = new Mork(dir + "/alfa_12.png", 12);
   themes["alfa_16"] = new Mork(dir + "/alfa_16.png", 16);
+  themes["they_8"] = new Mork(dir + "/they_8.png", 8);
+  themes["they_12"] = new Mork(dir + "/they_12.png", 12);
+  themes["they_16"] = new Mork(dir + "/they_16.png", 16);
 }
 
 Urb::~Urb() {
