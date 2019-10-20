@@ -907,6 +907,7 @@ fprintf(stderr, "req=[%s]\n", req.c_str());
   if (!strncmp(path.c_str(), "/images/", 8)) {
     std::set<std::string> valid;
     valid.insert("conf.png");
+    valid.insert("ahoy.png");
     valid.insert("close.png");
     valid.insert("clear.png");
     valid.insert("stop.png");

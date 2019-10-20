@@ -64,7 +64,6 @@ function loadimg() {
     socket.binaryType = 'arraybuffer';
     socket.onmessage = function() {
       uplab.style.outline = "3px solid blue";
-      //getbutton.style.border = "3px solid blue";
       socket.close();
       reloadpic();
   
@@ -201,38 +200,38 @@ function stopvid() {
 
 function clickauto() {
   window.posetool = 'auto';
-  document.getElementById('pbutton').style.borrder = '3px solid blue';
-  document.getElementById('qbutton').style.border = '3px solid blue';
-  document.getElementById('rbutton').style.border = '3px solid blue';
-  document.getElementById('autobutton').style.border = '3px solid green';
+  document.getElementById('pbutton').style.outlineColor = 'blue';
+  document.getElementById('qbutton').style.outlineColor = 'blue';
+  document.getElementById('rbutton').style.outlineColor = 'blue';
+  document.getElementById('autobutton').style.outlineColor = '#00ff00';
 }
 function clickp() {
   window.posetool = 'p';
-  document.getElementById('pbutton').style.border = '3px solid green';
-  document.getElementById('qbutton').style.border = '3px solid blue';
-  document.getElementById('rbutton').style.border = '3px solid blue';
-  document.getElementById('autobutton').style.border = '3px solid blue';
+  document.getElementById('pbutton').style.outlineColor = '#00ff00';
+  document.getElementById('qbutton').style.outlineColor = 'blue';
+  document.getElementById('rbutton').style.outlineColor = 'blue';
+  document.getElementById('autobutton').style.outlineColor = 'blue';
 }
 function clickq() {
   window.posetool = 'q';
-  document.getElementById('pbutton').style.border = '3px solid blue';
-  document.getElementById('qbutton').style.border = '3px solid green';
-  document.getElementById('rbutton').style.border = '3px solid blue';
-  document.getElementById('autobutton').style.border = '3px solid blue';
+  document.getElementById('pbutton').style.outlineColor = 'blue';
+  document.getElementById('qbutton').style.outlineColor = '#00ff00';
+  document.getElementById('rbutton').style.outlineColor = 'blue';
+  document.getElementById('autobutton').style.outlineColor = 'blue';
 }
 function clickr() {
   window.posetool = 'r';
-  document.getElementById('pbutton').style.border = '3px solid blue';
-  document.getElementById('qbutton').style.border = '3px solid blue';
-  document.getElementById('rbutton').style.border = '3px solid green';
-  document.getElementById('autobutton').style.border = '3px solid blue';
+  document.getElementById('pbutton').style.outlineColor = 'blue';
+  document.getElementById('qbutton').style.outlineColor = 'blue';
+  document.getElementById('rbutton').style.outlineColor = '#00ff00';
+  document.getElementById('autobutton').style.outlineColor = 'blue';
 }
 
 function canhighout() {
   if (window.posetool == 'auto') {
-    document.getElementById('pbutton').style.border = '3px solid blue';
-    document.getElementById('qbutton').style.border = '3px solid blue';
-    document.getElementById('rbutton').style.border = '3px solid blue';
+    document.getElementById('pbutton').style.outlineColor = 'blue';
+    document.getElementById('qbutton').style.outlineColor = 'blue';
+    document.getElementById('rbutton').style.outlineColor = 'blue';
   }
 }
 
@@ -263,11 +262,11 @@ function canhigh() {
 
   var which = ['p', 'q', 'r'][i];
 
-  document.getElementById('pbutton').style.border = '3px solid blue';
-  document.getElementById('qbutton').style.border = '3px solid blue';
-  document.getElementById('rbutton').style.border = '3px solid blue';
-  document.getElementById(which + 'button').style.border = '3px solid green';
-  autobutton.style.border = '3px solid green';
+  document.getElementById('pbutton').style.outlineColor = 'blue';
+  document.getElementById('qbutton').style.outlineColor = 'blue';
+  document.getElementById('rbutton').style.outlineColor = 'blue';
+  document.getElementById(which + 'button').style.outlineColor = '#00ff00';
+  autobutton.style.outlineColor = '#00ff00';
 }
 
 function canclick() {
@@ -325,7 +324,7 @@ function canclick() {
 $HEADER
 $SUBHEAD
 
-<img id="mork" style="display: none" src="/images/mork.png" width=256 height=384>
+<img id="mork" src="/images/mork.png" style="display: none" width=256 height=384>
 
 <table width=1280>
 
@@ -342,8 +341,8 @@ $SUBHEAD
 <table cellspacing=4 cellpadding=4><tr>
 <td><script>make_button('capture', 'startvid()', 'capbutton')</script></td>
 <td>
-<label id=uplab for="fileupload" style="border: 3px solid blue; display: inline-block; cursor: pointer">
-    <i></i> <script>make_button('upload')</script>
+<label id=uplab for="fileupload" style="outline: 3px solid blue; display: inline-block; cursor: pointer">
+    <script>make_button('upload')</script>
 </label>
 <input id="fileupload" style="display: none" type="file" onChange="upfile()"/>
 </td>
@@ -357,33 +356,20 @@ $SUBHEAD
         <video id="vid" style="width: 640; cursor: pointer" autoplay onClick="capcam()"></video>
       </div>
 
-      <div id="upcandiv" style="width: 640px; border: 3px solid green; display: none">
+      <div id="upcandiv" style="width: 640px; border: 3px solid #00ff00; display: none">
         <canvas id="upcan" width=640 onMouseMove="canhigh()" onMouseOut="canhighout()" onClick="canclick()"></canvas>
       </div>
 
       <div id="pqrdiv" style="display: none">
 <table cellspacing=4 cellpadding=4><tr>
-<td><img id="pbutton" width=24 height=24 src="/images/p.png" style="cursor: pointer; border: 3px solid blue" onClick="clickp()" /></td>
-<td><img id="qbutton" width=24 height=24 src="/images/q.png" style="cursor: pointer; border: 3px solid blue" onClick="clickq()" /></td>
-<td><img id="rbutton" width=24 height=24 src="/images/r.png" style="cursor: pointer; border: 3px solid blue" onClick="clickr()" /></td>
-<td><img id="autobutton" width=96 height=24 src="/images/auto.png" style="cursor: pointer; border: 3px solid green" onClick="clickauto()" /></td>
+<td><script>make_button('p', 'clickp()', 'pbutton', '', 'mork');</script></td>
+<td><script>make_button('q', 'clickq()', 'qbutton', '', 'mork');</script></td>
+<td><script>make_button('r', 'clickr()', 'rbutton', '', 'mork');</script></td>
+<td><script>make_button('auto', 'clickauto()', 'autobutton')</script></td>
 </tr></table>
 <script>window.posetool = 'auto';</script>
       </div>
 
-
-<!--
-<br/>
-<table cellpadding=4 cellspacing=4><tr>
-<td>
-<input placeholder="http://" id="urlinput" style="font-size: large; font-family: monospace" type="text" size="48" onChange="geturl(urlinput.value)">
-</td>
-<td>
-<img id="getbutton" style="border: 3px solid blue; cursor: pointer" onClick="geturl(urlinput.value)" src="/images/get.png">
-</td>
-</tr>
-</table>
--->
 
 </td>
 

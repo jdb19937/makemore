@@ -119,6 +119,18 @@ httpget("/top/" + func + ".json", function(txt) {
       }
       v = Math.floor(v);
     }
+    if (u == "") {
+      if (v >= 10000) {
+        v = v / 1024;
+        u = "k";
+      }
+      if (v >= 10000) {
+        v = v / 1024;
+        u = "M";
+      }
+      v = Math.floor(v);
+    }
+   
 
     var freq = v + "&nbsp;" + u;
     html += (

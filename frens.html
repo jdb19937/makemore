@@ -160,11 +160,7 @@ $SUBHEAD
     <script>autocomplete(document.getElementById('frenbuf'), function() { addfren(frenbuf.value) });</script>
   </div>
 &nbsp;
-    <img id=addfrenbutton align=center width=72 height=24 style="outline: 3px solid blue; cursor: pointer" src="/images/add.png"
-      onClick="addfren(frenbuf.value)" >
-<!--
-  <input type="button" style='font-size: large' value="addfren" onClick="addfren(frenbuf.value)">
--->
+    <script>make_button('add', 'addfren(frenbuf.value)', 'addfrenbutton', 'center');</script>
 </form>
 
 </div>

@@ -105,8 +105,7 @@ httpget("/comms.json?nom=" + window.usernom + "&session=" + window.session, func
     <script>autocomplete(document.getElementById('buf'), function() { location = "/" + document.getElementById('buf').value + "/meep" });</script>
   </div>
 &nbsp;
-    <img id=meepbutton align=center width=96 height=24 style="outline: 3px solid blue" src="/images/meep.png"
-      onClick="location = '/' + document.getElementById('buf').value + '/meep'" >
+    <script>make_button('meep', 'location = "/" + buf.value + "/meep"', 'meepbutton', 'center')</script>
 </form>
 </td></tr>
 </table>

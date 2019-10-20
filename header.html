@@ -26,7 +26,7 @@ function make_label(txt, dim, nochop) {
     ">"
   );
 }
-function make_button(txt, onc, id) {
+function make_button(txt, onc, id, align, thm) {
   var etxt = escape(txt);
   dim = 12;
   var chop = 1;
@@ -41,27 +41,39 @@ function make_button(txt, onc, id) {
     onc = " onClick='" + onc + "'";
   }
 
-  var u = "/button.png?txt=" + etxt + "&theme=" + theme + "&dim=" + dim + "&chop=" + chop;
+  align = align || '';
+  if (align) {
+    align = " align='" + align + "'";
+  }
+
+  thm = thm || theme;
+ 
+
+  var u = "/button.png?txt=" + etxt + "&theme=" + thm + "&dim=" + dim + "&chop=" + chop;
   document.write(
     "<img id='" + id + "' src='" +  u + "' class='button' " +
-    "width=" + w + " height=" + h + onc +
+    "width=" + w + " height=" + h + onc + align +
     ">"
   );
 }
 
+function nth(thm) {
+  if (thm == 'mork') { return 'ahoy'; }
+  if (thm == 'ahoy') { return 'alfa'; }
+  if (thm == 'alfa') { return 'mork'; }
+
+  return 'mork';
+}
+
 function switchtheme() {
-  var ntheme;
-  if (theme == 'mork') { ntheme = 'ahoy'; }
-  if (theme == 'ahoy') { ntheme = 'mork'; }
+  var ntheme = nth(theme);
 
   sessionStorage.setItem('theme', ntheme);
   window.location.reload();
 }
 
 function make_themeswitcher() {
-  var ntheme;
-  if (theme == 'mork') { ntheme = 'ahoy'; }
-  if (theme == 'ahoy') { ntheme = 'mork'; }
+  var ntheme = nth(theme);
 
   var txt = ntheme;
   var etxt = escape(txt);
