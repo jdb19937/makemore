@@ -109,6 +109,7 @@ httpget("/top/" + func + ".json", function(txt) {
       v = Math.floor(v);
     }
     if (u == "&mu;Hz") {
+if (0) {
       if (v >= 10000) {
         v = v / 1024;
         u = "mHz";
@@ -117,6 +118,7 @@ httpget("/top/" + func + ".json", function(txt) {
         v = v / 1024;
         u = "Hz";
       }
+}
       v = Math.floor(v);
     }
     if (u == "") {
