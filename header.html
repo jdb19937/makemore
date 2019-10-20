@@ -44,7 +44,7 @@ function make_label(txt, dim, nochop) {
 
   var u = "/button.png?txt=" + etxt + "&theme=" + theme + "&dim=" + dim + "&chop=" + chop;
   document.write(
-    "<img id='" + id + "' src='" +  u + "' " +
+    "<img alt='" + txt + "' id='" + id + "' src='" +  u + "' " +
     "width=" + w + " height=" + h +
     ">"
   );
@@ -74,7 +74,7 @@ function make_button(txt, onc, id, align, thm) {
 
   var u = "/button.png?txt=" + etxt + "&theme=" + thm + "&dim=" + dim + "&chop=" + chop;
   document.write(
-    "<img id='" + id + "' src='" +  u + "' class='button' " +
+    "<img alt='" + txt + "' id='" + id + "' src='" +  u + "' class='button' " +
     "width=" + w + " height=" + h + onc + align +
     ">"
   );
@@ -109,7 +109,7 @@ function make_themeswitcher() {
 
   var u = "/button.png?txt=" + etxt + "&theme=" + ntheme + "&dim=" + dim + "&chop=" + chop;
   document.write(
-    "<img class='button' src='" +  u + "' width=" + w + " height=" + h +
+    "<img alt='" + ntheme + "' class='button' src='" +  u + "' width=" + w + " height=" + h +
     " onClick='switchtheme()'>"
   );
 }
@@ -125,7 +125,7 @@ function make_logo() {
 
   var u = "/button.png?txt=" + etxt + "&theme=" + theme + "&dim=" + dim + "&chop=" + chop;
   document.write(
-    "<img src='" +  u + "' width=" + w + " height=" + h +
+    "<img alt='" + txt + "' src='" +  u + "' width=" + w + " height=" + h +
     ">"
   );
 }
