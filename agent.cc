@@ -1050,7 +1050,7 @@ valid.insert("link.png");
   }
 
   // if (path == "/tagger.html" || path == "/cam.html" || path == "/edit.html" || path == "/memory.html" || path == "/autocomplete.html" || path == "/terminal.html") {
-  if (path == "/sh" || path == "/popular" || path == "/active" || path == "/conf" || path == "/buy" || path == "/who" || path == "/online" || path == "/top" || path == "/top/" || path == "/top/activity" || path == "/top/online" || path == "/top/popular" || path == "/top/score" || path == "/top/minions" || path == "/comms" || path == "/script" || path == "/keys") {
+  if (path == "/sh" || path == "/popular" || path == "/active" || path == "/conf" || path == "/buy" || path == "/who" || path == "/online" || path == "/top" || path == "/top/" || path == "/top/activity" || path == "/top/online" || path == "/top/popular" || path == "/top/score" || path == "/top/followers" || path == "/comms" || path == "/script" || path == "/keys") {
     strvec pathparts;
     split(path, '/', &pathparts);
     std::string html = makemore::slurp(pathparts[0] + ".html");
@@ -1142,7 +1142,7 @@ valid.insert("link.png");
   }
 
 
-  if (path == "/top/minions.json") {
+  if (path == "/top/followers.json") {
     map<string, string> cgi;
     cgiparse(query, &cgi);
     unsigned int n = 256;

@@ -135,6 +135,9 @@ function make_pals() {
   for (var i = 0; i < 16; ++i) {
     pals[i] = gencelebnom();
   }
+var z = Math.floor(Math.random() * 15);
+pals[z] = 'jackie_chan';
+pals[z+1] = 'christopher_walken';
 
   window.pals = pals;
   var cols = 4;

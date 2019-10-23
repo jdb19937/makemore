@@ -47,7 +47,11 @@ function got_media(mediaStream) {
 function ask_camera() {
   navigator.mediaDevices.getUserMedia({video: true})
   .then(got_media)
-  .catch(error => console.error('getUserMedia() error:', error));
+  .catch(error => {
+     // console.error('getUserMedia() error:', error);
+     capbutton.style.outline = "3px solid red";
+     capbutton.onclick = function() { alert("camera not available"); }
+  });
 }
 
 function loadimg() {
@@ -188,9 +192,11 @@ function startvid() {
 }
 
 function stopvid() {
-  window.mediaStream.getTracks().forEach(function(track) {
-    track.stop();
-  });
+  if (window.mediaStream) {
+    window.mediaStream.getTracks().forEach(function(track) {
+      track.stop();
+    });
+  }
   capbutton.onclick = function() { startvid() };
   capbutton.style.outline = "3px solid blue";
   viddiv.style.display = 'none';

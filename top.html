@@ -36,9 +36,9 @@ $HEADER
 <tr><td align="center">
 <tr><td align="center" style='font-size: 40px'>[
       <a href="/top/online"><script>make_button('online', '', 'subheadonline')</script></a> |
+      <a href="/top/activity"><script>make_button('activity', '', 'subheadactivity')</script></a> |
       <a href="/top/score"><script>make_button('score', '', 'subheadscore')</script></a> |
-      <a href="/top/minions"><script>make_button('minions', '', 'subheadminions')</script></a> |
-      <a href="/top/activity"><script>make_button('activity', '', 'subheadactivity')</script></a>
+      <a href="/top/followers"><script>make_button('followers', '', 'subheadfollowers')</script></a>
 ]</td></tr></table>
 
 
@@ -53,18 +53,18 @@ var valid = { };
 valid['online'] = 1;
 valid['activity'] = 1;
 valid['score'] = 1;
-valid['minions'] = 1;
+valid['followers'] = 1;
 if (!valid[func]) { func = 'online'; }
 var unit = {
   'activity': '&mu;Hz',
   'score': '',
-  'minions': '',
+  'followers': '',
   'online': 's',
 };
 var sty = {
   'activity': 'font-size: 24px; font-family: monospace',
   'score': 'font-size: 24px; font-family: monospace; color: green',
-  'minions': 'font-size: 24px; font-family: monospace; color: orange',
+  'followers': 'font-size: 24px; font-family: monospace; color: orange',
   'online': 'font-size: 24px; font-family: monospace'
 };
 linktop.href = '/top/' + func;
