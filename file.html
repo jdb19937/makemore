@@ -246,6 +246,11 @@ actdiv.style = "display: block";
 
 </table>
 
+<br/><br/>
+
+<table width="1280" cellpadding=4 cellspacing=4 id="walltab">
+</table>
+
 <script>
 if ("$MAKER" == "") {
   if (window.usernom != '') {
@@ -320,6 +325,49 @@ function shuffle(array) {
   }
 
   return array;
+}
+
+function esctxt(txt) {
+  var newtxt = txt;
+  newtxt = newtxt.replace(/<br>/gim, function(i) {
+    return '\n';
+  });
+  newtxt = newtxt.replace(/[\u00A0-\u9999<>\&]/gim, function(i) {
+    return '&#' + i.charCodeAt(0)+ ';';
+  });
+  newtxt = newtxt.replace(/\@([a-z0-9_][a-z0-9_]+)/gim, function(x, nom) {
+    return "<a href='/" + nom + "'><img style='border: 3px solid blue' src='/" + nom + ".png?dim=64' width=64 height=64 align='center'></a>";
+  });
+  newtxt = newtxt.replace(/[\n\r]/gm, '<br>');
+
+  return newtxt;
+}
+
+if ("$MAKER" != "") {
+  myhttpget("/" + window.nom + "/wall.txt", function(all) {
+    var posts = all.split('\n').reverse();
+
+    for (var i in posts) {
+      var row = walltab.insertRow(0);
+      var cell = row.insertCell(0);
+
+      var txt = posts[i];
+      if (txt.length == 0)
+        continue;
+      txt = esctxt(txt);
+
+      cell.innerHTML =
+        '<table style="border: 1px solid gray; background-color: black" width="100%" cellspacing=0 cellpadding=0><tr>' +
+        '<td width=128 valign=top>' +
+        '<img align="left" src="/' + window.nom + '.png?dim=128" width=128 height=128>' +
+        '</td>' +
+        '<td align="left">' +
+        '<div style="max-width: 800; overflow-x: hidden; padding: 8px; color: black; color: white; font-size: 36px; font-family: monospace">' + txt + '</div>' +
+        '</td>' +
+        '</tr></table>'
+        ;
+    }
+  })
 }
 
 if ($NCREW > 0) {

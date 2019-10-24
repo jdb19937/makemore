@@ -248,6 +248,77 @@ actdiv.style = "display: block";
 
 <br/><br/>
 
+<div id="postdiv" style="display: none">
+<table width=1280 cellpadding=0 cellspacing=8>
+  <tr>
+    <td align="left" style="width: 1144px; background-color: darkblue">
+    <textarea autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" rows=1 onKeyDown="onkd()" onKeyPress="onkp()" id=newmsg maxlength="512" style="background-color: darkblue; color: white; font-size: 32px; width: 100%; height: auto; overflow: hidden; padding: 0px; display: block; resize: none"></textarea>
+    </td>
+    <td width=0></td>
+
+    <td valign="bottom" style="padding: 3px">
+      <script>make_button('post', 'clickpost()', 'postbutton');</script>
+    </td>
+  </tr>
+</table>
+</div>
+
+<script>
+  function onkp() {
+    if (event.which == 13 && !event.shiftKey) {
+      event.preventDefault();
+      clickpost();
+    }
+  }
+
+  function onkd() {
+    setTimeout(function() {
+      newmsg.style.height = 'auto';
+      newmsg.style.height = (newmsg.scrollHeight + 2) + 'px';
+    }, 0);
+  }
+
+  if (window.nom == window.usernom) {
+    postdiv.style.display = 'block';
+  }
+
+  function clickpost() {
+    var txt = newmsg.value;
+    if (txt == "")
+      return;
+    var btxt = new Blob([txt]);
+    var blen = btxt.size;
+
+    if (!window.usernom || !window.session)
+      return;
+
+    var socket = new WebSocket('wss://peaple.io:3333/', ['binary']);
+    socket.binaryType = 'arraybuffer';
+    socket.onopen = function() {
+      socket.send("be " + window.usernom + " " + window.session + "\n");
+    };
+
+    socket.onmessage = function(buf) {
+      var txt = arrayBufferToString(buf.data);
+      if (txt.substr(0, 8) == "session ") {
+        socket.onmessage = function(buf2) {
+          var txt2 = arrayBufferToString(buf2.data);
+          if (txt2 == "ok\n") {
+            window.location.reload();
+          } else {
+          }
+        }
+        var bl = new Blob(["wall <" + blen + "\n", btxt]);
+        socket.send(bl);
+      } else {
+        socket.close();
+      }
+    };
+
+    socket.onclose = function() { }
+  }
+</script>
+
 <table width="1280" cellpadding=4 cellspacing=4 id="walltab">
 </table>
 
