@@ -47,6 +47,7 @@ void mainmore(
   from->acted = time(NULL);
 
   string txt = process->args[0];
+  txt += "\n";
 
   ufrom.make_home_dir();
 

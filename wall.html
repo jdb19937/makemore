@@ -345,7 +345,7 @@ function esctxt(txt) {
 
 if ("$MAKER" != "") {
   myhttpget("/" + window.nom + "/wall.txt", function(all) {
-    var posts = all.split('\n').reverse();
+    var posts = all.split('\n');
 
     for (var i in posts) {
       var row = walltab.insertRow(0);
