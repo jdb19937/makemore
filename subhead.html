@@ -5,7 +5,7 @@
 
   <tr>
     <td style='font-size: 40px'>[
-      <a href="/$NOM"><script>make_button('file');</script></a> |
+      <a href="/$NOM"><script>make_button('wall');</script></a> |
       <a href="/$NOM/fam"><script>make_button('fam');</script></a> |
       <a href="/$NOM/frens"><script>make_button('frens');</script></a> |
       <a href="/$NOM/xform"><script>make_button('xform');</script></a> |
@@ -64,7 +64,7 @@ headcam.style.outline = ($LOCKED && window.hdrnom != window.usernom) ? '3px soli
   var fl = ll.lastIndexOf('/');
   if (fl < 0) { return; }
   var func = ll.substr(fl + 1);
-  if (func == '$NOM') { func = 'file'; }
+  if (func == '$NOM') { func = 'wall'; }
   var elem = document.getElementById('head' + func);
   elem.style = 'outline: 3px solid #00ff00';
 })();

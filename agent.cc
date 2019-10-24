@@ -1859,7 +1859,7 @@ valid.insert("link.png");
     nom = std::string(nom.c_str(), p - nom.c_str());
   }
 
-  std::string func = "file";
+  std::string func = "wall";
   if (const char *p = strchr(nom.c_str(), '/')) {
     func = p + 1;
     nom = std::string(nom.c_str(), p - nom.c_str());
@@ -2011,6 +2011,38 @@ valid.insert("link.png");
     return;
   }
 
+  if (ext == "txt" && func == "wall") {
+    map<string, string> cgi;
+    cgiparse(query, &cgi);
+    unsigned int off = strtoul(cgi["off"].c_str(), NULL, 0);
+
+    Parson *prs = server->urb->find(nom);
+    if (!prs) {
+      this->http_notfound();
+      return;
+    }
+
+    std::string fn = server->urb->dir + "/home/" + nom + "/wall.txt";
+    FILE *fp = fopen(fn.c_str(), "r");
+    if (!fp) {
+      this->printf("HTTP/1.1 200 OK\r\n");
+      this->printf("Connection: keep-alive\r\n");
+      this->printf("Content-Type: text/plain\r\n");
+      this->printf("Content-Length: 0\r\n");
+      this->printf("\r\n");
+      return;
+    }
+    std::string txt = makemore::slurp(fp);
+
+    this->printf("HTTP/1.1 200 OK\r\n");
+    this->printf("Connection: keep-alive\r\n");
+    this->printf("Content-Type: text/plain\r\n");
+    this->printf("Content-Length: %lu\r\n", txt.length());
+    this->printf("\r\n");
+    this->write(txt);
+    return;
+  }
+
   if (ext == "png" && func == "source") {
     Parson *prs = server->urb->find(nom);
     if (!prs) {
@@ -2041,7 +2073,7 @@ valid.insert("link.png");
   }
 
   if (ext == "html") {
-  if (func == "enc" || func == "file" || func == "fam" || func == "frens" || func == "xform" || func == "mem" || func == "grid" || func == "top" || func == "meep") {
+  if (func == "enc" || func == "wall" || func == "fam" || func == "frens" || func == "xform" || func == "mem" || func == "grid" || func == "top" || func == "meep") {
     std::string html = makemore::slurp(func + ".html");
 
     std::string header = makemore::slurp("header.html");

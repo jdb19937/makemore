@@ -1,0 +1,406 @@
+<html>
+<head>
+<title>$NOM</title>
+
+<meta property='og:title' content='$NOM'>
+<meta property='og:description' content='$NOM'>
+<meta property='og:image' content='https://peaple.io/$NOM.png'>
+<meta property='og:image:type' content='image/png'>
+<meta property='og:image:width' content='256'>
+<meta property='og:image:height' content='256'>
+<meta property='og:url' content='https://peaple.io/$NOM'>
+<meta property='og:type' content='article'>
+<link rel='canonical' href='https://peaple.io/$NOM'>
+
+
+
+<script src="/autocomplete.js"></script>
+<link rel="stylesheet" type="text/css" href="/autocomplete.css">
+
+<script>
+function get_nom() {
+  var nom = window.location.pathname;
+  nom = nom.substr(1);
+  var slash = nom.indexOf('/');
+  if (slash != -1) {
+    nom = nom.substr(0, slash);
+  }
+  return nom;
+}
+
+window.nom = get_nom();
+
+function randstr() {
+  return "" + Math.floor(Math.random() * 1000000000);
+}
+
+function myhttpget(url, cb) {
+  var i = new XMLHttpRequest;
+  i.open('GET', url);
+  i.overrideMimeType("text/plain");
+  i.onload = function(e) {
+    if (!(this.readyState == 4)) {
+      return;
+    }
+    cb(this.responseText);
+  }
+  i.send();
+}
+
+function reload() {
+  mainlink.href = "https://peaple.io/" + window.nom + "/fam";
+  mainpic.src = "/" + window.nom + ".png" + "?r=" + randstr();
+}
+
+</script>
+</head>
+
+<body text="#ffffff" bgcolor="#000000">
+
+$HEADER
+$SUBHEAD
+
+<table width="1280"> <tr><td rowspan=2>
+
+<table cellspacing=0 cellpadding=0 align="center">
+<tr>
+  <td><a href="/$NOM/fam" id="mainlink"><img style="border: 3px solid blue" id="mainpic" width=512 height=512 src="/$NOM.png"></a></td>
+</tr>
+
+<tr height="16px"><td></td></tr>
+
+
+<tr>
+<td align="center">
+<table><tr><td>
+  <script src="/autocomplete.js"></script>
+<script>
+function dogoto(who) {
+  location = "/" + who;
+}
+</script>
+  <link rel="stylesheet" type="text/css" href="/autocomplete.css">
+  <form autocomplete="off">
+    <div class="autocomplete">
+      <input type="text" style='font-family: monospace; font-size: 16px' onClick="this.value=''" value="$NOM" size="32" id="qnom" placeholder="nom">
+      <script>
+autocomplete(document.getElementById('qnom'), function() { dogoto(document.getElementById('qnom').value); });
+//qnom.focus();
+</script>
+    </div>
+&nbsp;
+
+
+
+    <script>make_button('goto', 'dogoto(qnom.value)', 'gotobutton', 'center');</script>
+</form>
+</td></tr></table>
+</td>
+</tr>
+
+
+</table>
+
+</td>
+
+<td width="256" align="right" valign="top">
+<div id="swdiv" style="display: none">
+<script>make_button('switch', 'doswitch()');</script>
+</div>
+
+<div id="claimdiv" style="display: none; color: white">
+<script>make_button('link', 'doclaim()');</script>
+</div>
+</td>
+</tr><tr>
+
+<td width="256" align="right" valign="bottom">
+
+<br/>
+
+
+<div id="crdiv">
+<script>make_label('created')</script><br/>
+<span id="crspan" style="font-family: monospace; font-size: 24px; color: white"></span>
+<br/>
+<br/>
+</div>
+<script>
+var now = new Date();
+var when = new Date($CREATED * 1000);
+var t = now - when;
+t = t * 1000 / 1024;
+var u = 'ms';
+if (t >= 10000) {
+  t /= 1024;
+  u = 's';
+}
+if (t >= 10000) {
+  t /= 1024;
+  u = 'ks';
+}
+if (t >= 10000) {
+  t /= 1024;
+  u = 'Ms';
+}
+if (t < 0) {
+  t = 0;
+}
+t = Math.floor(t);
+crspan.innerHTML = t + '&nbsp;' + u;
+</script>
+
+
+
+<div id="onldiv" style="display: none">
+<script>make_label('online');</script><br/>
+<span id="onlspan" style="font-family: monospace; font-size: 24px; color: white"></span>
+<br/>
+<br/>
+</div>
+<script>
+if ($ONLINE > 0) {
+  var u = 'ms';
+  var v = 1024 * (Date.now()/1000.0 - $ONLINE);
+  if (v >= 10000) {
+    v = v / 1024;
+    u = 's';
+  }
+  if (v >= 10000) {
+    v = v / 1024;
+    u = "ks";
+  }
+  if (v >= 10000) {
+    v = v / 1024;
+    u = "Ms";
+  }
+  v = Math.floor(v);
+  if (v < 0) {
+    v = 0;
+  }
+
+  onlspan.innerHTML = v + "&nbsp" + u;
+  onldiv.style = "display: block";
+}
+</script>
+
+
+<div id="actdiv" style="display: none">
+<script>make_label('activity');</script><br/>
+<span id="actspan" style="font-family: monospace; font-size: 24px; color: white"></span>
+<br/>
+<br/>
+</div>
+<script>
+var v = $ACTIVITY;
+var u = "&mu;Hz";
+if (0) {
+if (v >= 10000) {
+  v /= 1024;
+  u = "mHz";
+}
+if (v >= 10000) {
+  v /= 1024;
+  u = "Hz";
+}
+}
+v = Math.floor(v);
+actspan.innerHTML = v + "&nbsp;" + u;
+actdiv.style = "display: block";
+</script>
+
+<div id="ownerdiv" style="display: none">
+<script>make_label('head');</script>
+<div style="height: 4px"></div>
+<a id=ownerlink><img id=ownerpic width=128 height=128 style="border: 3px solid blue"></a>
+</div>
+
+
+<div id="scorediv" style="display: none">
+
+
+
+<script>make_label('score');</script>
+<div style="height: 4px"></div>
+<span id=scorespan style="font-size: 24px; color: green; font-family: monospace">$SCORE</span>
+
+<div style="height: 16px"></div>
+
+<script>make_label('followers');</script>
+<div style="height: 4px"></div>
+<span id=crewspan style="font-size: 24px; color: orange; font-family: monospace">$NCREW</span>
+
+</div>
+
+
+
+</td>
+</tr>
+
+
+<tr>
+<td colspan=1 align="center">
+<table id="crewtab" cellpadding=0 cellspacing=0><tr id="crewrow"></tr></table>
+</td>
+</tr>
+
+</table>
+
+<br/><br/>
+
+<table width="1280" cellpadding=4 cellspacing=4 id="walltab">
+</table>
+
+<script>
+if ("$MAKER" == "") {
+  if (window.usernom != '') {
+    claimdiv.style.display = "block";
+  }
+} else {
+  if ("$MAKER" == window.nom) {
+    scorediv.style.display = "block";
+  } else {
+    ownerpic.src = "/$MAKER.png?dim=128";
+    ownerlink.href = "/$MAKER";
+    ownerdiv.style.display = "block";
+  }
+
+  if ("$MAKER" == window.master && window.nom != window.usernom) {
+    swdiv.style.display = 'block';
+    swdiv.style.cursor = 'pointer';
+  }
+}
+
+function doswitch() {
+  if (window.usernom == '' || window.session == '' || window.master == '') {
+    return;
+  }
+//  if ("$MAKER" != window.master) {
+//    return;
+//  }
+
+  sessionStorage.setItem('nom', window.nom);
+  // window.location.reload();
+  window.location = "/" + window.usernom;
+}
+
+function doclaim() {
+  if (window.usernom == '' || window.session == '' || window.master == '') {
+    return;
+  }
+  myhttpget("/claim.txt?usernom=" + window.usernom + "&session=" + window.session + "&nom=" + window.nom, function(txt) {
+    if (txt == "ok") {
+      claimdiv.style.display = "none";
+      ownerpic.src = "/" + window.master + ".png?dim=128";
+      ownerlink.href = "/" + window.master;
+      ownerdiv.style.display = "block";
+
+      if (window.nom != window.usernom) {
+        swdiv.style.display = 'block';
+        swdiv.style.cursor = 'pointer';
+      }
+    } else {
+      claimbutton.style.border = "3px solid red";
+      window.setTimeout(function() {
+        claimbutton.style.border = "3px solid blue";
+      }, 500);
+    }
+  });
+}
+
+function shuffle(array) {
+  var currentIndex = array.length, temporaryValue, randomIndex;
+
+  // While there remain elements to shuffle...
+  while (0 !== currentIndex) {
+
+    // Pick a remaining element...
+    randomIndex = Math.floor(Math.random() * currentIndex);
+    currentIndex -= 1;
+
+    // And swap it with the current element.
+    temporaryValue = array[currentIndex];
+    array[currentIndex] = array[randomIndex];
+    array[randomIndex] = temporaryValue;
+  }
+
+  return array;
+}
+
+function esctxt(txt) {
+  var newtxt = txt;
+  newtxt = newtxt.replace(/<br>/gim, function(i) {
+    return '\n';
+  });
+  newtxt = newtxt.replace(/[\u00A0-\u9999<>\&]/gim, function(i) {
+    return '&#' + i.charCodeAt(0)+ ';';
+  });
+  newtxt = newtxt.replace(/\@([a-z0-9_][a-z0-9_]+)/gim, function(x, nom) {
+    return "<a href='/" + nom + "'><img style='border: 3px solid blue' src='/" + nom + ".png?dim=64' width=64 height=64 align='center'></a>";
+  });
+  newtxt = newtxt.replace(/[\n\r]/gm, '<br>');
+
+  return newtxt;
+}
+
+if ("$MAKER" != "") {
+  myhttpget("/" + window.nom + "/wall.txt", function(all) {
+    var posts = all.split('\n').reverse();
+
+    for (var i in posts) {
+      var row = walltab.insertRow(0);
+      var cell = row.insertCell(0);
+
+      var txt = posts[i];
+      if (txt.length == 0)
+        continue;
+      txt = esctxt(txt);
+
+      cell.innerHTML =
+        '<table style="border: 1px solid gray; background-color: black" width="100%" cellspacing=0 cellpadding=0><tr>' +
+        '<td width=128 valign=top>' +
+        '<img align="left" src="/' + window.nom + '.png?dim=128" width=128 height=128>' +
+        '</td>' +
+        '<td align="left">' +
+        '<div style="max-width: 800; overflow-x: hidden; padding: 8px; color: black; color: white; font-size: 36px; font-family: monospace">' + txt + '</div>' +
+        '</td>' +
+        '</tr></table>'
+        ;
+    }
+  })
+}
+
+if ($NCREW > 0) {
+  myhttpget("/" + window.nom + "/crew.json", function(j) {
+    var cols = 12;
+    var crew = JSON.parse(j);
+    if (!crew) {
+      return;
+    }
+    crew = shuffle(crew);
+    for (var i in crew) {
+      if (i >= cols) {
+        break;
+      }
+      var c = crew[i];
+      if (c == window.nom) {
+        continue;
+      }
+      var im = new Image();
+      im.src = "/" + c + ".png?dim=64";
+      var cell = crewrow.insertCell(0);
+      var link = document.createElement('a'); 
+      link.href = '/' + c;
+      link.appendChild(im);
+      cell.appendChild(link);
+    }
+  });
+}
+
+if (!window.usernom) {
+  nompass.focus();
+}
+</script>
+
+</body>
+</html>
