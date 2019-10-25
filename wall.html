@@ -246,13 +246,14 @@ actdiv.style = "display: block";
 
 </table>
 
-<br/><br/>
+<br/>
+<br/>
 
 <div id="postdiv" style="display: none">
 <table width=1280 cellpadding=0 cellspacing=8>
   <tr>
     <td align="left" style="width: 1144px; background-color: darkblue">
-    <textarea autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" rows=1 onKeyDown="onkd()" onKeyPress="onkp()" id=newmsg maxlength="512" style="background-color: darkblue; color: white; font-size: 32px; width: 100%; height: auto; overflow: hidden; padding: 0px; display: block; resize: none"></textarea>
+    <textarea autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" rows=4 onKeyDown="onkd()" onKeyPress="onkp()" id=newmsg maxlength="512" style="background-color: darkblue; color: white; font-size: 32px; width: 100%; height: auto; overflow: hidden; padding: 0px; display: block; resize: none"></textarea>
     </td>
     <td width=0></td>
 
@@ -263,12 +264,15 @@ actdiv.style = "display: block";
 </table>
 </div>
 
+<table width="1280" cellpadding=4 cellspacing=4 id="walltab">
+</table>
+
 <script>
   function onkp() {
-    if (event.which == 13 && !event.shiftKey) {
-      event.preventDefault();
-      clickpost();
-    }
+//    if (event.which == 13 && !event.shiftKey) {
+//      event.preventDefault();
+//      clickpost();
+//    }
   }
 
   function onkd() {
@@ -280,17 +284,17 @@ actdiv.style = "display: block";
 
   if (window.nom == window.usernom) {
     postdiv.style.display = 'block';
+    newmsg.focus();
   }
 
-  function clickpost() {
-    var txt = newmsg.value;
-    if (txt == "")
-      return;
-    var btxt = new Blob([txt]);
-    var blen = btxt.size;
-
+  function clickxbutton(ind) {
     if (!window.usernom || !window.session)
       return;
+    if (!confirm("delete post?"))
+      return;
+
+    var but = document.getElementById('xbutton' + ind);
+    but.style.outlineColor = 'yellow';
 
     var socket = new WebSocket('wss://peaple.io:3333/', ['binary']);
     socket.binaryType = 'arraybuffer';
@@ -304,25 +308,71 @@ actdiv.style = "display: block";
         socket.onmessage = function(buf2) {
           var txt2 = arrayBufferToString(buf2.data);
           if (txt2 == "ok\n") {
-            window.location.reload();
+            loadwall();
           } else {
+            but.style.outlineColor = 'red';
           }
+          socket.close();
         }
-        var bl = new Blob(["wall <" + blen + "\n", btxt]);
+        var bl = new Blob(["dewall " + ind + " " + "[hashhere]" + "\n"]);
         socket.send(bl);
       } else {
+        but.style.outlineColor = 'red';
         socket.close();
       }
     };
 
     socket.onclose = function() { }
   }
-</script>
 
-<table width="1280" cellpadding=4 cellspacing=4 id="walltab">
-</table>
+  function clickpost() {
+    var txt = newmsg.value;
+    if (txt == "")
+      return;
 
-<script>
+
+    txt = txt.replace(/\n/gim, '<br>');
+    var btxt = new Blob([txt]);
+    var blen = btxt.size;
+
+    if (!window.usernom || !window.session)
+      return;
+
+    postbutton.style.outlineColor = 'yellow';
+
+    var socket = new WebSocket('wss://peaple.io:3333/', ['binary']);
+    socket.binaryType = 'arraybuffer';
+    socket.onopen = function() {
+      socket.send("be " + window.usernom + " " + window.session + "\n");
+    };
+
+    socket.onmessage = function(buf) {
+      var txt = arrayBufferToString(buf.data);
+      if (txt.substr(0, 8) == "session ") {
+        socket.onmessage = function(buf2) {
+          var txt2 = arrayBufferToString(buf2.data);
+          if (txt2 == "ok\n") {
+            loadwall();
+            postbutton.style.outlineColor = 'blue';
+          } else {
+            postbutton.style.outlineColor = 'red';
+          }
+          socket.close();
+        }
+        var bl = new Blob(["wall <" + blen + "\n", btxt]);
+        socket.send(bl);
+      } else {
+        postbutton.style.outlineColor = 'red';
+        socket.close();
+      }
+    };
+
+    socket.onclose = function() { }
+
+    newmsg.value = '';
+  }
+
+
 if ("$MAKER" == "") {
   if (window.usernom != '') {
     claimdiv.style.display = "block";
@@ -406,6 +456,15 @@ function esctxt(txt) {
   newtxt = newtxt.replace(/[\u00A0-\u9999<>\&]/gim, function(i) {
     return '&#' + i.charCodeAt(0)+ ';';
   });
+  newtxt = newtxt.replace(/MORK\[(.*?)\]/gm, function(i, j) {
+    return '<img align=bottom src="/button.png?chop=0&dim=12&theme=mork&txt=' + escape(j) + '">';
+  });
+  newtxt = newtxt.replace(/THEY\[(.*?)\]/gm, function(i, j) {
+    return '<img align=bottom src="/button.png?chop=0&dim=12&theme=they&txt=' + escape(j) + '">';
+  });
+  newtxt = newtxt.replace(/AHOY\[(.*?)\]/gm, function(i, j) {
+    return '<img align=bottom src="/button.png?chop=0&dim=12&theme=ahoy&txt=' + escape(j) + '">';
+  });
   newtxt = newtxt.replace(/\@([a-z0-9_][a-z0-9_]+)/gim, function(x, nom) {
     return "<a href='/" + nom + "'><img style='border: 3px solid blue' src='/" + nom + ".png?dim=64' width=64 height=64 align='center'></a>";
   });
@@ -414,9 +473,10 @@ function esctxt(txt) {
   return newtxt;
 }
 
-if ("$MAKER" != "") {
+function loadwall() {
   myhttpget("/" + window.nom + "/wall.txt", function(all) {
     var posts = all.split('\n');
+    walltab.innerHTML = '';
 
     for (var i in posts) {
       var row = walltab.insertRow(0);
@@ -427,18 +487,29 @@ if ("$MAKER" != "") {
         continue;
       txt = esctxt(txt);
 
+      var xtd = '';
+      if (window.usernom == window.nom) {
+        var xtd = '<td align="right" valign="top">' +
+          '<img id="xbutton' + i + '" onClick="clickxbutton(' + i + ')" style="cursor: pointer; outline: 3px solid blue" src="/button.png?txt=x&theme=' + theme + '">' +
+          '</td>'
+      }
+
       cell.innerHTML =
-        '<table style="border: 1px solid gray; background-color: black" width="100%" cellspacing=0 cellpadding=0><tr>' +
-        '<td width=128 valign=top>' +
-        '<img align="left" src="/' + window.nom + '.png?dim=128" width=128 height=128>' +
-        '</td>' +
+        '<table style="border: 1px solid gray; background-color: black" width="100%" cellspacing=0 cellpadding=2><tr>' +
+//        '<td width=128 valign=top>' +
+//        '<img align="left" src="/' + window.nom + '.png?dim=128" width=128 height=128>' +
+//        '</td>' +
         '<td align="left">' +
         '<div style="max-width: 800; overflow-x: hidden; padding: 8px; color: black; color: white; font-size: 36px; font-family: monospace">' + txt + '</div>' +
-        '</td>' +
+        '</td>' + xtd +
         '</tr></table>'
         ;
     }
   })
+}
+
+if ("$MAKER" != "") {
+  loadwall();
 }
 
 if ($NCREW > 0) {

@@ -281,7 +281,28 @@ if (window.usernom == '') {
 </td>
 </tr>
 </table>
-</td></tr>
+</td>
+
+
+<td align="right" valign="top">
+<script>
+
+function delcomms() {
+  xbutton.style.outlineColor = 'yellow';
+  if (!confirm("delete meeps?")) {
+    xbutton.style.outlineColor = 'blue';
+    return;
+  }
+  socket.send("deto " + window.nom + "\n");
+  socket.onmessage = function() {
+    window.location.reload();
+  }
+}
+
+make_button("x", "delcomms()", 'xbutton')
+</script>
+</td>
+</tr>
 
 <tr height=16></tr>
 

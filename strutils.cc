@@ -8,6 +8,8 @@
 #include <string>
 #include <regex>
 
+#include <openssl/sha.h>
+
 namespace makemore {
 using namespace std;
 
@@ -433,6 +435,17 @@ std::string replacestr(const std::string &x, const std::string &pat, const std::
 
   z += std::string(xp);
   return z;
+}
+
+std::string sha256(const std::string &x) {
+  uint8_t hash[32];
+
+  SHA256_CTX sha;
+  SHA256_Init(&sha);
+  SHA256_Update(&sha, (const uint8_t *)x.data(), x.length());
+  SHA256_Final(hash, &sha);
+
+  return std::string((const char *)hash, 32);
 }
 
 }

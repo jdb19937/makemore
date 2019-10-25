@@ -203,6 +203,8 @@ inline void rtrim(std::string &x) {
   x.resize(n);
 }
 
+std::string sha256(const std::string &x);
+
 }
 
 #endif
