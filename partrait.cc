@@ -654,6 +654,27 @@ void Partrait::jitter(unsigned int z) {
   }
 #endif
 }
+
+void Partrait::paste(const Partrait &prt, unsigned int x0, unsigned int y0) {
+  unsigned int x1 = x0 + prt.w;
+  if (x1 > w)
+    x1 = w ;
+  unsigned int y1 = y0 + prt.h;
+  if (y1 > h)
+    y1 = h;
+
+  for (unsigned int y = y0; y < y1; ++y) {
+    unsigned int py = y - y0;
+
+    for (unsigned int x = x0; x < x1; ++x) {
+      unsigned int px = x - x0;
+
+      for (unsigned int c = 0; c < 3; ++c) {
+        rgb[y * w * 3 + x * 3 + c] = prt.rgb[py * prt.w * 3 + px * 3 + c];
+      }
+    }
+  }
+}
      
 
 }

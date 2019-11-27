@@ -333,6 +333,28 @@ void Parson::del_fren(const char *nom) {
   }
 }
 
+void Parson::push_paren(const std::string &pnom) {
+  assert(valid_nom(pnom));
+
+  if (pnom == parens[0] || pnom == parens[1])
+    return;
+
+  const char *styles[] = {
+    "human", "dog", "cat",
+    "young", "old",
+    "male", "female",
+    "white", "black", "hispanic", "asian",
+    "blonde_hair", "black_hair", "brown_hair", 
+    "bald", "mustache", "glasses", "smiling",
+    ""
+  };
+  for (unsigned int i = 0; *styles[i]; ++i)
+    if (pnom == styles[i])
+      return;
+
+  memcpy(parens[1], parens[0], sizeof(Nom));
+  strcpy(parens[0], pnom.c_str());
+}
 
 void Parson::set_parens(const char *anom, const char *bnom) {
   if (anom)

@@ -14,6 +14,7 @@
 
 
 
+<script src="/sha256.js"></script>
 <script src="/autocomplete.js"></script>
 <link rel="stylesheet" type="text/css" href="/autocomplete.css">
 
@@ -64,6 +65,8 @@ $SUBHEAD
 
 <table cellspacing=0 cellpadding=0 align="center">
 <tr>
+
+
   <td><a href="/$NOM/fam" id="mainlink"><img style="border: 3px solid blue" id="mainpic" width=512 height=512 src="/$NOM.png"></a></td>
 </tr>
 
@@ -73,7 +76,6 @@ $SUBHEAD
 <tr>
 <td align="center">
 <table><tr><td>
-  <script src="/autocomplete.js"></script>
 <script>
 function dogoto(who) {
   location = "/" + who;
@@ -111,6 +113,19 @@ autocomplete(document.getElementById('qnom'), function() { dogoto(document.getEl
 <div id="claimdiv" style="display: none; color: white">
 <script>make_button('link', 'doclaim()');</script>
 </div>
+
+<!--
+<div id="gendiv" style="display: block">
+<br/>
+<script>make_button('n', 'setgen("n")', 'nbutton');</script> &nbsp;
+<script>make_button('p', 'setgen("p")', 'pbutton');</script> &nbsp;
+<script>make_button('q', 'setgen("q")', 'qbutton');</script>
+</div>
+-->
+
+
+
+
 </td>
 </tr><tr>
 
@@ -253,7 +268,7 @@ actdiv.style = "display: block";
 <table width=1280 cellpadding=0 cellspacing=8>
   <tr>
     <td align="left" style="width: 1144px; background-color: darkblue">
-    <textarea autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" rows=4 onKeyDown="onkd()" onKeyPress="onkp()" id=newmsg maxlength="512" style="background-color: darkblue; color: white; font-size: 32px; width: 100%; height: auto; overflow: hidden; padding: 0px; display: block; resize: none"></textarea>
+    <textarea autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" rows=1 onKeyDown="onkd()" onKeyPress="onkp()" id=newmsg maxlength="16383" style="background-color: darkblue; color: white; font-size: 32px; width: 100%; height: auto; overflow: hidden; padding: 0px; display: block; resize: none"></textarea>
     </td>
     <td width=0></td>
 
@@ -293,6 +308,7 @@ actdiv.style = "display: block";
     if (!confirm("delete post?"))
       return;
 
+
     var but = document.getElementById('xbutton' + ind);
     but.style.outlineColor = 'yellow';
 
@@ -314,7 +330,11 @@ actdiv.style = "display: block";
           }
           socket.close();
         }
-        var bl = new Blob(["dewall " + ind + " " + "[hashhere]" + "\n"]);
+        var hash = sha256.arrayBuffer(window.posts[ind]);
+        var cmd = "dewall " + ind + " <32\n";
+        var b0 = new Blob([cmd], {type: 'application/octet-stream'});
+        var b1 = new Blob([hash], {type: 'application/octet-stream'});
+        var bl = new Blob([b0, b1], {type: 'application/octet-stream'});
         socket.send(bl);
       } else {
         but.style.outlineColor = 'red';
@@ -405,6 +425,15 @@ function doswitch() {
   window.location = "/" + window.usernom;
 }
 
+
+function setgen(x) {
+  myhttpget("/" + window.nom + "/setgen.txt?gen=" + x, function(txt) {
+    if (txt == "ok") {
+      reload();
+    }
+  })
+}
+
 function doclaim() {
   if (window.usernom == '' || window.session == '' || window.master == '') {
     return;
@@ -456,6 +485,9 @@ function esctxt(txt) {
   newtxt = newtxt.replace(/[\u00A0-\u9999<>\&]/gim, function(i) {
     return '&#' + i.charCodeAt(0)+ ';';
   });
+  newtxt = newtxt.replace(/ALFA\[(.*?)\]/gm, function(i, j) {
+    return '<img align=bottom src="/button.png?chop=0&dim=12&theme=alfa&txt=' + escape(j) + '">';
+  });
   newtxt = newtxt.replace(/MORK\[(.*?)\]/gm, function(i, j) {
     return '<img align=bottom src="/button.png?chop=0&dim=12&theme=mork&txt=' + escape(j) + '">';
   });
@@ -466,7 +498,7 @@ function esctxt(txt) {
     return '<img align=bottom src="/button.png?chop=0&dim=12&theme=ahoy&txt=' + escape(j) + '">';
   });
   newtxt = newtxt.replace(/\@([a-z0-9_][a-z0-9_]+)/gim, function(x, nom) {
-    return "<a href='/" + nom + "'><img style='border: 3px solid blue' src='/" + nom + ".png?dim=64' width=64 height=64 align='center'></a>";
+    return "<a href='/" + nom + "'><img alt='@" + nom + "' style='border: 3px solid blue' src='/" + nom + ".png?dim=64' width=64 height=64 align='bottom'></a>";
   });
   newtxt = newtxt.replace(/[\n\r]/gm, '<br>');
 
@@ -477,6 +509,7 @@ function loadwall() {
   myhttpget("/" + window.nom + "/wall.txt", function(all) {
     var posts = all.split('\n');
     walltab.innerHTML = '';
+    window.posts = posts;
 
     for (var i in posts) {
       var row = walltab.insertRow(0);
@@ -489,8 +522,8 @@ function loadwall() {
 
       var xtd = '';
       if (window.usernom == window.nom) {
-        var xtd = '<td align="right" valign="top">' +
-          '<img id="xbutton' + i + '" onClick="clickxbutton(' + i + ')" style="cursor: pointer; outline: 3px solid blue" src="/button.png?txt=x&theme=' + theme + '">' +
+        var xtd = '<td align="right" width=64 valign="top">' +
+          '<img id="xbutton' + i + '" onClick="clickxbutton(' + i + ')" style="cursor: pointer; outline: 3px solid blue" src="/button.png?dim=12&txt=x&theme=' + theme + '">' +
           '</td>'
       }
 
@@ -500,7 +533,7 @@ function loadwall() {
 //        '<img align="left" src="/' + window.nom + '.png?dim=128" width=128 height=128>' +
 //        '</td>' +
         '<td align="left">' +
-        '<div style="max-width: 800; overflow-x: hidden; padding: 8px; color: black; color: white; font-size: 36px; font-family: monospace">' + txt + '</div>' +
+        '<div style="max--width: 800; overflow-x: hidden; padding: 8px; color: black; color: white; font-size: 36px; font-family: monospace">' + txt + '</div>' +
         '</td>' + xtd +
         '</tr></table>'
         ;

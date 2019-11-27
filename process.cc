@@ -15,7 +15,7 @@ namespace makemore {
 using namespace std;
 
 static void _call_cmd(Process *p, ...) {
-fprintf(stderr, "calling cmd args=[%s]\n", joinwords(p->args).c_str());
+fprintf(stderr, "calling cmd=[%s] args=[%s]\n", p->cmd.c_str(), joinwords(p->args).c_str());
   assert(p->inuc);
   Command f = p->func;
   f(p);

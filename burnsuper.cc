@@ -103,8 +103,8 @@ double t0 = now();
     enc.encode(prt, ctr);
     gen.generate(ctr, NULL, NULL, true);
 
-    gen.burn(prt, 0.00003);
-    enc.burn(gen, 0.00003);
+    gen.burn(prt, 0.0003);
+    // enc.burn(gen, 0.00003);
 
 //cholo->observe(ctr);
 

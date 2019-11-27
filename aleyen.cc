@@ -46,7 +46,7 @@ int main(int argc, char **argv) {
     par.load(srcdir + "/" + srcfn);
     if (!par.has_pose())
       continue;
-assert(par.alpha);
+//assert(par.alpha);
 
     Pose pose = par.get_pose();
     par.set_tag("angle", pose.angle);
@@ -57,8 +57,8 @@ assert(par.alpha);
     newpar.fill_gray();
     newpar.set_pose(Pose::STANDARD);
 
-newpar.alpha = new uint8_t[256 * 256];
-assert(newpar.alpha);
+//newpar.alpha = new uint8_t[256 * 256];
+//assert(newpar.alpha);
 
     par.warp(&newpar);
 //memset(newpar.alpha, 0xFF, 256 * 256);

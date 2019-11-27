@@ -2,6 +2,7 @@
 #include <process.hh>
 #include <server.hh>
 #include <agent.hh>
+#include <wall.hh>
 
 namespace makemore {
 
@@ -49,6 +50,14 @@ void mainmore(
   string txt = process->args[0];
   txt += "\n";
 
+  if (txt.length() > 16384) {
+    strvec outvec;
+    outvec.resize(1);
+    outvec[0] = "nope4";
+    process->write(outvec);
+    return;
+  }
+
   ufrom.make_home_dir();
 
   string wallfn = urb->dir + "/home/" + ufrom.nom + "/wall.txt";
@@ -70,6 +79,13 @@ void mainmore(
     return;
   }
   fclose(fp);
+
+  Wall wall;
+  wall.load(wallfn);
+  if (wall.posts.size() > 8) {
+    wall.truncate(8);
+    wall.save(wallfn);
+  }
 
   strvec outvec;
   outvec.resize(1);

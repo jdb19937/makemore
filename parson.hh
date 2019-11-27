@@ -192,6 +192,7 @@ struct Parson {
   }
 
   void set_parens(const char *anom, const char *bnom);
+  void push_paren(const std::string &pnom);
 
   bool has_fren(const char *nom);
   void add_fren(const char *fnom);

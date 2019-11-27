@@ -175,6 +175,7 @@ struct Partrait {
 
   void erase_bg(const Partrait &mask);
   void replace_bg(const Partrait &mask, const Partrait &bg);
+  void paste(const Partrait &prt, unsigned int x, unsigned int y);
 };
 
 }

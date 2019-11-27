@@ -16,7 +16,13 @@ void Wall::load(FILE *fp) {
 }
 
 void Wall::save(const std::string &fn) {
-  makemore::spit(join(posts, '\n') + "\n", fn);
+  std::string str;
+  if (posts.size() > 0) {
+    str = join(posts, '\n') + "\n";
+  } else {
+    str = "";
+  }
+  makemore::spit(str, fn);
 }
 
 bool Wall::erase(unsigned int i, const std::string &hash) {

@@ -606,6 +606,72 @@ var onkeyup = (function (ev) {
     </tr>
 <tr><td height="16"></td></tr>
 <tr>
+<td align="right" valign="bottom" height="340">
+
+<script>
+function make_small_button(txt, onc, id, align, thm) {
+  var etxt = escape(txt);
+  dim = 8;
+  var chop = 1;
+
+  if (!id)
+    id = 'head' + txt;
+  var w = 2 * dim * txt.length;
+  var h = (chop ? 2 : 3) * dim * 1;
+
+  onc = onc || '';
+  if (onc) {
+    onc = " onClick='" + onc + "'";
+  }
+
+  align = align || '';
+  if (align) {
+    align = " align='" + align + "'";
+  }
+
+  thm = thm || theme;
+ 
+
+  var u = "/button.png?txt=" + etxt + "&theme=" + thm + "&dim=" + dim + "&chop=" + chop;
+  document.write(
+    "<img alt='" + txt + "' id='" + id + "' src='" +  u + "' class='button' " +
+    "width=" + w + " height=" + h + onc + align +
+    ">"
+  );
+}
+</script>
+
+<div id="gendiv" style="display: block">
+<table>
+<tr><td height="24" align="right">
+<script>make_small_button("halloween", 'setgen("n")', "nbutton")</script></td></tr>
+<tr><td height="24" align="right">
+<script>make_small_button("starburst", 'setgen("p")', "pbutton")</script></td></tr>
+<tr><td height="24" align="right">
+<script>make_small_button("supernova", 'setgen("q")', "qbutton")</script></td></tr>
+</table>
+</div>
+
+
+<script>
+
+var gen0 = "$GEN";
+if (gen0 != "n" && gen0 != "p" && gen0 != "q") { gen0 = "n" }
+document.getElementById(gen0 + "button").style.outlineColor = '#00ff00';
+
+function setgen(x) {
+  httpget("/" + window.nom + "/setgen.txt?gen=" + x, function(txt) {
+    document.getElementById("pbutton").style.outlineColor = 'blue';
+    document.getElementById("qbutton").style.outlineColor = 'blue';
+    document.getElementById("nbutton").style.outlineColor = 'blue';
+    document.getElementById(x + "button").style.outlineColor = '#00ff00';
+    if (txt == "ok") {
+      reloadpic();
+    }
+  })
+}
+</script>
+</td>
 <!--
 <td valign="top" height="320" style="outline: 3px solid gray; color: white">
 /\/\/\/\/\/\/\/\/\/\/\/\/\/\ <br/>

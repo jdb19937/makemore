@@ -1,3 +1,16 @@
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-151395366-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-151395366-1');
+</script>
+
+
+
+
 
 <style type="text/css">
 .button {
@@ -262,6 +275,7 @@ function logout() {
   sessionStorage.removeItem('nom');
   sessionStorage.removeItem('session');
   sessionStorage.removeItem('master');
+  sessionStorage.removeItem('privkey');
   location.reload();
   return;
 }

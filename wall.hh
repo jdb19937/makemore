@@ -6,10 +6,13 @@
 #include <string>
 #include <vector>
 
+#include "strutils.hh"
+
 namespace makemore {
 
 struct Wall {
-  std::vector<std::string> posts;
+  strvec posts;
+  std::vector<strvec> replies;
 
   Wall() {
   }
@@ -19,6 +22,7 @@ struct Wall {
 
   void clear() {
     posts.clear();
+    replies.clear();
   }
 
   void load(const std::string &fn);

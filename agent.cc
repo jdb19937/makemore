@@ -1536,6 +1536,8 @@ valid.insert("link.png");
 
       if (Parson::valid_nom(cgi["vec"])) {
         if (Parson *vec = server->urb->find(cgi["vec"])) {
+          parson->push_paren(vec->nom);
+          parson->revised = time(NULL);
           seedrand(r);
 
           for (unsigned int j = 0; j < Parson::ncontrols; ++j) {
@@ -1595,6 +1597,8 @@ valid.insert("link.png");
 
       if (Parson::valid_nom(cgi["vec"])) {
         if (Parson *vec = server->urb->find(cgi["vec"])) {
+          parson->push_paren(vec->nom);
+          parson->revised = time(NULL);
           seedrand(r);
           for (unsigned int j = 0; j < Parson::ncontrols; ++j) {
             //parson->controls[j] += mul * vec->controls[j];
@@ -1660,6 +1664,8 @@ valid.insert("link.png");
 
       if (Parson::valid_nom(cgi["vec"])) {
         if (Parson *vec = server->urb->find(cgi["vec"])) {
+          parson->push_paren(vec->nom);
+          parson->revised = time(NULL);
           for (unsigned int j = 0; j < Parson::ncontrols; ++j) {
             if (randrange(0, 1) < mul) {
               parson->controls[j] = vec->controls[j];
@@ -2011,6 +2017,45 @@ valid.insert("link.png");
     return;
   }
 
+  if (ext == "txt" && func == "setgen") {
+    map<string, string> cgi;
+    cgiparse(query, &cgi);
+    std::string genstr = cgi["gen"];
+
+    if (genstr != "n" && genstr != "p" && genstr != "q") {
+      this->http_notfound();
+      return;
+    }
+
+    Supergen *gen = server->urb->get_gen(genstr);
+    if (!gen) {
+      this->http_notfound();
+      return;
+    }
+    gen->load();
+
+    Parson *prs = server->urb->find(nom);
+    if (!prs) {
+      this->http_notfound();
+      return;
+    }
+
+    assert(genstr.length() < sizeof(Parson::gen));
+    strcpy(prs->gen, genstr.c_str());
+
+
+
+    std::string txt = "ok";
+
+    this->printf("HTTP/1.1 200 OK\r\n");
+    this->printf("Connection: keep-alive\r\n");
+    this->printf("Content-Type: text/plain\r\n");
+    this->printf("Content-Length: %lu\r\n", txt.length());
+    this->printf("\r\n");
+    this->write(txt);
+    return;
+  }
+
   if (ext == "txt" && func == "wall") {
     map<string, string> cgi;
     cgiparse(query, &cgi);
@@ -2094,6 +2139,8 @@ valid.insert("link.png");
     Parson *prs = server->urb->find(nom);
     html = replacestr(html, "$LOCKED", prs && prs->has_pass() ? "1" : "0");
 
+    html = replacestr(html, "$GEN", prs && *prs->gen ? prs->gen : "n");
+
     std::string hexpk;
     if (prs)
       hexpk = to_hex(std::string((char *)prs->pubkey, 128));
@@ -2107,7 +2154,9 @@ valid.insert("link.png");
     char sbuf[256];
     sprintf(sbuf, "%llu", prs ? prs->score : 0ULL);
     html = replacestr(html, "$SCORE", sbuf);
-    sprintf(sbuf, "%llu", prs ? prs->ncrew : 0ULL);
+    strcpy(sbuf, "0");
+    if (prs && prs->ncrew)
+      sprintf(sbuf, "%lu", prs->ncrew - 1);
     html = replacestr(html, "$NCREW", sbuf);
 
     char abuf[256];
@@ -2309,16 +2358,55 @@ gen->generate(tmp, &genpar);
 delete[] tmp;
 
 
-Partrait showpar(dim, dim);
-Pose pose = Pose::STANDARD;
-pose.center *= (double)dim / 256.0;
-pose.scale *= (double)dim / 256.0;
 
-showpar.set_pose(pose);
-genpar.warp(&showpar);
+  if (dim >= 128) {
+    Mork *mork = server->urb->themes["mork_2"];
+    assert(mork);
+    Mork *thum = server->urb->themes["thum_2"];
+    assert(thum);
+
+    Partrait ptxt;
+    std::string url = "https://peaple.io/" + nom;
+    if (dim >= 256) {
+      thum->print(url, &ptxt, false);
+      genpar.paste(ptxt, 0, genpar.h - ptxt.h);
+    } else {
+      mork->print(url, &ptxt, false);
+      genpar.paste(ptxt, 0, genpar.h - ptxt.h);
+    }
+
+    char buf[256];
+    unsigned long now = time(NULL);
+    sprintf(buf, "%luZ", now);
+    mork->print(buf, &ptxt, false);
+    int dy = ptxt.h;
+    genpar.paste(ptxt, genpar.w - ptxt.w, genpar.h - dy);
+
+    sprintf(buf, "%lds", parson->created - now);
+    mork->print(buf, &ptxt, false);
+    dy += ptxt.h;
+    genpar.paste(ptxt, genpar.w - ptxt.w, genpar.h - dy);
+
+    sprintf(buf, "%lds", parson->revised - now);
+    mork->print(buf, &ptxt, false);
+    dy += ptxt.h;
+    genpar.paste(ptxt, genpar.w - ptxt.w, genpar.h - dy);
+  }
 
     std::string png;
-    showpar.to_png(&png);
+
+
+if (dim == 256) {
+    genpar.to_png(&png);
+} else {
+  Partrait showpar(dim, dim);
+  Pose pose = Pose::STANDARD;
+  pose.center *= (double)dim / 256.0;
+  pose.scale *= (double)dim / 256.0;
+  showpar.set_pose(pose);
+  genpar.warp(&showpar);
+  showpar.to_png(&png);
+}
 
     this->printf("HTTP/1.1 200 OK\r\n");
     this->printf("Connection: keep-alive\r\n");

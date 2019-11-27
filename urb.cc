@@ -71,6 +71,8 @@ add_gen("alpha", "gena.proj");
 add_gen("gazetest1", "gena.gazetest1.proj");
 add_gen("anderson", "gena.anderson.proj");
 #endif
+  add_gen("p", "pgen.proj");
+  add_gen("q", "qgen.proj");
   default_gen = gens["n"];
 
   add_sty("n", "nsty.proj");
@@ -119,9 +121,18 @@ add_gen("anderson", "gena.anderson.proj");
   themes["ahoy_8"] = new Mork(dir + "/ahoy_8.png", 8);
   themes["ahoy_12"] = new Mork(dir + "/ahoy_12.png", 12);
   themes["ahoy_16"] = new Mork(dir + "/ahoy_16.png", 16);
+  themes["mork_2"] = new Mork(dir + "/mork_2.png", 2);
+  themes["mork_4"] = new Mork(dir + "/mork_4.png", 4);
   themes["mork_8"] = new Mork(dir + "/mork_8.png", 8);
   themes["mork_12"] = new Mork(dir + "/mork_12.png", 12);
   themes["mork_16"] = new Mork(dir + "/mork_16.png", 16);
+  themes["thum_2"] = new Mork(dir + "/thum_2.png", 2);
+  themes["thum_4"] = new Mork(dir + "/thum_4.png", 4);
+  themes["thum_8"] = new Mork(dir + "/thum_8.png", 8);
+  themes["thum_12"] = new Mork(dir + "/thum_12.png", 12);
+  themes["thum_16"] = new Mork(dir + "/thum_16.png", 16);
+  themes["alfa_2"] = new Mork(dir + "/alfa_2.png", 2);
+  themes["alfa_4"] = new Mork(dir + "/alfa_4.png", 4);
   themes["alfa_8"] = new Mork(dir + "/alfa_8.png", 8);
   themes["alfa_12"] = new Mork(dir + "/alfa_12.png", 12);
   themes["alfa_16"] = new Mork(dir + "/alfa_16.png", 16);

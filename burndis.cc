@@ -63,15 +63,13 @@ int main(int argc, char **argv) {
   Supergen gen(argv[2], 1);
 //  Superenc enc0("/spin/dan/nbak/nenc.proj", 1);
 //  Supergen gen0("/spin/dan/nbak/ngen.proj", 1);
-  Superenc enc0(argv[1], 1);
-  Supergen gen0(argv[2], 1);
+  Superenc enc0("penc.proj", 1);
+  Supergen gen0("pgen.proj", 1);
   Superdis dis(argv[3], 1);
   unsigned int w = 256, h = 256;
 
   assert(enc.inplay->n == w * h * 3);
 
-Video vid;
-vid.open_write("test.mp4");
 Parson *prsv = pk(*gen.zone);
 
 fprintf(stderr, "starting\n");
@@ -129,7 +127,7 @@ double t0 = now();
     gen.generate(ctr, NULL, NULL, true);
 
     gen.burn(prt2, 1e-4, &dis);
-    enc.burn(gen, 1e-4);
+    // enc.burn(gen, 1e-4);
 
 
 //}
@@ -163,7 +161,6 @@ for (unsigned int j = 0;j < 256*256*3; ++j) {
   p[j] = 128 + m * ((int)prt2.rgb[j] - (int)prt3.rgb[j]);
 }
 prt5.save("/var/www/html/foo2.png");
-vid.write(prt5);
 
       enc.report("burndis");
       dis.report("burndis");

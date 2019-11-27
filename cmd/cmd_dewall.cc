@@ -52,7 +52,6 @@ void mainmore(
   unsigned int id = strtoul(idstr.c_str(), NULL, 0);
 
   string hash = process->args[1];
-#if 0
   if (hash.length() != 32) {
     strvec outvec;
     outvec.resize(1);
@@ -60,14 +59,13 @@ void mainmore(
     process->write(outvec);
     return;
   }
-#endif
 
   ufrom.make_home_dir();
   string wallfn = urb->dir + "/home/" + ufrom.nom + "/wall.txt";
   Wall wall;
   wall.load(wallfn);
 
-  bool erased = wall.erase(id); // , hash
+  bool erased = wall.erase(id, hash);
   if (!erased) {
     strvec outvec;
     outvec.resize(1);
