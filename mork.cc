@@ -61,6 +61,7 @@ void Mork::print(const std::string &txt, Partrait *out, bool chop) {
     h -= scale;
   }
   out->create(w, h);
+  out->fill_black();
 
   int dchop = 0;
   if (chop)

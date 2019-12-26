@@ -33,9 +33,8 @@ int main(int argc, char **argv) {
   double nu = 0.001;
 
   unsigned int mbn = 1;
-  Superenc enc("nenc.proj", 1);
-  Supergen gen("ngen.proj", 1);
-  Styler sty("nsty.proj");
+  Supergen gen("fgen.proj", 1);
+  Styler sty("fsty.proj");
 
 #if 0
 Impdis impdis("id.proj", mbn);
@@ -53,7 +52,7 @@ Impdis impdis("id.proj", mbn);
   double *tmpd = new double[10 << 20];
 
   // assert(egd.ctrlay->n == 512);
-double *ctr = new double[enc.enc->outn];
+double *ctr = new double[gen.gen->inn];
 
   for (unsigned int y = 0; y < dim; ++y) {
   for (unsigned int x = 0; x < dim; ++x) {

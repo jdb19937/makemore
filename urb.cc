@@ -73,10 +73,12 @@ add_gen("anderson", "gena.anderson.proj");
 #endif
   add_gen("p", "pgen.proj");
   add_gen("q", "qgen.proj");
+  add_gen("font", "fgen.proj");
   default_gen = gens["n"];
 
   add_sty("n", "nsty.proj");
   //add_sty("minidne", "stya.minidne.proj");
+  add_sty("font", "fsty.proj");
 #if 0
   add_sty("miniceleb", "stya.miniceleb.proj");
   add_sty("alpha", "stya.proj");

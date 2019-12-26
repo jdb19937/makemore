@@ -20,6 +20,9 @@
 </style>
 
 <script>
+if ("$NOM" == "burning_ship") {
+  sessionStorage.setItem('theme', 'ahoy');
+}
 var qarr = window.location.search.substr(1).split('&').filter(function(x) {
   return x.substr(0, 6) == "theme=";
 }).map(function(x) {
@@ -128,18 +131,23 @@ function make_themeswitcher() {
 }
 
 function make_logo() {
-  var txt = 'MakeMore Peaple v1.0';
+  var txt = 'Peaple.IO';
+  var vers = " v1.1";
   var etxt = escape(txt);
+  var evers = escape(vers);
   var dim = 16
   var chop = 0;
 
   var w = 2 * dim * txt.length;
   var h = (chop ? 2 : 3) * dim * 1;
+  var w2 = 2 * 8 * vers.length;
+  var h2 = (chop ? 2 : 3) * 8 * 1;
 
   var u = "/button.png?txt=" + etxt + "&theme=" + theme + "&dim=" + dim + "&chop=" + chop;
+  var u2 = "/button.png?txt=" + evers + "&theme=" + theme + "&dim=" + 8 + "&chop=" + chop;
   document.write(
-    "<img alt='" + txt + "' src='" +  u + "' width=" + w + " height=" + h +
-    ">"
+    "<img alt='" + txt + "' src='" +  u + "' width=" + w + " height=" + h + ">" +
+    "<img alt='" + vers + "' src='" +  u2 + "' width=" + w2 + " height=" + h2 + ">"
   );
 }
 
@@ -475,20 +483,10 @@ check_loginstate();
 
 </td>
   <td valign="top" align="right">
-    <script>make_label('created by Dan Brumleve', 8, 1);</script><br/>
-    <a id=linkemail><script>make_emlabel();</script></a>
-
-<script>
-var z = 'mai';
-z += 'lto:';
-z += String.fromCharCode(0x6A);
-z += 'db1729';
-z += String.fromCharCode(z.charCodeAt(7) - 0x2A);
-z += 'gma';
-z += 'il.com';
-linkemail.href = z;
-</script>
-
+    <a href="https://makemoresoftware.com/"><script>make_label('a MakeMore Software product', 8, 1);</script></a><br/>
+    <a href="https://makemoresoftware.com/">
+<script>make_label('https://makemoresoftware.com/', 8, 1)</script>
+</a>
   </td>
   </tr>
 

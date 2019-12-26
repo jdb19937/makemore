@@ -597,6 +597,161 @@ fprintf(stderr, "req=[%s]\n", req.c_str());
     return;
   }
 
+  std::string query;
+  if (const char *p = strchr(path.c_str(), '?')) {
+    query = p + 1;
+    path = std::string(path.c_str(), p - path.c_str());
+  }
+
+  if (host == "hotorbot.ai") {
+    std::string fn = path.c_str() + 1;
+    if (fn == "")
+      fn = "index";
+
+    if (fn == "favicon.ico") {
+      std::string favicon = makemore::slurp("hob/" + fn);
+      this->printf("HTTP/1.1 200 OK\r\n");
+      this->printf("Connection: keep-alive\r\n");
+      this->printf("Content-Type: image/x-icon\r\n");
+      this->printf("Content-Length: %lu\r\n", favicon.length());
+      this->printf("Cache-Control: public, max-age=86400\r\n");
+      this->printf("\r\n");
+      this->write(favicon);
+      return;
+    }
+
+    if (fn == "index") {
+      std::string html = makemore::slurp("hob/" + fn + ".html");
+      seedrand();
+      char buf[256];
+      sprintf(buf, "%u", randuint());
+      html = replacestr(html, "$R0", buf);
+      sprintf(buf, "%u", randuint());
+      html = replacestr(html, "$R1", buf);
+    
+      this->printf("HTTP/1.1 200 OK\r\n");
+      this->printf("Connection: keep-alive\r\n");
+      this->printf("Content-Type: text/html\r\n");
+      this->printf("Content-Length: %lu\r\n", html.length());
+      this->printf("\r\n");
+      this->write(html);
+      return;
+    }
+
+    http_notfound();
+    return;
+  }
+
+  if (host == "clipbored.io") {
+    std::string fn = path.c_str() + 1;
+    if (fn == "")
+      fn = "index";
+
+    if (fn == "favicon.ico") {
+      std::string favicon = makemore::slurp("bbs/" + fn);
+      this->printf("HTTP/1.1 200 OK\r\n");
+      this->printf("Connection: keep-alive\r\n");
+      this->printf("Content-Type: image/x-icon\r\n");
+      this->printf("Content-Length: %lu\r\n", favicon.length());
+      this->printf("Cache-Control: public, max-age=86400\r\n");
+      this->printf("\r\n");
+      this->write(favicon);
+      return;
+    }
+
+    if (fn == "index") {
+      std::string html = makemore::slurp("bbs/" + fn + ".html");
+    
+      this->printf("HTTP/1.1 200 OK\r\n");
+      this->printf("Connection: keep-alive\r\n");
+      this->printf("Content-Type: text/html\r\n");
+      this->printf("Content-Length: %lu\r\n", html.length());
+      this->printf("\r\n");
+      this->write(html);
+      return;
+    }
+
+    http_notfound();
+    return;
+  }
+
+  if (host == "makemoresoftware.com") {
+    std::string fn = path.c_str() + 1;
+
+    std::set<std::string> pngs;
+    pngs.insert("collab.png");
+    pngs.insert("desc1.png");
+    pngs.insert("desc2.png");
+    pngs.insert("desc3.png");
+    pngs.insert("desc4.png");
+    pngs.insert("descjdb.png");
+    pngs.insert("footer.png");
+    pngs.insert("help.png");
+    pngs.insert("healing.png");
+    pngs.insert("job.png");
+    pngs.insert("leader.png");
+    pngs.insert("leaders.png");
+    pngs.insert("logo.png");
+    pngs.insert("nom1.png");
+    pngs.insert("nom2.png");
+    pngs.insert("nom3.png");
+    pngs.insert("nom4.png");
+    pngs.insert("nomjdb.png");
+    pngs.insert("peaple.png");
+    pngs.insert("consume.png");
+    pngs.insert("proud.png");
+    pngs.insert("seeking.png");
+    pngs.insert("story.png");
+    pngs.insert("title1.png");
+    pngs.insert("title2.png");
+    pngs.insert("title3.png");
+    pngs.insert("title4.png");
+    pngs.insert("title.png");
+    pngs.insert("assim.png");
+    pngs.insert("assim2.png");
+
+    if (fn == "")
+      fn = "story";
+
+    if (fn == "favicon.ico") {
+      std::string favicon = makemore::slurp("mms/" + fn);
+      this->printf("HTTP/1.1 200 OK\r\n");
+      this->printf("Connection: keep-alive\r\n");
+      this->printf("Content-Type: image/x-icon\r\n");
+      this->printf("Content-Length: %lu\r\n", favicon.length());
+      this->printf("Cache-Control: public, max-age=86400\r\n");
+      this->printf("\r\n");
+      this->write(favicon);
+      return;
+    }
+
+    if (fn == "story" || fn == "consume" || fn == "job" || fn == "leader") {
+      std::string html = makemore::slurp("mms/" + fn + ".html");
+    
+      this->printf("HTTP/1.1 200 OK\r\n");
+      this->printf("Connection: keep-alive\r\n");
+      this->printf("Content-Type: text/html\r\n");
+      this->printf("Content-Length: %lu\r\n", html.length());
+      this->printf("\r\n");
+      this->write(html);
+      return;
+    }
+    if (pngs.count(fn)) {
+      std::string png = makemore::slurp("mms/" + fn);
+    
+      this->printf("HTTP/1.1 200 OK\r\n");
+      this->printf("Connection: keep-alive\r\n");
+      this->printf("Content-Type: image/png\r\n");
+      this->printf("Content-Length: %lu\r\n", png.length());
+      this->printf("\r\n");
+      this->write(png);
+      return;
+    }
+
+    http_notfound();
+    return;
+  }
+
   if (host != "peaple.io") {
     this->printf("HTTP/1.1 302 Redirect\r\n");
     this->printf("Connection: close\r\n");
@@ -605,11 +760,6 @@ fprintf(stderr, "req=[%s]\n", req.c_str());
     return;
   }
 
-  std::string query;
-  if (const char *p = strchr(path.c_str(), '?')) {
-    query = p + 1;
-    path = std::string(path.c_str(), p - path.c_str());
-  }
 
 #if 0
   if (path == "/") {
@@ -735,6 +885,47 @@ fprintf(stderr, "req=[%s]\n", req.c_str());
     this->write(png);
     return;
   }
+
+  if (path == "/font.png") {
+    map<string, string> cgi;
+    cgiparse(query, &cgi);
+
+    unsigned int r = randuint();
+    if (cgi["r"] != "")
+      r = strtoul(cgi["r"].c_str(), NULL, 0);
+
+    double vdev = 0.0;
+    if (cgi["vdev"] != "")
+      vdev = strtod(cgi["vdev"].c_str(), NULL);
+
+    Parson prs;
+
+    seedrand(r);
+    for (unsigned int j = 0; j < Parson::ncontrols; ++j)
+      prs.controls[j] = randgauss() * vdev;
+
+    Styler *sty = server->urb->get_sty("font");
+    assert(sty);
+    Supergen *gen = server->urb->get_gen("font");
+
+
+    Partrait genpar(256, 256);
+    sty->tag_cholo["base"]->generate(prs.controls, prs.controls);
+    gen->generate(prs.controls, &genpar);
+
+    std::string png;
+    genpar.to_png(&png);
+
+    this->printf("HTTP/1.1 200 OK\r\n");
+    this->printf("Connection: keep-alive\r\n");
+    this->printf("Content-Type: image/png\r\n");
+    this->printf("Content-Length: %lu\r\n", png.length());
+    // this->printf("Cache-Control: public, max-age=%u\r\n", 31536000);
+    this->printf("\r\n");
+    this->write(png);
+    return;
+  }
+
   if (path == "/burning_ship.png") {
     map<string, string> cgi;
     cgiparse(query, &cgi);
@@ -1622,6 +1813,57 @@ valid.insert("link.png");
       char buf[256];
       sprintf(buf, "%lf", q);
       txt = buf;
+    } else if (op == "rblend") {
+      double mul = 1.0;
+      if (cgi["mul"] != "")
+        mul = strtod(cgi["mul"].c_str(), NULL);
+
+      double vdev = 0.0;
+      if (cgi["vdev"] != "")
+        vdev = strtod(cgi["vdev"].c_str(), NULL);
+
+      unsigned int r = randuint();
+      if (cgi["r"] != "")
+        r = strtoul(cgi["r"].c_str(), NULL, 0);
+
+      double *tmp = new double[Parson::ncontrols];
+      memcpy(tmp, parson->controls, sizeof(double) * Parson::ncontrols);
+
+      seedrand(r);
+      for (unsigned int j = 0; j < Parson::ncontrols; ++j) {
+        tmp[j] += randgauss() * sqrt(parson->variations[j]) * vdev;
+      }
+
+      parson->revised = time(NULL);
+      seedrand(r);
+      for (unsigned int j = 0; j < Parson::ncontrols; ++j) {
+        double ma = parson->controls[j];
+        double va = parson->variations[j];
+        double mb = tmp[j];
+        parson->controls[j] = (1.0 - mul) * ma + mul * mb;
+        parson->variations[j] = (1.0 - mul) * va + mul * ((ma - mb) * (ma - mb));
+      }
+
+fprintf(stderr, "return=[%s]\n", cgi["return"].c_str());
+      if (cgi["return"] == "https://hotorbot.ai/") {
+        this->printf("HTTP/1.1 302 Redirect\r\n");
+        this->printf("Connection: keep-alive\r\n");
+        this->printf("Content-Type: text/plain\r\n");
+        this->printf("Content-Length: 0\r\n");
+        this->printf("Location: %s\r\n", cgi["return"].c_str());
+        this->printf("\r\n");
+        return;
+      }
+
+      double q = 0;
+      for (unsigned int j = 0; j < Parson::ncontrols; ++j)
+        q += parson->controls[j] * parson->controls[j];
+      q /= Parson::ncontrols;
+      q = sqrt(q);
+
+      char buf[256];
+      sprintf(buf, "%lf", q);
+      txt = buf;
     } else if (op == "bread") {
       unsigned int r = randuint();
       if (cgi["r"] != "")
@@ -1674,6 +1916,7 @@ valid.insert("link.png");
           }
         }
       }
+
 
       double q = 0;
       for (unsigned int j = 0; j < Parson::ncontrols; ++j)
@@ -2088,7 +2331,32 @@ valid.insert("link.png");
     return;
   }
 
-  if (ext == "png" && func == "source") {
+  if (ext == "png" && func == "base") {
+    Parson *prs = server->urb->find(nom);
+    if (!prs) {
+      this->http_notfound();
+      return;
+    }
+
+    std::string fn = server->urb->dir + "/home/" + nom + "/base.png";
+    FILE *fp = fopen(fn.c_str(), "r");
+    if (!fp) {
+      this->http_notfound();
+      return;
+    }
+    std::string png = makemore::slurp(fp);
+    fclose(fp);
+
+    this->printf("HTTP/1.1 200 OK\r\n");
+    this->printf("Connection: keep-alive\r\n");
+    this->printf("Content-Type: image/png\r\n");
+    this->printf("Content-Length: %lu\r\n", png.length());
+    this->printf("\r\n");
+    this->write(png);
+    return;
+  }
+
+  if (0 && ext == "png" && func == "source") {
     Parson *prs = server->urb->find(nom);
     if (!prs) {
       this->http_notfound();
@@ -2310,6 +2578,8 @@ dev = sqrt(dev);
     if (cgi["r"] != "")
       r = strtoul(cgi["r"].c_str(), NULL, 0);
 
+    bool stamp = (cgi["nostamp"] == "");
+
     unsigned int dim = 256;
     if (cgi["dim"] != "")
       dim = strtoul(cgi["dim"].c_str(), NULL, 0);
@@ -2359,7 +2629,7 @@ delete[] tmp;
 
 
 
-  if (dim >= 128) {
+  if (stamp && dim >= 128) {
     Mork *mork = server->urb->themes["mork_2"];
     assert(mork);
     Mork *thum = server->urb->themes["thum_2"];

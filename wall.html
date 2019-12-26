@@ -497,7 +497,16 @@ function esctxt(txt) {
   newtxt = newtxt.replace(/AHOY\[(.*?)\]/gm, function(i, j) {
     return '<img align=bottom src="/button.png?chop=0&dim=12&theme=ahoy&txt=' + escape(j) + '">';
   });
-  newtxt = newtxt.replace(/\@([a-z0-9_][a-z0-9_]+)/gim, function(x, nom) {
+  newtxt = newtxt.replace(/Artbreeder/gm, function(i, j) {
+    return '<a href="https://artbreeder.com/">Artbreeder</a>';
+  });
+  newtxt = newtxt.replace(/MakeMore/gm, function(i, j) {
+    return '<a href="https://makemoresoftware.com/">MakeMore</a>';
+  });
+  newtxt = newtxt.replace(/ClipBored\.IO/gm, function(i, j) {
+    return '<a href="https://clipbored.io/"><img style="filter: invert(1); border: 2px solid blue" src="/button.png?chop=0&dim=12&theme=ahoy&txt=ClipBored.IO"></a>';
+  });
+  newtxt = newtxt.replace(/\@([a-z0-9_][a-z0-9_]*)/gm, function(x, nom) {
     return "<a href='/" + nom + "'><img alt='@" + nom + "' style='border: 3px solid blue' src='/" + nom + ".png?dim=64' width=64 height=64 align='bottom'></a>";
   });
   newtxt = newtxt.replace(/[\n\r]/gm, '<br>');
