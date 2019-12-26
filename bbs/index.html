@@ -1,0 +1,283 @@
+<html>
+<head>
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-151395366-3"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-151395366-3');
+</script>
+<script async src="https://peaple.io/gennom.js"></script>
+<meta name='viewport' content='width=1040,user-scalable=0'>
+<title>ClipBored.IO</title>
+
+
+<style type="text/css">
+img{
+    -khtml-user-select: none;
+    -o-user-select: none;
+    -moz-user-select: none;
+    -webkit-user-select: none;
+    user-select: none;
+}
+</style>
+
+
+</head>
+
+<body bgcolor="#ffffff">
+<table width="1024">
+<tr>
+<td align="left" valign="top" align="center">
+<img style="filter: invert(1)" src="https://peaple.io/button.png?txt=ClipBored.IO&theme=ahoy&dim=16&chop=0" />
+<img style="filter: invert(1)" src="https://peaple.io/button.png?txt=+v0%2E1&theme=ahoy&dim=8&chop=0" />
+</td>
+<td valign="top" align="right">
+<a href="https://makemoresoftware.com/"><img style="filter: invert(1)" src="https://peaple.io/button.png?txt=a+MakeMore+Software+product&theme=ahoy&dim=8&chop=0" /></a><br/>
+<a href="https://makemoresoftware.com/"><img style="filter: invert(1)" src="https://peaple.io/button.png?txt=https://makemoresoftware.com/&theme=ahoy&dim=8&chop=0" /></a>
+</td>
+</tr>
+</table>
+
+<!-- <div style="width: 1024px; height: 2px; background-color: #888888"></div> -->
+
+
+
+<table width="1024">
+<tr>
+
+<td valign="top">
+
+<div id="draw" style="background-image: url(https://peaple.io/bbs/base.png); width: 1024px; height: 1536px; position: relative; overflow: hidden; border: 1px solid black"></div>
+
+<script>
+var px = new Image();
+px.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAUEBAAAACwAAAAAAQABAAACAkQBADs=';
+var zi = 100;
+
+draw.addEventListener('pointermove', function(ev) {
+  if (draw.dragging) {
+ev.preventDefault();
+    var x = ev.pageX - draw.offsetLeft - draw.dragx;
+    var y = ev.pageY - draw.offsetTop - draw.dragy;
+
+    draw.dragging.style.top = y + 'px';
+    draw.dragging.style.left = x + 'px';
+  }
+});
+window.addEventListener('pointerup', function(ev) {
+ev.preventDefault();
+  if (!draw.dragging) {
+    return;
+  }
+
+  var x = ev.pageX - draw.offsetLeft - draw.dragx - 1;
+  var y = ev.pageY - draw.offsetTop - draw.dragy - 1;
+
+  if (y < 32 && x + draw.dragging.width > 1024 - 32) {
+    x = -1024;
+    y = -1024;
+    delim(draw.dragging.src, draw.dragging);
+  }
+
+  bcast(draw.dragging.src, x, y);
+  draw.dragging = null;
+});
+draw.addEventListener('dblclick', function(ev) {
+  if (draw.dragging) {
+    return;
+  }
+  var nom = gencelebnom();
+  var x = ev.pageX - draw.offsetLeft - 128;
+  var y = ev.pageY - draw.offsetTop - 128;
+  bcast("https://peaple.io/" + nom + ".png", x, y);
+  imcan("https://peaple.io/" + nom + ".png", x, y);
+});
+
+function delim(url, im) {
+  draw.removeChild(im);
+  delete imdict[url];
+}
+
+function randim(url, im) {
+  var nurl = url;
+  if (url.indexOf("?") > 0) {
+    nurl = url + "&";
+  } else {
+    nurl = url + "?";
+  }
+  im.src = nurl + "r=" + Math.floor(Math.random() * 1000000) + "&vdev=0.2";
+}
+
+
+var imdict = { };
+
+function imcan(url, x, y, inv) {
+  var im = imdict[url];
+  if (!im) {
+    im = document.createElement('img');
+    imdict[url] = im;
+    document.getElementById('draw').appendChild(im);
+  }
+
+  // im.width = 256;
+  // im.height = 256;
+  if (inv) { im.style.filter = 'invert(1)' }
+  im.style.zIndex = ++zi;
+  im.style.position = 'absolute';
+  im.style.top = y + 'px';
+  im.style.left = x + 'px';
+  im.style.cursor = 'pointer';
+  if (url.includes("button.png")) {
+    im.style.filter = "invert(1)";
+  }
+im.style.border = '1px solid #00ff00';
+im.style.touchAction = 'none';
+  im.draggable = false;
+  im.ondblclick = function(ev) {
+//    delim(url, im);
+//    bcast(url, -1024, -1024);
+//    draw.dragging = null;
+  };
+  im.addEventListener('pointerdown', function(ev) {
+    im.style.zIndex = ++zi;
+    draw.dragx = ev.offsetX;
+    draw.dragy = ev.offsetY;
+    draw.dragging = im;
+  });
+  im.src = url;
+}
+
+imcan("https://peaple.io/button.png?theme=ahoy&dim=16&txt=x", 1024 - 32, 0);
+if (0) {
+for (var i = 0; i < 16; ++i) {
+  var x = 256 * (i % 4);
+  var y = 256 * Math.floor(i / 4);
+  var j = i + 1;
+  imcan("https://peaple.io/mosaic" + j + ".png", x, y);
+}
+}
+</script>
+
+</td>
+
+
+</tr></table>
+
+
+
+
+<table>
+<tr>
+
+
+<td valign="top" align="left">
+<input name="parson" id="parson" size="32" maxlength="32" style="font-family: monospace; font-size: 24px" >
+<script>
+parson.addEventListener('keyup', function (e) {
+    if (e.keyCode === 13) {
+      genimg(parson.value);
+    }
+});
+
+function genimg(nom) {
+  var url = "https://peaple.io/" + nom + ".png";
+  var x = Math.floor(Math.random() * (1024 - 256));
+  var y = Math.floor(Math.random() * (1536- 256));
+  imcan(url, x, y);
+}
+</script>
+
+</td>
+<td width="16"></td>
+
+<td valign="top" align="left">
+
+<input name="txt" id="txt" size="16" maxlength="16" style="font-family: monospace; font-size: 24px" >
+<script>
+txt.addEventListener('keyup', function (e) {
+    if (e.keyCode === 13) {
+      gentxt();
+    }
+});
+
+function gentxt() {
+  var t = txt.value;
+  var im = new Image();
+  var url = "https://peaple.io/button.png?dim=16&theme=ahoy&chop=0&txt=" + escape(t);
+  im.draggable = 'false';
+  im.src = url;
+  im.style.filter = 'invert(1)';
+
+  im.onload = function(ev) {
+    var x = Math.floor(Math.random() * (1024 - im.width));
+    var y = Math.floor(Math.random() * (1536 - im.height));
+    imcan(url, x, y, 1);
+  };
+}
+</script>
+</td>
+
+</tr>
+</table>
+
+<script>
+function bcast(url, x, y) { 
+  window.socket.send("note " + url + " " + x + " " + y + "\n");
+}
+
+var rem = '';
+function socketmsg(buf) {
+  var txt = arrayBufferToString(buf.data);
+  var lines = txt.split('\n');
+  for (var i in lines) {
+    var line = lines[i];
+    var ar = line.split(' ');
+    if (ar[0] == 'note') {
+      var url = ar[1];
+      var x = ar[2];
+      var y = ar[3];
+
+      if (x <= -1024 && y <= -1024) {
+        var im = imdict[url];
+        if (im) {
+          delim(url, im);
+        }
+      } else {
+        imcan(url, x, y);
+      }
+    }
+  }
+}
+
+function arrayBufferToString(buffer){
+    var arr = new Uint8Array(buffer);
+    var str = String.fromCharCode.apply(String, arr);
+    return str;
+}
+
+
+function opensock() {
+  socket = new WebSocket('wss://clipbored.io:3333/', ['binary']);
+  window.socket = socket;
+  socket.binaryType = 'arraybuffer';
+  socket.onopen = function() {
+    socket.send("be bbs bbs\n");
+  };
+  socket.onmessage = function() {
+    socket.send("notes\n");
+    socket.onmessage = socketmsg;
+  };
+
+  socket.onclose = function() {
+    window.socket = null;
+  }
+}
+
+opensock();
+</script>
+
+</body>
+</html>
