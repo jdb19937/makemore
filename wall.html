@@ -506,6 +506,9 @@ function esctxt(txt) {
   newtxt = newtxt.replace(/ClipBored\.IO/gm, function(i, j) {
     return '<a href="https://clipbored.io/"><img style="filter: invert(1); border: 2px solid blue" src="/button.png?chop=0&dim=12&theme=ahoy&txt=ClipBored.IO"></a>';
   });
+  newtxt = newtxt.replace(/HotOrBot\.AI/gm, function(i, j) {
+    return '<a href="https://hotorbot.ai/">HotOrBot.AI</a>';
+  });
   newtxt = newtxt.replace(/\@([a-z0-9_][a-z0-9_]*)/gm, function(x, nom) {
     return "<a href='/" + nom + "'><img alt='@" + nom + "' style='border: 3px solid blue' src='/" + nom + ".png?dim=64' width=64 height=64 align='bottom'></a>";
   });

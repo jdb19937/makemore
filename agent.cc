@@ -894,7 +894,7 @@ fprintf(stderr, "req=[%s]\n", req.c_str());
     if (cgi["r"] != "")
       r = strtoul(cgi["r"].c_str(), NULL, 0);
 
-    double vdev = 0.0;
+    double vdev = 1.0;
     if (cgi["vdev"] != "")
       vdev = strtod(cgi["vdev"].c_str(), NULL);
 
@@ -915,6 +915,10 @@ fprintf(stderr, "req=[%s]\n", req.c_str());
 
     std::string png;
     genpar.to_png(&png);
+
+Parson *parson = server->urb->make("font", 0);
+parson->visit(1);
+++parson->score;
 
     this->printf("HTTP/1.1 200 OK\r\n");
     this->printf("Connection: keep-alive\r\n");
@@ -2593,7 +2597,6 @@ dev = sqrt(dev);
       cache = strtoul(cgi["cache"].c_str(), NULL, 0);
 
     Parson *parson = server->urb->make(nom, 0);
-
 parson->visit(1);
 if (*parson->owner) {
   if (Parson *m = server->urb->find(parson->owner)) {
