@@ -67,42 +67,31 @@ void Display::close() {
 }
 
 void Display::update(const Partrait &prt) {
-  double asp = (double)w / (double)prt.w;
-  if (asp > (double)h / (double)prt.h)
-    asp = (double)h / (double)prt.h;
+  update(prt.rgb, prt.w, prt.h);
+}
+
+void Display::update(const uint8_t *rgb, unsigned int pw, unsigned int ph) {
+  double asp = (double)w / (double)pw;
+  if (asp > (double)h / (double)ph)
+    asp = (double)h / (double)ph;
 
   SDL_Rect drect;
-  drect.x = (double)w / 2.0 - asp * (double)prt.w / 2.0;
-  drect.y = (double)h / 2.0 - asp * (double)prt.h / 2.0;
-  drect.w = asp * (double)prt.w;
-  drect.h = asp * (double)prt.h;
+  drect.x = (double)w / 2.0 - asp * (double)pw / 2.0;
+  drect.y = (double)h / 2.0 - asp * (double)ph / 2.0;
+  drect.w = asp * (double)pw;
+  drect.h = asp * (double)ph;
   SDL_Surface *surf = SDL_CreateRGBSurfaceFrom(
-    prt.rgb, prt.w, prt.h, 24, prt.w * 3, 0xff, 0xff00, 0xff0000, 0
+    (void *)rgb, pw, ph, 24, pw * 3, 0xff, 0xff00, 0xff0000, 0
   );
 
   SDL_Texture *text = SDL_CreateTextureFromSurface(renderer, surf);
 
-
-Triangle mark = prt.get_mark();
-mark.p.x *= asp;
-mark.p.x += drect.x;
-mark.p.y *= asp;
-mark.p.y += drect.y;
-mark.q.x *= asp;
-mark.q.x += drect.x;
-mark.q.y *= asp;
-mark.q.y += drect.y;
-
-
   SDL_Rect srect;
   srect.x = 0;
   srect.y = 0;
-  srect.w = prt.w;
-  srect.h = prt.h;
+  srect.w = pw;
+  srect.h = ph;
   SDL_RenderCopy(renderer, text, &srect, &drect);
-
-draw_pigeon(mark.p.x, mark.p.y);
-draw_pigeon(mark.q.x, mark.q.y);
 
   SDL_DestroyTexture(text);
   SDL_FreeSurface(surf);

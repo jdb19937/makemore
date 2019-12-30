@@ -357,6 +357,15 @@ burnsham: burnsham.o libmakemore.so
 burndis.o: $(LIBHDR)
 burndis: burndis.o libmakemore.so
 	$(CXX) -o $@ $(CXXFLAGS) burndis.o $(LDFLAGS) $(CULDFLAGS)
+doboost.o: $(LIBHDR)
+doboost: doboost.o libmakemore.so
+	$(CXX) -o $@ $(CXXFLAGS) doboost.o $(LDFLAGS) $(CULDFLAGS)
+burnboost.o: $(LIBHDR)
+burnboost: burnboost.o libmakemore.so
+	$(CXX) -o $@ $(CXXFLAGS) burnboost.o $(LDFLAGS) $(CULDFLAGS)
+fontasy.o: $(LIBHDR)
+fontasy: fontasy.o libmakemore.so
+	$(CXX) -o $@ $(CXXFLAGS) fontasy.o $(LDFLAGS) $(CULDFLAGS)
 burnsuper.o: $(LIBHDR)
 burnsuper: burnsuper.o libmakemore.so
 	$(CXX) -o $@ $(CXXFLAGS) burnsuper.o $(LDFLAGS) $(CULDFLAGS)

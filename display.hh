@@ -21,6 +21,7 @@ struct Display {
   void fill_black();
   void draw_pigeon(unsigned int x, unsigned int y);
   void update(const class Partrait &);
+  void update(const uint8_t *rgb, unsigned int w, unsigned int h);
 
   void present();
 };
