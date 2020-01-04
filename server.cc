@@ -23,6 +23,8 @@
 #include "ppm.hh"
 #include "agent.hh"
 
+#include "fontasy.hh"
+
 namespace makemore {
 
 std::map<std::string, Server::Handler> Server::default_cmdtab;
@@ -289,6 +291,8 @@ void Server::setup() {
   fprintf(stderr, "opening urb %s\n", urbdir.c_str());
   urb = new Urb(urbdir.c_str(), 4);
   fprintf(stderr, "opened urb %s\n", urbdir.c_str());
+
+  fontasy = new Fontasy(1024, 96);
 
   seedrand();
 }
