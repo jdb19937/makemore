@@ -28,6 +28,9 @@
 #include "mob.hh"
 #include "fractals.hh"
 #include "mork.hh"
+#include "pic.hh"
+
+#include "fontasy.hh"
 
 namespace makemore {
 
@@ -544,6 +547,15 @@ void Agent::http_denied() {
   this->printf("\r\n");
 }
 
+static unsigned int parsecol(const std::string &str, unsigned int dflt) {
+  if (str == "")
+    return dflt;
+  const char *p = str.c_str();
+  if (*p == '#')
+    ++p;
+  return strtoul(p, NULL, 16);
+}
+
 void Agent::handle_http() {
   std::string req = httpbuf[0];
   strvec reqwords;
@@ -553,6 +565,7 @@ void Agent::handle_http() {
   std::string cookie;
 
   for (auto kv : httpbuf) {
+    fprintf(stderr, "[%s]\n", kv.c_str());
     if (strbegins(kv, "Cookie: ")) {
       std::string v = kv.c_str() + 8;
       cookie = v;
@@ -562,8 +575,8 @@ void Agent::handle_http() {
     }
   }
 
-#if 0
-  std::string usernom, session;
+  std::string usernom, session, ctheme;
+  unsigned long cfg = 0x000000, cbg = 0xFFFFFF;
   if (cookie.length()) {
     std::vector<std::string> kv;
     split(cookie, ';', &kv);
@@ -575,12 +588,16 @@ void Agent::handle_http() {
         usernom = p + 8;
       } else if (!strncmp(p, "session=", 8)) {
         session = p + 8;
+      } else if (!strncmp(p, "theme=", 6)) {
+        ctheme = p + 6;
+      } else if (!strncmp(p, "fg=", 3)) {
+        cfg = strtoul(p + 3, NULL, 16);
+      } else if (!strncmp(p, "bg=", 3)) {
+        cbg = strtoul(p + 3, NULL, 16);
       }
     }
   }
-fprintf(stderr, "cookie=[%s] usernom=[%s] session=[%s]\n", cookie.c_str(), usernom.c_str(), session.c_str());
-#endif
-
+fprintf(stderr, "cookie=[%s] ctheme=[%s]\n", cookie.c_str(), ctheme.c_str());
 
 
 fprintf(stderr, "host=[%s]\n", host.c_str());
@@ -601,6 +618,253 @@ fprintf(stderr, "req=[%s]\n", req.c_str());
   if (const char *p = strchr(path.c_str(), '?')) {
     query = p + 1;
     path = std::string(path.c_str(), p - path.c_str());
+  }
+
+  if (host == "fontasy.io") {
+    Fontasy *fon = server->fontasy;
+    std::string fn = path.c_str() + 1;
+
+    if (fn == "favicon.ico") {
+      std::string favicon = makemore::slurp("fsy/" + fn);
+      this->printf("HTTP/1.1 200 OK\r\n");
+      this->printf("Connection: keep-alive\r\n");
+      this->printf("Content-Type: image/x-icon\r\n");
+      this->printf("Content-Length: %lu\r\n", favicon.length());
+      this->printf("Cache-Control: public, max-age=86400\r\n");
+      this->printf("\r\n");
+      this->write(favicon);
+      return;
+    }
+
+    if (fn == "")
+      fn = "index";
+
+    std::string ext = "html";
+    if (const char *p = strchr(fn.c_str(), '.')) {
+      ext = p + 1;
+      fn = std::string(fn.c_str(), p - fn.c_str());
+    }
+
+    if (ext == "png") {
+      unsigned int cache = 86400;
+
+      if (fn == "FG") {
+        Pic pix(1, 1);
+        pix.rgb[0] = (cfg >> 16) & 0xFF;
+        pix.rgb[1] = (cfg >> 8) & 0xFF;
+        pix.rgb[2] = (cfg) & 0xFF;
+
+        std::string png;
+        pix.to_png(&png);
+
+        this->printf("HTTP/1.1 200 OK\r\n");
+        this->printf("Connection: keep-alive\r\n");
+        this->printf("Content-Type: image/png\r\n");
+        this->printf("Content-Length: %lu\r\n", png.length());
+        this->printf("\r\n");
+        this->write(png);
+        return;
+      }
+
+      if (fn == "BG") {
+        Pic pix(1, 1);
+        pix.rgb[0] = (cbg >> 16) & 0xFF;
+        pix.rgb[1] = (cbg >> 8) & 0xFF;
+        pix.rgb[2] = (cbg) & 0xFF;
+
+        std::string png;
+        pix.to_png(&png);
+
+        this->printf("HTTP/1.1 200 OK\r\n");
+        this->printf("Connection: keep-alive\r\n");
+        this->printf("Content-Type: image/png\r\n");
+        this->printf("Content-Length: %lu\r\n", png.length());
+        this->printf("\r\n");
+        this->write(png);
+        return;
+      }
+
+      if (!Parson::valid_nom(fn)) {
+         http_notfound();
+         return;
+      }
+
+
+      if (fn == "default") {
+        if (ctheme != "" && ctheme != "default" && Parson::valid_nom(ctheme)) {
+          fn = ctheme;
+        } else { 
+          fn = "they";
+        }
+
+        this->printf("HTTP/1.1 302 Redirect\r\n");
+        this->printf("Connection: keep-alive\r\n");
+        this->printf("Content-Type: text/plain\r\n");
+        this->printf("Content-Length: 0\r\n");
+        this->printf("Location: /%s.png%s%s\r\n", fn.c_str(), query.length() ? "?" : "", query.c_str());
+        this->printf("\r\n");
+        return;
+      }
+
+      if (fn == "random") {
+        fn = fon->gennom();
+        cache = 0;
+      }
+
+      map<string, string> cgi;
+      cgiparse(query, &cgi);
+
+      double m = 1.0;
+      if (cgi["m"] != "")
+        m = strtod(cgi["m"].c_str(), NULL);
+
+      bool chop = 0;
+      if (cgi["chop"] == "1")
+        chop = 1;
+
+      Phont ph;
+      fon->generate(fn, &ph, m);
+
+      std::string png;
+
+      if (cgi["txt"] == "") {
+        std::string txt = cgi["txt"];
+        unsigned int dim = strtoul(cgi["dim"].c_str(), NULL, 0);
+        if (!dim)
+          dim = 32;
+
+        if (dim == 32) {
+        } else if (dim == 16) {
+          ph.reduce();
+        } else if (dim == 8) {
+          ph.reduce();
+          ph.reduce();
+        } else if (dim == 4) {
+          ph.reduce();
+          ph.reduce();
+          ph.reduce();
+        } else {
+          http_notfound();
+          return;
+        }
+
+        unsigned int fg = parsecol(cgi["fg"], cfg);
+        unsigned int bg = parsecol(cgi["bg"], cbg);
+
+        Pic pic(ph.w, ph.h);
+        ph.print_all(fg, bg, &pic);
+        pic.to_png(&png);
+
+        // ph.to_png(&png);
+      } else {
+        std::string txt = cgi["txt"];
+        unsigned int dim = strtoul(cgi["dim"].c_str(), NULL, 0);
+        if (!dim)
+          dim = 32;
+
+        if (dim == 64) {
+          ph.enlarge();
+        } else if (dim == 32) {
+        } else if (dim == 16) {
+          ph.reduce();
+        } else if (dim == 8) {
+          ph.reduce();
+          ph.reduce();
+        } else if (dim == 4) {
+          ph.reduce();
+          ph.reduce();
+          ph.reduce();
+        } else {
+          http_notfound();
+          return;
+        }
+
+        unsigned int w = dim * 2 * txt.length();
+        unsigned int fg = parsecol(cgi["fg"], cfg);
+        unsigned int bg = parsecol(cgi["bg"], cbg);
+        unsigned int fga = 0xFF;
+        unsigned int bga = 0xFF;
+
+        Pic pic(w, dim * 3);
+        ph.print(txt, fg, bg, fga, bga, &pic);
+
+        if (chop) {
+          pic.rgb += w * dim * 3;
+          pic.h -= dim;
+        }
+
+        pic.to_png(&png);
+
+        if (chop) {
+          pic.rgb -= w * dim * 3;
+          pic.h += dim;
+        }
+      }
+
+      this->printf("HTTP/1.1 200 OK\r\n");
+      this->printf("Connection: keep-alive\r\n");
+      this->printf("Content-Type: image/png\r\n");
+      if (cache)
+        this->printf("Cache-Control: public, max-age=%u\r\n", cache);
+      this->printf("Content-Length: %lu\r\n", png.length());
+      this->printf("\r\n");
+      this->write(png);
+      return;
+    }
+
+    if (!Parson::valid_nom(fn)) {
+      http_notfound();
+      return;
+    }
+
+
+    if (fn == "default" && ext == "html") {
+      if (ctheme != "" && ctheme != "default" && Parson::valid_nom(ctheme)) {
+        fn = ctheme;
+      } else { 
+        fn = "they";
+      }
+
+      this->printf("HTTP/1.1 302 Redirect\r\n");
+      this->printf("Connection: keep-alive\r\n");
+      this->printf("Content-Type: text/plain\r\n");
+      this->printf("Content-Length: 0\r\n");
+      this->printf("Location: /%s\r\n", fn.c_str());
+      this->printf("\r\n");
+      return;
+    }
+
+    if (fn == "index" && ext == "html") {
+      std::string nom = fon->gennom();
+
+      this->printf("HTTP/1.1 302 Redirect\r\n");
+      this->printf("Connection: keep-alive\r\n");
+      this->printf("Content-Type: text/plain\r\n");
+      this->printf("Content-Length: 0\r\n");
+      this->printf("Location: /%s\r\n", nom.c_str());
+      this->printf("\r\n");
+      return;
+    }
+
+    if (ext == "html") {
+      std::string html = makemore::slurp("fsy/index.html");
+      html = replacestr(html, "$NOM", fn);
+      html = replacestr(html, "$CNOM0", fon->gennom(fn));
+      html = replacestr(html, "$CNOM1", fon->gennom(fn));
+      html = replacestr(html, "$CNOM2", fon->gennom(fn));
+      html = replacestr(html, "$CNOM3", fon->gennom(fn));
+    
+      this->printf("HTTP/1.1 200 OK\r\n");
+      this->printf("Connection: keep-alive\r\n");
+      this->printf("Content-Type: text/html\r\n");
+      this->printf("Content-Length: %lu\r\n", html.length());
+      this->printf("\r\n");
+      this->write(html);
+      return;
+    }
+
+    http_notfound();
+    return;
   }
 
   if (host == "hotorbot.ai") {
@@ -894,7 +1158,7 @@ fprintf(stderr, "req=[%s]\n", req.c_str());
     if (cgi["r"] != "")
       r = strtoul(cgi["r"].c_str(), NULL, 0);
 
-    double vdev = 0.0;
+    double vdev = 1.0;
     if (cgi["vdev"] != "")
       vdev = strtod(cgi["vdev"].c_str(), NULL);
 
@@ -915,6 +1179,10 @@ fprintf(stderr, "req=[%s]\n", req.c_str());
 
     std::string png;
     genpar.to_png(&png);
+
+Parson *parson = server->urb->make("font", 0);
+parson->visit(1);
+++parson->score;
 
     this->printf("HTTP/1.1 200 OK\r\n");
     this->printf("Connection: keep-alive\r\n");
@@ -2593,7 +2861,6 @@ dev = sqrt(dev);
       cache = strtoul(cgi["cache"].c_str(), NULL, 0);
 
     Parson *parson = server->urb->make(nom, 0);
-
 parson->visit(1);
 if (*parson->owner) {
   if (Parson *m = server->urb->find(parson->owner)) {

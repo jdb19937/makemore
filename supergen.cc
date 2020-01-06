@@ -147,16 +147,18 @@ void Supergen::generate(const double *ctr, class Partrait *prt, class Styler *st
     prt->set_pose(Pose::STANDARD);
 
     assert(!is_rgb);
-    if (tgtlay->n == 256 * 256 * 4) {
+    if (tgtlay->n == prt->w * prt->h * 4) {
       if (!prt->alpha)
-        prt->alpha = new uint8_t[256 * 256];
-      labargba(tgtbuf, 256 * 256, prt->rgb, prt->alpha);
-    } else {
+        prt->alpha = new uint8_t[prt->w * prt->h];
+      labargba(tgtbuf, prt->w * prt->h, prt->rgb, prt->alpha);
+    } else if (tgtlay->n == prt->w * prt->h * 3) {
       if (prt->alpha) {
         delete[] prt->alpha;
         prt->alpha = NULL;
       }
-      labrgb(tgtbuf, 256 * 256 * 3, prt->rgb);
+      labrgb(tgtbuf, prt->w * prt->h * 3, prt->rgb);
+    } else {
+      assert(0);
     }
 
 #if 0

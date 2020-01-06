@@ -61,6 +61,8 @@ struct Server {
   std::string urbdir;
   Urb *urb;
 
+  class Fontasy *fontasy;
+
   std::string session_key;
   bool check_session(const std::string &nom, const std::string &session);
   std::string make_session(const std::string &nom, unsigned long duration = 3600);
