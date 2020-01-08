@@ -72,7 +72,36 @@ __global__ void gpu_supertron_feed(
 
   double sum = 0;
 
-  if (head->type == Supertron::Layer::TYPE_MPOOL) {
+  if (head->type == Supertron::Layer::TYPE_NOISEPAD) {
+    int tmp = outi;
+    int oz = tmp % head->oc; tmp /= head->oc;
+    int ox = tmp % head->ow; tmp /= head->ow;
+    int oy = tmp;
+
+    int ix = ox;
+    int iy = oy;
+    int iz = oz;
+
+    if (oz < head->ic) {
+      int ini = iz + head->ic * (ix + head->iw * iy);
+      sum = in[ini];
+    } else {
+      int nni = (oz - head->ic) + (head->oc - head->ic) * (ix + head->iw * iy);
+      sum = layer.noise[nni];
+    }
+  } else if (head->type == Supertron::Layer::TYPE_IDENTITY) {
+    int tmp = outi;
+    int oz = tmp % head->oc; tmp /= head->oc;
+    int ox = tmp % head->ow; tmp /= head->ow;
+    int oy = tmp;
+
+    int ix = ox;
+    int iy = oy;
+    int iz = oz;
+
+    int ini = iz + head->ic * (ix + head->iw * iy);
+    sum = in[ini];
+  } else if (head->type == Supertron::Layer::TYPE_MPOOL) {
     int tmp = outi;
     int oz = tmp % head->oc; tmp /= head->oc;
     int ox = tmp % head->ow; tmp /= head->ow;
@@ -198,7 +227,20 @@ __global__ void gpu_supertron_train1(
   double *weight = layer.weight;
   double *fout = layer.fout;
 
-  if (head->type == Supertron::Layer::TYPE_MPOOL) {
+  if (head->type == Supertron::Layer::TYPE_NOISEPAD || head->type == Supertron::Layer::TYPE_IDENTITY) {
+    int tmp = ini;
+    int iz = tmp % head->ic; tmp /= head->ic;
+    int ix = tmp % head->iw; tmp /= head->iw;
+    int iy = tmp;
+
+    int oz = iz;
+    int ox = ix;
+    int oy = iy;
+
+    int outi = oz + head->oc * (ox + head->ow * oy);
+    layer.fin[ini] += layer.fout[outi];
+    return;
+  } else if (head->type == Supertron::Layer::TYPE_MPOOL) {
     int tmp = ini;
     int iz = tmp % head->ic; tmp /= head->ic;
     int ix = tmp % head->iw; tmp /= head->iw;
@@ -263,6 +305,10 @@ __global__ void gpu_supertron_train2(
   int wn = head->wn;
 
   if (head->type == Supertron::Layer::TYPE_MPOOL)
+    return;
+  if (head->type == Supertron::Layer::TYPE_IDENTITY)
+    return;
+  if (head->type == Supertron::Layer::TYPE_NOISEPAD)
     return;
   if (a == 0)
     return;
@@ -369,12 +415,20 @@ const double *Supertron::feed(const double *_in, double *_fin) {
       lay.fin = _fin;
     }
 
+    if (lay.type == Supertron::Layer::TYPE_NOISEPAD) {
+      unsigned int nn = lay.outn - lay.inn;
+      if (!lay.noise)
+        cumake(&lay.noise, nn);
+      double *noisebuf = new double[nn];
+      for (unsigned int j = 0; j < nn; ++j)
+        noisebuf[j] = randgauss();
+      encude(noisebuf, nn, lay.noise);
+      delete[] noisebuf;
+    }
+
     int bs = 256;
     int gs = (lay.outn + bs - 1) / bs;
-//fprintf(stderr, "feeding layer %u\n", li);
     gpu_supertron_feed<<<gs, bs>>>(lay);
-//fprintf(stderr, "    fed layer %u\n", li);
-
   }
   
   return layers[layers.size() - 1]->out;
@@ -465,6 +519,7 @@ Supertron::Supertron(Mapfile *_mapfile) {
 
     Supertron::Layer::Head head;
     decude(lay->head, 1, &head);
+    lay->type = head.type;
     lay->wn = head.wn;
     lay->inn = head.inn;
     lay->outn = head.outn;
@@ -490,11 +545,11 @@ Supertron::Supertron(Mapfile *_mapfile) {
 
     if (head.type == Supertron::Layer::TYPE_CONV) {
 
-      unsigned int mwn = 16384;
+      unsigned int mwn = 65536;
       if (lay->wn < mwn) {
         lay->wbufk = 2 * mwn / lay->wn;
-        if (lay->wbufk > 128)
-          lay->wbufk = 128;
+        if (lay->wbufk > 1024)
+          lay->wbufk = 1024;
       }
 
       cumake(&lay->wbuf, lay->wn * lay->wbufk);
@@ -586,6 +641,24 @@ void Supertron::add_layer(
   int s2 = (s > 0) ? (1 << s) : 1;
 
   switch (head.type) {
+  case Supertron::Layer::TYPE_IDENTITY:
+    head.wn = 1;
+    assert(iw == ow);
+    assert(ih == oh);
+    assert(ic == oc);
+    assert(d == 0);
+    assert(s == 0);
+    break;
+
+  case Supertron::Layer::TYPE_NOISEPAD:
+    head.wn = 1;
+    assert(d == 0);
+    assert(s == 0);
+    assert(iw == ow);
+    assert(ih == oh);
+    assert(oc > ic);
+    break;
+
   case Supertron::Layer::TYPE_FULL:
     head.wn = (head.inn + 1) * head.outn;
     assert(d == 0);
@@ -653,6 +726,8 @@ void Supertron::add_layer(const Supertron::Layer::Head &head) {
   mapfile->map(lay->m, head.wn);
   cumake(&lay->v, head.wn);
   mapfile->map(lay->v, head.wn);
+
+  lay->type = head.type;
 
   lay->wn = head.wn;
   lay->inn = head.inn;

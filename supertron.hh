@@ -32,6 +32,7 @@ struct Supertron {
       wbufk = 0;
       m = NULL;
       v = NULL;
+      noise = NULL;
 
       wn = 0;
       inn = 0;
@@ -64,6 +65,9 @@ struct Supertron {
       oiwtab = l.oiwtab;
       iowtab = l.iowtab;
       wiotab = l.wiotab;
+
+      type = l.type;
+      noise = l.noise;
     }
 
     enum Type {
@@ -72,7 +76,8 @@ struct Supertron {
       TYPE_CONV = 2,
       TYPE_YCONV = 3,
       TYPE_MPOOL = 4,
-      TYPE_IDENTITY = 5
+      TYPE_IDENTITY = 5,
+      TYPE_NOISEPAD = 6
     };
 
     enum Activation {
@@ -108,6 +113,9 @@ struct Supertron {
     unsigned int wn, inn, outn;
 
     int *oiwtab, *iowtab, *wiotab;
+
+    double *noise;
+    Layer::Type type;
   };
 
   uint64_t *cunlayers;
