@@ -133,42 +133,65 @@ void Zoomgen::generate(const Partrait &pic0, Partrait *outpic) {
   assert(mbn == 1);
 
   assert(ctxlay->n == 0);
-  Partrait pic = pic0;
-  pic.zoom();
-  assert(pic.w * pic.h * 3 == ctrlay->n);
+  // const Partrait &inpic = pic0;
+  Partrait inpic = pic0;
+  assert(inpic.w * inpic.h * 3 == ctrlay->n);
 
-  double *lab = new double[ctrlay->n];
-  rgblab(pic.rgb, ctrlay->n, lab);
-  encude(lab, ctrlay->n, cugenin);
-  delete[] lab;
+  double *rgb = new double[ctrlay->n];
+  btodv(inpic.rgb, rgb, ctrlay->n);
+  
+  encude(rgb, ctrlay->n, cugenin);
+  delete[] rgb;
 
   double *cugenout;
   cugenout = (double *)gen->feed(cugenin, NULL);
 
-  assert(tgtlay->n == pic.w * pic.h * 3);
-  lab = new double[tgtlay->n];
-  rgblab(pic.rgb, tgtlay->n, lab);
-  double *culab;
-  cumake(&culab, tgtlay->n);
-  encude(lab, tgtlay->n, culab);
-  cuaddvec(culab, cugenout, tgtlay->n, cugenout);
-  cufree(culab);
+  Partrait tgtpic = pic0;
+  assert(tgtlay->n == tgtpic.w * tgtpic.h * 3);
+  rgb = new double[tgtlay->n];
+  btodv(tgtpic.rgb, rgb, tgtlay->n);
+  double *curgb;
+  cumake(&curgb, tgtlay->n);
+  encude(rgb, tgtlay->n, curgb);
+  cuaddvec(curgb, cugenout, tgtlay->n, cugenout);
+  cufree(curgb);
 
   if (outpic) {
-    decude(cugenout, tgtlay->n, lab);
-    outpic->create(pic.w, pic.h);
-    labrgb(lab, tgtlay->n, outpic->rgb);
+    decude(cugenout, tgtlay->n, rgb);
+    outpic->create(tgtpic.w, tgtpic.h);
+    dtobv(rgb, outpic->rgb, tgtlay->n);
   }
 
-  delete[] lab;
+  delete[] rgb;
 }
 
-void Zoomgen::burn(double pi, Zoomdis *dis) {
-  assert(dis->inplay->n == tgtlay->n);
-  assert(dis->dis->inn == tgtlay->n);
+void Zoomgen::burn(double pi, Zoomdis *dis, const class Partrait *pic, double ganlev) {
+  if (dis) {
+    assert(dis->dis->inn == tgtlay->n);
 
-  double sc = dis->score(this);
-  dis->burn(1.0, 0.0);
+    double sc = dis->score(this);
+
+//    if (sc > 0.5)
+//      return;
+//dis->burn(0.5, 0.0);
+
+
+//  dis->burn(1.0, 0.0);
+
+  dis->burn(sc + 1.0, 0.0);
+
+
+  }
+
+  if (ganlev > 0) {
+    assert(tgtlay->n == pic->w * pic->h * 3);
+    btodv(pic->rgb, tgtbuf, pic->w * pic->h * 3);
+    encude(tgtbuf, tgtlay->n, cugentgt);
+
+    cusubvec(cugentgt, gen->output(), tgtlay->n, cugentgt);
+    cumuld(cugentgt, ganlev, tgtlay->n, cugentgt);
+    cuaddvec(cugentgt, gen->foutput(), tgtlay->n, gen->foutput());
+  }
 
   gen->update_stats();
   gen->train(pi);
@@ -177,10 +200,10 @@ void Zoomgen::burn(double pi, Zoomdis *dis) {
 void Zoomgen::burn(double pi, const Partrait &pic) {
   assert(pic.w * pic.h * 3 == tgtlay->n);
 
-  double *lab = new double[tgtlay->n];
-  rgblab(pic.rgb, tgtlay->n, lab);
-  encude(lab, tgtlay->n, cugentgt);
-  delete[] lab;
+  double *rgb = new double[tgtlay->n];
+  btodv(pic.rgb, rgb, tgtlay->n);
+  encude(rgb, tgtlay->n, cugentgt);
+  delete[] rgb;
 
   gen->target(cugentgt);
   gen->update_stats();

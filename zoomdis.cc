@@ -13,6 +13,7 @@
 #include "zoomgen.hh"
 #include "pic.hh"
 #include "partrait.hh"
+#include "numutils.hh"
 
 namespace makemore {
 
@@ -23,30 +24,20 @@ Zoomdis::Zoomdis(const std::string &_dir, unsigned int _mbn) : Project(_dir, _mb
 
   assert(config["type"] == "zoomdis");
 
-  char inplayfn[4096];
-  sprintf(inplayfn, "%s/input.lay", dir.c_str());
-  inplay = new Layout;
-  inplay->load_file(inplayfn);
-
   char dismapfn[4096];
   sprintf(dismapfn, "%s/dis.map", dir.c_str());
   dismap = new Mapfile(dismapfn);
   dis = new Supertron(dismap);
 
-  assert(dis->inn == inplay->n);
-  assert(dis->outn == 1);
-
   cumake(&cudisin, dis->inn);
-  cumake(&cudistgt, 1);
+  cumake(&cudistgt, dis->outn);
 
-  inpbuf = new double[mbn * inplay->n]();
+  inpbuf = new double[mbn * dis->inn]();
 
   rounds = 0;
 }
 
 Zoomdis::~Zoomdis() {
-  delete inplay;
-
   cufree(cudisin);
   cufree(cudistgt);
 
@@ -73,10 +64,10 @@ void Zoomdis::load() {
 
 double Zoomdis::score(const class Partrait &prt) {
   assert(mbn == 1);
-  assert(inplay->n == prt.w * prt.h * 3);
+  assert(dis->inn == prt.w * prt.h * 3);
 
-  rgblab(prt.rgb, inplay->n, inpbuf);
-  encude( inpbuf, inplay->n, cudisin);
+  btodv(prt.rgb, inpbuf, dis->inn);
+  encude( inpbuf, dis->inn, cudisin);
   const double *cudisout = dis->feed(cudisin);
   double sc;
 
@@ -86,7 +77,7 @@ double Zoomdis::score(const class Partrait &prt) {
 
 double Zoomdis::score(const class Zoomgen *gen) {
   assert(mbn == 1);
-  assert(gen->tgtlay->n == inplay->n);
+  assert(gen->tgtlay->n == dis->inn);
   const double *cudisout = dis->feed(gen->gen->output(), gen->gen->foutput());
 
   double sc;
@@ -95,7 +86,12 @@ double Zoomdis::score(const class Zoomgen *gen) {
 }
 
 void Zoomdis::burn(double sc, double nu) {
-  encude(&sc, 1, cudistgt);
+  double *scbuf = new double[dis->outn];
+  for (unsigned int j = 0; j < dis->outn; ++j)
+    scbuf[j] = sc;
+  encude(scbuf, dis->outn, cudistgt);
+  delete[] scbuf;
+
   dis->target(cudistgt);
 
   if (nu > 0)
