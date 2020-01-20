@@ -146,6 +146,7 @@ void Zoomgen::generate(const Partrait &pic0, Partrait *outpic) {
   double *cugenout;
   cugenout = (double *)gen->feed(cugenin, NULL);
 
+#if 0
   Partrait tgtpic = pic0;
   assert(tgtlay->n == tgtpic.w * tgtpic.h * 3);
   rgb = new double[tgtlay->n];
@@ -163,6 +164,16 @@ void Zoomgen::generate(const Partrait &pic0, Partrait *outpic) {
   }
 
   delete[] rgb;
+#endif
+
+  if (outpic) {
+    rgb = new double[tgtlay->n];
+    decude(cugenout, tgtlay->n, rgb);
+    outpic->create(pic0.w, pic0.h);
+    dtobv(rgb, outpic->rgb, tgtlay->n);
+    delete[] rgb;
+  }
+
 }
 
 void Zoomgen::burn(double pi, Zoomdis *dis, const class Partrait *pic, double ganlev) {
@@ -175,10 +186,11 @@ void Zoomgen::burn(double pi, Zoomdis *dis, const class Partrait *pic, double ga
 //      return;
 //dis->burn(0.5, 0.0);
 
-
 //  dis->burn(1.0, 0.0);
 
-  dis->burn(sc + 1.0, 0.0);
+//  dis->burn(sc + 1.0, 0.0);
+
+  dis->testfake();
 
 
   }

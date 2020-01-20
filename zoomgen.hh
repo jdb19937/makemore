@@ -48,7 +48,7 @@ struct Zoomgen : Project {
   void save();
 
   void generate(const class Partrait &, class Partrait *outpic = NULL);
-  void burn(double pi, class Zoomdis *dis);
+  void burn(double pi, class Zoomdis *dis, const class Partrait *pic, double ganlevel);
   void burn(double pi, const Partrait &);
 
 };

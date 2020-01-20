@@ -18,7 +18,6 @@
 namespace makemore {
 
 struct Zoomdis : Project {
-  Layout *inplay;
   Mapfile *dismap;
   Supertron *dis;
 
@@ -34,9 +33,11 @@ struct Zoomdis : Project {
   void load();
   void save();
 
-  double score(const class Zoomgen *gen);
-  double score(const class Partrait &prt);
-  void burn(double sc, double nu);
+  double score(const class Zoomgen *gen, double noise = 0);
+  double score(const class Partrait &prt, double noise = 0);
+  void burnreal(double nu);
+  void burnfake(double nu);
+  void testfake();
   void observe(const class Partrait *prt0, class Zoomgen *gen, const class Partrait *prt1, double nu);
 };
 
