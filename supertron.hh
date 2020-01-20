@@ -77,7 +77,8 @@ struct Supertron {
       TYPE_YCONV = 3,
       TYPE_MPOOL = 4,
       TYPE_IDENTITY = 5,
-      TYPE_NOISEPAD = 6
+      TYPE_NOISEPAD = 6,
+      TYPE_FILLPAD = 7
     };
 
     enum Activation {
@@ -131,10 +132,12 @@ struct Supertron {
   void update_stats();
 
   const double *input() { assert(layers.size()); return layers[0]->in; }
-  const double *output() { assert(layers.size()); return layers[layers.size() - 1]->out; }
+  double *output() { assert(layers.size()); return layers[layers.size() - 1]->out; }
   double *foutput() { assert(layers.size()); return layers[layers.size() - 1]->fout; }
 
+  void randomize_last(double disp);
   void randomize(double disp);
+  void randomize_layer(Layer *, double disp);
 
   void add_layer(const Layer::Head &head);
   void add_layer(
