@@ -822,8 +822,17 @@ void Supertron::add_layer(const Supertron::Layer::Head &head) {
   outn = lay->outn;
 }
 
+void Supertron::randomize_last(double disp) {
+  randomize_layer(layers[layers.size() - 1], disp);
+}
+
 void Supertron::randomize(double disp) {
   for (auto lay : layers) {
+    randomize_layer(lay, disp);
+  }
+}
+
+void Supertron::randomize_layer(Supertron::Layer *lay, double disp) {
     Supertron::Layer::Head head;
     decude(lay->head, 1, &head);
 
@@ -863,7 +872,6 @@ void Supertron::randomize(double disp) {
 
     encude(weight, lay->wn, lay->weight);
     delete[] weight;
-  }
 }
 
 }
