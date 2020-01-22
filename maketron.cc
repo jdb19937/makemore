@@ -2,6 +2,7 @@
 
 #include "supertron.hh"
 #include "random.hh"
+#include "cudamem.hh"
 
 using namespace makemore;
 
@@ -37,6 +38,60 @@ int main(int argc, char **argv) {
     return 0;
   }
 
+  if (opt == "--adam_b1") {
+    --argc;
+    ++argv;
+    assert(argc > 0);
+    const char *mapfn = argv[0];
+
+    --argc;
+    ++argv;
+    double x = argc > 0 ? strtod(argv[0], NULL) : 1.0;
+
+    Mapfile *mapfile = new Mapfile(mapfn);
+    Supertron *st = new Supertron(mapfile);
+
+    for (auto lay : st->layers) {
+      Supertron::Layer::Head head;
+      decude(lay->head, 1, &head);
+      head.adam_b1 = x;
+      encude(&head, 1, lay->head);
+    }
+
+    mapfile->save();
+
+    delete st;
+    delete mapfile;
+    return 0;
+  }
+
+  if (opt == "--adam_b2") {
+    --argc;
+    ++argv;
+    assert(argc > 0);
+    const char *mapfn = argv[0];
+
+    --argc;
+    ++argv;
+    double x = argc > 0 ? strtod(argv[0], NULL) : 1.0;
+
+    Mapfile *mapfile = new Mapfile(mapfn);
+    Supertron *st = new Supertron(mapfile);
+
+    for (auto lay : st->layers) {
+      Supertron::Layer::Head head;
+      decude(lay->head, 1, &head);
+      head.adam_b2 = x;
+      encude(&head, 1, lay->head);
+    }
+
+    mapfile->save();
+
+    delete st;
+    delete mapfile;
+    return 0;
+  }
+
   if (opt == "--randomize") {
     --argc;
     ++argv;
@@ -51,6 +106,27 @@ int main(int argc, char **argv) {
     Supertron *st = new Supertron(mapfile);
 
     st->randomize(disp);
+    mapfile->save();
+
+    delete st;
+    delete mapfile;
+    return 0;
+  }
+
+  if (opt == "--randomize_last") {
+    --argc;
+    ++argv;
+    assert(argc > 0);
+    const char *mapfn = argv[0];
+
+    --argc;
+    ++argv;
+    double disp = argc > 0 ? strtod(argv[0], NULL) : 1.0;
+
+    Mapfile *mapfile = new Mapfile(mapfn);
+    Supertron *st = new Supertron(mapfile);
+
+    st->randomize_last(disp);
     mapfile->save();
 
     delete st;
