@@ -588,10 +588,11 @@ void Partrait::replace_bg(const Partrait &mask, const Partrait &bg) {
   }
 }
 
-void Partrait::shrink(Partrait *zpar) {
+void Partrait::shrink() {
   assert(w % 2 == 0 && h % 2 == 0);
-  zpar->create(w / 2, h / 2);
-
+  unsigned int nw = w / 2;
+  unsigned int nh = h / 2;
+  
   const uint8_t *r = rgb;
   double *tmp = new double[w * h * 3 / 4];
   memset(tmp, 0, w * h * 3 * sizeof(double) / 4);
@@ -601,14 +602,20 @@ void Partrait::shrink(Partrait *zpar) {
     for (unsigned int x = 0; x < w; ++x) {
       unsigned int x1 = x / 2;
       for (unsigned int c = 0; c < 3; ++c) {
-        tmp[y1 * zpar->w * 3 + x1 * 3 + c] += (double)*r++ / 4.0;
+        tmp[y1 * nw * 3 + x1 * 3 + c] += (double)*r++ / 4.0;
       }
     }
   }
 
-  for (unsigned int j = 0, jn = zpar->w * zpar->h * 3; j < jn; ++j) {
-    zpar->rgb[j] = tmp[j];
+  delete[] rgb;
+  rgb = new uint8_t[nw * nh * 3];
+
+  for (unsigned int j = 0, jn = nw * nh * 3; j < jn; ++j) {
+    rgb[j] = tmp[j];
   }
+
+  w = nw;
+  h = nh;
 
   delete[] tmp;
 }
@@ -676,5 +683,118 @@ void Partrait::paste(const Partrait &prt, unsigned int x0, unsigned int y0) {
   }
 }
      
+void Partrait::cut(Partrait *prt, unsigned int x0, unsigned int y0) {
+  unsigned int x1 = x0 + prt->w;
+  if (x1 > w)
+    x1 = w ;
+  unsigned int y1 = y0 + prt->h;
+  if (y1 > h)
+    y1 = h;
+
+  for (unsigned int y = y0; y < y1; ++y) {
+    unsigned int py = y - y0;
+
+    for (unsigned int x = x0; x < x1; ++x) {
+      unsigned int px = x - x0;
+
+      for (unsigned int c = 0; c < 3; ++c) {
+        prt->rgb[py * prt->w * 3 + px * 3 + c] = rgb[y * w * 3 + x * 3 + c];
+      }
+    }
+  }
+}
+
+void Partrait::zoom() {
+  unsigned int nw = w * 2;
+  unsigned int nh = h * 2;
+
+  assert(nw > 0);
+  assert(nh > 0);
+  assert(rgb);
+
+  double *vec = new double[nw * nh * 3]();
+
+  for (unsigned int y = 0; y < h; ++y) {
+    for (unsigned int x = 0; x < w; ++x) {
+      for (unsigned int c = 0; c < 3; ++c) {
+        uint8_t z = rgb[y * w * 3 + x * 3 + c];
+
+        vec[(2*y+0) * nw * 3 + (2*x+0) * 3 + c] = z;
+
+        vec[(2*y+1) * nw * 3 + (2*x+0) * 3 + c] += z/2.0;
+        if (y > 0)
+          vec[(2*y-1) * nw * 3 + (2*x+0) * 3 + c] += z/2.0;
+
+        vec[(2*y+0) * nw * 3 + (2*x+1) * 3 + c] += z/2.0;
+        if (x > 0)
+          vec[(2*y+0) * nw * 3 + (2*x-1) * 3 + c] += z/2.0;
+
+        vec[(2*y+1) * nw * 3 + (2*x+1) * 3 + c] += z/4.0;
+        if (x > 0)
+          vec[(2*y+1) * nw * 3 + (2*x-1) * 3 + c] += z/4.0;
+        if (y > 0)
+          vec[(2*y-1) * nw * 3 + (2*x+1) * 3 + c] += z/4.0;
+        if (x > 0 && y > 0)
+          vec[(2*y-1) * nw * 3 + (2*x-1) * 3 + c] += z/4.0;
+
+        if (x == w-1) {
+          vec[(2*y+0) * nw * 3 + (2*x+1) * 3 + c] += z/2.0;
+          vec[(2*y+1) * nw * 3 + (2*x+1) * 3 + c] += z/4.0;
+          if (y > 0)
+            vec[(2*y-1) * nw * 3 + (2*x+1) * 3 + c] += z/4.0;
+        }
+
+        if (y == h-1) {
+          vec[(2*y+1) * nw * 3 + (2*x+0) * 3 + c] += z/2.0;
+          vec[(2*y+1) * nw * 3 + (2*x+1) * 3 + c] += z/4.0;
+          if (x > 0)
+            vec[(2*y+1) * nw * 3 + (2*x-1) * 3 + c] += z/4.0;
+        }
+
+        if (x == w-1 && y == h-1) {
+          vec[(2*y+1) * nw * 3 + (2*x+1) * 3 + c] += z/4.0;
+        }
+      }
+    }
+  }
+
+  uint8_t *nrgb = new uint8_t[nw * nh * 3];
+  for (int i = nw * nh * 3; i >= 0; --i)
+    nrgb[i] = vec[i];
+  delete[] vec;
+
+  delete[] rgb;
+  rgb = nrgb;
+  w = nw;
+  h = nh;
+}
+
+#if 0
+
+void Partrait::enlarge() {
+  assert(rgb);
+
+  unsigned int w0 = w, h0 = h;
+  w *= 2;
+  h *= 2;
+
+  uint8_t *new_rgb = new uint8_t[w * h * 3];
+  uint8_t *p = new_rgb;
+  unsigned int wh3 = w * h * 3;
+
+  for (unsigned int y = 0; y < h; ++y) {
+    unsigned int y0 = (y >> 1);
+    for (unsigned int x = 0; x < w; ++x) {
+      unsigned int x0 = (x >> 1);
+      for (unsigned int c = 0; c < 3; ++c) {
+        *p++ = rgb[y0 * 3 * w0 + x0 * 3 + c];
+      }
+    }
+  }
+
+  delete[] rgb;
+  rgb = new_rgb;
+}
+#endif
 
 }

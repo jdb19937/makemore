@@ -53,7 +53,8 @@ struct Partrait {
 
   void clear();
 
-  void shrink(Partrait *zprt);
+  void shrink();
+  void zoom();
 
   void create(unsigned int _w, unsigned int _h) {
     clear();
@@ -61,6 +62,37 @@ struct Partrait {
     h = _h;
     assert(w > 0 && h > 0);
     rgb = new uint8_t[w * h * 3];
+  }
+
+  void invert(int cmask = 7) {
+    uint8_t *p = rgb;
+    assert(p);
+
+    unsigned int n = w * h;
+    for (unsigned int i = 0; i < n; ++i) {
+      for (int c = 0; c < 3; ++c) {
+        if (cmask & (1 << c)) {
+          uint8_t x = 255 - *p;
+          *p = x;
+        }
+        ++p;
+      }
+    }
+  }
+
+  void fill(int cmask, uint8_t val) {
+    uint8_t *p = rgb;
+    assert(p);
+
+    unsigned int n = w * h;
+    for (unsigned int i = 0; i < n; ++i) {
+      for (int c = 0; c < 3; ++c) {
+        if (cmask & (1 << c)) {
+          *p = val;
+        }
+        ++p;
+      }
+    }
   }
 
   void fill_white() {
@@ -176,6 +208,7 @@ struct Partrait {
   void erase_bg(const Partrait &mask);
   void replace_bg(const Partrait &mask, const Partrait &bg);
   void paste(const Partrait &prt, unsigned int x, unsigned int y);
+  void cut(Partrait *, unsigned int x, unsigned int y);
 };
 
 }
