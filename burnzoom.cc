@@ -70,8 +70,10 @@ assert(argc == 4 || argc == 5);
     assert(pin.w == 32 && pin.h == 32);
     // pin.shrink();
     
+if (dis.dis->err2 < 0.45) {
     gen.generate(pin);
     gen.burn(0.0001, &dis, &pout, 0);
+}
 
    if (i % 100 == 0) {
 pout.save("./zoomsrc.png");
