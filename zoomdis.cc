@@ -110,17 +110,14 @@ double Zoomdis::score(const class Zoomgen *gen, double noise) {
 }
 
 void Zoomdis::burnreal(double nu) {
-  assert(dis->outn == 1);
+  double *scbuf = new double[dis->outn];
+  decude(dis->output(), dis->outn, scbuf);
 
-  double p;
-  decude(dis->output(), 1, &p);
+  for (unsigned int j = 0; j < dis->outn; ++j)
+    scbuf[j] = scbuf[j] + 1.0 - sigmoid(scbuf[j]);
 
-  // double loss = 1.0 / (p > MINP ? p : MINP);
-  double loss = 1.0 - sigmoid(p);
-
-  double sc1 = p + loss;
-
-  encude(&sc1, 1, cudistgt);
+  encude(scbuf, dis->outn, cudistgt);
+  delete[] scbuf;
 
   dis->target(cudistgt);
   dis->update_stats();
@@ -128,17 +125,14 @@ void Zoomdis::burnreal(double nu) {
 }
 
 void Zoomdis::burnfake(double nu) {
-  assert(dis->outn == 1);
+  double *scbuf = new double[dis->outn];
+  decude(dis->output(), dis->outn, scbuf);
 
-  double p;
-  decude(dis->output(), 1, &p);
+  for (unsigned int j = 0; j < dis->outn; ++j)
+    scbuf[j] = scbuf[j] + 0.0 - sigmoid(scbuf[j]);
 
-  // double loss = -1.0 / (1.0 - (p < (1.0 - MINP) ? p : (1.0 - MINP)));
-  double loss = 0.0 - sigmoid(p);
-
-  double sc1 = p + loss;
-
-  encude(&sc1, 1, cudistgt);
+  encude(scbuf, dis->outn, cudistgt);
+  delete[] scbuf;
 
   dis->target(cudistgt);
   dis->update_stats();
@@ -146,16 +140,14 @@ void Zoomdis::burnfake(double nu) {
 }
 
 void Zoomdis::testfake() {
-  assert(dis->outn == 1);
+  double *scbuf = new double[dis->outn];
+  decude(dis->output(), dis->outn, scbuf);
 
-  double p;
-  decude(dis->output(), 1, &p);
+  for (unsigned int j = 0; j < dis->outn; ++j)
+    scbuf[j] = scbuf[j] + 1.0 - sigmoid(scbuf[j]);
 
-  double loss = 1.0 - sigmoid(p);
-
-  double sc1 = p + loss;
-
-  encude(&sc1, 1, cudistgt);
+  encude(scbuf, dis->outn, cudistgt);
+  delete[] scbuf;
 
   dis->target(cudistgt);
   dis->train(0);

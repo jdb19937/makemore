@@ -146,7 +146,7 @@ void Zoomgen::generate(const Partrait &pic0, Partrait *outpic) {
   double *cugenout;
   cugenout = (double *)gen->feed(cugenin, NULL);
 
-#if 1
+#if 0
   Partrait tgtpic = pic0;
   assert(tgtlay->n == tgtpic.w * tgtpic.h * 3);
   rgb = new double[tgtlay->n];
