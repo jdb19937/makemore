@@ -86,8 +86,6 @@ Zoomgen::Zoomgen(const std::string &_dir, unsigned int _mbn) : Project(_dir, _mb
     encude(tgtlay->y, tgtlay->n, cutgtlayy);
   }
 
-  zone = new Zone(dir + "/train.zone");
-
   rounds = 0;
 }
 

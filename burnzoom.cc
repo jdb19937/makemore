@@ -52,7 +52,8 @@ assert(argc == 4 || argc == 5);
 
       // p0.shrink();
 
-      dis.observe(&p0, &gen, &p1, 1e-4);
+      double dismul = dis.dis->err2 > 0.5 ? 1.0 : 2.0 * dis.dis->err2;
+      dis.observe(&p0, &gen, &p1, 1e-4 * dismul);
     }
 
 
@@ -70,10 +71,11 @@ assert(argc == 4 || argc == 5);
     assert(pin.w == 32 && pin.h == 32);
     // pin.shrink();
     
-if (dis.dis->err2 < 0.45) {
+    double genmul = dis.dis->err2 > 0.5 ? 0.0 : 2.0 * (0.5 - dis.dis->err2);
+//if (dis.dis->err2 < 0.45) {
     gen.generate(pin);
-    gen.burn(0.0001, &dis, &pout, 0);
-}
+    gen.burn(1e-4 * genmul, &dis, &pout, 0);
+//}
 
    if (i % 100 == 0) {
 pout.save("./zoomsrc.png");

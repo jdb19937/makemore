@@ -91,7 +91,7 @@ double Zoomdis::score(const class Partrait &prt, double noise) {
   double sc;
 
   decude(cudisout, 1, &sc);
-  return sigmoid(sc);
+  // return sigmoid(sc);
   return sc;
 }
 
@@ -105,7 +105,7 @@ double Zoomdis::score(const class Zoomgen *gen, double noise) {
 
   double sc;
   decude(cudisout, 1, &sc);
-  return sigmoid(sc);
+  // return sigmoid(sc);
   return sc;
 }
 
@@ -114,7 +114,8 @@ void Zoomdis::burnreal(double nu) {
   decude(dis->output(), dis->outn, scbuf);
 
   for (unsigned int j = 0; j < dis->outn; ++j)
-    scbuf[j] = scbuf[j] + 1.0 - sigmoid(scbuf[j]);
+    // scbuf[j] = scbuf[j] + 1.0 - sigmoid(scbuf[j]);
+    scbuf[j] = 0.5;
 
   encude(scbuf, dis->outn, cudistgt);
   delete[] scbuf;
@@ -129,7 +130,8 @@ void Zoomdis::burnfake(double nu) {
   decude(dis->output(), dis->outn, scbuf);
 
   for (unsigned int j = 0; j < dis->outn; ++j)
-    scbuf[j] = scbuf[j] + 0.0 - sigmoid(scbuf[j]);
+    // scbuf[j] = scbuf[j] + 0.0 - sigmoid(scbuf[j]);
+    scbuf[j] = -0.5;
 
   encude(scbuf, dis->outn, cudistgt);
   delete[] scbuf;
@@ -144,7 +146,8 @@ void Zoomdis::testfake() {
   decude(dis->output(), dis->outn, scbuf);
 
   for (unsigned int j = 0; j < dis->outn; ++j)
-    scbuf[j] = scbuf[j] + 1.0 - sigmoid(scbuf[j]);
+    //scbuf[j] = scbuf[j] + 1.0 - sigmoid(scbuf[j]);
+    scbuf[j] = 0.5;
 
   encude(scbuf, dis->outn, cudistgt);
   delete[] scbuf;
@@ -159,7 +162,8 @@ void Zoomdis::observe(const Partrait *prt0, Zoomgen *gen, const Partrait *prt1, 
 //  if (dis->err2 < 0.3)
 //    nu = 1e-24;
 
-  bool lswap = (randuint() % 64 == 0);
+  //bool lswap = (randuint() % 64 == 0);
+  bool lswap = 0;
   double noise = 0.01;
 
   gen->generate(*prt0);
