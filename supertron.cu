@@ -72,7 +72,19 @@ __global__ void gpu_supertron_feed(
 
   double sum = 0;
 
-  if (head->type == Supertron::Layer::TYPE_NOISEPAD || head->type == Supertron::Layer::TYPE_FILLPAD) {
+  if (head->type == Supertron::Layer::TYPE_ADDINPUT) {
+    int tmp = outi;
+    int oz = tmp % head->oc; tmp /= head->oc;
+    int ox = tmp % head->ow; tmp /= head->ow;
+    int oy = tmp;
+
+    int ix = ox;
+    int iy = oy;
+    int iz = oz;
+
+    int ini = iz + head->ic * (ix + head->iw * iy);
+    sum = in[ini] + layer.noise[ini];
+  } else if (head->type == Supertron::Layer::TYPE_NOISEPAD || head->type == Supertron::Layer::TYPE_FILLPAD || head->type == Supertron::Layer::TYPE_PADINPUT) {
     int tmp = outi;
     int oz = tmp % head->oc; tmp /= head->oc;
     int ox = tmp % head->ow; tmp /= head->ow;
@@ -85,7 +97,7 @@ __global__ void gpu_supertron_feed(
     if (oz < head->ic) {
       int ini = iz + head->ic * (ix + head->iw * iy);
       sum = in[ini];
-    } else if (head->type == Supertron::Layer::TYPE_NOISEPAD) {
+    } else if (head->type == Supertron::Layer::TYPE_NOISEPAD || head->type == Supertron::Layer::TYPE_PADINPUT) {
       int nni = (oz - head->ic) + (head->oc - head->ic) * (ix + head->iw * iy);
       sum = layer.noise[nni];
     } else if (head->type == Supertron::Layer::TYPE_FILLPAD) {
@@ -205,7 +217,10 @@ __global__ void gpu_supertron_train0(
       layer.fout[outi] = 0;
     break;
   case Supertron::Layer::ACTIVATION_SOFTPLUS:
-    layer.fout[outi] = layer.fout[outi] * (1 - exp(-layer.out[outi]));
+    if (layer.out[outi] <= 0)
+      layer.fout[outi] = 0;
+    else
+      layer.fout[outi] = layer.fout[outi] * (1 - exp(-layer.out[outi]));
     break;
   default:
     break;
@@ -230,7 +245,7 @@ __global__ void gpu_supertron_train1(
   double *weight = layer.weight;
   double *fout = layer.fout;
 
-  if (head->type == Supertron::Layer::TYPE_NOISEPAD || head->type == Supertron::Layer::TYPE_IDENTITY || head->type == Supertron::Layer::TYPE_FILLPAD) {
+  if (head->type == Supertron::Layer::TYPE_NOISEPAD || head->type == Supertron::Layer::TYPE_IDENTITY || head->type == Supertron::Layer::TYPE_FILLPAD || head->type == Supertron::Layer::TYPE_PADINPUT || head->type == Supertron::Layer::TYPE_ADDINPUT) {
     int tmp = ini;
     int iz = tmp % head->ic; tmp /= head->ic;
     int ix = tmp % head->iw; tmp /= head->iw;
@@ -314,6 +329,10 @@ __global__ void gpu_supertron_train2(
   if (head->type == Supertron::Layer::TYPE_NOISEPAD)
     return;
   if (head->type == Supertron::Layer::TYPE_FILLPAD)
+    return;
+  if (head->type == Supertron::Layer::TYPE_PADINPUT)
+    return;
+  if (head->type == Supertron::Layer::TYPE_ADDINPUT)
     return;
   if (a == 0)
     return;
@@ -447,9 +466,17 @@ const double *Supertron::feed(const double *_in, double *_fin) {
       delete[] noisebuf;
     }
 
+    if (lay.type == Supertron::Layer::TYPE_PADINPUT || lay.type == Supertron::Layer::TYPE_ADDINPUT) {
+      lay.noise = (double *)_in;
+    }
+
     int bs = 256;
     int gs = (lay.outn + bs - 1) / bs;
     gpu_supertron_feed<<<gs, bs>>>(lay);
+
+    if (lay.type == Supertron::Layer::TYPE_PADINPUT || lay.type == Supertron::Layer::TYPE_ADDINPUT) {
+      lay.noise = NULL;
+    }
   }
   
   return layers[layers.size() - 1]->out;
@@ -663,6 +690,7 @@ void Supertron::add_layer(
 
   switch (head.type) {
   case Supertron::Layer::TYPE_IDENTITY:
+  case Supertron::Layer::TYPE_ADDINPUT:
     head.wn = 1;
     assert(iw == ow);
     assert(ih == oh);
@@ -671,6 +699,7 @@ void Supertron::add_layer(
     assert(s == 0);
     break;
 
+  case Supertron::Layer::TYPE_PADINPUT:
   case Supertron::Layer::TYPE_NOISEPAD:
   case Supertron::Layer::TYPE_FILLPAD:
     head.wn = 1;

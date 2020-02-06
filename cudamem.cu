@@ -5,6 +5,8 @@
 #include <stdio.h>
 #include <stdint.h>
 
+#include "random.hh"
+
 namespace makemore {
 
 void encudev(const void *a, unsigned int n, void *da) {
@@ -54,6 +56,56 @@ void cumulf(const float *a, const float b, unsigned int n, float *c) {
   int bs = 128;
   int gs = ((n + bs - 1) / bs);
   gpu_mulf<<<gs, bs>>>(a, b, n, c);
+}
+
+
+__global__ void gpu_clampvec(double *a, unsigned int n, double q) {
+  unsigned int i = blockIdx.x * blockDim.x + threadIdx.x;
+  if (i < n && a[i] > q)
+    a[i] = q;
+}
+void cuclampvec(double *a, unsigned int n, double q) {
+  int bs = 128;
+  int gs = ((n + bs - 1) / bs);
+  gpu_clampvec<<<gs, bs>>>(a, n, q);
+}
+
+
+__global__ void gpu_log1vec(double *a, unsigned int n) {
+  unsigned int i = blockIdx.x * blockDim.x + threadIdx.x;
+  if (i < n && a[i] >= 0)
+    a[i] = log(1 + a[i]);
+}
+
+void culog1vec(double *a, unsigned int n) {
+  int bs = 128;
+  int gs = ((n + bs - 1) / bs);
+  gpu_log1vec<<<gs, bs>>>(a, n);
+}
+
+__global__ void gpu_absvec(double *a, unsigned int n) {
+  unsigned int i = blockIdx.x * blockDim.x + threadIdx.x;
+  if (i < n && a[i] < 0)
+    a[i] = -a[i];
+}
+
+__global__ void gpu_sqrtvec(double *a, unsigned int n) {
+  unsigned int i = blockIdx.x * blockDim.x + threadIdx.x;
+  if (i < n && a > 0)
+    a[i] = sqrt(a[i]);
+}
+
+void cusqrtvec(double *a, unsigned int n) {
+  int bs = 128;
+  int gs = ((n + bs - 1) / bs);
+  gpu_sqrtvec<<<gs, bs>>>(a, n);
+}
+
+
+void cuabsvec(double *a, unsigned int n) {
+  int bs = 128;
+  int gs = ((n + bs - 1) / bs);
+  gpu_absvec<<<gs, bs>>>(a, n);
 }
 
 __global__ void gpu_muld(const double *a, const double b, unsigned int n, double *c) {
@@ -973,6 +1025,57 @@ __global__ void gpu_dctii(const double *x, unsigned int n, double *y) {
   y[k] = sum;
 }
 
+
+__global__ void gpu_cuspliceadd(
+  const double *x, int n, int xm, int xa, int xk,
+  double *y, int ym, int ya
+) {
+  int i = blockIdx.x * blockDim.x + threadIdx.x;
+  if (i >= n * xk)
+    return;
+
+  int ixk = i / n;
+  int in = i % n;
+
+  y[in * ym + ya + ixk] += x[in * xm + xa + ixk];
+}
+
+void cuspliceadd(
+  const double *x, int n, int xm, int xa, int xk,
+  double *y, int ym, int ya
+) {
+  int bs = 256;
+  int gs = ((n * xk + bs - 1) / bs);
+  gpu_cuspliceadd<<<gs, bs>>>(x, n, xm, xa, xk, y, ym, ya);
+}
+
+
+
+__global__ void gpu_cusplice(
+  const double *x, int n, int xm, int xa, int xk,
+  double *y, int ym, int ya
+) {
+  int i = blockIdx.x * blockDim.x + threadIdx.x;
+  if (i >= n * xk)
+    return;
+
+  int ixk = i / n;
+  int in = i % n;
+
+  y[in * ym + ya + ixk] = x[in * xm + xa + ixk];
+}
+
+void cusplice(
+  const double *x, int n, int xm, int xa, int xk,
+  double *y, int ym, int ya
+) {
+  int bs = 256;
+  int gs = ((n * xk + bs - 1) / bs);
+  gpu_cusplice<<<gs, bs>>>(x, n, xm, xa, xk, y, ym, ya);
+}
+
+
+
 void cudctii(const double *x, unsigned int n, double *y) {
   int bs = 256;
   int gs = ((n + bs - 1) / bs);
@@ -1001,6 +1104,22 @@ void cudctiii(const double *x, unsigned int n, double *y) {
   int bs = 256;
   int gs = ((n + bs - 1) / bs);
   gpu_dctiii<<<gs, bs>>>(x, n, y);
+}
+
+void cuaddnoise(double *cudat, unsigned int n, double dev) {
+  if (dev == 0.0)
+    return;
+
+  double *noise = new double[n];
+  for (unsigned int j = 0; j < n; ++j)
+    noise[j] = randgauss() * dev;
+  double *cunoise;
+  cumake(&cunoise, n);
+  encude(noise, n, cunoise);
+  delete[] noise;
+
+  cuaddvec(cudat, cunoise, n, cudat);
+  cufree(cunoise);
 }
   
 };

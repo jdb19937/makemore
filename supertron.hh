@@ -78,7 +78,9 @@ struct Supertron {
       TYPE_MPOOL = 4,
       TYPE_IDENTITY = 5,
       TYPE_NOISEPAD = 6,
-      TYPE_FILLPAD = 7
+      TYPE_FILLPAD = 7,
+      TYPE_PADINPUT = 8,
+      TYPE_ADDINPUT = 9
     };
 
     enum Activation {

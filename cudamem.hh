@@ -119,6 +119,10 @@ extern void cutmatxvec(
   const double *m, const double *x, unsigned int w, unsigned int h, double *y
 );
 
+extern void culog1vec(double *a, unsigned int n);
+extern void cusqrtvec(double *a, unsigned int n);
+extern void cuclampvec(double *a, unsigned int n, double q);
+extern void cuabsvec(double *a, unsigned int n);
 extern void cumuld(const double *a, const double b, unsigned int n, double *c);
 extern void cumulf(const float *a, const float b, unsigned int n, float *c);
 extern void cumulvec(const double *a, const double *b, unsigned int n, double *c);
@@ -154,6 +158,18 @@ inline void dctiii(const double *x, unsigned int n, double *y) {
   cufree(cx);
   cufree(cy);
 }
+
+void cuaddnoise(double *cudat, unsigned int n, double dev);
+
+void cusplice(
+  const double *x, int n, int xm, int xa, int xk,
+  double *y, int ym, int ya
+);
+void cuspliceadd(
+  const double *x, int n, int xm, int xa, int xk,
+  double *y, int ym, int ya
+);
+
 
 }
 
