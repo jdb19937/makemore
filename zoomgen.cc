@@ -64,11 +64,6 @@ Zoomgen::Zoomgen(const std::string &_dir, unsigned int _mbn) : Project(_dir, _mb
   genmap = new Mapfile(genmapfn);
   gen = new Supertron(genmap);
 
-  geninlay = new Layout(*ctxlay);
-  *geninlay += *ctrlay;
-  assert(gen->inn == mbn * geninlay->n);
-  assert(gen->outn == mbn * tgtlay->n);
-
   cumake(&cugentgt, gen->outn);
   cumake(&cugenin, gen->inn);
   cumake(&cugenfin, gen->inn);
@@ -90,8 +85,6 @@ Zoomgen::Zoomgen(const std::string &_dir, unsigned int _mbn) : Project(_dir, _mb
 }
 
 Zoomgen::~Zoomgen() {
-  delete geninlay;
-
   delete ctxlay;
   delete tgtlay;
   delete ctrlay;

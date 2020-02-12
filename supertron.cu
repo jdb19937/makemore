@@ -166,6 +166,8 @@ __global__ void gpu_supertron_feed(
     }
   }
 
+  layer.pout[outi] = sum;
+
   switch (head->activated) {
   case Supertron::Layer::ACTIVATION_NONE:
     layer.out[outi] = sum;
@@ -178,6 +180,12 @@ __global__ void gpu_supertron_feed(
     break;
   case Supertron::Layer::ACTIVATION_SOFTPLUS:
     layer.out[outi] = (sum > 64) ? sum : log(1 + exp(sum));
+    break;
+  case Supertron::Layer::ACTIVATION_ABS:
+    layer.out[outi] = (sum > 0) ? sum : -sum;
+    break;
+  case Supertron::Layer::ACTIVATION_SQUARE:
+    layer.out[outi] = sum * sum / 2.0;
     break;
   default:
     layer.out[outi] = 0;
@@ -202,14 +210,11 @@ __global__ void gpu_supertron_train0(
   case Supertron::Layer::ACTIVATION_SIGMOID:
     {
       double o = layer.out[outi];
-      double fo = layer.fout[outi];
 
-      if (o > 1.0)
-        o = 1.0;
-      else if (o < 0.0)
-        o = 0.0;
-
-      layer.fout[outi] = fo * o * (1.0 - o);
+      if (o < 1.0 && o > 0.0)
+        layer.fout[outi] *= (o * (1.0 - o)); // ???
+      else
+        layer.fout[outi] = 0;
     }
     break;
   case Supertron::Layer::ACTIVATION_RELU:
@@ -221,6 +226,16 @@ __global__ void gpu_supertron_train0(
       layer.fout[outi] = 0;
     else
       layer.fout[outi] = layer.fout[outi] * (1 - exp(-layer.out[outi]));
+    break;
+  case Supertron::Layer::ACTIVATION_ABS:
+    if (layer.pout[outi] <= 0)
+      layer.fout[outi] = -layer.fout[outi];
+    break;
+  case Supertron::Layer::ACTIVATION_SQUARE:
+    if (layer.pout[outi] == 0)
+      layer.fout[outi] = 0;
+    else
+      layer.fout[outi] = layer.fout[outi] / layer.pout[outi];
     break;
   default:
     break;
@@ -574,6 +589,7 @@ Supertron::Supertron(Mapfile *_mapfile) {
 
     cumake(&lay->out, head.outn);
     cumake(&lay->fout, head.outn);
+    cumake(&lay->pout, head.outn);
 
     cumake(&lay->weight, head.wn);
     mapfile->map(lay->weight, head.wn);
@@ -600,7 +616,8 @@ Supertron::Supertron(Mapfile *_mapfile) {
           lay->wbufk = 1024;
       }
 
-      cumake(&lay->wbuf, lay->wn * lay->wbufk);
+      if (lay->wbufk)
+        cumake(&lay->wbuf, lay->wn * lay->wbufk);
     }
 
 #if 0
@@ -645,6 +662,7 @@ Supertron::~Supertron() {
     cufree(lay->head);
     cufree(lay->out);
     cufree(lay->fout);
+    cufree(lay->pout);
     cufree(lay->weight);
     cufree(lay->m);
     cufree(lay->v);
@@ -770,6 +788,7 @@ void Supertron::add_layer(const Supertron::Layer::Head &head) {
 
   cumake(&lay->out, head.outn);
   cumake(&lay->fout, head.outn);
+  cumake(&lay->pout, head.outn);
 
   cumake(&lay->weight, head.wn);
   mapfile->map(lay->weight, head.wn);

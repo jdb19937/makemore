@@ -91,26 +91,34 @@ fprintf(stderr, "\n");
 
 
 
-  double genmul = 1.0;
-  double dismul = 1.0;
+//  double genmul = 1.0;
+//  double dismul = 1.0;
 
-//   double genmul = dis->err2 > 0.5 ? 0.0 : 2.0 * (0.5 - dis->err2);
-//   double dismul = dis->err2 > 0.5 ? 1.0 : 2.0 * dis->err2;
+   double genmul = dis->err2 > 0.5 ? 0.0 : 2.0 * (0.5 - dis->err2);
+   double dismul = dis->err2 > 0.5 ? 1.0 : 2.0 * dis->err2;
 
-  // double dismul = 1.0;
-  // double genmul = 0.0;
+//   double dismul = 1.0;
+//   double genmul = 0.0;
 
 #if 0
   assert(dis->outn == 32 * 32 * 3);
   cusplice(cudsamp, 32 * 32, 9, 0, 3, cudistgt, 3, 0);
 #endif
-#if 1
+#if 0
   cucopy(cudsamp, dis->inn, cudisin);
   #if 1
     cusplice(cudsamp, 32 * 32, 9, 3, 3, cugentgt, 3, 0);
     cuaddnoise(cugentgt, 32 * 32 * 3, nh);
+    //cucenterloss(cugentgt, 32, 32, 3, 4);
     cusplice(cugentgt, 32 * 32, 3, 0, 3, cudisin, 9, 3);
   #endif
+
+  #if 0
+    cusplice(cudisin, 32 * 32, 9, 0, 3, cugentgt, 3, 0);
+    cucenterloss(cugentgt, 32, 32, 3, 4);
+    cusplice(cugentgt, 32 * 32, 3, 0, 3, cudisin, 9, 0);
+  #endif
+
   dis->feed(cudisin, NULL);
   cucopy(dis->output(), dis->outn, cudistgt);
 #endif
@@ -119,7 +127,7 @@ fprintf(stderr, "\n");
     scbuf[j] = 0.5;
   encude(scbuf, dis->outn, cudistgt);
 #endif
-#if 0
+#if 1
   for (unsigned int j = 0; j < dis->outn; ++j)
     scbuf[j] = 0;
   encude(scbuf, dis->outn, cudistgt);
@@ -139,20 +147,28 @@ fprintf(stderr, "\n");
 #if 1
   cusplice(cudsamp, 32 * 32, 9, 3, 3, cugentgt, 3, 0);
   cuaddnoise(cugentgt, 32 * 32 * 3, nh);
+  //cucenterloss(cugentgt, 32, 32, 3, 4);
   cusplice(cugentgt, 32 * 32, 3, 0, 3, cudisin, 9, 3);
 #endif
 
   cusplice(gen->output(), 32 * 32, 3, 0, 3, cudisin, 9, 0);
+
+#if 0
+  cusplice(cudisin, 32 * 32, 9, 0, 3, cugentgt, 3, 0);
+  cucenterloss(cugentgt, 32, 32, 3, 4);
+  cusplice(cugentgt, 32 * 32, 3, 0, 3, cudisin, 9, 0);
+#endif
+
   cuzero(cudisfin, dis->inn);
   dis->feed(cudisin, cudisfin);
 
 
-#if 0
+#if 1
   assert(dis->outn == 32 * 32);
   double *tmpd = new double[dis->outn];
   decude(dis->output(), dis->outn, tmpd);
-  for (unsigned int j = 0; j < dis->outn; ++j)
-    tmpd[j] += 0.5;
+//  for (unsigned int j = 0; j < dis->outn; ++j)
+//    tmpd[j] += 0.5;
   uint8_t *tmpb = new uint8_t[dis->outn];
   dtobv(tmpd, tmpb, dis->outn);
   FILE *fp = fopen("tmp.pgm", "w");
@@ -163,11 +179,26 @@ fprintf(stderr, "\n");
   delete[] tmpd;
 #endif
 
+
   dis->target(cudistgt);
+
+#if 0
+  assert(dis->outn == 32 * 32 * 1);
+  cucenterloss(dis->foutput(), 32, 32, 1);
+#endif
+
   dis->train(0);
 
   cusplice(cudisfin, 32 * 32, 9, 0, 3, gen->foutput(), 3, 0);
+
+#if 0
+  cucenterloss(gen->foutput(), 32, 32, 3, 4);
+  cumuld(gen->foutput(), 2.0, 32 * 32 * 3, gen->foutput());
+#endif
+
   gen->update_stats();
+
+
   gen->train(nu * genmul);
 
 
@@ -175,10 +206,14 @@ fprintf(stderr, "\n");
 #if 1
   cusplice(cudsamp, 32 * 32, 9, 3, 3, cugentgt, 3, 0);
   cuaddnoise(cugentgt, 32 * 32 * 3, nh);
+  //cucenterloss(cugentgt, 32, 32, 3, 4);
   cusplice(cugentgt, 32 * 32, 3, 0, 3, cudisin, 9, 3);
 #endif
-
-
+#if 0
+  cusplice(cudisin, 32 * 32, 9, 0, 3, cugentgt, 3, 0);
+  cucenterloss(cugentgt, 32, 32, 3, 4);
+  cusplice(cugentgt, 32 * 32, 3, 0, 3, cudisin, 9, 0);
+#endif
 
   dis->feed(cudisin, NULL);
 #if 1
@@ -221,6 +256,10 @@ fprintf(stderr, "\n");
 
   dis->target(cudistgt);
   dis->update_stats();
+#if 0
+  assert(dis->outn == 32 * 32 * 1);
+  cucenterloss(dis->foutput(), 32, 32, 1);
+#endif
   dis->train(nu * dismul);
 
 
@@ -229,9 +268,14 @@ fprintf(stderr, "\n");
 #if 1
   cusplice(cudsamp, 32 * 32, 9, 3, 3, cugentgt, 3, 0);
   cuaddnoise(cugentgt, 32 * 32 * 3, nh);
+  //cucenterloss(cugentgt, 32, 32, 3, 4);
   cusplice(cugentgt, 32 * 32, 3, 0, 3, cudisin, 9, 3);
 #endif
-
+#if 0
+  cusplice(cudisin, 32 * 32, 9, 0, 3, cugentgt, 3, 0);
+  cucenterloss(cugentgt, 32, 32, 3, 4);
+  cusplice(cugentgt, 32 * 32, 3, 0, 3, cudisin, 9, 0);
+#endif
 
   dis->feed(cudisin, NULL);
 #if 0
@@ -246,6 +290,10 @@ fprintf(stderr, "\n");
 #endif
   dis->target(cudistgt);
   dis->update_stats();
+#if 0
+  assert(dis->outn == 32 * 32 * 1);
+  cucenterloss(dis->foutput(), 32, 32, 1);
+#endif
   dis->train(nu * dismul);
 
   delete[] scbuf;

@@ -152,6 +152,7 @@ int main(int argc, char **argv) {
     Mapfile *mapfile = new Mapfile(mapfn);
     Supertron *st = new Supertron(mapfile);
 
+fprintf(stderr, "addlayer\n");
     st->add_layer(type, iw, ih, ic, ow, oh, oc, d, s, a);
     mapfile->save();
 

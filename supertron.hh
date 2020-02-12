@@ -27,6 +27,7 @@ struct Supertron {
       fin = NULL;
       out = NULL;
       fout = NULL;
+      pout = NULL;
       weight = NULL;
       wbuf = NULL;
       wbufk = 0;
@@ -52,6 +53,7 @@ struct Supertron {
       fin = l.fin;
       out = l.out;
       fout = l.fout;
+      pout = l.pout;
       weight = l.weight;
       wbuf = l.wbuf;
       wbufk = l.wbufk;
@@ -87,7 +89,9 @@ struct Supertron {
       ACTIVATION_NONE = 0,
       ACTIVATION_SIGMOID = 1,
       ACTIVATION_RELU = 2,
-      ACTIVATION_SOFTPLUS = 3
+      ACTIVATION_SOFTPLUS = 3,
+      ACTIVATION_ABS = 4,
+      ACTIVATION_SQUARE = 5
     };
 
     struct Head {
@@ -107,7 +111,7 @@ struct Supertron {
 
     Head *head;
     const double *in;
-    double *fin, *out, *fout;
+    double *fin, *out, *pout, *fout;
     double *weight, *m, *v;
 
     double *wbuf;

@@ -1121,5 +1121,40 @@ void cuaddnoise(double *cudat, unsigned int n, double dev) {
   cuaddvec(cudat, cunoise, n, cudat);
   cufree(cunoise);
 }
-  
+
+
+__global__ void gpu_centerloss(double *data, unsigned int w, unsigned int h, unsigned int c, unsigned int d) {
+  unsigned int i = blockIdx.x * blockDim.x + threadIdx.x;
+  unsigned int n = w * h * c;
+  if (i >= n)
+    return;
+
+  unsigned int tmp = i;
+
+  tmp /= c;
+  unsigned int x = tmp % w; tmp /= w;
+  unsigned int y = tmp;
+
+  unsigned int x0 = d;
+  unsigned int x1 = w - d;
+  unsigned int y0 = d;
+  unsigned int y1 = h - d;
+
+  if (
+    x >= x0 && x < x1 &&
+    y >= y0 && y < y1
+  ) {
+    return;
+  }
+
+  data[i] = 0;
+}
+
+void cucenterloss(double *a, unsigned int w, unsigned int h, unsigned int c, unsigned int d) {
+  unsigned int n = w * h * c;
+  int bs = 128;
+  int gs = ((n + bs - 1) / bs);
+  gpu_centerloss<<<gs, bs>>>(a, w, h, c, d);
+}
+
 };

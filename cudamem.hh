@@ -170,6 +170,8 @@ void cuspliceadd(
   double *y, int ym, int ya
 );
 
+void cucenterloss(double *a, unsigned int w, unsigned int h, unsigned int c, unsigned int d);
+
 
 }
 
