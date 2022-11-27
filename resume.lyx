@@ -1,0 +1,304 @@
+#LyX 2.3 created this file. For more info see http://www.lyx.org/
+\lyxformat 544
+\begin_document
+\begin_header
+\save_transient_properties true
+\origin unavailable
+\textclass amsart
+\use_default_options true
+\begin_modules
+theorems-ams
+eqs-within-sections
+figs-within-sections
+\end_modules
+\maintain_unincluded_children false
+\language english
+\language_package default
+\inputencoding auto
+\fontencoding global
+\font_roman "default" "default"
+\font_sans "default" "default"
+\font_typewriter "default" "default"
+\font_math "auto" "auto"
+\font_default_family default
+\use_non_tex_fonts false
+\font_sc false
+\font_osf false
+\font_sf_scale 100 100
+\font_tt_scale 100 100
+\use_microtype false
+\use_dash_ligatures true
+\graphics default
+\default_output_format default
+\output_sync 0
+\bibtex_command default
+\index_command default
+\paperfontsize default
+\spacing single
+\use_hyperref false
+\papersize default
+\use_geometry false
+\use_package amsmath 1
+\use_package amssymb 1
+\use_package cancel 1
+\use_package esint 1
+\use_package mathdots 1
+\use_package mathtools 1
+\use_package mhchem 1
+\use_package stackrel 1
+\use_package stmaryrd 1
+\use_package undertilde 1
+\cite_engine basic
+\cite_engine_type default
+\biblio_style plain
+\use_bibtopic false
+\use_indices false
+\paperorientation portrait
+\suppress_date false
+\justification true
+\use_refstyle 1
+\use_minted 0
+\index Index
+\shortcut idx
+\color #008000
+\end_index
+\secnumdepth 3
+\tocdepth 3
+\paragraph_separation indent
+\paragraph_indentation default
+\is_math_indent 0
+\math_numbering_side default
+\quotes_style english
+\dynamic_quotes 0
+\papercolumns 1
+\papersides 1
+\paperpagestyle default
+\tracking_changes false
+\output_changes false
+\html_math_output 0
+\html_css_as_file 0
+\html_be_strict false
+\end_header
+
+\begin_body
+
+\begin_layout Title
+Resume of J.
+ Daniel Brumleve
+\end_layout
+
+\begin_layout Standard
+\align center
+
+\family typewriter
+jdb1729@gmail.com | 217-722-2642
+\end_layout
+
+\begin_layout Section*
+Synopsis
+\end_layout
+
+\begin_layout Paragraph*
+Software engineer with diverse domain experience including distributed systems,
+ machine learning, information retrieval, security, cryptography, 3D graphics
+ and generative art.
+ Industry experience includes social media, music, advertising, education,
+ manufacturing, publishing.
+ Strong interest in mathematics and computer science.
+ Seeking a challenging position in technology with a focus on innovation.
+\end_layout
+
+\begin_layout Section*
+Experience
+\end_layout
+
+\begin_layout Subsection*
+Apple (Nov 2013 - Aug 2017)
+\end_layout
+
+\begin_layout Paragraph*
+Leveraging Topsy's technology, created and maintained a system for real-time
+ identification and ranking of news-related search terms for Apple's Spotlight
+ Search product.
+\end_layout
+
+\begin_layout Subsection*
+Topsy (Feb 2008 - Nov 2013)
+\end_layout
+
+\begin_layout Paragraph*
+Designed, built and maintained server-side software infrastructure for Topsy's
+ Twitter search and analytics.
+ Developed Sentiment and Related Terms product verticals.
+\end_layout
+
+\begin_layout Subsection*
+Imeem (Apr 2008 - Oct 2008)
+\end_layout
+
+\begin_layout Paragraph*
+Designed and implemented an in-memory database as a caching layer in Imeem's
+ .NET-based application server.
+\end_layout
+
+\begin_layout Subsection*
+Snocap (Jul 2004 - Apr 2008)
+\end_layout
+
+\begin_layout Paragraph*
+Built and maintained server-side software to enable content identification
+ and licensing.
+ Snocap developed a pioneering P2P music distribution system and was one
+ of the first authorized digital music platforms that used the MP3 format.
+\end_layout
+
+\begin_layout Subsection*
+Cloudmark (Aug 2003 - Jun 2004)
+\end_layout
+
+\begin_layout Paragraph*
+Designed and implemented spam signature algorithms used in Cloudmark's anti-spam
+ products.
+\end_layout
+
+\begin_layout Subsection*
+APL Engineered Materials (Oct 2002 - Apr 2003)
+\end_layout
+
+\begin_layout Paragraph*
+Automated business processes for purchasing, invoicing, shipping, inventory
+ control, time tracking.
+ Designed combinatorial search algorithm for experimental production runs
+ within inventory constraints.
+\end_layout
+
+\begin_layout Subsection*
+Napster (2001 - 2002)
+\end_layout
+
+\begin_layout Paragraph*
+Maintained napd, the Napster server.
+ Integrated SSL and DRM support.
+\end_layout
+
+\begin_layout Subsection*
+Hewlett-Packard (1998 - 1999)
+\end_layout
+
+\begin_layout Paragraph*
+Developed e-commerce web applications for HP's intranet.
+\end_layout
+
+\begin_layout Paragraph*
+\begin_inset Newpage pagebreak
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection*
+Wolfram Research (1995 - 1996)
+\end_layout
+
+\begin_layout Paragraph*
+Developed and maintained company web site.
+ Developed The Integrator, a web site showcasing Mathematica's symbolic
+ integration capability.
+ Developed e-marketing application for tracking sales leads.
+\end_layout
+
+\begin_layout Subsection*
+Armageddon (1991 - 1993)
+\end_layout
+
+\begin_layout Paragraph*
+Founded Armageddon MUD.
+ Armageddon is one of the oldest continuously-operating MUDs on the internet.
+\end_layout
+
+\begin_layout Section*
+Patents
+\end_layout
+
+\begin_layout Subsection*
+Audio-visual simulation-generating neural network system
+\end_layout
+
+\begin_layout Subsubsection*
+(U.S.
+ Patent 11361563B2 – Issued June 14, 2022)
+\end_layout
+
+\begin_layout Quotation
+Embodiments of the present invention provide a system of interconnected
+ neural networks capable audio-visual simulation generation by interpreting
+ and processing a first image and, utilizing a given reference image or
+ training set, modifying the first image such that the new image possesses
+ parameters found within the reference image or training set.
+ The images used and generated may include video.
+ The system includes an autoposer, an automasker, an encoder, a generator,
+ an improver, a discriminator, styler, and at least one training set of
+ images or video.
+ The system can also generate training sets for use within.
+\end_layout
+
+\begin_layout Subsection*
+Systems and methods for discovery of related terms for social media content
+ collection over social networks
+\end_layout
+
+\begin_layout Subsubsection*
+(U.S.
+ Patent 20130304818A1 – Issued November 14, 2013)
+\end_layout
+
+\begin_layout Quote
+A new approach is proposed that contemplates systems and methods to discover
+ one or more terms related to one or more query terms submitted by a user
+ for search over a social media network, wherein the related terms discovered
+ are trending and co-occurring with the submitted query terms over the social
+ media network during a specific period of time.
+ The terms related to the submitted keywords can be discovered based on
+ based on various measurements that measure the trending characteristics
+ of the terms in the social media content items collected over a period
+ of time.
+ Once the terms related to the submitted keywords have been discovered,
+ they can be utilized to search or perform aggregated metrics and analytics
+ on the social network together with the user-submitted query terms for
+ content items containing all or most of the query terms and/or the related
+ terms, wherein such content items obtained are presented as the search
+ result to the user or subject to aggregate metrics and analytics presented
+ to the user.
+\end_layout
+
+\begin_layout Paragraph*
+\begin_inset Newpage pagebreak
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section*
+Publications
+\end_layout
+
+\begin_layout Subsection*
+The mate-in-n problem of infinite chess is decidable
+\end_layout
+
+\begin_layout Subsubsection*
+(CiE12: Proceedings of the 8th Turing Centenary Conference on Computability
+ in Europe: how the world computes – June 2012)
+\end_layout
+
+\begin_layout Quote
+Infinite chess is chess played on an infinite edgeless chessboard.
+ The familiar chess pieces move about according to their usual chess rules,
+ and each player strives to place the opposing king into checkmate.
+ The mate-in-n problem of infinite chess is the problem of determining whether
+ a designated player can force a win from a given finite position in at
+ most n moves.
+\end_layout
+
+\end_body
+\end_document
