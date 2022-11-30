@@ -98,14 +98,53 @@ jdb1729@gmail.com | 217-722-2642
 Synopsis
 \end_layout
 
-\begin_layout Paragraph*
+\begin_layout Standard
 Software engineer with diverse domain experience including distributed systems,
  machine learning, information retrieval, security, cryptography, 3D graphics
  and generative art.
  Industry experience includes social media, music, advertising, education,
  manufacturing, publishing.
- Strong interest in mathematics and computer science.
+ Strong interest in mathematics and theoretical computer science.
  Seeking a challenging position in technology with a focus on innovation.
+\end_layout
+
+\begin_layout Standard
+I am an expert programmer, fluent in Linux, C, C++, perl.
+\end_layout
+
+\begin_layout Standard
+I am a published mathematician and author of two U.S.
+ patents encompassing my innovations at Topsy and recent independent machine
+ learning projects.
+\end_layout
+
+\begin_layout Standard
+In 2020 I co-founded the Ford County Chronicle, a local print and online
+ newspaper serving Ford County, Illinois, and a member of the Illinois Press
+ Association.
+ This year the Chronicle took home 38 awards at the Illinois Press Association
+ Convention, more than any other Illinois newspaper, including the David
+ B.
+ Kramer Memorial Trophy.
+\end_layout
+
+\begin_layout Standard
+In the 1990s and 2000s I discovered several widely-covered exploits in Netscape
+ Navigator, MSIE, JavaScript and Java including Tracker, Cache Cow, and
+ Brown Orifice.
+\end_layout
+
+\begin_layout Standard
+In 1991 I founded Armageddon MUD.
+ Armageddon is today one of the oldest continuously-operating MUDs on the
+ internet.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Newpage clearpage
+\end_inset
+
+
 \end_layout
 
 \begin_layout Section*
@@ -189,13 +228,6 @@ Hewlett-Packard (1998 - 1999)
 Developed e-commerce web applications for HP's intranet.
 \end_layout
 
-\begin_layout Paragraph*
-\begin_inset Newpage pagebreak
-\end_inset
-
-
-\end_layout
-
 \begin_layout Subsection*
 Wolfram Research (1995 - 1996)
 \end_layout
@@ -207,13 +239,11 @@ Developed and maintained company web site.
  Developed e-marketing application for tracking sales leads.
 \end_layout
 
-\begin_layout Subsection*
-Armageddon (1991 - 1993)
-\end_layout
+\begin_layout Standard
+\begin_inset Newpage clearpage
+\end_inset
 
-\begin_layout Paragraph*
-Founded Armageddon MUD.
- Armageddon is one of the oldest continuously-operating MUDs on the internet.
+
 \end_layout
 
 \begin_layout Section*
@@ -272,9 +302,6 @@ A new approach is proposed that contemplates systems and methods to discover
 \end_layout
 
 \begin_layout Paragraph*
-\begin_inset Newpage pagebreak
-\end_inset
-
 
 \end_layout
 
