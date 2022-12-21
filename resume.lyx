@@ -99,45 +99,28 @@ Synopsis
 \end_layout
 
 \begin_layout Standard
-Software engineer with diverse domain experience including distributed systems,
- machine learning, information retrieval, security, cryptography, 3D graphics
- and generative art.
- Industry experience includes social media, music, advertising, education,
- manufacturing, publishing.
- Strong interest in mathematics and theoretical computer science.
- Seeking a challenging position in technology with a focus on innovation.
-\end_layout
-
-\begin_layout Standard
-I am an expert programmer, fluent in Linux, C, C++, perl.
-\end_layout
-
-\begin_layout Standard
-I am a published mathematician and author of two U.S.
- patents encompassing my innovations at Topsy and recent independent machine
- learning projects.
-\end_layout
-
-\begin_layout Standard
-In 2020 I co-founded the Ford County Chronicle, a local print and online
- newspaper serving Ford County, Illinois, and a member of the Illinois Press
- Association.
- This year the Chronicle took home 38 awards at the Illinois Press Association
- Convention, more than any other Illinois newspaper, including the David
- B.
- Kramer Memorial Trophy.
-\end_layout
-
-\begin_layout Standard
-In the 1990s and 2000s I discovered several widely-covered exploits in Netscape
- Navigator, MSIE, JavaScript and Java including Tracker, Cache Cow, and
- Brown Orifice.
-\end_layout
-
-\begin_layout Standard
-In 1991 I founded Armageddon MUD.
- Armageddon is today one of the oldest continuously-operating MUDs on the
- internet.
+Software engineer with over 25 years experience in a variety of business
+ and technical domains including distributed systems, information retrieval,
+ security, cryptography, machine learning, 3D graphics and generative art.
+ Author of two U.S.
+ patents, one covering my innovations at Topsy (2013) and another encompassing
+ my machine learning projects at MakeMore (2022).
+ Discoverer of several major web security bugs covered by WSJ, NYT, including
+ the first cross-site-scripting (XSS) vulnerability.
+ Inventor of open-source cryptocurrencies dBarter (2000) and BankOfEuler
+ (2007), and finder of lost bitcoins.
+ Creator of Armageddon MUD (1991), one of the oldest continuously-operating
+ internet games.
+ Member of the Illinois Press Association and co-founder of the Ford County
+ Chronicle (2020), an award-winning regional newspaper.
+ Published mathematician and top-ranked StackExchange and MathOverflow contribut
+or.
+ Practiced in Linux, C++, perl, python, JavaScript.
+ Familiar with modern development methodologies and tools including Scrum,
+ Agile, Continuous Integration/Development, git and git-based workflows,
+ Jira, AWS, GCP.
+ Adaptable and autodidactive, helpful and communicative, setting a high
+ standard for innovation.
 \end_layout
 
 \begin_layout Standard
@@ -152,36 +135,59 @@ Experience
 \end_layout
 
 \begin_layout Subsection*
-Apple (Nov 2013 - Aug 2017)
+MakeMore Software (Jan 2020 - present) - Founder
 \end_layout
 
 \begin_layout Paragraph*
-Leveraging Topsy's technology, created and maintained a system for real-time
- identification and ranking of news-related search terms for Apple's Spotlight
- Search product.
+Boutique machine learning start-up focused on generative art, augmented
+ reality and foundational research.
+ (Linux, C++, CUDA, perl, python)
 \end_layout
 
 \begin_layout Subsection*
-Topsy (Feb 2008 - Nov 2013)
+SEED Token (May 2018 - Sep 2018) - Software Engineer
+\end_layout
+
+\begin_layout Paragraph*
+Consulting for blockchain firm focused on the AI chatbot space.
+ Developed prototypes for several generative text concepts.
+ (Linux, C++, perl, Ethereum)
+\end_layout
+
+\begin_layout Subsection*
+Apple (Nov 2013 - Aug 2017) - Individual Contributor (Software Engineer)
+\end_layout
+
+\begin_layout Paragraph*
+Leveraging technology developed at Topsy, created and maintained a system
+ for real-time identification and ranking of news-related search terms for
+ Apple's Spotlight Search product.
+ (Linux, C, C++, perl, python, go)
+\end_layout
+
+\begin_layout Subsection*
+Topsy (Feb 2008 - Nov 2013) - Software Engineer
 \end_layout
 
 \begin_layout Paragraph*
 Designed, built and maintained server-side software infrastructure for Topsy's
  Twitter search and analytics.
- Developed Sentiment and Related Terms product verticals.
+ Developed Sentiment, Related Terms, and Alerts product verticals.
+ (Linux, C, C++, perl, python)
 \end_layout
 
 \begin_layout Subsection*
-Imeem (Apr 2008 - Oct 2008)
+Imeem (Apr 2008 - Oct 2008) - Software Engineer
 \end_layout
 
 \begin_layout Paragraph*
 Designed and implemented an in-memory database as a caching layer in Imeem's
  .NET-based application server.
+ (Linux, Win64, C#, .NET platform, Mono)
 \end_layout
 
 \begin_layout Subsection*
-Snocap (Jul 2004 - Apr 2008)
+Snocap (Jul 2004 - Apr 2008) - Software Engineer
 \end_layout
 
 \begin_layout Paragraph*
@@ -189,19 +195,21 @@ Built and maintained server-side software to enable content identification
  and licensing.
  Snocap developed a pioneering P2P music distribution system and was one
  of the first authorized digital music platforms that used the MP3 format.
+ (Linux, C++, perl, python)
 \end_layout
 
 \begin_layout Subsection*
-Cloudmark (Aug 2003 - Jun 2004)
+Cloudmark (Aug 2003 - Jun 2004) - Software Engineer
 \end_layout
 
 \begin_layout Paragraph*
 Designed and implemented spam signature algorithms used in Cloudmark's anti-spam
  products.
+ (Linux, C, C++, perl).
 \end_layout
 
 \begin_layout Subsection*
-APL Engineered Materials (Oct 2002 - Apr 2003)
+APL Engineered Materials (Oct 2002 - Apr 2003) - Software Engineer
 \end_layout
 
 \begin_layout Paragraph*
@@ -209,27 +217,30 @@ Automated business processes for purchasing, invoicing, shipping, inventory
  control, time tracking.
  Designed combinatorial search algorithm for experimental production runs
  within inventory constraints.
+ (Win16, Win32, MSIE, C++, JavaScript, MS SQL Server)
 \end_layout
 
 \begin_layout Subsection*
-Napster (2001 - 2002)
+Napster (2001 - 2002) - Software Engineer
 \end_layout
 
 \begin_layout Paragraph*
-Maintained napd, the Napster server.
+Maintained and developed napd, the Napster server.
  Integrated SSL and DRM support.
+ (Linux, C, C++, perl) 
 \end_layout
 
 \begin_layout Subsection*
-Hewlett-Packard (1998 - 1999)
+Hewlett-Packard (1998 - 1999) - Software Engineer
 \end_layout
 
 \begin_layout Paragraph*
 Developed e-commerce web applications for HP's intranet.
+ (HP-UX, perl)
 \end_layout
 
 \begin_layout Subsection*
-Wolfram Research (1995 - 1996)
+Wolfram Research (1995 - 1996) - Software Engineer
 \end_layout
 
 \begin_layout Paragraph*
@@ -237,6 +248,7 @@ Developed and maintained company web site.
  Developed The Integrator, a web site showcasing Mathematica's symbolic
  integration capability.
  Developed e-marketing application for tracking sales leads.
+ (assorted Unix platforms, C, perl, Mathematica)
 \end_layout
 
 \begin_layout Standard
