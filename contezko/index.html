@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Contezko — Zero-Knowledge Proving for the Enterprise</title>
+<meta name="description" content="Contezko is the enterprise zero-knowledge proving platform. Prove everything. Reveal nothing. Coming soon.">
+<meta property="og:title" content="Contezko — Zero-Knowledge Proving for the Enterprise">
+<meta property="og:image" content="https://contezko.com/contezko.png">
+<link rel="icon" href="favicon.ico">
+<style>
+  :root { --navy: #1c2b4a; --teal: #1f8a8a; --orange: #f07a2a; --ink: #243040; --mute: #6b7a90; --line: #e3eaf2; }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: -apple-system, "Segoe UI", Inter, Roboto, Helvetica, Arial, sans-serif; color: var(--ink); background: #fff; line-height: 1.5; }
+  a { color: var(--teal); text-decoration: none; }
+  .wrap { max-width: 1120px; margin: 0 auto; padding: 0 20px; }
+  .bar { background: var(--navy); color: #fff; text-align: center; font-size: 14px; padding: 8px; letter-spacing: .04em; }
+  .bar b { color: #ffd27a; }
+  nav { display: flex; align-items: center; justify-content: space-between; padding: 18px 0; }
+  .logo { font-weight: 800; font-size: 26px; letter-spacing: .06em; color: var(--navy); }
+  .logo span { color: var(--teal); }
+  .logo small { display: block; font-size: 11px; font-weight: 500; letter-spacing: .02em; color: var(--mute); }
+  nav ul { list-style: none; display: flex; gap: 26px; margin: 0; padding: 0; font-weight: 500; align-items: center; }
+  nav ul a { color: var(--ink); }
+  .btn { display: inline-block; background: var(--orange); color: #fff; font-weight: 700; padding: 14px 26px; border-radius: 10px; border: 0; font-size: 16px; cursor: pointer; box-shadow: 0 6px 18px rgba(240,122,42,.35); }
+  .btn.ghost { background: #fff; color: var(--navy); border: 2px solid var(--line); box-shadow: none; }
+  .hero { background: linear-gradient(180deg, #e9f3f8 0%, #ffffff 100%); padding: 56px 0 40px; }
+  .hero .wrap { display: grid; grid-template-columns: 1.05fr 1fr; gap: 40px; align-items: center; }
+  h1 { font-size: 46px; line-height: 1.1; margin: 0 0 18px; color: var(--navy); }
+  h1 em { font-style: normal; color: var(--teal); }
+  .lead { font-size: 19px; color: var(--mute); margin: 0 0 26px; }
+  .hero img { width: 100%; border-radius: 16px; box-shadow: 0 20px 50px rgba(28,43,74,.18); }
+  .cap { text-align: center; font-size: 12px; color: var(--mute); margin-top: 8px; }
+  .wait { display: flex; gap: 10px; margin: 18px 0 8px; max-width: 540px; }
+  .wait input { flex: 1; font-size: 16px; padding: 14px 16px; border: 2px solid var(--line); border-radius: 10px; }
+  .fine { font-size: 12px; color: var(--mute); }
+  .logos { text-align: center; padding: 34px 0 10px; color: var(--mute); font-size: 14px; letter-spacing: .12em; text-transform: uppercase; }
+  .logos div { display: flex; justify-content: center; gap: 44px; flex-wrap: wrap; margin-top: 16px; font-size: 22px; font-weight: 800; color: #b9c4d2; letter-spacing: 0; text-transform: none; }
+  section { padding: 56px 0; }
+  h2 { font-size: 34px; color: var(--navy); margin: 0 0 8px; text-align: center; }
+  .sub { text-align: center; color: var(--mute); font-size: 18px; margin: 0 0 36px; }
+  .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; }
+  .card { background: #fff; border: 1px solid var(--line); border-radius: 14px; padding: 24px; box-shadow: 0 8px 24px rgba(28,43,74,.06); }
+  .card .ic { font-size: 30px; }
+  .card h3 { margin: 10px 0 6px; font-size: 18px; color: var(--navy); }
+  .card p { margin: 0; color: var(--mute); font-size: 15px; }
+  .stats { background: var(--navy); color: #fff; }
+  .stats .grid { grid-template-columns: repeat(4, 1fr); text-align: center; }
+  .stats b { display: block; font-size: 44px; color: #7fe0d8; }
+  .stats span { color: #c6d2e4; font-size: 14px; }
+  .plans { align-items: stretch; }
+  .plan { position: relative; }
+  .plan.hot { border: 2px solid var(--teal); }
+  .plan .tag { position: absolute; top: -12px; right: 18px; background: var(--teal); color: #fff; font-size: 12px; font-weight: 700; padding: 3px 10px; border-radius: 999px; }
+  .price { font-size: 40px; font-weight: 800; color: var(--navy); margin: 6px 0 0; }
+  .price small { font-size: 14px; color: var(--mute); font-weight: 500; }
+  .plan ul { padding-left: 18px; color: var(--mute); font-size: 15px; }
+  .plan .btn { width: 100%; text-align: center; margin-top: 10px; }
+  .quote { display: flex; gap: 16px; align-items: flex-start; }
+  .quote img { width: 64px; height: 64px; border-radius: 50%; flex: none; background: #000; }
+  .quote p { margin: 0 0 8px; font-style: italic; }
+  .quote b { font-size: 14px; color: var(--navy); }
+  .quote span { display: block; font-size: 13px; color: var(--mute); }
+  .cta { text-align: center; background: linear-gradient(180deg, #ffffff, #e9f3f8); }
+  footer { border-top: 1px solid var(--line); padding: 28px 0 40px; color: var(--mute); font-size: 13px; }
+  footer .wrap { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+  footer a { color: var(--mute); margin-left: 18px; }
+  .ok { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #2ecc71; margin-right: 6px; }
+  code { background: #eef3f8; padding: 1px 6px; border-radius: 6px; font-size: 90%; }
+  @media (max-width: 860px) { .hero .wrap, .grid, .stats .grid { grid-template-columns: 1fr; } h1 { font-size: 36px; } nav ul { display: none; } }
+</style>
+</head>
+<body>
+
+<div class="bar">COMING SOON &nbsp;·&nbsp; <b id="count">4,811</b> enterprises are on the waitlist. We can prove it without revealing who.</div>
+
+<div class="wrap">
+  <nav>
+    <div class="logo">CONTE<span>ZK</span>O<small>Zero-Knowledge Proving for the Enterprise</small></div>
+    <ul>
+      <li><a href="#features">Platform</a></li>
+      <li><a href="#features">Solutions</a></li>
+      <li><a href="#pricing">Pricing</a></li>
+      <li><a href="#customers">Customers</a></li>
+      <li><a href="#waitlist" class="btn ghost" style="padding: 10px 18px">Book a demo</a></li>
+    </ul>
+  </nav>
+</div>
+
+<div class="hero">
+  <div class="wrap">
+    <div>
+      <h1>Prove Everything.<br><em>Reveal Nothing.</em></h1>
+      <p class="lead">Contezko is the enterprise zero-knowledge proving platform. The ZK is right there in the name. Prove compliance, prove delivery, prove you were in the meeting, all without disclosing a single fact to anyone, including yourself.</p>
+      <form class="wait" id="waitlist" onsubmit="return join()">
+        <input type="email" id="em" placeholder="work email (we will prove we have it, not store it)" required>
+        <button class="btn" type="submit">GET STARTED FOR FREE*</button>
+      </form>
+      <div class="fine">*Free trial requires a credit card, a procurement contact, a countersigned MSA and a trusted setup ceremony. No spam, only "touching base."</div>
+    </div>
+    <div><img src="contezko.png" alt="Contezko: Say goodbye to chaos. Say hello to smart, proactive timelines."><div class="cap">Pictured: our previous pivot. The timelines are now zero-knowledge.</div></div>
+  </div>
+</div>
+
+<div class="wrap logos">
+  Trusted by forward-looking teams at
+  <div><span>Ovalware</span><span>Blockflow</span><span>Synergistix</span><span>Paxton Grain &amp; Proof</span><span>Nimbulate</span></div>
+</div>
+
+<section id="features">
+  <div class="wrap">
+    <h2>One platform. Every proof. Zero knowledge.</h2>
+    <p class="sub">Everything your enterprise needs to be certain without being informed.</p>
+    <div class="grid">
+      <div class="card"><div class="ic">🧾</div><h3>Proof of Compliance</h3><p>Prove to auditors that you are compliant without revealing that you are not. Succinct, non-interactive, SOC 2 adjacent.</p></div>
+      <div class="card"><div class="ic">🗓️</div><h3>Verifiable Timelines</h3><p>Cryptographically prove the milestone slipped without disclosing why, who, or by how much. A proof is 288 bytes; the retro is 288 slides.</p></div>
+      <div class="card"><div class="ic">🧍</div><h3>Zero-Knowledge Standups</h3><p>Prove you did work yesterday. Prove you will do work today. Prove there are no blockers. Reveal none of it.</p></div>
+      <div class="card"><div class="ic">🤖</div><h3>Agentic Provers</h3><p>Our AI agents generate proofs autonomously for claims nobody made. Fully recursive: the agents prove they are agents.</p></div>
+      <div class="card"><div class="ic">🔐</div><h3>SNARKs, STARKs, whatever is next</h3><p>Pairing-friendly, post-quantum, pre-revenue. When the acronym changes, we rename the product and re-bill you.</p></div>
+      <div class="card"><div class="ic">🏛️</div><h3>Enterprise-Grade Trust</h3><p>Trusted setup ceremony held in a WeWork. Toxic waste disposed of responsibly.* &nbsp;<span class="fine">*in the WeWork</span></p></div>
+    </div>
+  </div>
+</section>
+
+<section class="stats">
+  <div class="wrap grid">
+    <div><b>0</b><span>knowledge, guaranteed</span></div>
+    <div><b>2<sup style="font-size: 22px">128</sup></b><span>bits of security, 0 customers</span></div>
+    <div><b>288 B</b><span>proof size, verified in 3 ms, sold in 9 months</span></div>
+    <div><b>$0</b><span>ARR, and we can prove it</span></div>
+  </div>
+</section>
+
+<section id="pricing">
+  <div class="wrap">
+    <h2>Simple, transparent pricing</h2>
+    <p class="sub">Per proof, per verifier, per month, billed annually, in a currency we will reveal later.</p>
+    <div class="grid plans">
+      <div class="card plan"><h3>Free</h3><div class="price">$0<small> forever*</small></div>
+        <ul><li>1 proof per month (of your choice, as long as it is true)</li><li>"Proven by Contezko" watermark on the verifier</li><li>Trusted setup: trust us</li><li>Community support (the community is you)</li></ul>
+        <a class="btn ghost" href="#waitlist">Start free</a><div class="fine">*forever is a 14-day trial</div></div>
+      <div class="card plan hot"><span class="tag">MOST POPULAR</span><h3>Pro</h3><div class="price">$49<small> /verifier/mo, 25-verifier minimum</small></div>
+        <ul><li>Unlimited proofs, including false ones (beta)</li><li>Recursive proofs: prove you paid for Pro</li><li>Priority email support: we read it, we do not reveal that</li><li>Export to CSV (Enterprise)</li></ul>
+        <a class="btn" href="#waitlist">Start free trial</a></div>
+      <div class="card plan"><h3>Enterprise</h3><div class="price">Contact sales<small> we will prove we received it</small></div>
+        <ul><li>Everything in Pro</li><li>SSO, SCIM, an acronym of your choice</li><li>On-site trusted setup ceremony with catering</li><li>A shared Slack channel where we say "great question"</li><li>Dedicated Customer Success Manager (also the CEO)</li></ul>
+        <a class="btn ghost" href="#" onclick="return sales()">Talk to sales</a></div>
+    </div>
+  </div>
+</section>
+
+<section id="customers">
+  <div class="wrap">
+    <h2>Loved by teams who have something to hide</h2>
+    <p class="sub">Real quotes from people who exist on peaple.io.</p>
+    <div class="grid">
+      <div class="card quote"><img src="https://peaple.io/contezko_vp_timelines.png?dim=128" alt=""><div><p>"Before Contezko, our team was behind schedule. Now we can prove it to the board without saying it."</p><b>VP of Timelines</b><span>Ovalware</span></div></div>
+      <div class="card quote"><img src="https://peaple.io/contezko_head_of_agents.png?dim=128" alt=""><div><p>"The agents generated a proof that our launch happened. The launch did not happen. The proof verifies."</p><b>Head of Agentic Operations</b><span>Blockflow</span></div></div>
+      <div class="card quote"><img src="https://peaple.io/contezko_customer_zero.png?dim=128" alt=""><div><p>"I was told this would 10x our velocity. I cannot confirm or deny that, and now I have a certificate saying so."</p><b>Customer Zero</b><span>Paxton Grain &amp; Proof</span></div></div>
+    </div>
+  </div>
+</section>
+
+<section class="cta">
+  <div class="wrap">
+    <h2>Ready to know nothing with confidence?</h2>
+    <p class="sub">Your auditors will see a proof. Your board will see a dashboard. Nobody will see the data. Including you.</p>
+    <a class="btn" href="#waitlist">GET STARTED FOR FREE</a>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div>&copy; 2026 Contezko, Inc. A <a href="https://makemoresoftware.com/" style="margin: 0">MakeMore Software</a> product. Not a real product. We can prove that too.</div>
+    <div><span class="ok"></span>All systems operational* <a href="#" onclick="return alert('We collect nothing. We can prove we collected it.'), false">Privacy</a><a href="#" onclick="return alert('By reading these terms you have proven you accept them.'), false">Terms</a><a href="#" onclick="return alert('Status: operational. Proof: see status.'), false">Status</a></div>
+  </div>
+</footer>
+
+<script>
+  var n = 4811;
+  function join() {
+    n += 1; document.getElementById('count').textContent = n.toLocaleString();
+    document.getElementById('em').value = '';
+    alert("You're on the waitlist. Position: proven, not disclosed.\n\nWe'll reach out as soon as we've raised our Series B.");
+    return false;
+  }
+  function sales() { alert('Thanks for reaching out! A member of our sales team will circle back once one has been hired.'); return false; }
+</script>
+</body>
+</html>
