@@ -1,0 +1,2634 @@
+                                                                                       US011361563B2
+
+( 12) United States Patent                                            ( 10) Patent No .: US 11,361,563 B2
+         Brumleve                                                     (45 ) Date of Patent :   Jun . 14 , 2022
+( 54 ) AUDIO - VISUAL SIMULATION -GENERATING                              USPC                                          382/156
+         NEURAL NETWORK SYSTEM                                            See application file for complete search history .
+( 71 ) Applicant: Jacob Daniel Brumleve , Champaign,             ( 56 )                 References Cited
+                       IL (US )
+                                                                                  U.S. PATENT DOCUMENTS
+( 72 ) Inventor: Jacob Daniel Brumleve , Champaign,
+                 IL (US)                                          2017/0011257 A1 *       1/2017 Mikhael             G06V 10/52
+                                                                  2019/0050632 A1 *      2/2019 Weng                G06K 9/6267
+( * ) Notice: Subject to any disclaimer, the term of this        * cited by examiner
+                 patent is extended or adjusted under 35
+                 U.S.C. 154 (b ) by 51 days .
+                                                                 Primary Examiner Neil R McLean
+( 21 ) Appl. No .: 17/103,336                                    (74 ) Attorney, Agent, or Firm — Singleton Law Firm ,
+                                                                 P.C.
+(22 ) Filed :          Nov. 24 , 2020
+( 65 )               Prior Publication Data                      ( 57 )                   ABSTRACT
+         US 2021/0158109 A1 May 27 , 2021                        Embodiments of the present invention provide a system of
+                                                                 interconnected neural networks capable audio - visual simu
+              Related U.S. Application Data                      lation generation by interpreting and processing a first image
+( 60 ) Provisional application No. 62/ 939,900 , filed on Nov.   and , utilizing a given reference image or training set , modi
+         25 , 2019 .                                             fying the first image such that the new image possesses
+                                                                 parameters found within the reference image or training set.
+(51 ) Int. Cl .                                                  The images used and generated may include video . The
+         G06V 30/194              ( 2022.01 )                    system includes an autoposer, an automasker, an encoder, a
+( 52) U.S. Cl.                                                   generator, an improver, a discriminator, styler, and at least
+         CPC                       GO6V 30/194 (2022.01 )        one training set of images or video . The system can also
+( 58 ) Field of Classification Search                            generate training sets for use within .
+         CPC           GO6V 30/194 ; GO6V 10/26 ; G06V 10/82 ;
+                                  GOOK 9/6256 ; G06K 9/6271                       8 Claims , 7 Drawing Sheets
+
+
+
+
+                                                                              60
+U.S. Patent   Jun . 14 , 2022    Sheet 1 of 7   US 11,361,563 B2
+
+
+
+
+                                persussro
+
+                                                   FIG , 1A
+
+
+
+
+                                                     FIG . 1B
+U.S. Patent   Jun . 14 , 2022           Sheet 2 of 7              US 11,361,563 B2
+
+
+
+
+                                *** : **** 80 * & . }
+
+                                                                    FIG . 1C
+
+
+
+
+                            ***            3.2.X        maxmode
+
+                                                                      FIG . 1D
+U.S. Patent   Jun . 14 , 2022   Sheet 3 of 7   US 11,361,563 B2
+
+
+
+
+                                                    FIG . 1E
+
+
+
+
+                                                    FIG . 1F
+U.S. Patent   Jun . 14 , 2022   Sheet 4 of 7   US 11,361,563 B2
+
+
+
+
+   9                                            4
+                                                MHz     FIG
+                                                        2A
+                                                        .
+
+
+
+
+    I
+
+
+
+
+    )
+    alta
+U.S. Patent        Jun . 14 , 2022   Sheet 5 of 7             US 11,361,563 B2
+
+
+
+
+                                                              MHz
+                                                              2         .
+                                                                        FIG
+                                                                        2B
+
+
+
+
+   Bookstore
+
+
+
+
+               {                                    **
+                                                    yorpion
+U.S. Patent         Jun . 14 , 2022   Sheet 6 of 7   US 11,361,563 B2
+
+
+
+                                                                         3A
+                                                                         .
+                                                                         FIG
+
+
+
+
+         ????????
+
+
+
+
+                          A                          **   ***
+
+
+
+
+                                                                *$*30*
+U.S. Patent   Jun . 14 , 2022       Sheet 7 of 7       US 11,361,563 B2
+
+
+
+
+                                                                        3B
+                                                                        .
+                                                                        FIG
+
+                                                   .
+
+                         mos   ws
+                               w
+
+
+
+
+                                                   BO
+                   082
+                     6
+   ***
+
+
+
+                                                         ?
+
+                                                           E3*xo*uyg*
+                                                  US 11,361,563 B2
+                             1                                                                   2
+   AUDIO -VISUAL SIMULATION -GENERATING                             poser or a rough poser, wherein the fine poser is configured
+            NEURAL NETWORK SYSTEM                                   to minimize distortion of objects of the input image ; while
+                                                                    the rough poser is configured to locate objects in a wider
+          CROSS - REFERENCE TO RELATED                              area with some potential for added distortion of said object.
+                   APPLICATIONS                                 5      The automasker is configured to take an input image that
+                                                                    has been posed by the autoposer and maps the image onto a
+   The present application claims the benefit of U.S. Provi-        grayscale foreground mask or a background mask . Through
+sional Application No. 62 / 939,900 , filed Nov. 25 , 2019 ,        trained segmentation, the automasker is capable of deter
+titled “ Audio - Visual Simulation -Generating Neural Net-          mining foreground objects or objects of interest within the
+work System ,” which is hereby incorporated by reference in 10 image and distinguishing between the objects and the back
+its entirety.                                                  ground of the image , after which the background or the
+                                                               objects is modified separately from the other.
+       BRIEF DESCRIPTION OF THE INVENTION                         The encoder is configured to receive an input image from
+                                                               either the autoposer or the automasker and output a control
+   Embodiments of the invention present a system of neural 15 vector for the image . The encoder may also be configured to
+networks configured for audio - visual simulation and gen- function as a class - specific compression algorithm , wherein
+eration . The system is capable of interpreting and processing the resultant vector is stored . The encoder is configured to
+a first image and , utilizing a given reference image or work in tandem with the generator to reduce reconstruction
+training set , modifying the first image such that the new error of the input image , such that it can be lossily recon
+image possesses parameters found within the reference 20 structed; that is , the image is irreversibly compressed but
+image or training set . The system may be configured to vary        may be uncompressed by inexact approximations with mini
+the degree to which the reference image or training set             mal data loss .
+contributes to the new image . The first image or the refer-          The generator is configured to receive an input consisting
+ence image or training set may also comprise a video , or set       of the control vector produced by the encoder, a reference
+of images , wherein the new image is also a video . A 25 sketch of the image configured as a general map of the
+reference image or training set may also be combined with image , a set of hashable text tags , and a set of final pose
+a first video , resulting in a new image comprising a video parameters. The generator is then configured to output a
+having parameters found within the reference image or generated image or new image . The generator may be
+training set . The system may also generate training sets for further configured to utilize the set of final pose parameters
+use within .                                                 30 to modify the image and correct for previous distortions of
+   The system comprises a number of interconnected neural the image . The generator and encoder are configured to
+networks. Each neural network of the invention is a feed-         function in tandem but may be trained with varied or
+forward sigmoid -activated multilayer perceptron network . differing training image sets, resulting in differing output
+The interconnected neural networks include an autoposer, an images from one image generation to another. Control
+automasker, an encoder, a generator, an improver, and a 35 vectors may also be modified between the encoder and the
+discriminator. The system also comprises a styler having a generator to produce variance in resulting simulated or
+mean vector and a matrix , configured for vector manipula- generated images.
+tion .                                                               The improver is configured to take an input image from
+   Training processes of the system comprise a stochastic the generator and produces an altered image that has been
+optimization algorithm configured to optimize functions of 40 modified based on a given loss function . The improver is
+each of the neural networks and the functions of the system . configured to work in tandem with the discriminator. The
+Each neural network of the system further comprises a discriminator is configured to take an input image and output
+network topology based on randomized layouts and aa pre- a single output channel representing an overall quality value
+determined set of layer wiring rules. The network topology of the input image . The discriminator therefore provides the
+is configured to reduce hyperparameters and output artifacts . 45 loss function that trains and is utilized the improver to
+Layers of each of the neural networks are further configured maximize quality of the improver through back -propagation .
+to be locally connected in order to avoid instances of The improver and discriminator are further trained simulta
+redundant feeding of nodes between layers of the neural neously, with the discriminator trained by predetermined
+network . Instances reflective connectivity may occur, in sample images and output images from the improver.
+which one or more wires of a layer may cross vertical 50 The styler comprises a mean vector and a matrix, com
+centerline to an opposite point node of another layer. Reflec- puted as a Cholesky decomposition of a given covariance
+tive connectivity typically occurs where a presented image matrix of the control vectors of a given training set. The
+or object possesses bilateral symmetry . The encoder and styler is configured to generate control vectors based on a
+generator of the system may utilize reflective connectivity to specific training set control vectors , having the same means ,
+increase efficiency and object representation.                 55 variances, and correlations thereof. The styler is further
+   Training processes of the encoder, generator, automasker, configured to accept tags , resulting in implementation of a
+and autoposer may further comprise providing a neural               corresponding tag vector on the control vector. This then
+network with a training set made up of a combination of             results in transformations of mean and variance values in the
+samples and reflected symmetrical samples to increase control vector. In some embodiments of the invention ,
+learning by the neural networks .                             60 transformations of mean and variance may be done with
+   The autoposer of the system is configured to take an input respect to a covariance of a given set . Doing so allows the
+image of rigid or mostly rigid objects and output location styler to utilize tag vectors to effectively focus on relevant
+information of the objects within the image . The autoposer variances during identification and selection processes on a
+is further configured to normalize images prior to processing given image or control vector.
+by the encoder, by adjusting location information for objects 65 The methods, systems , and apparatuses are set forth in
+to within a given range or value , also known as pose- part in the description which follows, and in part will be
+estimation . The autoposer may also be configured as a fine         obvious from the description, or can be learned by practice
+                                                   US 11,361,563 B2
+                              3                                                                4
+of the methods, apparatuses, or can be learned by practice of    network topology based on randomized layouts and a pre
+the methods, apparatuses, and systems. The advantages of determined set of layer wiring rules. The network topology
+the methods, apparatuses, and systems will be realized and is configured to reduce hyperparameters and output artifacts.
+attained by means of the elements and combinations par- Layers of each of the neural networks are further configured
+ticularly pointed out in the appended claims . It is to be 5 to be locally connected in order to avoid instances of
+understood that both the foregoing general description and redundant feeding of nodes between layers of the neural
+the following detailed description are exemplary and network . Instances reflective connectivity may occur, in
+explanatory only and are not restrictive of the methods,         which one or more wires of a layer may cross vertical
+apparatuses, and systems , as claimed . More details concern-    centerline to an opposite point node of another layer. Reflec
+ing these embodiments, and others , are further described in 10 tive connectivity typically occurs where a presented image
+the following figures and detailed description set forth or object possesses bilateral symmetry. The encoder and
+herein below .                                                   generator of the system may utilize reflective connectivity to
+                                                                 increase efficiency and object representation .
+      BRIEF DESCRIPTION OF THE DRAWINGS                            Training processes of the encoder, generator, automasker,
+                                                              15 and autoposer may further comprise providing a neural
+   FIGS . 1A through 1F illustrate output results of different network with a training set made up of a combination of
+encoded and combined images produced by the invention . samples and reflected symmetrical samples to increase
+   FIGS . 2A and 2B illustrates generated images produced learning by the neural networks.
+by the invention from random input images with a covari             Each of the neural networks is also configured to generate
+ance matching training set .                                  20 synthetic training sets for each other neural network . For
+   FIGS . 3A and 3B illustrates an embodiment of a user example, the autoposer can generate a training set with
+interface of the invention , specifically transformation and specific poses that is utilized by the automasker to train ; the
+combination of input and / or generated images .                 automasker can be used to modify or replace backgrounds of
+                                                                 samples within a training set utilized by the autoposer, and
+           DETAILED DESCRIPTION OF THE                        25 the generator can generate synthetic objects and images for
+                        INVENTION                                use in training sets for both the autoposer and the auto
+                                                                 masker. Inter- network generation of training sets allows
+   The present invention relates to neural networks, machine training process to be carried out efficiently and requiring
+learning, and picture and video generation. Specifically, a fewer initial user -provided samples. These techniques make
+system of neural networks configured for audio - visual simu- 30 it possible to train to the same accuracy with fewer real
+lation and generation . The system is capable of interpreting samples.
+and processing a first image and, utilizing a given reference       The autoposer of the system comprises five layers, start
+image or training set, modifying the first image such that the ing with local connectivity and becoming dense near the
+new image possesses parameters found within the reference output. The autoposer is configured to take an input image
+image or training set . The system may be configured to vary 35 of rigid or mostly rigid objects and output landmark location
+the degree to which the reference image or training set information of the objects within the image , starting with the
+contributes to the new image . The first image or the refer- size of a given image and outputting coordinates for each
+ence image or training set may also comprise a video , or set landmark specified within the image . The autoposer is
+of images , wherein the new image is also a video . A further configured to normalize images prior to processing
+reference image or training set may also be combined with 40 by the encoder, by adjusting location information for objects
+a first video , resulting in a new image comprising a video to within a given range or value , also known as pose
+having parameters found within the reference image or estimation .
+training set . The system may also generate training sets for      The autoposer is further configured to linearly warp
+use within .                                                    images such that landmarks within the image are trans
+  The system comprises a number of interconnected neural 45 formed to a standardized position . For example, for images
+networks. Each neural network of the invention is a feed-   of faces, the " standard pose” is configured such that eyes are
+forward sigmoid -activated multilayer perceptron network . level at specific points symmetrical about a center and a
+The interconnected neural networks include an autoposer, an      mouth is centered horizontally at a specific point beneath the
+automasker, an encoder, a generator, an improver, and a eyes .
+discriminator. The system also comprises a styler having a 50 The autoposer may also be configured as a fine poser or
+mean vector and a matrix , configured for vector manipula- a rough poser, wherein the fine poser is configured to
+tion .                                                         minimize distortion of objects of the input image ; while the
+   Each of the neural networks of the system , and the styler, rough poser is configured to locate objects in a wider area
+are capable of being trained by input of a training set with some potential for added distortion of said object. One
+comprised of a number of sample images . The sample 55 or both of the fine poser or rough poser may be utilized to
+images may comprise parameters or depictions of any process an image multiple times to increase accuracy of
+characteristics that a user chooses. The training set is gen- pose - estimation , specifically on outliers within the image .
+erally configured such that input of the training set through       The autoposer of the system comprises five layers, all of
+a given neural network will train said neural network to react    similar size , with only local connectivity. The automasker is
+to specific parameters common amongst the samples of the 60 configured to take an input image that has been posed by the
+training set. The training set can be curated for each indi- autoposer and maps the image onto a grayscale foreground
+vidual neural network or for the system as a whole in order mask or a background mask . Through trained segmentation,
+to yield user- desired results .                              the automasker is capable of determining foreground objects
+   Training processes of the system comprise a stochastic or objects of interest within the image and distinguishing
+optimization algorithm configured to optimize functions of 65 between the objects and the background of the image , after
+each of the neural networks and the functions of the system . which the background or the objects is modified separately
+Each neural network of the system further comprises a             from the other.
+                                                  US 11,361,563 B2
+                             5                                                                  6
+     The encoder of the system comprises five layers, which overall quality value of the input image . The discriminator
+begin locally connected and increasing in density until a therefore provides the loss function that trains and is utilized
+final fully -connected control layer. The encoder is config- the improver to maximize quality of the improver through
+ured to receive an input image from either the autoposer or the process of backpropagation . The improver and discrimi
+the automasker and output a control vector for the image . 5 nator are further trained simultaneously and against one
+The encoder may also be configured to function as a another to form a generative adversarial network , wherein
+class -specific compression algorithm , wherein the resultant the discriminator is trained by predetermined sample images
+vector is stored . The encoder is configured to work in and output images from the improver.
+tandem with the generator to reduce reconstruction error of            In another embodiment, the generator and encoder may be
+the input image , such that it can be lossily reconstructed; that 10 configured to allow compression of video in the same
+is , the image is irreversibly compressed but may be uncom- manner described above , with the improver and the dis
+pressed by inexact approximations with minimal data loss . criminator further configured to process a generated video
+     The generator of the system comprises a shape nearly from the generator and increase the quality of the video
+opposite to that of the encoder, having five layers of decreas- despite any loss from compression .
+ing density. The generator is configured to receive an input 15 The styler of the system comprises a mean vector and a
+consisting of the control vector produced by the encoder, a matrix , computed as a Cholesky decomposition of a given
+reference sketch of the image configured as a general map of covariance matrix of the control vectors of a given training
+the image , a set of hashable text tags , and a set of final pose set, as received from the encoder. The styler is configured to
+parameters. The generator is then configured to output a generate control vectors based on a specific training set
+generated image or new image . The generator may be 20 control vectors , having the same means , variances, and
+further configured to utilize the set of final pose parameters correlations thereof. The styler is further configured to
+to modify the image and correct for previous distortions of accept tags , resulting in implementation of a corresponding
+the image . The generator and encoder are configured to tag vector on the control vector. This then results in trans
+function in tandem but may be trained with varied or              formations of mean and variance values in the control
+differing training image sets , resulting in differing output 25 vector. While the styler is not a neural network, the function
+images from one image generation to another. Control              of the styler, namely the multiply -matrix -and -add -vector
+vectors may also be modified between the encoder and the          operation, can treated as a single , un- activated neural net
+generator to produce variance in resulting simulated or           work layer. In some embodiments of the invention, trans
+generated images .                                                formations of mean and variance may be done with respect
+  In some embodiments of the invention, an encoder and the 30 to a covariance of a given set . Doing so allows the styler to
+generator may be trained to focus reconstruction processes utilize tag vectors to effectively focus on relevant variances
+on specific targets within an image , such as spatial areas . during identification and selection processes on a given
+This is done by clustering control space samples of a training image or control vector.
+set for a given area . Next, a second encoder and a second         In another embodiment of the invention , the system may
+generator may be trained on the clustered training set . Less 35 be configured to generate simulations, such as moving
+variation within each cluster of the training set results in a objects, video , and simulations of human beings . Simula
+more accurate reconstruction than an encoder and generator tions generated by the system may further be configured to
+trained on a larger training set . Loss by the generator may react to pre - determined stimuli or input and then, through
+then be focused to a center by using a paraboloid - type the function of the system and generated training sets , be
+function , which doubles loss at the center and approaches 40 modified to react to different or new stimuli or input, or
+zero away from the center. This effectively increases recon- modified to react differently to the same pre -determined
+struction accuracy in the center than at any edges or corners stimuli or input.
+of an image , reserving more of the control space for those        In another embodiment, the autoposer may further be
+central details .                                                configured to generate and capture a training set from a
+   The improver of the system is configured to take an input 45 video , thereby posing relative movements of objects within
+image from the generator and produce an altered image that the video . The generated training set can then be used by the
+has been modified based on a given loss function. The generator to train for a specific object, increasing recon
+improver is configured to work in tandem with the discrimi- struction accuracy for said specific object.
+nator. The discriminator of the system , similar in configu-       Below is a partial example of computer - implemented
+ration to the autoposer, is configured to receive an input 50 code representing at least one implementation of the neural
+image and output a single output channel representing an          network of the invention .
+                            US 11,361,563 B2
+                 7                             8
+
+#ifndef      MAKEMORE MEGATRON HH
+#define      MAKEMORE MEGATRON HH        1
+
+
+#include " tron.hh "
+#include " wiring.hh "
+
+namespace makemore {
+
+extern double adam bi , adam b2 , adam b3 , adam eps ;
+
+struct Megatron : Tron {
+  const double * in ;
+  double * fin , tout , * fout ;
+
+  const class Wiring * wire ;
+  class Mapfile * mapfile ;
+
+  unsigned int wn ;
+  unsigned int ** iwmap , ** owmap ;
+  unsigned int ** iomap , ** oimap ;
+  unsigned int * wimap , womap ;
+                            *
+
+
+
+
+  double * weight ;
+  unsigned int * mapbuf ;
+
+double * m , * v ;
+
+  unsigned int inrn , outrn ;
+  unsigned int mbn ;
+
+  double eta ;
+                                      US 11,361,563 B2
+                        9                                           10
+     bool activated ;
+
+     std :: vector < std :: vector < unsigned int > >   mow ;
+
+
+                                   wire , class Mapfile * _mapfile , unsigned
+  Megatron ( const class Wiring * _wire
+int mbn 1I, double eta = 1.0 , bool activated = true ) ;
+             -                    =                             =
+
+
+
+  virtual ~ Megatron ( ) ;
+
+     virtual const double * feed ( const double * in , double * fin ) ;
+     virtual void train ( double r ) ;
+
+     virtual const double * output o { return out ; }
+     virtual const double * input a       { return in ; }
+     virtual double * foutputo ) { return fout ; }
+
+     void makemaps () ;
+     void randomize ( double disp ) ;
+};
+
+}
+
+#endif
+
+
+
+#define           MAKEMORE SUPERTRON CU     1
+
+
+#include < stdio.h >
+#include < assert.h >
+
+#include < math.h >
+
+#include < vector >
+#include <map >
+
+#include " cudamem.hh "
+             IT
+
+
+
+
+#include " random.hh "
+#include " supertron.hh "
+#include " mapfile.hh "
+                                       US 11,361,563 B2
+                      11                                              12
+namespace makemore {
+
+inline       device        int   shl ( int a , int b ) { return ( ( b < 0 ) ? ( a >> -b )   :
+
+( a << b ) ) ; }
+inline                     int dshl ( int a , int b ) { return ( b < 0 ) ? ( a >> -b ) :
+( a << b ) ) ; }
+
+inline       device        int   shr ( int a , int b ) { return ( b < 0 ) ? ( a << -b ) :
+( a >> b ) ) ; }
+inline                     int dshr ( int a , int b ) { return ( b < 0 ) ? ( a << -b )      :
+
+( a >> b ) ) ; }
+
+
+
+inline     device_bool dev_outi_to_ini_wi ( const Supertron ::Layer ::Head *
+head , int outi , int i , int * inip , int * wip )
+#include " outi to ini wi.hh "
+inline      device         bool dev_ini_to_outi_wi ( const Supertron ::Layer ::Head *
+head , int ini , int i , int * outip , int * wip )
+#include " ini_to_outi_wi.hh "
+inline device bool dev_wi_to_ini_outi ( const Supertron :: Layer :: Head *
+head , int wi , int i , int * inip , int * outip )
+#include " wi to ini outi.hh "
+
+inline device int dev_get_oiwtabn ( const Supertron :: Layer :: Head * head )
+#include " get_oiwtabn.hh "
+inline device int dev get iowtabn ( const Supertron ::Layer ::Head * head )
+#include " get_iowtabn.hh "
+inline device int dev_get_wiotabn ( const Supertron ::Layer ::Head * head )
+#include " get_wiotabn.hh "
+
+
+#define shr dshr
+#define shl dshl
+
+inline bool outi_to_ini_wi ( const Supertron ::Layer::Head * head , int outi ,
+int i , int * inip , int * wip )
+      1
+
+
+#include " outi to ini wi.hh "
+                                           US 11,361,563 B2
+                               13                                  14
+inline bool ini_to_outi_wi ( const Supertron ::Layer :: Head? head , int ini ,
+int i , int * outip , int * wip )
+       1
+
+
+#include " ini to outi wi.hh "
+inline bool wi_to_ini_outi ( const Supertron :: Layer ::Head * head , int wi ,
+int i , int * inip , int * outip )
+#include " wi to ini outi.hh "
+
+inline int get_oiwtabn ( const Supertron ::Layer ::Head * head )
+#include " get oiwtabn.hh "
+inline int get_iowtabn ( const Supertron :: Layer :: Head * head )
+#include " get iowtabn.hh "
+inline int get_wiotabn ( const Supertron :: Layer ::Head * head )
+#include " get_wiotabn.hh "
+
+
+
+  global void gpu_supertron_feed /
+  Supertron ::Layer layer
+) {
+  Supertron : : Layer : : Head * head = layer.head ;
+  int outn       -
+                         head- > outn ;
+  int outi     blockIdx.x + blockDim.x + threadIdx.x ;
+                 =
+
+
+
+  if ( outi > = outn )
+    return ;
+
+  double * weight   layer.weight ; =
+
+
+
+  const double * in   layer.in ;       =
+
+
+
+
+  double sum             -
+                              0;
+
+
+  if ( head- > type == Supertron :: Layer :: TYPE_MPOOL ) {
+      int tmp        =
+                             outi ;
+      int oz     =
+                         tmp % head- > oc ; tmpl= head- > oc ;
+      int ox     =
+                         tmp & head- > ow ; tmp / = head- > ow ;
+      int Oy     =
+                         tmp ;
+
+      if ( head- > s > = 0 )
+           return ;
+                                                  US 11,361,563 B2
+                              15                                             16
+  int md    ( 1 << -head- > s ) ;
+  int max ini     -1 ;   =
+
+
+
+
+  for ( int dy 0 ; dy < md ; ++ dy ) {
+                         =
+
+
+
+
+    for ( int dx  0 ; dx < md ; ++ dx ) {
+                             =
+
+
+
+      int ix = dx + OX * md ;
+      int iy dy + oy * md ;
+                     =
+
+
+
+          int iz = OZ ;
+
+          int ini    iz + head- > ic * ( ix + head- > iw * iy ) ;
+                         =
+
+
+
+
+          if ( max ini < -1 || in?ini ] > in [ max ini ] )
+            max ini    ini ;
+      }
+  }
+
+
+  sum = in [ max_ini ] ;
+          =
+
+
+
+} else if ( int * oiwtab                 =
+                                               layer.oiwtab ) {
+ unsigned int oiwtabn = dev_get_oiwtabn (head ) ;
+
+  oiwtab + = outi * oiwtabn * 2 ;
+  for ( int i =              0 ; i < oiwtabn ; ++ i , oiwtab + = 2 ) {
+      int ini = oiwtab [ 0 ] ;
+      int wi     oiwtab [ 1 ] ;
+                 =
+
+
+
+      if ( wi > = 0 ) {
+        if ( ini > = 0 )
+              sum + = weight [ wi ] * in [ ini ] ;
+          else if ( ini            ==
+                                        -1 )
+              sum + = weight [ wi ] ;
+      }
+  }
+} else {
+ int ini , wi ;
+  for ( int i = 0 ; dev_outi_to_ini_wi (head, outi , i , & ini , & wi ) ; ++ i ) {
+                     -
+                                                                         1
+
+
+      if ( wi > = 0 ) {
+        if ( ini > = 0 )
+              sum + = weight [ wi ] * in [ ini ] ;
+          else if ( ini            ==
+                                        -1 )
+              sum + = weight [ wi ] ;
+                                           US 11,361,563 B2
+                       17                                       18
+
+            }
+        }
+    }
+
+
+    switch ( head- > activated ) {
+    case Supertron ::Layer :: ACTIVATION_NONE :
+      layer.out [ outi ] = sum ; =
+
+
+
+        break ;
+    case Supertron ::Layer :: ACTIVATION_SIGMOID :
+        layer.out [ outi ] = 1.0 / ( 1.0 + exp ( -sum ) ) ;
+        break ;
+    case Supertron :: Layer::ACTIVATION RELU :
+        layer.out [ outi ]       =
+                                     ( sum > 0 ) ? sum   0;
+        break ;
+    case Supertron ::Layer :: ACTIVATION SOFTPLUS :
+      layer.out [ outi ] ( sum > 64 ) ? sum : log ( 1 + exp ( sum ) ) ;
+      break ;
+    default :
+        layer.out [ outi ] = 0 ; =
+
+
+
+        break ;
+    }
+
+    layer.fout [ outi ] = 0.0 ;
+                             =
+
+
+
+
+}
+
+__global_ void gpu_supertron_traino (
+    Supertron :: Layer layer , double a
+) {
+    Supertron :: Layer::Head * head = layer.head ;
+                                              =
+
+
+
+    int outn = head- > outn ;
+    int outi     blockIdx.x * blockDim.x + threadIdx.x ;
+                   -
+
+
+
+
+    if ( outi > = outn )
+        return ;
+
+    switch ( head- > activated ) {
+    case Supertron :: Layer :: ACTIVATION NONE :
+        break ;
+    case Supertron ::Layer:: ACTIVATION_SIGMOID :
+                                               US 11,361,563 B2
+                            19                                                 20
+      {
+          double o       =
+                                 layer.out [ outi ] ;
+          double fo = layer . fout [ outi ] ;
+                             =
+
+
+
+
+          if ( o > 1.0 )
+            O   =
+                    1.0 ;
+          else if ( 0 < 0.0 )
+            O   0.0 ;
+                =
+
+
+
+
+          layer . fout [ outi ] = fo * oo * ( 1.0 - 0 ) ;
+      }
+      break ;
+    case Supertron ::Layer :: ACTIVATION RELU :
+      if ( layer.out [ outi ] < = 0 )
+        layer.fout [ outi ] = 0 ;
+      break ;
+    case Supertron :: Layer :: ACTIVATION SOFTPLUS :
+      layer.fout [ outi ] = layer.fout [ outi ] * ( 1
+                                      =                                exp ( -layer.out [ outi ] ) ) ;
+      break ;
+    default :
+      break ;
+    }
+}
+
+
+
+_global void gpu_supertron_traini /
+  Supertron :: Layer layer
+) {
+    Supertron :: Layer :: Head * head             =     layer.head ;
+    int inn = head- > inn ;
+    unsigned int ini = blockIdx.x * blockDim . x + threadIdx.x ;
+    if ( ini > = inn )
+      return ;
+
+    double sum 0 ;   =
+
+
+
+    int outi , wi ;
+
+    double * weight = layer.weight ;
+                                 =
+                                                  US 11,361,563 B2
+                                   21                                22
+
+double * fout = layer.fout ;
+
+if ( head- > type == Supertron :: Layer :: TYPE MPOOL ) {
+  int tmp ini ;    =
+
+
+
+    int iz = tmp & head- > ic ; tmp / = head- > ic ;   -
+
+
+
+
+    int ix = tmp & head- > iw ; tmp = head- > iw ;
+               =
+
+
+
+
+    int iy     =       tmp ;
+
+    if ( head- > s > = 0 )
+        return ;
+    int md = ( 1 << -head- > s ) ;
+
+
+    int oz = iz ;
+    int ox = ix / md ;
+    int oy = iy / md ;
+
+    int max_inj = -1 ;         =
+
+
+
+
+    for ( int dy = 0 ; dy < md ; ++ dy ) {
+                               =
+
+
+
+        for ( int dx = 0 ; dx < md ; ++ dx ) {
+            int jx         =
+                                   dx + Ox * md ;
+            int jy         =
+                                   dy + oy * md ;
+            int jz         =
+                                   OZ ;
+
+
+            int inj jz + head- > ic * ( jx + head- > iw * jy ) ;
+            if ( max_inj < -1 || layer.in [ inj ] > layer.in [ max_inj ] )
+              max inj                     inj ;
+        }
+    }
+
+
+    if ( max inj ! = ini )
+        return ;
+
+    int outi           =
+                                     ( ox + head- > ow * oy ) ;
+                           oz + head- > oc *
+    layer.fin [ ini ] + = layer . fout [outi ] ;
+    return ;
+}
+                                              US 11,361,563 B2
+                          23                                              24
+     if ( int * iowtab = layer.iowtab ) {
+                                 =
+
+
+
+       unsigned int iowtabn = dev get iowtabn (head ) ;
+                                          =
+
+
+
+
+         iowtab + = ini * iowtabn * 2 ;
+         for ( int i   0 ; i < iowtabn ; ++ i , iowtab t = 2 ) {
+                         =
+
+
+           outi = iowtab [ 0 ] ;
+                    =
+
+
+
+           wi = iowtab [ 1 ] ;
+                =
+
+
+
+
+             if ( outi > = 0 && wi > = 0 )
+               sum + = weight [ wi ] * fout [ outi ] ;
+         }
+     } else {
+         for ( int i = 0 ; dev_ini_to_outi_wi (head , ini , i , & outi , & wi ) ; ++ i ) {
+                         =
+
+
+
+
+             if ( outi > = 0 && wi > = 0 )
+               sum + = weight [ wi ] # fout [ outi ] ;
+         }
+     }
+
+     layer.fin [ ini ] + = sum ;
+}
+
+
+
+    __global        void gpu_supertron_train2 (
+     Supertron ::Layer layer , double a
+
+     Supertron :: Layer :: Head * head            =
+                                                      layer.head ;
+     int wn     =
+                    head- > wn ;
+
+     if ( head- > type       ==
+                                     Supertron :: Layer :: TYPE MPOOL )
+         return ;
+     if ( a     0)
+               ==
+
+
+
+       return ;
+
+     unsigned int wi ;
+     int k ;
+     int i0 , il ;
+     unsigned int n = dev_get_wiotabn (head ) ;
+                             =
+                                                      US 11,361,563 B2
+                                   25                                    26
+if ( layer.wbufk ) {
+  int a blockIdx.x * blockDim.x + threadIdx.x ;
+                     -
+
+
+
+
+    wi = q % wn ;
+    k   =
+         q / wn ;
+    if ( k > = layer.wbufk )
+        return ;
+
+    io =          ( k * n ) / layer.wbufk ;
+    il =          ( ( + 1 ) + n ) / layer.wbufk ;
+} else {
+  wi = blockIdx.x * blockDim.x + threadIdx.x ;
+  if ( wi > = wn )
+       return ;
+    k   =
+         -1 ;
+    io    0;=
+
+
+
+    il = n ;
+}
+
+double * fout = layer.fout ;
+const double #in                         layer.in ;
+
+double dw                 =
+                              0;
+int nw           -
+                         0;
+
+
+if ( int * wiotab                  =
+                                        layer.wiotab ) {
+    unsigned int wiotabn = dev get wiotabn ( head ) ;
+                                             =
+
+
+
+
+    wiotab + = wi * wiotabn * 2 + i                         + 2;
+
+    for ( int i = i0 ; i < il ; ++ i , wiotab t+ = 2 ) {
+        int ini = wiotab [ 0 ] ;
+                              =
+
+
+
+
+        int outi = wiotab [ 1 ] ;
+
+        if ( outi > = 0 && ini ! = -2 ) {
+          dw + = fout [ outi ] ** ( ini   -1 ? 1.0 : in [ ini ] ) ;
+                ++ nw ;
+        }
+                                                 US 11,361,563 B2
+                              27                                      28
+
+    }
+
+} else {
+  int ini , outi ;
+
+    for ( int i = i0 ; i < il ; ++ i ) {
+        dev_wi_to_ini_outi (head , wi , i , & ini , & outi ) ;
+        if ( outi > = 0 && ini ! = -2 ) {
+          dw + = fout [ outi ] * ( ini    -1 ? 1.0 : in [ ini ] ) ;
+            ++ nw ;
+        }
+    }
+}
+
+if ( layer.wbufk ) {
+  layer.wbuf [ wi * layer.wbufk + k ] = dw ;
+
+        syncthreads ( ) ;
+
+    if ( k )
+      return ;
+
+    double sdw        =
+                              0;
+    for ( k = 0 ; k < layer.wbufk ; ++ k )
+                -
+
+
+
+
+      sdw + = layer.wbuf [ wi * layer.wbufk + k ] ;
+    dw = sdw ;
+}
+
+if ( nw > 1 )
+  dw / = ( double ) nw ;
+
+if ( head- > adam ) {
+  double adam bl                       layer.head- > adam bl ;
+    double adam_b2 = layer.head- > adam_b2 ;
+                                   =
+
+
+
+    double adam b3                 =
+                                       layer.head- > adam b3 ;
+    double adam eps                     layer.head- > adam_eps ;
+
+    layer.m [ wi ] = adam_bl * layer.m [ wi ] + ( 1.0 - adam_b1) * dw ;
+                          =
+                                                   US 11,361,563 B2
+                              29                                                   30
+        layer.v [ wi ] = adam b2 * layer.v [ wi ] + ( 1.0 - adam b2 ) * dw * dw ;
+        layer.weight [ wi ] + = a              *
+                                                    layer.m [ wi ] / ( pow ( layer.v [ wi ] , adam b3 )   +
+adam eps ) ;
+    } else {
+        layer.weight [ wi ] + = a + dw ;
+    }
+}
+
+const double * Supertron :: feed ( const double * _in , double * _fin ) {
+  assert ( layers.size () > 0 ) ;
+
+    for ( unsigned int li = 0 ; li < layers.size ( ) ; ++ li ) {
+                                       =
+
+
+
+        Supertron ::Layer & lay                =
+                                                   * layers [ li ] ;
+
+        if ( li > 0 ) {
+            lay.in = layers [ li 1 ] - > out ;
+                      =
+
+
+
+
+            lay.fin layers [ li - 1 ] - > fout ;
+                          =
+
+
+
+
+        } else {
+            lay.in =  =
+                              in ;
+            lay.fin       =
+                               fin ;
+        }
+
+        int bs   =
+                      256 ;
+        int gs = ( lay.outn + bs - 1 ) / bs ;
+// fprintf ( stderr , " feeding layer fu \ n " , li ) ;
+     gpu_supertron_feed <<< gs , bs >>> ( lay ) ;
+// fprintf ( stderr ,    fed layer çu \ n " , li ) ;
+
+    }
+
+    return layers [ layers.size ( ) - 1 ] - > out ;
+}
+
+void Supertron :: target (const double * tgt ) {
+  assert ( layers.size () ) ;
+    Supertron :: Layer * lay = layers [ layers.size ( ) - 1 ] ;
+                                           =
+
+
+
+    cusubvec ( tgt , lay- > out , lay- > outn , lay- > fout ) ;
+}
+                                                          US 11,361,563 B2
+                             31                                                   32
+void Supertron ::update_stats () {
+  assert ( layers.size () ) ;
+    Supertron ::Layer * lay = layers [ layers.size ( ) - 1 ] ;
+                                             =
+
+
+
+
+    double z         pow ( 1.0           errdecay , (double ) rounds ) ;
+
+    double nerr2 = sqrt ( cusumsq ( lay- > fout , lay- > outn ) / (double ) lay- > outn ) ;
+                         =
+
+
+
+1 / fprintf ( stderr , " nerr2 = 81f \ n " , nerr2 ) ;
+    err2    *=   ( 1.0            z) ;
+    err2 * = ( 1.0 - errdecay ) ;
+    err2 + = errdecay * nerr2 ;
+    err2 * = 1.0 / ( 1.0                 Z       *
+                                                         ( 1.0 - errdecay ) ) ;
+
+    double nerrm             =
+                                  cumaxabs ( lay- > fout , lay- > outn ) ;
+    errm * = ( 1.0                z) ;
+    errm * =     ( 1.0 - errdecay ) ;
+    errm + = errdecay * nerrm ;
+    errm    * = 1.0 / ( 1.0 - Z * ( 1.0 - errdecay ) ) ;
+
+    ++ rounds ;
+}
+
+void Supertron :: train (double nu ) {
+
+    for ( auto li = layers.rbegin ( ) ; li ! = layers.rend ( ) ; ++ li ) {
+                                                                      =
+
+
+
+      Supertron :: Layer & lay                       =
+                                                         ** li ;
+
+      {
+           int bso       =
+                                 256 ;
+           int gs0 ( lay.outn + bs0 - 1 ) / bs0 ;
+                         =
+
+
+
+           gpu_supertron_train0 <<< gs0 , bs0 >>> (lay , nu ) ;
+      }
+
+      if ( lay.fin ) {
+           int bs1       =
+                                 256 ;
+           int gs1               ( lay.inn + bs1 - 1 ) / bs1 ;
+                                                      US 11,361,563 B2
+                                  33                                     34
+            gpu_supertron_trainl <<< gsl , bs1>>> ( lay ) ;
+        }
+
+
+        if ( lay.wbufk ) {
+            int bs2           =
+                                  256 ;
+            int gs2 = ( lay.wn * lay.wbufk + bs2 - 1 ) / bs2 ;       -
+
+
+
+
+            gpu_supertron_train2 <<< gs2 , bs2 >>> (lay , nu ) ;
+        } else {
+            int bs2           =
+                                  256 ;
+            int gs2    ( lay.wn + bs2 - 1 ) / bs 2 ;
+                              =
+
+
+
+            gpu_supertron_train2 <<< gs2 , bs2 >>> (lay , nu ) ;
+        }
+    }
+}
+
+Supertron :: Supertron ( Mapfile * _mapfile ) {
+    inn = 0 ;
+    outn     =
+                 0i
+    err2     =
+                 0;
+    errm     =
+                 0;
+    rounds       =
+                         0;
+    errdecay = 0.01 ;    =
+
+
+
+
+    mapfile = mapfile ;
+                     =
+
+
+
+
+    cumake ( & cunlayers , 1 ) ;
+    mapfile- >map ( cunlayers , 1 ) ;         /
+
+
+    mapfile- > load ( cunlayers ) ;
+
+    uint64_t nlayers ;
+    decude (cunlayers , 1 , & nlayers ) ;
+    layers.resize (nlayers ) ;
+
+    for ( unsigned int i = 0 ; i < nlayers ; ++ i ) {
+                                          =
+
+
+
+        Supertron :: Layer * lay = new Supertron :: Layer ;
+                                                  =
+
+
+        cumake ( & lay- > head , 1 ) ;
+        mapfile- >map ( lay- > head , 1 ) ;
+                                            US 11,361,563 B2
+                           35                                        36
+mapfile- > load ( lay- > head ) ;
+
+Supertron :: Layer :: Head head ;
+decude ( lay- > head , 1 , & head ) ;
+lay- > wn head.wn ;
+           =
+
+
+
+lay- > inn = head.inn ;
+lay- > outn = head.outn ;
+               =
+
+
+
+
+cumake ( & lay- > out , head.outn ) ;
+cumake ( & lay- > fout , head.outn ) ;
+
+cumake ( & lay- > weight , head.wn ) ;
+mapfile- > map ( lay- > weight , head.wn ) ;
+mapfile- > load ( lay- > weight ) ;
+
+ cumake ( & lay- > m , head.wn ) ;
+                       /
+
+
+mapfile- >map ( lay- > m , head.wn ) ;
+mapfile- > load ( lay- >m ) ;
+
+cuma ke ( & lay- > v , head.wn ) ;
+mapfile- >map ( lay- > v , head.wn ) ;
+mapfile- > load ( lay- > v ) ;
+
+lay- > iowtab = NULL ;
+lay- > oiwtab = NULL ;
+                   =
+
+
+
+lay- > wiotab = NULL ;
+                   =
+
+
+
+
+if ( head . type       ==
+                               Supertron :: Layer :: TYPE CONV ) {
+
+    unsigned int mwn = 16384 ;     =
+
+
+
+
+    if ( lay- > wn < mwn ) {
+      lay- >wbufk = 2 * mwn / lay- > wn ;
+                           -
+
+
+
+
+      if ( lay- > wbufk > 128 )
+         lay- > wbufk = 128 ;  =
+
+
+
+    }
+
+    cuma ke ( & lay- > wbuf , lay- > wn * lay- > wbufk ) ;
+}
+                                         US 11,361,563 B2
+                           37                                                38
+
+#if 0
+        {
+            unsigned int oiwtabn = get oiwtabn ( & head ) ;
+            cumake ( & lay- > oiwtab , oiwtabn * head.outn * 2 ) ;
+            mapfile- >map ( lay- > oiwtab , oiwtabn * head.outn # 2 ) ;
+            mapfile- > load ( lay- > oiwtab ) ;
+        }
+
+        {
+            unsigned int iowtabn = get iowtabn (Shead ) ;
+                                         =
+
+
+
+            cumake ( & lay- > iowtab , iowtabn * head.inn * 2 ) ;
+                                     1
+
+
+            mapfile- > map ( lay- > iowtab , iowtabn * head.inn * 2 ) ;
+            mapfile- > load ( lay- > iowtab ) ;
+        }
+
+        {
+            unsigned int wiotabn = get_wiotabn ( & head ) ;
+                                         =
+
+
+
+
+            cumake ( & lay- > wiotab , wiotabn * head.wn * 2 ) ;
+            mapfile- > map ( lay- >wiotab ,, wiotabn * head.wn * 2 ) ;
+            mapfile- > load ( lay- > wiotab ) ;
+        }
+#endif
+
+
+        layers [ i ]   -
+                            lay ;
+        if ( i > 0 ) {
+fprintf ( stderr , " i = % d \ n " , i ) ;
+      assert ( layers [ i 1 ] - > outn            ==
+                                                       layers [ i ] - > inn ) ;
+}
+    }
+
+    if ( nlayers ) {
+      inn = layers [ 0 ] - > inn ;
+              =
+
+
+
+        outn = layers [ layers.size ( )
+                  =
+                                                   1 ] - > outn ;
+    }
+}
+                                                 US 11,361,563 B2
+                              39                                    40
+
+Supertron :: ~ Supertron ( ) {
+  for ( auto lay : layers ) {
+    cufree ( lay- > head ) ;
+    cufree ( lay- > out ) ;
+    cufree ( lay- > fout ) ;
+    cufree ( lay- >weight ) ;
+    cufree ( lay- > m ) ;
+    cufree (lay- > v ) ;
+    delete lay ;
+    }
+    if ( cunlayers )
+         cufree ( cunlayers ) ;
+}
+
+void Supertron :: add layer
+        Supertron :: Layer :: Type type ,
+        unsigned int iw , unsigned int ih , unsigned int ic ,
+        unsigned int ow , unsigned int oh , unsigned int oc ,
+                                   1
+
+
+        unsigned int d , int s ,
+        Supertron :: Layer :: Activation activated
+) {
+    Supertron :: Layer :: Head head ;
+
+    head.type = type ; =
+
+
+
+
+    head.iw iw ;   =
+
+
+
+
+    head.ih = ih ;
+    head.ic        =
+                       ic ;
+    head.ow        =   OW ;
+    head.oh        =
+                       oh ;
+    head.oc        =
+                       OC ;
+
+    head.d d ; =
+
+
+
+
+    head.s = S ;
+    head.activated             =
+                                       activated ;
+
+    head.inn               in * ih * ic ;
+    head.outn = OW * oh * oc ;
+
+    head.adam          =
+                           true ;
+                                                           US 11,361,563 B2
+                                41                                            42
+  head . adam bl                        0.9 ;
+  head . adam b2 = 0.999 ;
+// head.adam_b2 = 0.99 ;                =
+
+
+
+  head . adam b3 = 0.5 ;        =
+
+
+
+
+  head . adam eps = le - 8 ;        =
+
+
+
+
+  int d21          =
+                      (d * 2 + 1 ) ;
+  int m    =
+                   ( d21 * 021 * ic + 1 ) ;
+  int s2       -
+                       ( s > 0 ) ? ( 1 << s ) : 1 ;
+
+  switch ( head.type ) {
+  case Supertron :: Layer :: TYPE FULL :
+    head.wn    ( head.inn + 1 ) + head.outn ;
+                       =
+
+
+
+
+     assert ( d                     0) ;
+     assert ( s            ==
+                                    0) ;
+     break ;
+
+  case Supertron :: Layer:: TYPE LOCAL :
+     head.wn           -
+                            head.outn * m ;
+fprintf ( stderr , " % d , d , $ d , % d \ n " , ow , iw , s , ( iw >> -- S ) ) ;
+     assert ( ow == shl ( iw , S ) ) ;
+     assert ( oh == shl ( ih , S ) ) ;
+     break ;
+
+  case Supertron :: Layer :: TYPE CONV :
+    head.wn s2 * s2 * head.oc * m ;
+    assert ( ow   shl ( iw , S ) ) ;
+                            ==
+
+
+
+     assert ( oh            ==
+                                        shl ( ih , S ) ) ;
+     break ;
+
+    case Supertron :: Layer :: TYPE YCONV :
+      head.wn = s2 ?? OW m ;            *       *      *
+
+
+1 / fprintf ( stderr , " s = %& d iw = fu ow = fu \ n " , s , iw , ow ) ;
+     assert ( ow    shl ( iw , S ) ) ;
+                            ==
+
+
+
+     assert ( oh == shl ( ih , S ) ) ;
+     break ;
+
+  case Supertron ::Layer :: TYPE_MPOOL :
+                                          US 11,361,563 B2
+                            43                               44
+        head.wn    =
+                       1;
+        assert ( s < 0 ) ;
+        assert ( d == 0 ) ;
+        assert ( ow      shl ( iw , s ) ) ;
+        assert ( oh    ==
+                         shl ( ih , S ) ) ;
+        break ;
+
+    default :
+      assert ( 0 ) ;
+    }
+
+fprintf ( stderr , " wn = % d \ n " , head.wn ) ;
+
+    add layer (head ) ;
+}
+
+void Supertron :: add_layer ( const Supertron :: Layer::Head & head ) {
+    uint64 t nlayers layers.size ( ) ;
+                                 =
+
+
+    if ( nlayers ) {
+      Layer * ll = layers [ nlayers 1 ] ;
+                       =
+
+
+
+
+        assert ( ll- > outn == head.inn ) ;
+    }
+
+    ++ nlayers ;
+    encude ( &nlayers , 1 , cunlayers ) ;
+    Supertron ::Layer * lay new Supertron :: Layer ;
+                                     =
+
+
+
+    cumake ( & lay- > head , 1 ) ;
+    mapfile- >map ( lay- > head , 1 ) ;
+     encude ( & head , 1 , lay- > head ) ;
+
+    cumake ( & lay- > out , head.outn ) ;
+    cumake ( & lay- > fout , head.outn ) ;
+
+    cumake ( & lay- > weight , head.wn ) ;
+    mapfile- >map (lay- >weight , head.wn ) ;
+    cumake ( & lay- > m , head.wn ) ;
+    mapfile- >map (lay- > m , head.wn ) ;
+                                                US 11,361,563 B2
+                            45                                             46
+ cumake ( & lay- > v , head.wn ) ;
+ mapfile- > map ( lay- > v , head.wn ) ;
+
+ lay- > wn = head.wn ;
+                =
+
+
+
+
+ lay- > inn head.inn ;
+                    =
+
+
+
+  lay- > outn = head.outn ;
+
+  lay- > iowtab         =
+                            NULL ;
+  lay- > oiwtab         =
+                            NULL ;
+  lay- > wiotab = NULL ;=
+
+
+
+
+#if o
+
+      unsigned int oiwtabn = get_oiwtabn ( & head ) ;
+      cuma ke ( & lay- > oiwtab , oiwtabn * head.outn * 2 ) ;
+      mapfile- >map (lay- > oiwtab , oiwtabn * head.outn * 2 ) ;
+
+      int * oiwtab new int [ oiwtabn * head.outn * 2 ] , * p = oiwtab ;
+                            =
+
+
+
+      for ( unsigned int outi   0 ; outi < head.outn ; ++ outi ) {
+          for ( int i           =
+                                    0 ; i < oiwtabn ; ++ i , p t = 2 ) {
+              assert ( outi to ini wi ( & head , outi , i , p + 0 , p + 1 ) ) ;
+          }
+
+          int tmpo , tmpl ;
+          assert ( ! outi_to_ini_wi ( & head , outi , oiwtabn , & tmpo , & tmp1 ) ) ;
+                                                                                1
+
+      }
+      encude (oiwtab , oiwtabn * head.outn * 2 , lay- > oiwtab ) ;
+      delete [ ] oiwtab ;
+  }
+
+  {
+      unsigned int iowtabn = get iowtabn ( & head ) ;
+                                            =
+
+
+
+
+      cuma ke ( & lay- > iowtab , iowtabn * head.inn # 2 ) ;
+                                        1
+
+
+      mapfile- > map ( lay- > iowtab , iowtabn * head . inn * 2 ) ;
+
+      int * iowtab = new int [ iowtabn * head.inn # 2 ] , * p = iowtab ;
+      for ( unsigned int ini = 0 ; ini < head.inn ; ++ ini ) {
+          for ( int i           =
+                                    0 ; i < iowtabn ; ++ i , p + = 2 ) {
+                                                 US 11,361,563 B2
+                             47                                             48
+
+                    assert ( ini_to_outi_wi ( &head , ini , i , p + 0 , p + 1 ) ) ;
+            }
+
+            int tmpo , tmpl ;
+            assert ( ! ini_to_outi_wi ( & head , ini , iowtabn , & tmpo , & tmpl ) ) ;
+                                                                                /
+
+
+        }
+        encude (iowtab , iowtabn * head.inn * 2 , lay- > iowtab ) ;
+        delete [ ] iowtab ;
+    }
+
+
+    {
+        unsigned int wiotabn = get wiotabn ( & head ) ;
+                                             =
+
+
+
+
+        cumake ( & lay- > wiotab , wiotabn * head.wn * 2 ) ;
+        mapfile- >map (lay- >wiotab , wiotabn * head.wn * 2 ) ;
+
+        int * wiotab = new int [ wiotabn * head.wn *+ 2 ] , * p = wiotab ;  =
+
+
+
+        for ( unsigned int wi = 0 ; wi < head.wn ; ++ wi ) {
+                                             =
+
+
+
+
+            for ( int i = 0 ; i < wiotabn ; ++ i , p + = 2 ) {
+                               =
+
+
+
+                    assert ( wi_to_ini_outi ( & head , wi , i , p + 0 , p + 1 ) ) ;
+            }
+
+            int tmpo , tmpl ;
+            assert ( ! wi_to_ini_outi ( & head , wi , wiotabn , & tmpo , & tmpl ) ) ;
+        }
+        encude ( wiotab , wiotabn * head.wn * 2 , lay- > wiotab ) ;
+        delete [ ] wiotab ;
+    }
+#endif
+
+    layers.push_back ( lay ) ;
+
+    if ( layers.size ( )           ==   1)
+      inn = lay- > inn ;
+    outn = lay- > outn ;
+                -
+
+
+
+
+}
+
+void Supertron :: randomize ( double disp ) {
+  for ( auto lay : layers ) {
+                                                     US 11,361,563 B2
+                              49                                        50
+Supertron ::Layer :: Head head ;
+decude ( lay- > head , 1 , & head ) ;
+
+unsigned int s = get_oiwtabn ( & head ) ;
+                              =
+
+
+
+double f = disp / sqrt (( (double ) s ) ;
+double * weight = new double [ lay- >> wn ] ;
+                              =
+
+
+
+
+switch ( head.type ) {
+case Supertron :: Layer :: TYPE FULL :
+case Supertron :: Layer :: TYPE LOCAL :
+    for ( unsigned int outi = 0 ; outi < head.outn ; ++ outi ) {
+                                             =
+
+
+
+
+        double SW 0 ;     =
+
+
+
+        int ini , wi ;
+        for ( int i    0 ; i < s ; ++ i ) {
+                              =
+
+
+
+            outi to ini wi ( & head , outi , i , & ini , & wi ) ;
+            if ( ini ! = -1 ) {
+                              =
+
+
+
+                weight [ wi ] = randgauss ( ). * f ;
+                                    =
+
+
+                sw + = weight [ wi ] ;
+            }
+        }
+        for ( int i           =
+                                  0 ; i < 5 ; ++ i ) {
+            outi_to_ini_wi ( & head , outi , i , & ini , & wi ) ;
+                                                 1
+
+
+            if ( ini              -1 && wi ! = -1 ) {
+                weight [ wi ] = -sw / 2.0 ;
+                                    =
+
+
+
+                break ;
+            }
+        }
+    }
+    break ;
+
+default :
+    for ( unsigned int wi = 0 ; wi < lay- > wn ; ++ wi )
+                                         =
+
+
+
+      weight [ wi ] = randgauss ( ) * f ;
+                              =
+
+
+
+    break ;
+}
+
+encude (weight , lay- > wn , lay- > weight ) ;
+                                             US 11,361,563 B2
+                             51                                  52
+        delete [ ] weight ;
+    }
+}
+
+
+}
+
+#if MAIN
+using namespace makemore ;
+
+int main ( ) {
+    Mapfile mapfile ( " foos.map " ) ;
+    Supertron s ( &mapfile ) ;
+
+fprintf ( stderr , " % lu \ n " , s.layers.size ( ) ) ;
+for ( auto lay : s.layers ) {
+    Supertron :: Layer :: Head head ;
+    decude ( lay- > head , 1 , & head ) ;
+                                  1
+
+
+    fprintf ( stderr ,, " fu fu fu \ n " , head.inn , head.outn , head.wn ) ;
+}
+
+#if 1
+double * cuin ;
+cumake ( & cuin , 256 ) ;
+double * in      new double [ 256 ] ;
+                    =
+
+
+
+double * out            =
+                            new double [ 256 ] ;
+
+while ( 1 ) {
+    for ( int j == 0 ; j < 256 ; ++ j ) {
+        in [ j ] = randrange ( 0 , 1 ) ;
+                =
+
+
+
+    }
+
+    encude ( in , 256 , cuin ) ;
+    decude ( s.feed ( cuin ) , 256 , out ) ;
+
+    s . target ( cuin ) ;
+    s.update_stats ( ) ;
+    s.train (0.0001) ;
+                                           US 11,361,563 B2
+                         53                                   54
+    if ( s . rounds § 500      ==
+                                    0) {
+         for ( unsigned int k = 0 ; k < 5 ; ++ k )
+                                    =
+
+
+
+           fprintf ( stderr , " % lf \ t " , out [ k ] ) ;
+         fprintf ( stderr , " \ n " ) ;
+         fprintf ( stderr , " err2 = 81f \ n " , s.err2 ) ;
+
+         s.mapfile- > save ( ) ;
+    }
+}
+
+#else
+    s.add layer ( Supertron :: Layer :: TYPE YCONV ,
+         16 , 16 , 1 ,
+         32 , 32 , 1 ,
+         1 , 1 , true
+    );
+
+    s.add_layer (Supertron ::Layer :: TYPE_YCONV ,
+         32 , 32 , 1 ,
+         16 , 16 , 1 ,
+         1 , -1 , false
+    );
+
+    s.randomize ( 1.0 ) ;
+    s.mapfile- > save ( ) ;
+#endif
+  return 0 ;
+}
+#endif
+                                                   US 11,361,563 B2
+                          55                                                                                56
+  Below is an additional partial example of computer                                                     -continued
+implemented code representing at least one implementation
+of the neural network of the invention .                                             bool adam ;
+                                                                                     double adam_b1, adam_b2, adam_b3, adam_eps, eta ;
+                                                            5
+                                                                                     int8_t activated;
+   #ifndef _MAKEMORE_SUPERTRON_HH
+                                                                                };
+                                                                                Head * head ;
+   #define _MAKEMORE_SUPERTRON_HH_1                                             const double * in ;
+   #include < stdint.h >                                                        double * fin , * out, * fout;
+   #include < stdio.h>                                                          double * weight, * m , * v ;
+   #include < stdlib.h>                                                         double * wbuf;
+   #include < assert.h >                                    10                  unsigned int wbufk ;
+   #include < vector >                                                          unsigned int wn , inn , outn ;
+   #include “ mapfile.hh ”                                                    int * oiwtab , * iowtab , * wiotab ;
+   namespace makemore {                                                    };
+   struct Supertron {                                                      uint64_t * cunlayers;
+      class Mapfile * mapfile;                                             std ::vector < Layer * > layers ;
+      double err2, errm , errdecay;                         15             Layer * first_layer, * last_layer ;
+      unsigned int rounds;                                                 Supertron ( class Mapfile * _mapfile );
+      unsigned int inn , outn ;                                            -Supertron ( );
+     struct Layer {                                                        const double * feed (const double * _in , double * _fin = NULL );
+        Layer ( ) {                                                        void train ( double r );
+        head = NULL ;                                                      void target (const double * _tgt);
+        in = NULL ;                                         20             void update stats ( );
+        fin NULL ;                                                         const double * input( ) { assert (layers.size ( ) ); return layers [ 0 ] - > in ;
+        out = NULL ;                                                  }
+        fout = NULL ;
+                 =
+                                                                         const double * output ( ) { assert( layers.size( )); return
+        weight = NULL ;  =
+                                                                      layers [layers.size ( ) - 1 ] - >out; }
+        wbuf = NULL ;=
+                                                                         double * foutput( ) { assert( layers.size ()); return
+        wbufk = 0 ;                                                   layers [layers.size ( ) - 1 ]- > fout; }
+        m = NULL ;                                          25
+                 NULL ;
+                                                                         void randomize (double disp ) ;
+        V =
+        wn 0 ;
+                                                                           void add_layer ( const Layer ::Head &head ) ;
+                                                                           void add_layer
+        inn 0 ;                                                                 Layer :: Type type ,
+        outn 0 ;                                                                unsigned int iw, unsigned int ih , unsigned int ic ,
+        oiwtab NULL ;    =
+                                                                                unsigned int ow, unsigned int oh , unsigned int oc ,
+        iowtab = NULL ;                                     30                  unsigned int d , int s ,
+        wiotab = NULL ;                                                         Layer :: Activation activated
+        }                                                                  );
+        ~ Layer( ) {                                                  };
+        }                                                             }
+        Layer (const Layer &l ) {                                     #endif
+             head = 1.head ;                                35
+             in = l.in ;
+                 =
+
+
+
+             fin = l.fin ;
+             out == 1.out ;
+                                                                   Below is a partial example of computer - implemented
+             fout 1.fout;                                        code representing at least one implementation of the encoder
+             weight = 1.weight;
+                             =                                   class configuration of the invention .
+             wbuf = l.wbuf;                                 40
+             wbufk = l.wbufk ;
+             m   = 1.m ;                                         #define _MAKEMORE_SUPERENC_CC_1
+             V = l.v ;                                           #include < string >
+             wn =- l.wn ;                                        #include < algorithm >
+             inn = l.inn ;                                       #include “ cudamem.hh ”
+             outn =- l.outn ;                                    #include " tron.hh ”
+             oiwtab 1.oiwtab ;                              45 #include “ multitron.hh ”
+             iowtab 1.iowtab ;
+                             =
+                                                                 #include " superenc.hh ”
+             wiotab = l.wiotab ;
+                                                                 #include " parson.hh”
+                                                                 #include " strutils.hh ”
+        }                                                      #include “ imgutils.hh ”
+        enum Type {                                            #include " supergen.hh”
+             TYPE_FULL = 0 ,     =
+                                                            50 namespace makemore {
+             TYPE LOCAL = 1 ,                                  using namespace std ;
+             TYPE_CONV = 2 ,     =
+                                                               Superenc :: Superenc (const std :: string & _dir, unsigned int _mbn ) :
+             TYPE_YCONV = 3 ,        =
+                                                               Project (_dir, _mbn) {
+             TYPE_MPOOL = 4 ,                                      assert (mbn > 0 ) ;
+             TYPE_IDENTITY = 5                                     assert (config [" type " ]       " superenc " ) ;
+        };                                                  55     char ctrlayfn [4096 ];
+        enum Activation {                                          sprintf ( ctrlayfn, “ % s / control.lay ” , dir.c_str ( ));
+             ACTIVATION_NONE = 0 ,                                 ctrlay = new Layout;
+             ACTIVATION SIGMOID               1,                   ctrlay- >load_file ( ctrlayfn );
+             ACTIVATION_RELU = 2 ,                                 char inplayfn [4096 ];
+             ACTIVATION SOFTPLUS               3                   sprintf ( inplayfn , “ % s / input.lay ” , dir.c_str ( ));
+                                                            60     inplay = new Layout;
+                                                                                =
+        };                                                         inplay- > load_file (inplayfn );
+        struct Head {                                              char encmapfn [4096 ];
+           Layer :: Type type ;                                    sprintf (encmapfn , " % s /enc.map ”, dir.c_str ( ) );
+             unsigned int wn , inn , outn ;                        encmap = new Mapfile (encmapfn );
+             unsigned int iw, ih , ic ;                            enc = new Supertron ( encmap );
+             unsigned int ow, oh , oc ;                            encinlay = new Layout ( * inplay );
+             unsigned int d ;                               65     assert ( enc- > inn mbn * encinlay- > n );
+                                                                                          ==
+
+             int s;                                                assert (enc- > outn mbn * ctrlay-> n );
+                                                                          US 11,361,563 B2
+                                                 57                                                                                   58
+                                              -continued                                                                           -continued
+    cumake ( & cuencin , enc- > inn );                                                           double * cuencfoutput = enc- > foutput ( );
+    ctrbuf= new double [mbn * ctrlay- > n ] ( );                                                 for (unsigned int mbi = 0 ; mbi < mbn ; ++mbi ) {
+    inpbuf = new double [mbn * inplay- > n ] ( );                                      5
+                                                                                                 cucopy (cugenfin + mbi * geninlay- > n + ctxlay- > n , ctrlay- > n ,
+                                                                                                                               *
+
+    rounds = 0 ;                                                                            cuencfoutput + mbi * ctrlay- > n );
+}                                                                                                }
+Superenc :: - Superenc ( ) {                                                                     enc- > update_stats ( );
+  delete encinlay ;                                                                              enc- > train (nu );
+  delete inplay;                                                                              }
+  delete ctrlay;                                                                            #endif
+  cufree ( cuencin );                                                                  10 }
+  delete [ ] ctrbuf;
+  delete [ ] inpbuf;
+}                                                                                             Below is an additional partial example of computer
+void Superenc :: report (const char * prog ) {
+  fprintf(
+                                                                                            implemented code representing at least one implementation
+         stderr,                                                                       15
+                                                                                            of the encoder class configuration of the invention .
+         “ % s % s rounds = % u enc_err2 = % g enc_errm = % g \ n " ,
+         prog , dir.c_str( ) , rounds , enc- > err2, enc- > errm
+    );                                                                                                     #ifndef _MAKEMORE_SUPERENC_HH_
+}                                                                                                          #define _MAKEMORE_SUPERENC_HH_1
+void Superenc::save ( ) {                                                                                  #include “ layout.hh ”
+  encmap- > save ( );                                                                  20                  #include "multitron.hh ”
+}                                                                                                          #include “ project.hh ”
+void Superenc :: load ( ) {                                                                                #include " parson.hh ”
+    encmap-> load ( );                                                                                     #include " mapfile.hh ”
+}                                                                                                          #include " partrait.hh ”
+void Superenc ::encode (const Partrait & prt, double * ctr) {                                              #include " cholo.hh”
+    assert (mbn    ==
+                          1 );                                                         25
+                                                                                                           #include " styler.hh ”
+    assert (encinlay- > n inplay- > n );                                                                   #include " supertron.hh "”
+    assert( inplay- > n prt.w * prt.h * 3 ) ;
+                            ==                                                                             #include <vector>
+    rgblab (prt.rgb , inplay- > n , inpbuf );                                                              #include < string >
+    encude ( inpbuf, inplay- > n , cuencin ) ;                                                             #include <map >
+    const double * cuencout = enc- > feed (cuencin , NULL );                                               namespace makemore {
+    assert ( enc- > outn = ctrlay- > n );                                                                  struct Superenc : Project {
+    decude ( cuencout, enc- > outn , ctr );                                            30                     bool ctract;
+}                                                                                                             Layout * inplay, * ctrlay ;
+                                                                                                              Layout * encinlay;
+void Superenc::burn (const class Supergen & gen , double nu) {                                                Mapfile * encmap ;
+   assert ( gen.ctrlay- > n == ctrlay- > n );                                                                 Supertron * enc ;
+if (0 ) {                                                                                                     double * cuencin , * cuencinp ;
+double foo [1024 ];                                                                    35                     double * ctrbuf, * inpbuf;
+decude (gen.cugenfin , 1024 , foo );                                                                          unsigned int rounds ;
+for (unsigned int j = 0 ; j < 16 ; ++ j)
+                            =
+                                                                                                              Superenc ( const std ::string & _dir, unsigned int _mbn );
+fprintf( stderr," % lf\ t” , foo [ j ]);                                                                        -Superenc ( );
+fprintf (stderr," \n " );                                                                                       void report (const char * prog) ;
+}                                                                                                               void load ( ) ;
+    cucopy ( gen.cugenfin + gen.ctxlay- > n , gen.ctrlay- > n, enc- > foutput ( )) ;   40                       void save ( );
+    enc- > update_stats ( );                                                                                    void encode (const Partrait & prt, double * ctr );
+    enc- > train (nu );                                                                                         void burn ( const class Supergen &gen , double nu) ;
+}                                                                                                          };
+#if o                                                                                                       }
+    assert ( geninlay- > n - ctxlay- > n + ctrlay-> n );
+                                 ==                                                                        #endif
+    assert (encinlay- > n inplay- > n );
+                                 ==
+                                                                                       45
+  for ( unsigned int mbi = 0 ; mbi < mbn ; ++mbi ) {                                           Below is a partial example of computer- implemented
+     encude ( ctxbuf + mbi * ctxlay- > n , ctxlay- > n , cugenin + mbi *                    code representing at least one implementation of the gen
+geninlay- > n );
+     encude (inpbuf + mbi * inplay- > n, inplay- > n , cuencin + mbi *                      erator class configuration of the invention .
+encinlay- > n );
+  }                                                                                    50
+    const double * cuencout enc- > feed (cuencin , NULL );
+                                          =
+                                                                                                           #ifndef _MAKEMORE_SUPERENC_HH_
+  for ( unsigned int mbi = 0 ; mbi < mbn ; ++mbi ) {
+                                      =
+                                                                                                           #define _MAKEMORE_SUPERENC_HH_1
+     cucopy (cuencout + mbi * ctrlay- > n , ctrlay- > n , cugenin + mbi *                                  #include " layout.hh ”
+geninlay- > n + ctxlay- > n );                                                                             #include “multitron.hh ”
+  }                                                                                                        #include " project.hh ”
+  cuzero (cugenfin , mbn * geninlay- > n );                                            55                  #include " parson.hh”
+  gen- > feed (cugenin , cugenfin );                                                                       #include " mapfile.hh ”
+  assert ( gen- > outn == mbn * inplay- > n );                                                             #include " partrait.hh ”
+  encude ( inpbuf, gen- > outn , cugeninp );                                                               #include " cholo.hh "
+  gen- > target(cugeninp, false );                                                                         #include " styler.hh ”
+  if (focus) {                                                                                             #include " supertron.hh ”
+                                                                                                           #include <vector>
+     double * cugenfout = gen- > foutput( );                                           60
+                                                                                                           #include < string >
+         for (unsigned int mbi 0 ; mbi < mbn ; ++mbi)                                                      #include < map >
+           cufocus( cugenfout + mbi * inplay- > n , cuinplayx , cuinplayy,                                 namespace makemore {
+inplay- > n );                                                                                             struct Superenc : Project {
+  }                                                                                                             bool ctract;
+  gen- > update_stats( ) ;                                                                                      Layout * inplay, * ctrlay;
+    gen- > train (pi);                                                                 65                       Layout * encinlay;
+    if (nu > 0 ) {                                                                                              Mapfile * encmap ;
+                                                                            US 11,361,563 B2
+                                             59                                                                                        60
+                                        -continued                                                                                 -continued
+                         Supertron * enc ;                                                  #include " superdis.hh ”
+                         double * cuencin , * cuencinp ;                                    #include " parson.hh ”
+                         double * ctrbuf, * inpbuf;                                    5
+                                                                                            #include " strutils.hh "
+                         unsigned int rounds ;                                              #include “ imgutils.hh ”
+                         Superenc ( const std :: string & _dir, unsigned int _mbn );        #include " supergen.hh”
+                         -Superenc ( ) ;                                                    #include " superenc.hh ”
+                         void report ( const char * prog) ;                                 namespace makemore {
+                         void load ( );                                                     using namespace std ;
+                         void save ( );                                                     Superdis :: Superdis ( const std ::string & _dir, unsigned int _mbn ) :
+                         void encode (const Partrait & prt, double * ctr );            10   Project (_dir, _mbn ) {
+                         void burn (const class Supergen &gen , double nu) ;                    assert (mbn > 0 ) ;
+                                                                                                assert (config [ " type" ]    ==   " superdis ” );
+                 }                                                                              char inplayfn [4096 ];
+                 #endif                                                                         sprintf ( inplayfn , " % s/ input.lay ” , dir.c_str ( ) );
+                                                                                                inplay = new Layout;
+                                                                                       15       inplay- > load_file (inplayfn );
+  Below is an additional partial example of computer                                        #if o
+implemented code representing at least one implementation                                       char clsmapfn [4096 ];
+                                                                                                sprintf (clsmapfn , " % s /cls.map ” , dir.c_str ( ) );
+of the generator class configuration of the invention .                                         clsmap = new Mapfile (clsmapfn );
+                                                                                                cls = new Supertron (clsmap );
+                                                                                       20   #endif
+#ifndef _MAKEMORE_SUPERGEN_HH_                                                                  char dismapfn [4096 ];
+#define _MAKEMORE_SUPERGEN_HH_1                                                                 sprintf(dismapfn , “ % s /dis.map ” , dir.c_str ( ));
+#include " layout.hh”                                                                           dismap new Mapfile (dismapfn );
+#include "multitron.hh ”                                                                        dis = new Supertron (dismap );
+#include “ vocab.hh ”                                                                       #ifo
+#include " project.hh ”                                                                25      assert (cls- > inn inplay- > n );
+                                                                                                                      ==
+
+#include " script.hh ”                                                                        assert ( cls- > outn dis-> inn );
+#include " convo.hh”                                                                        #else
+#include " parson.hh ”                                                                        assert (dis- > inn inplay- > n );
+                                                                                                                      ==
+
+#include "mapfile.hh ”                                                                      #endif
+#include " styler.hh ”                                                                          assert (dis- >outn     ==
+                                                                                                                             1);
+#include " zone.hh"                                                                         #if o
+#include " supertron.hh ”                                                              30     cumake ( & cuclsin, cls- >inn) ;
+#include < vector >                                                                           cumake ( & cuclstgt, cls- > outn );
+#include < string >                                                                         #endif
+#include <map >                                                                               cumake ( & cudisin , dis- >inn) ;
+namespace makemore {                                                                          cumake ( & cudistgt, 1 ) ; *
+struct Supergen : Project {
+                     .
+                                                                                               inpbuf = new double [mbn * inplay- > n ] ( );
+        bool ctract;                                                                   35     rounds = 0 ;
+        bool focus;                                                                         }
+        bool is_rgb ;                                                                       Superdis :-Superdis ( ) {
+        int ctxtype;                                                                          delete inplay;
+        Layout * tgtlay, * ctrlay, * ctxlay;                                                   cufree (cudisin );
+        Layout * geninlay;                                                                  #if o
+        Mapfile * genmap ;                                                             40      cufree (cuclsin );
+        Supertron * gen ;                                                                      cufree (cuclstgt );
+        Zone * zone ;                                                                       #endif
+        double * cugenin , * cugentgt, * cugenfin ;                                            cufree (cudistgt);
+        double * ctxbuf, * ctrbuf, * tgtbuf, * buf;                                            delete [ ] inpbuf;
+        double * cutgtlayx, * cutgtlayy;                                                    }
+        unsigned int rounds ;                                                          45
+                                                                                            void Superdis :: report ( const char * prog ) {
+        Supergen ( const std ::string & _dir, unsigned int _mbn = 1 ) ; =
+                                                                                               fprintf(
+         -Supergen ( );                                                                           stderr,
+         void report ( const char * prog );                                                 #if o
+         void load ( );                                                                           “ % s % s rounds = % u cls_err2 = % g cls_errm = % g \n ”
+         void save ( );                                                                     #endif
+         void scramble ( double dev = 1.0 ) ;                                                     “ % s % s rounds = % u dis_err2 = % g dis_errm = % g \ n " ,
+         void generate (const double * ctr, class Partrait * prt, class Styler * sty 50     #if o
+         NULL , bool bp = false );                                                                prog , dir.c_str( ) , rounds,
+         void burn (const class Partrait & prt, double pi ) ;                                        cls- > err2 , cls- > errm ,
+         void burn (const class Partrait & prt, double pi , class Superdis * dis ) ;        #endif
+};                                                                                                   prog , dir.c str ( ) , rounds ,
+}                                                                                                    dis- > err2, dis- > errm
+#endif                                                                                 55       );
+                                                                                            }
+  Below is a partial example of computer- implemented                                       void Superdis :: save ( ) {
+                                                                                                //clsmap- > save ( );
+code representing at least one implementation of the dis                                        dismap- >save ( );
+criminator class configuration of the invention .                                           }
+                                                         60                                 void Superdis :: load ( ) {
+                                                                                              //clsmap- > load ( );
+     #define _MAKEMORE _SUPERDIS_CC_1                                                         dismap- >load ( );
+     #include < string >                                                                    }
+     #include < algorithm >                                                                 double Superdis :: score ( const class Partrait & prt) {
+     #include " cudamem.hh”                                                                     assert (mbn      ==
+                                                                                                                      1);
+     #include " tron.hh ”                                                              65       assert (inplay- > n == prt.w * prt.h * 3 ) ;
+     #include " multitron.hh ”                                                                  rgblab (prt.rgb , inplay- > n , inpbuf);
+                                                                      US 11,361,563 B2
+                                               61                                                                               62
+                                       -continued                                                                            -continued
+         double d = 0.5 / 256.0 ;                                                      #include " multitron.hh ”
+         for ( unsigned int j = 0 ; j < inplay- > n ; ++ j)
+                                           <
+                                                                                     #include " project.hh”
+             inpbuf [ j] + = randrange (-d , d) ;                                  5
+                                                                                     #include " parson.hh ”
+     #if o                                                                           #include " mapfile.hh”
+         encude ( inpbuf, inplay- > n , cuclsin );                                     #include " partrait.hh ”
+         const double * cuclsout cls- > feed (cuclsin , NULL );
+                                       =
+                                                                                       #include " cholo.hh ”
+         const double * cudisout dis- > feed (cuclsout, cls- > foutput ( ) );
+                                       =
+                                                                                     #include " styler.hh”
+     #endif                                                                          #include " supertron.hh ”
+         encude ( inpbuf, inplay- > n , cudisin );                                   #include < vector >
+         const double * cudisout = dis- > feed (cudisin );                        10 #include < string >
+         double sc ;                                                                   #include <map >
+         decude ( cudisout, 1 , &sc) ;                                                 namespace makemore {
+         return sc ;                                                                  struct Superdis : Project {
+     }                                                                                   Layout * inplay;
+     #if o                                                                               Mapfile * dismap ;
+     void Superdis :: classify ( const class Partrait & prt, double * clsbuf) {    15 // Mapfile * clsmap ;
+         assert (mbn - 1 ) ;
+                       ==
+                                                                                      // Supertron * cls ;
+         assert ( inplay- > n prt.w * prt.h * 3 ) ;                                      Supertron *dis;
+         rgblab (prt.rgb , inplay- > n , inpbuf);                                      1 / double * cuclsin , * cuclstgt ;
+         double d = 0.5 / 256.0 ;                                                         double * cudisin , * cudistgt;
+         for ( unsigned int j = 0 ; j < inplay- > n ; ++ i)
+                                           <
+                                                                                          double * inpbuf;
+           inpbuf[ j] + = randrange (-d, d) ;                                     20      unsigned int rounds ;
+         encude ( inpbuf, inplay- > n , cuclsin );                                        Superdis ( const std :: string & _dir, unsigned int _mbn );
+         const double * cuclsout cls- > feed (cuclsin , NULL );                           -Superdis ( ) ;
+         decude (cuclsout, cls- > outn , clsbuf);                                         void report ( const char * prog );
+     }
+     #endif                                                                              void load( ) ;
+     double Superdis :: score (const class Supergen * gen) {                             void save ( );
+         assert (mbn == 1 ) ;                                                     25     double score (const class Supergen * gen) ;
+         assert (gen- > tgtlay- > n   ==
+                                           inplay- > n );                                 double score ( const class Partrait & prt );
+     #if o                                                                             // void classify ( const class Partrait & prt, double * clsbuf );
+        const double * cuclsout cls-> feed ( gen- > gen- > output ( ), gen-> gen          void burn (double sc , double nu );
+     > foutput ( ) );                                                                     void observe ( const class Partrait * prto , class Superenc * enc , class
+        const double * cudisout dis-> feed (cls- >output ( ), cls- > foutput ( ) );    Supergen * gen , const class Partrait * prt1, double nu );
+     #endif                                                                         30 } ;
+        const double * cudisout = dis- > feed ( gen- > gen- >output( ) , gen- > gen    }
+     > foutput( ) );                                                                   #endif
+         double sc ;
+         decude (cudisout, 1 , &sc) ;
+         return sc ;
+     }                                                                            35      Below is a partial example of computer - implemented
+     void Superdis :: burn (double sc , double nu ) {
+     // double osc ;
+                                                                                       code representing at least one implementation of the auto
+     Il decude(dis- > output( ), 1 , & osc ) ;                                         poser class configuration of the invention .
+     // double dsc ( SC - sigmoid (osc ) );
+                       =      -
+
+     1/ encude( & dsc, 1 , dis- > foutput ( ));
+        encude ( &sc , 1 , cudistgt) ;                                            40 #define _MAKEMORE_AUTOPOSER_CC_1
+        dis- > target (cudistgt);                                                      #include < netinet/ in.h >
+        if (nu > 0 )                                                                   #include < string >
+            dis-> update_stats ( );                                                    #include < algorithm >
+        dis- >train (nu );                                                             #include " cudamem.hh ”
+     // if (nu > 0 )                                                                   #include " tron.hh "
+     // cls- > update_stats( ) ;                                                       #include "multitron.hh ”
+     // cls- > train ( nu );                                                     45 #include " twiddle.hh ”
+     }                                                                              #include " closest.hh ”
+     void Superdis :: observe (const Partrait * prto , Superenc * enc , Supergen    #include " shibboleth.hh”
+     * gen , const Partrait * prt1 , double nu ) {                                  #include " shibbomore.hh ”
+          double * ctr;                                                             #include " convo.hh ”
+          cumake ( & ctr, enc- > ctrlay- > n );                                     #include “ parson.hh ”        ,
+
+          enc- > encode ( * prto , ctr );                                        50 #include “ strutils.hh"
+          gen- > generate (ctr, NULL );                                             #include " cholo.hh ”
+          cufree (ctr );                                                            #include “ normatron.hh ”
+          double sc0 = score ( gen ) ;                                              #include " autoposer.hh ”
+          burn (0.0 , nu );                                                         #include " partrait.hh ”
+          double scl = score (* prtl );                                             namespace makemore {
+          burn ( 1.0 , nu );                                                     55 using namespace std ;
+     l / fprintf (stderr, " % lf , % 1f ) \n ” , sco , scl ) ;                      static string read_word (FILE * fp , char sep ) {
+     }                                                                                    int c = getc (fp );
+                                                                                          if (c EOF )
+                                                                                                ==
+
+
+                                                                                             return " " ;
+                                                                                          char buf[2 ];
+  Below is an additional partial example of computer         buf[ 0 ] = ( char ) c ;
+implemented code representing at least one implementation 60 buf [ 1] = 0 ;
+                                                             string word (buf);
+                                                                                                    =
+
+
+of the discriminator class configuration of the invention .  while ( 1 ) {
+                                                                C = getc ( fp );
+                                                                                            if (c   ==
+                                                                                                          EOF )
+#ifndef _MAKEMORE_SUPERDIS_HH_                                                                 return
+#define _MAKEMORE_SUPERDIS_HH_1                                                   65         if ( c == sep)
+#include " layout.hh ”                                                                          break ;
+                                                                        US 11,361,563 B2
+                                                   63                                                                             64
+                                              -continued                                                                    -continued
+         buf[ 0 ] = ( char) c ;                                                        encude ( ( double * ) & mark, 6 , cusegtgt );
+         word += buf;                                                                  seg- > target(cusegtgt );
+    }                                                                          5
+                                                                                       seg- >train (mu );
+    return word ;                                                                   }
+}                                                                                   void Autoposer ::reobserve ( const Partrait & par, double mu) {
+Autoposer :: Autoposer (const std ::string &_dir) : Project (_dir, 1 ) {               assert (par.has_mark ( ));
+    assert (mbn == 1 ) ;                                                               Triangle mark par.get_mark ( );
+                                                                                                          =
+
+
+
+
+    assert (config [ " type " ]          " autoposer ” );                              assert ( reseg- > inn == par.w * par.h * 3 ) ;
+    char segoutlayfn [4096 ];                                                          par.encudub ( cusegin );
+    sprintf ( segoutlayfn , " % s /segoutput.lay ” , dir.c_str ( ) );
+                                                                               10      reseg-> feed (cusegin , NULL );
+    segoutlay = new Layout;                                                            mark.p.x /= ( double )par.w ;
+                                                                                       mark.p.y /= ( double )par.h ;
+    segoutlay- > load_file ( segoutlayfn );                                            mark.q.x /= ( double ) par.w ;
+    char seginlayfn [ 4096 ];                                                          mark.q.y /= ( double )par.h ;
+    sprintf(seginlayfn , “ % s / seginput.lay ” , dir.c_str ( ) );                     mark.r.x /= (double )par.w ;
+    seginlay = new Layout;                                                     15      mark.r.y /= ( double )par.h;
+    seginlay- > load_file ( seginlayfn );                                              assert (reseg- > outn   ==
+                                                                                                                    6) ;
+    char segmapfn [ 4096 ], segtopfn [4096 ];                                          assert (sizeof(mark ) - 6 * sizeof(double ));
+    sprintf (segtopfn , " % s /seg.top ” , dir.c_str ( ) );                            encude((double * ) & mark , 6 , cusegtgt);
+    sprintf ( segmapfn , " % s /seg.map ” , dir.c_str ( ) );                           reseg- > target (cusegtgt );
+    segtop = new Topology ;                                                            reseg- > train (mu );
+    segtop- >load file (segtopfn );                                            20   }
+    segmap = new Mapfile ( segmapfn );                                              void Autoposer ::autopose (Partrait * parp ) {
+    seg = new Multitron ( * segtop , segmap , mbn , false );                           assert (parp- > has_mark ( ));
+    char resegmapfn [4096 ];                                                           assert (seginlay- > n == 256 * 256 * 3 ) ;
+    sprintf ( resegmapfn , " % s /reseg.map ” , dir.c_str ( ));                        Partrait x ( 256 , 256 ) ;
+    resegmap = new Mapfile ( resegmapfn );
+                                                      >
+                                                                                       x.set_pose (Pose ::STANDARD );
+                                                                                       parp- >warp ( & x );
+    reseg = new Multitron ( * segtop , resegmap , mbn , false );               25
+                                                                                       x.encudub ( cusegin );
+    assert ( seg- > outn == segoutlay- > n );                                          const double * cusegout = seg- > feed (cusegin , NULL );
+                                                                                                                      =
+
+    assert ( segoutlay- > n       ==   6) ;                                            Triangle xmark ;
+    cumake ( & cusegtgt, seg- > outn );                                                decude (cusegout, 6 , ( double * ) & xmark );
+    cumake ( & cusegin , seg- > inn );                                                 xmark.p.x * = 256.0 ;
+    rounds = 0;     =                                                                  xmark.p.y *= 256.0;
+}                                                                              30      xmark.q.x *= 256.0;
+Autoposer:: - Autoposer ( ) {                                                          xmark.q.y *= 256.0 ;
+    delete seg                                                                         xmark.r.x * = 256.0 ;
+    delete segmap ;                                                                    xmark.r.y * = 256.0 ;
+    delete segtop;                                                                l / fprintf( stderr, “ xmark = % lf , % lf) ( % lf, % lf) ( % lf, % lf) \n ” , xmark.p.x ,
+    delete seginlay;                                                              xmark.p.y, xmark.q.x , xmark.q.y, xmark.r.x , xmark.r.y) ;
+    delete segoutlay ;                                                         35      Triangle pmark = parp- > get_mark ( ) ;
+    cufree (cusegin );                                                                 Triangle qmark = x.get_mark ( ) ;
+  cufree (cusegtgt );                                                                  xmark.p = makemore ::trimap (xmark.p , qmark , pmark );
+}                                                                                      xmark.q = makemore ::trimap ( xmark.q, qmark , pmark );
+void Autoposer :: report ( const char * prog) {                                        xmark.r = makemore ::trimap (xmark.r, qmark , pmark );
+                                                                                                  =
+
+
+    fprintf(                                                                           parp- > set_mark (xmark );
+                                                                               40
+         stderr,
+         “ % s % s rounds = % u \n "                                                  Below is an additional partial example of computer
+         “ % s % s seg_err2 = % g seg_errm = % g \n ”
+         “ % s % s reseg_err2 = % g reseg_errm = % g \n "
+                                                                                    implemented code representing at least one implementation
+         “ \n " ,                                                                   of the autoposer class configuration of the invention .
+         prog, dir.c_str( ), rounds,                                           45
+         prog , dir.c_str( ) , seg- > err2, seg-> errm ,                                               #ifndef MAKEMORE_AUTOPOSER_HH
+         prog , dir.c_str( ) , reseg- > err2, reseg- > errm                                            #define MAKEMORE_AUTOPOSER_HH                                 1
+    );                                                                                                 #include " layout.hh"
+}                                                                                                      #include " topology.hh"
+void Autoposer :: save ( ) {                                                                           #include "multitron.hh"
+    segmap- >save ( );                                                         50                      #include " vocab.hh"
+}                                                                                                      #include " project.hh "
+void Autoposer::load ( ) {                                                                             #include " script.hh"
+    segmap- > load ( );                                                                                #include " convo.hh "
+}                                                                                                      #include " parson.hh "
+void Autoposer :: observe ( const Partrait & par, double mu ) {                                        #include "mapfile.hh "
+                                                                               55                      #include " cholo.hh "
+    assert (par.has_mark ( ) ) ;                                                                       #include <vector>
+    Triangle mark = par.get_mark ( ) ;                                                                 #include < string >
+    assert (seg- > inn == par.w * par.h * 3 ) ;                                                        #include <map >
+    par.encudub ( cusegin );                                                                           namespace makemore {
+    seg- > feed (cusegin , NULL );                                                                     struct Autoposer : Project {
+    mark.p.x != ( double )par.w ;                                              60                         Layout * seginlay, * segoutlay;
+    mark.p.y /= ( double )par.h ;                                                                         Topology * segtop ;
+    mark.q.x /= ( double )par.w ;                                                                         Mapfile * segmap , * resegmap ;
+    mark.q.y != ( double )par.h ;                                                                         Tron * seg, * reseg;
+    mark.r.x /= (double )par.w ;                                                                          double * cusegtgt, * cusegin ;
+                                                                                                          unsigned int rounds ;
+    mark.r.y /= (double )par.h ;                                                                          Autoposer( const std ::string & _dir );
+    assert ( seg- > outn 6 ) ;
+                            ==                                                 65                         ~ Autoposer ( );
+    assert ( sizeofmark
+                     ( ) 6 * sizeof (double ));
+                                  ==
+                                                                                                          void report (const char * prog) ;
+                                                                           US 11,361,563 B2
+                                                 65                                                                                         66
+                                            -continued                                                                                 -continued
+                            void load ( );                                                 };
+                            void save ( );                                               }
+                            void observe ( const class Partrait & par, double mu );    5 void Automasker ::save ( ) {
+                            void reobserve (const class Partrait & par, double mu) ;       mskmap- > save ( );
+                            void autopose (class Partrait * parp );                      }
+                                                                                            void Automasker:: load ( ) {
+                                                                                            mskmap- > load ( );
+                      #endif                                                                }
+                                                                                       10
+                                                                                            void Automasker ::observe (const Partrait & prt, double mu) {
+                                                                                                assert (mbn == 1 ) ;
+  Below is a partial example of computer - implemented                                          assert (msk- > inn - prt.w * prt.h * 3 ) ;
+code representing at least one implementation of the auto                                       assert (msk- > outn prt.w * prt.h );
+                                                                                                assert (prt.rgb );
+masker class configuration of the invention .                                                   assert (pit.alpha );
+                                                                                                btodv (prt.rgb , tgtbuf, msk- >inn) ;
+                                                                                       15       encude (tgtbuf, msk- > inn , cumskin );
+#define MAKEMORE_AUTOMASKER_CC_1                                                                msk- > feed ( cumskin , NULL ) ;
+#include < netinet/ in.h >                                                                      btodv (prt.alpha, tgtbuf, msk- > outn );
+#include < string >                                                                             encude( tgtbuf , msk- > outn , cumsktgt);
+#include < algorithm >                                                                          msk- > target (cumsktgt, false);
+#include " cudamem.hh "                                                                         msk- > update stats ( );
+#include " tron.hh "                                                                            msk- > train (mu );
+                                                                                       20
+#include "multitron.hh "                                                                    }
+#include " twiddle.hh "                                                                     void Automasker ::automask (Partrait * prt) {
+#include " closest.hh"                                                                          assert (mbn     ==    1 );
+#include " shibboleth.hh "                                                                      assert (msk- > inn == prt- > w * prt- > h ** 3 ) ;
+#include " shibbomore.hh "                                                                      assert (msk- > inn     ==
+                                                                                                                             msk- > outn * 3 ) ;
+#include " convo.hh "                                                                           btodv (prt- > rgb , tgtbuf, msk- > inn );
+                                                                                                            >
+
+#include " parson.hh "                                                                 25
+                                                                                                encude ( tgtbuf, msk- > inn, cumskin );
+#include " strutils.hh "                                                                        const double * cumskout = msk- > feed (cumskin, NULL );
+#include " cholo.hh "                                                                           decude (cumskout, msk- > outn , tgtbuf );
+#include " normatron.hh "                                                                       if ( !prt- > alpha)
+#include " automasker.hh "                                                                        prt- > alpha= new uint8_t [prt- > w ** prt- > h ];
+#include " partrait.hh "                                                                        dtobv ( tgtbuf, prt- > alpha, msk- >outn ) ;
+#include "numutils.hh"                                                                 30
+                                                                                            }
+namespace makemore {
+using namespace std ;
+Automasker:: Automasker ( const std :: string & dir) : Project (_dir, 1 ) {
+    assert(mbn - 1 ) ;===
+
+    assert (config [ "type "]     ==
+                                       " automasker " );                                    Below is an additional partial example of computer
+    char mskoutlayfn [4096 ];
+    sprintf(mskoutlayfn, " % s /mskoutput.lay " , dir.c_str ( ));
+                                                                                       35 implemented code representing at least one implementation
+    mskoutlay new Layout;                                                                 of the automasker class configuration of the invention .
+    mskoutlay- > load_file (mskoutlayfn );
+    char mskinlayfn [4096 ];
+    sprintf (mskinlayfn , " % s /mskinput.lay ", dir.c_str ( ));                            #ifndef MAKEMORE_AUTOMASKER_HH
+    mskinlay = new Layout;                                                             40   #define MAKEMORE_AUTOMASKER_HH__1
+    mskinlay- > load_file (mskinlayfn );                                                    #include " layout.hh "
+    char mskmapfn [4096 ], msktopfn [4096 ];                                                #include " topology.hh "
+    sprintf (msktopfn , " % s /msk.top " , dir.c_str ( ));                                  #include "multitron.hh"
+    sprintf (mskmapfn , " % s /msk.map " , dir.c_str ( ) );                                 #include " vocab.hh " .
+    msktop = new Topology ;                                                               #include " project.hh "
+    msktop- > load file (msktopfn );                                                      #include " script.hh "
+    mskmap = new Mapfile (mskmapfn );                                                  45 #include " convo.hh"
+    msk = new Multitron ( *msktop , mskmap , mbn , false );                               #include " parson.hh "
+    assert (msk- > outn == mskoutlay- > n );                                              #include "mapfile.hh"
+    assert (mskoutlay- > n ** 3        ==
+                                            mskinlay- > n );                                #include " cholo.hh "
+    cumake ( & cumsktgt, msk- > outn );                                                     #include < vector >
+    cumake ( & cumskin , msk- > inn );                                                      #include < string >
+    tgtbuf = new double [msk-> inn ];                                                  50 #include <map >
+    rounds       0;                                                                         namespace makemore {
+}                                                                                           struct Automasker : Project {
+Automasker::~ Automasker ( ) {                                                                  Layout * mskinlay, * mskoutlay;
+    delete msk ;                                                                                Topology * msktop ;
+    delete mskmap ;                                                                             Mapfile *mskmap ;
+    delete msktop;                                                                     55       Tron * msk ;
+    delete mskinlay;                                                                            double * tgtbuf;
+    delete mskoutlay;                                                                           double * cumsktgt, * cumskin ;
+    delete [ ] tgtbuf;                                                                          unsigned int rounds ;
+    cufree ( cumskin );                                                                         Automasker (const std::string & _dir );
+    cufree (cumsktgt );                                                                         -Automasker ( );
+}                                                                                      60       void report (const char * prog );
+void Automasker:: report ( const char * prog ) {                                                void load ( );
+    fprintf(                                                                                    void save ( );
+       stderr,                                                                                  void observe ( const class Partrait & prt, double mu) ;
+       " % s % s rounds = % u \n "                                                              void automask ( class Partrait * prtp );
+      " % s % s msk_err2 = % g msk_errm = % g \n "
+      " n ",
+      prog , dir.c_str( ) , rounds ,                                                   65   #endif
+      prog , dir.c_str( ) , msk- > err2, msk- > errm
+                                                               US 11,361,563 B2
+                                              67                                                                        68
+    Below is a partial example of computer -implemented                                                              -continued
+code representing at least one implementation of the encoder
+of the invention .                                                                     $ (BINDIR )/maketron --add $ @ 2 256 256 8 256 256 8 103
+                                                                                       $ (BINDIR )/maketron --add $ @ 4 256 256 8 128 128 80-10
+                                                                         5
+                                                                                       $ (BINDIR )/maketron --add $ @ 2 128 128 8 128 128 16 10 3
+# ! /bin/ bash
+                                                                                       $ ( BINDIR )/maketron --add $ @ 4 128 128 16 64 64 16 0 -1 0
+                                                                                      $ (BINDIR )/maketron --add $ @ 2 64             64 16 64 64 16 10 3
+LAYOUTS = input.lay control.lay                                                       $ (BINDIR )/maketron --add $ @ 4 64             64 16 32 32 16 0 -1 0
+MAPFILES = enc.map                                                                    $ (BINDIR )/maketron --add $ @ 2 32             32 16 32 32 16 10 3
+BINDIR = ..                                                                           $ (BINDIR )/maketron --add $ @ 4 32             32 16 16 16 16 0 -1 0
+all : $ (LAYOUTS ) $ ( MAPFILES )                                                     $ (BINDIR )/maketron --add $ @ 2 16             16 16 16 16 16 1 0 3
+encinput.lay: input , lay                                                10           $ (BINDIR ) / maketron --add $ @ 4 16           16 16 8 8 16 0 -1 0
+       $ (BINDIR )/catlay $ > $ @                                                     $ (BINDIR )/maketron --add $ @ 1 8                8 16 8 8 16 10 3
+encoutput.lay: control.lay                                                            $ (BINDIR )/maketron --add $ @ 0 8                8 16 11 256 0 0 3
+       $ (BINDIR )/ catlay $ > $ @                                                    $ (BINDIR )/maketron --add $ @ 0 1 1 256 11 128 0 0 3
+enc.map :                                                                             $ (BINDIR )/maketron --add $ @ 0 1 1 128 1 1 1 000
+          $ ( BINDIR )/maketron --new $ @                                             $ (BINDIR )/maketron --randomize $ @ 2
+          $ ( BINDIR )/maketron --add $ @ 1 256 256 3 256 256 4 1 01     15 input.lay :
+          $ ( BINDIR )/maketron --add $ @ 1 256 256 4 128 128 4 1 -1 1              $ (BINDIR )/makelay -grid 256 1 3 > $ @
+          $ (BINDIR )/maketron --add $ @ 1 128 128 4 64 64 4 2 -1 1         clean :
+          $ (BINDIR )/maketron --add $ @ 1 64 64 4 32 32 4 3-1 1                  rm -f * .lay * wire * .top * .map
+        $ (BINDIR )/maketron --add $ @ 0 32 32 4 16 16 40 01
+        $ (BINDIR )/maketron --randomize $ @ 3
+control.lay:                                                             20      Below is a partial example of computer - implemented
+        $ (BINDIR )/makelay -grid 161 4 > $ @                                 code representing at least one implementation of the inven
+input.lay:
+        $ ( BINDIR ) /makelay -grid 256 1 3 > $ @                             tion .
+clean :
+                       rm -f * .lay * .wire * top ** .map
+                                                                            #include < string >
+                                                                         25 #include " supertron.hh "
+  Below is a partial example of computer - implemented                        #include " random.hh "
+code representing at least one implementation of the gen-                     using namespace makemore ;
+erator of the invention .                                                   int usage ( ) {
+                                                                               fprintf ( stderr, " Usage: maketron [ --new file.map | ... ] \ n " ) ;
+                                                                               return 1 ;
+                                                                         30 }
+# ! / bin / bash                                                            int main (int argc , char ** argv) {
+LAYOUTS = context.lay control.lay target.lay
+                   =
+                                                                                 seedrand ( );
+TOPOLOGIES =                                                                     --argc ,
+MAPFILES gen.map                                                                 ++ argv;
+BINDIR = ..                                                                      assert?argc > 0 ) ;
+all : $ (DATASETS ) $ (LAYOUTS) $ (WIRINGS) $ (TOPOLOGIES ) $            35      std ::string opt = argv [0 ];
+                                                                                                    =
+
+
+( MAPFILES )                                                                     if (opt == " --new " ) {
+geninput.lay: context. lay control. lay                                            --arge;
+          $ (BINDIR )/ catlay $ " > $ @                                             ++ argv ;
+genoutput.lay : target. lay                                                        assert (argc > 0 ) ;
+          $ (BINDIR )/catlay $ * > $ @                                             const char * mapfn = argv [ 0 ];
+gen.map :                                                                40         FILE *mapfp ;
+          $ (BINDIR )/maketron --new $ @                                            assert (mapfp = fopen (mapfn , " w " ) );
+          $ (BINDIR )/maketron --add $ @ 0 16 16 4 32 32 40 01                     Mapfile *mapfile = new Mapfile (mapfn );
+          $ (BINDIR )/maketron --add $ @ 1 32 32 4 64 64 4 3 1 1                   Supertron * st = new Supertron (mapfile );
+          $ (BINDIR )/maketron --add $ @ 1 64 64 4 128 128 4 2 1 1                 mapfile- > save ( );
+          $ ( BINDIR )/maketron --add $ @ 1 128 128 4 256 256 8 1 1 1               delete st;
+          $ (BINDIR ) /maketron --add $ @ 2 256 256 8 256 256 8 1 0 1              delete mapfile;
+          $ (BINDIR )/maketron --add $ @ 2 256 256 8 256 256 8 1 0 1     45        fclose (mapfp );
+         $ ( BINDIR )/maketron --add $ @ 2 256 256 8 256 256 3100                  return 0 ;
+         $ ( BINDIR )/maketron --randomize $ @ 3                                 }
+control. lay:                                                                    if (opt == " --randomize " ) {
+         $ ( BINDIR ) /makelay -grid 16 1 4 > $ @                                   --argc ;
+context. lay:                                                                       ++ argv;
+         $ ( BINDIR ) /makelay -center 0 16 > $ @                        50        assert ( argc > 0 ) ;
+target. lay:                                                                        const char * mapfn = argv [ 0 ];
+         $ (BINDIR ) /makelay -grid 256 1 3 > $ @                                  --argc;
+clean :                                                                             ++ argv ;
+     rm -f * .lay * .wire * .top * .map                                            double disp argc > 0 ? strtod (argv [0 ], NULL ) : 1.0 ;
+                                                                                   Mapfile * mapfile new Mapfile (mapfn );
+                                                                         55        Supertron *st = new Supertron (mapfile );
+    Below is a partial example of computer- implemented                             st-> randomize (disp );
+code representing at least one implementation of the dis-                          mapfile-
+                                                                                   delete st;
+                                                                                             > save ( );
+criminator of the invention .                                                      delete mapfile;
+                                                                                    return 0 ;
+                                                                         60      }
+# ! / bin / bash                                                                 if (opt == " --add " ) {
+LAYOUTS = input.lay                                                                 --argc ;
+MAPFILES = dis.map                                                                  ++ argv;
+BINDIR                                                                             assert (argc > 0 ) ;
+all : $ (LAYOUTS) $ ( MAPFILES )                                                    const char * mapfn = argv [ 0 ];
+                                                                                                                 =
+
+dis.map :                                                                           --argc ;
+          $ (BINDIR )/maketron --new $ @                                 65         ++ argv;
+          $ ( BINDIR )/maketron --add $ @ 2 256 256 3 256 256 8 10 3                assert ( argc       10 ) ;
+                                                                               US 11,361,563 B2
+                                              69                                                                                70
+                                       -continued                                                                           -continued
+        Supertron ::Layer:: Type type = ( Supertron ::Layer:: Type) atoi ( argv [ 0 ]);
+                                          =                                                  segoutput.lay :
+     int iw = atoi (argv [ 1 ] ), ih = atoi (argv [ 2 ]), ic = atoi( argv [ 3 ]);                     $ (BINDIR )/makelay -center 6 2 > $ @
+     int ow =- atoi ( argv [ 4 ]), oh = atoi( argv [ 5 ] ), oc = atoi (argv [6 ] );
+                                                                                          5
+                                                                                             seghiddenl.wire : seginput.lay seghidden1.lay
+     int d = atoi (argv [ 7 ]), s = atoi(argv [ 8 ]);
+              =                    =                                                                  $ (BINDIR )/wireup --minv 16 $ > $ @
+     Supertron ::Layer :: Activation                            a                            seghidden2.wire : seghidden1.lay seghidden2.lay
+(Supertron ::Layer::Activation )atoi (argv [ 9 ] );                                                  $ (BINDIR )/wireup --minv 16 $ * > $ @
+     Mapfile *mapfile = new Mapfile(mapfn );                                                 seghidden3.wire : seghidden2.lay seghidden3.lay
+     Supertron *st= new Supertron (mapfile );                                                        $ (BINDIR )/wireup --minv 16 $ > $ @
+     st- > add_layer (type , iw , ih , ic , ow , oh , oc , d , s , a) ;                      segoutput.wire : seghidden3.lay segoutput.lay
+     mapfile- > save ( );                                                                 10         $ ( BINDIR ) /wireup --minv 16 $ " > $ @
+     delete st;                                                                              seg.top : seghidden1.wire seghidden2.wire seghidden3.wire segoutput.wire
+     delete mapfile;                                                                                  $ (BINDIR )/maketop $ * > $ @
+        return 0 ;                                                                           seg.map : seg.top
+    }                                                                                                 $ (BINDIR )/makemap --dispersion 3 seg.top seg.map
+    return usage ( ) ;                                                                       clean :
+}                                                                                         15      rm -f * .lay * wire * .top * .map
+
+  Below is a partial example of computer- implemented                                          Those of ordinary skill in the art will understand and
+code representing at least one implementation of the auto                                    appreciate that the foregoing description of the invention has
+masker of the invention .
+                                                                                          20 been made with reference to certain exemplary embodi
+                                                                                             ments of the invention, which describe a system of neural
+# ! /bin/bash                                                                                networks configured for audio - visual simulation and gen
+LAYOUTS = target.lay
+                  ==
+                                                                                               eration . Those of skill in the art will understand that obvious
+TOPOLOGIES = msk.top
+MAPFILES = msk.map
+                       =
+                                                                                             variations in system configuration, protocols , parameters or
+                                                                                          25 properties may be made without departing from the scope of
+                   =
+
+
+BINDIR = .
+all : $ (DATASETS ) $ (LAYOUTS) $ (WIRINGS) $ ( TOPOLOGIES ) $                               the invention which is intended to be limited only by the
+ ( MAPFILES )                                                                                  claims appended hereto .
+mskinput.lay: target.lay
+          $ (BINDIR )/catlay $ * > $ @
+mskhidden 1.lay:                                                                                 What is claimed is :
+          $ (BINDIR )/makelay -rand 65536 16 > $ @                                        30     1. A system for audio - visual simulation and generation ,
+mskhidden2.lay:                                                                                comprising:
+          $ (BINDIR )/makelay -rand 8192 32 > $ @
+mskhidden3.lay:                                                                                  a . an autoposer neural network configured to receive an
+          $ (BINDIR )/makelay -rand 65536 16 > $ @
+mskoutput.lay : target.lay
+                                                                                                     input image and to output landmark information for the
+          $ ( BINDIR ) /catlay $ * > $ @                                                  35
+                                                                                                     image;
+mskhidden1.wire : mskinput.lay mskhidden1.lay                                                    b . an automasker neural network configured to receive an
+          $ ( BINDIR )/wireup --minv 4 $ " > $ @                                                     input image and use trained segmentation to map the
+mskhidden2.wire : mskhidden1.lay mskhidden2.lay                                                      input image onto a grayscale foreground mask or a
+          $ (BINDIR )/wireup --minv 4 $ * > $ @                                                      background mask and output the result ;
+mskhidden3.wire : mskhidden2.lay mskhidden3.lay
+          $ ( BINDIR )/wireup --minv 4 $ * > $ @
+mskoutput.wire : mskhidden3.lay mskoutput.lay                                             40     c . an encoder neural network configured to receive an
+          $ (BINDIR )/wireup --minv 4 $ * > $ @
+                                                                                                     input image and output a control vector corresponding
+msk.top : mskhiddenl.wire mskhidden2.wire mskhidden3.wire                                            to the input image;
+mskoutput.wire                                                                                   d . a generator neural network configured to receive and
+          $ ( BINDIR ) /maketop $ * > $ @                                                            generate an image based on an input control vector
+msk.map : msk.top
+          $ ( BINDIR )/makemap --dispersion 3 msk.top msk.map                             45         produced by the encoder, a reference image map , a set
+target.lay:                                                                                          of hashable text tags , and a set of final pose parameters ;
+          $ ( BINDIR )/makelay -grid 256 1 3 > $ @                                                   and
+clean :
+        rm -f * .lay * .wire * .top * .map                                                       e . at least one training set , comprising a set of images and
+                                                                                                     configured to train a neural network .
+     Below is a partial example of computer - implemented
+                                                                                          50     2. The system of claim 1 , further comprising:
+code representing at least one implementation of the auto                                        a . an improver neural network configured to receive an
+                                                                                                     input image from the generator and produce an altered
+poser of the invention .                                                                             image that has been modified based on a given loss
+                                                                                                     function value ; and
+# ! /bin/bash
+                                                                                          55     b . a discriminator neural network configured to receive an
+LAYOUTS = seginput.lay segoutput.lay
+                  =                                                                                  input image and output a single channel loss function
+TOPOLOGIES = seg.top                                                                               representing an overall quality value of the input
+MAPFILES               seg.map                                                                      image .
+BINDIR = ..
+all : $ (DATASETS) $ (LAYOUTS ) $ ( TOPOLOGIES ) $ (MAPFILES )
+                                                                                                3. The system of claim 2 , further comprising a styler,
+seginput.lay :                                                                            60 configured to generate control vectors based on a specific
+          $ (BINDIR )/makelay -grid 256 1 3 > $ @                                            training set control vector.
+seghiddenl.lay :                                                                                4. The system of claim 3 , wherein the styler is further
+          $ ( BINDIR ) /makelay -rand 32768 2 > $ @
+seghidden2.lay:
+                                                                                             configured to accept tags , resulting in implementation of a
+          $ (BINDIR )/makelay -rand 4096 16 > $ @                                            corresponding tag vector on the control vector.
+seghidden3.lay:                                                                           65    5. The system of claim 4 , wherein at least one of the at
+       $ (BINDIR )/makelay -center 256 2 > $ @                                               least one training set is generated by a neural network of the
+                                                                                               system .
+                                                  US 11,361,563 B2
+                            71                                       72
+   6. The system of claim 5 , wherein at least one training set
+generated by a neural network of the system is used to train
+a neural network of the system .
+   7. The system of claim 6 , wherein the autoposer is
+configured to generate and capture a training set from a 5
+video , and the generated training set is used to train the
+generator.
+  8. The system of claim 7 , wherein the generator and the
+encoder are configured to carry out compression of video ,
+and the improver and the discriminator further configured to 10
+process a resulting generated video from the generator.
+
