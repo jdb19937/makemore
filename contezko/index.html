@@ -3,15 +3,15 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Contezko — Zero-Knowledge Proving for the Enterprise</title>
-<meta name="description" content="Contezko is the enterprise zero-knowledge proving platform. Prove everything. Reveal nothing. Coming soon.">
-<meta property="og:title" content="Contezko — Zero-Knowledge Proving for the Enterprise">
+<title>Contezko — Zero-Knowledge Banking for the Enterprise</title>
+<meta name="description" content="Contezko is the enterprise edition of BankOfEuler, the public-domain zero-knowledge banking server. Your ledger holds only encrypted values. Coming soon.">
+<meta property="og:title" content="Contezko — Zero-Knowledge Banking for the Enterprise">
 <meta property="og:image" content="https://contezko.com/contezko.png">
 <link rel="icon" href="favicon.ico">
 <style>
   :root { --navy: #1c2b4a; --teal: #1f8a8a; --orange: #f07a2a; --ink: #243040; --mute: #6b7a90; --line: #e3eaf2; }
   * { box-sizing: border-box; }
-  body { margin: 0; font-family: -apple-system, "Segoe UI", Inter, Roboto, Helvetica, Arial, sans-serif; color: var(--ink); background: #fff; line-height: 1.5; }
+  body { margin: 0; font-family: -apple-system, "Segoe UI", Inter, Roboto, Helvetica, Arial, sans-serif; color: var(--ink); background: #fff; line-height: 1.55; }
   a { color: var(--teal); text-decoration: none; }
   .wrap { max-width: 1120px; margin: 0 auto; padding: 0 20px; }
   .bar { background: var(--navy); color: #fff; text-align: center; font-size: 14px; padding: 8px; letter-spacing: .04em; }
@@ -26,9 +26,9 @@
   .btn.ghost { background: #fff; color: var(--navy); border: 2px solid var(--line); box-shadow: none; }
   .hero { background: linear-gradient(180deg, #e9f3f8 0%, #ffffff 100%); padding: 56px 0 40px; }
   .hero .wrap { display: grid; grid-template-columns: 1.05fr 1fr; gap: 40px; align-items: center; }
-  h1 { font-size: 46px; line-height: 1.1; margin: 0 0 18px; color: var(--navy); }
+  h1 { font-size: 40px; line-height: 1.1; margin: 0 0 18px; color: var(--navy); }
   h1 em { font-style: normal; color: var(--teal); }
-  .lead { font-size: 19px; color: var(--mute); margin: 0 0 26px; }
+  .lead { font-size: 18px; color: var(--mute); margin: 0 0 26px; }
   .hero img { width: 100%; border-radius: 16px; box-shadow: 0 20px 50px rgba(28,43,74,.18); }
   .cap { text-align: center; font-size: 12px; color: var(--mute); margin-top: 8px; }
   .wait { display: flex; gap: 10px; margin: 18px 0 8px; max-width: 540px; }
@@ -37,22 +37,28 @@
   .logos { text-align: center; padding: 34px 0 10px; color: var(--mute); font-size: 14px; letter-spacing: .12em; text-transform: uppercase; }
   .logos div { display: flex; justify-content: center; gap: 44px; flex-wrap: wrap; margin-top: 16px; font-size: 22px; font-weight: 800; color: #b9c4d2; letter-spacing: 0; text-transform: none; }
   section { padding: 56px 0; }
-  h2 { font-size: 34px; color: var(--navy); margin: 0 0 8px; text-align: center; }
-  .sub { text-align: center; color: var(--mute); font-size: 18px; margin: 0 0 36px; }
+  h2 { font-size: 32px; color: var(--navy); margin: 0 0 8px; text-align: center; }
+  .sub { text-align: center; color: var(--mute); font-size: 17px; margin: 0 auto 36px; max-width: 900px; }
   .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; }
   .card { background: #fff; border: 1px solid var(--line); border-radius: 14px; padding: 24px; box-shadow: 0 8px 24px rgba(28,43,74,.06); }
-  .card .ic { font-size: 30px; }
-  .card h3 { margin: 10px 0 6px; font-size: 18px; color: var(--navy); }
+  .card h3 { margin: 0 0 8px; font-size: 17px; color: var(--navy); }
   .card p { margin: 0; color: var(--mute); font-size: 15px; }
+  .tech { display: grid; grid-template-columns: 200px 1fr; gap: 36px; align-items: center; }
+  .tech img { width: 200px; height: 200px; image-rendering: pixelated; border: 1px solid var(--line); border-radius: 8px; }
   .stats { background: var(--navy); color: #fff; }
   .stats .grid { grid-template-columns: repeat(4, 1fr); text-align: center; }
-  .stats b { display: block; font-size: 44px; color: #7fe0d8; }
+  .stats b { display: block; font-size: 40px; color: #7fe0d8; }
   .stats span { color: #c6d2e4; font-size: 14px; }
+  table { width: 100%; border-collapse: collapse; font-size: 15px; }
+  td, th { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { color: var(--navy); font-size: 13px; letter-spacing: .06em; text-transform: uppercase; }
+  code { font-family: ui-monospace, Menlo, Consolas, monospace; background: #eef3f8; padding: 1px 6px; border-radius: 6px; font-size: 90%; }
   .plans { align-items: stretch; }
   .plan { position: relative; }
   .plan.hot { border: 2px solid var(--teal); }
   .plan .tag { position: absolute; top: -12px; right: 18px; background: var(--teal); color: #fff; font-size: 12px; font-weight: 700; padding: 3px 10px; border-radius: 999px; }
-  .price { font-size: 40px; font-weight: 800; color: var(--navy); margin: 6px 0 0; }
+  .price { font-size: 36px; font-weight: 800; color: var(--navy); margin: 6px 0 0; }
   .price small { font-size: 14px; color: var(--mute); font-weight: 500; }
   .plan ul { padding-left: 18px; color: var(--mute); font-size: 15px; }
   .plan .btn { width: 100%; text-align: center; margin-top: 10px; }
@@ -61,28 +67,35 @@
   .quote p { margin: 0 0 8px; font-style: italic; }
   .quote b { font-size: 14px; color: var(--navy); }
   .quote span { display: block; font-size: 13px; color: var(--mute); }
+  .notice { border-left: 4px solid var(--orange); background: #fff7f0; padding: 18px 22px; border-radius: 0 10px 10px 0; color: var(--ink); font-size: 15px; }
   .cta { text-align: center; background: linear-gradient(180deg, #ffffff, #e9f3f8); }
   footer { border-top: 1px solid var(--line); padding: 28px 0 40px; color: var(--mute); font-size: 13px; }
   footer .wrap { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
   footer a { color: var(--mute); margin-left: 18px; }
   .ok { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #2ecc71; margin-right: 6px; }
-  code { background: #eef3f8; padding: 1px 6px; border-radius: 6px; font-size: 90%; }
-  @media (max-width: 860px) { .hero .wrap, .grid, .stats .grid { grid-template-columns: 1fr; } h1 { font-size: 36px; } nav ul { display: none; } }
+  .wrap, .wrap > *, .grid > *, .grid2 > *, .tech > *, .card { min-width: 0; }
+  pre { max-width: 100%; overflow-x: auto; white-space: pre; font-size: 12px; line-height: 1.6; }
+  .card p, .sub, .lead, .fine { overflow-wrap: anywhere; }
+  @media (max-width: 960px) { .sub br { display: none; } .sub { white-space: normal !important; } }
+  @media (max-width: 860px) { .hero .wrap, .grid, .grid2, .stats .grid, .tech { grid-template-columns: 1fr; } h1 { font-size: 34px; } h1 span { white-space: normal !important; } nav ul { display: none; } table { display: block; overflow-x: auto; } td code { white-space: nowrap; } pre { white-space: pre-wrap; overflow-wrap: anywhere; } .wait { flex-wrap: wrap; } .wait input { min-width: 200px; } .hero { padding-top: 32px; } }
 </style>
 </head>
 <body>
 
-<div class="bar">COMING SOON &nbsp;·&nbsp; <b id="count">4,811</b> enterprises are on the waitlist. We can prove it without revealing who.</div>
+<div class="bar">CONTEZKO ENTERPRISE &nbsp;·&nbsp; built on BankOfEuler 1.1 &nbsp;·&nbsp; <b>coming soon</b></div>
 
 <div class="wrap">
   <nav>
-    <div class="logo">CONTE<span>ZK</span>O<small>Zero-Knowledge Proving for the Enterprise</small></div>
+    <div class="logo">CONTE<span>ZK</span>O<small>Zero-Knowledge Banking for the Enterprise</small></div>
     <ul>
-      <li><a href="#features">Platform</a></li>
-      <li><a href="#features">Solutions</a></li>
+      <li><a href="#platform">Platform</a></li>
+      <li><a href="#technology">Technology</a></li>
+      <li><a href="#operations">Operations</a></li>
       <li><a href="#pricing">Pricing</a></li>
-      <li><a href="#customers">Customers</a></li>
-      <li><a href="#waitlist" class="btn ghost" style="padding: 10px 18px">Book a demo</a></li>
+      <li><a href="#support">Support</a></li>
+      <li><a href="#security">Security</a></li>
+      <li><a href="docs">Docs</a></li>
+      <li><a href="#waitlist" class="btn ghost" style="padding: 10px 18px">Request access</a></li>
     </ul>
   </nav>
 </div>
@@ -90,101 +103,275 @@
 <div class="hero">
   <div class="wrap">
     <div>
-      <h1>Prove Everything.<br><em>Reveal Nothing.</em></h1>
-      <p class="lead">Contezko is the enterprise zero-knowledge proving platform. The ZK is right there in the name. Prove compliance, prove delivery, prove you were in the meeting, all without disclosing a single fact to anyone, including yourself.</p>
+      <h1><span style="white-space: nowrap">The bank that does not know</span><br><em>what it holds.</em></h1>
+      <p class="lead">Contezko is the enterprise edition of BankOfEuler, the public-domain zero-knowledge banking server. The ledger stores only encrypted values. The bank never learns a balance. Each transfer carries a proof that it is valid, and the server verifies the proof. A treasury settlement and a one-cent micropayment are verified the same way.</p>
       <form class="wait" id="waitlist" onsubmit="return join()">
-        <input type="email" id="em" placeholder="work email (we will prove we have it, not store it)" required>
-        <button class="btn" type="submit">GET STARTED FOR FREE*</button>
+        <input type="email" id="em" placeholder="work email" required>
+        <button class="btn" type="submit">Request access</button>
       </form>
-      <div class="fine">*Free trial requires a credit card, a procurement contact, a countersigned MSA and a trusted setup ceremony. No spam, only "touching base."</div>
+      <div class="fine">Access is granted in order of request.</div>
     </div>
-    <div><img src="contezko.png" alt="Contezko: Say goodbye to chaos. Say hello to smart, proactive timelines."><div class="cap">Pictured: our previous pivot. The timelines are now zero-knowledge.</div></div>
+    <div><img src="contezko.png" alt="Contezko"><div class="cap">Contezko Timeline, our 2025 product, remains available to existing customers.</div></div>
   </div>
 </div>
 
 <div class="wrap logos">
-  Trusted by forward-looking teams at
-  <div><span>Ovalware</span><span>Blockflow</span><span>Synergistix</span><span>Paxton Grain &amp; Proof</span><span>Nimbulate</span></div>
+  Deployed by treasury teams at
+  <div><span>Ovalware</span><span>Blockflow</span><span>Synergistix</span><span>Paxton Grain &amp; Trust</span><span>Nimbulate</span></div>
 </div>
 
-<section id="features">
+<section id="platform">
   <div class="wrap">
-    <h2>One platform. Every proof. Zero knowledge.</h2>
-    <p class="sub">Everything your enterprise needs to be certain without being informed.</p>
+    <h2>A ledger with nothing in it</h2>
+    <p class="sub">BankOfEuler was designed on one principle: the server should be able to do its job without learning a single quantity. <br>Contezko keeps that principle and adds what an enterprise deployment requires.</p>
     <div class="grid">
-      <div class="card"><div class="ic">🧾</div><h3>Proof of Compliance</h3><p>Prove to auditors that you are compliant without revealing that you are not. Succinct, non-interactive, SOC 2 adjacent.</p></div>
-      <div class="card"><div class="ic">🗓️</div><h3>Verifiable Timelines</h3><p>Cryptographically prove the milestone slipped without disclosing why, who, or by how much. A proof is 288 bytes; the retro is 288 slides.</p></div>
-      <div class="card"><div class="ic">🧍</div><h3>Zero-Knowledge Standups</h3><p>Prove you did work yesterday. Prove you will do work today. Prove there are no blockers. Reveal none of it.</p></div>
-      <div class="card"><div class="ic">🤖</div><h3>Agentic Provers</h3><p>Our AI agents generate proofs autonomously for claims nobody made. Fully recursive: the agents prove they are agents.</p></div>
-      <div class="card"><div class="ic">🔐</div><h3>SNARKs, STARKs, whatever is next</h3><p>Pairing-friendly, post-quantum, pre-revenue. When the acronym changes, we rename the product and re-bill you.</p></div>
-      <div class="card"><div class="ic">🏛️</div><h3>Enterprise-Grade Trust</h3><p>Trusted setup ceremony held in a WeWork. Toxic waste disposed of responsibly.* &nbsp;<span class="fine">*in the WeWork</span></p></div>
+      <div class="card"><h3>Homomorphic ledger</h3><p>Values are stored under ElGamal encryption. The server combines ciphertexts into encrypted sums and differences without ever decrypting them. The server cannot produce a balance, for its operator or for anyone else.</p></div>
+      <div class="card"><h3>Proofs of non-negativity</h3><p>When a value is subtracted, the client convinces the server through an interactive proof that the difference is not negative, so an overdraft cannot be represented.</p></div>
+      <div class="card"><h3>Equal scrutiny</h3><p>Micropayments are verified with the same proof as any other transfer. There is no minimum amount and no reduced check for small amounts.</p></div>
+      <div class="card"><h3>Shared proof construction</h3><p>Two parties can construct a proof together, which enables provably fair games of chance. A reference coin-flipping service, <code>flipserve</code>, is included in every deployment.</p></div>
+      <div class="card"><h3>Values as existence</h3><p>A value is an empty file whose name is a secure hash of g<sup>x</sup>. The existence of the file confirms the value of x. The file has no contents and the server has no key, so there is nothing on the server that can be read.</p></div>
+      <div class="card"><h3>Transport</h3><p>All sessions run over stunnel. Client authentication is unnecessary, since the client proves what it needs to prove, but the channel is encrypted to thwart eavesdroppers.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="demo" style="background: #f5f9fc">
+  <div class="wrap">
+    <h2>Proof of non-negativity, live</h2>
+    <p class="sub">A withdrawal is a subtraction the bank cannot see. Enter a balance and a withdrawal: the bank receives only commitments, forms the encrypted difference itself, and accepts the withdrawal only if the client can prove that difference is not negative. <br>Simplified for the browser; the production protocol is interactive and the prover's witnesses never leave the client.</p>
+    <div class="grid2">
+      <div class="card">
+        <div style="display: flex; gap: 10px; align-items: end; flex-wrap: wrap">
+          <label style="font-size: 13px; color: var(--mute)">Balance (plaintext, client only)<br><input id="dbal" type="number" value="120" min="0" max="1000000" style="font-size: 16px; padding: 10px; border: 2px solid var(--line); border-radius: 8px; width: 170px"></label>
+          <label style="font-size: 13px; color: var(--mute)">Withdrawal<br><input id="dwd" type="number" value="45" min="0" max="1000000" style="font-size: 16px; padding: 10px; border: 2px solid var(--line); border-radius: 8px; width: 170px"></label>
+          <button class="btn" type="button" onclick="runDemo()" style="padding: 12px 20px">Submit to bank</button>
+        </div>
+        <p class="fine" style="margin-top: 12px">Commitments are g<sup>x</sup> mod p with p = 2<sup>61</sup> − 1 and g = 3, the same shape as the hashes that name BankOfEuler's value files. The proof uses Lagrange's theorem: every non-negative integer is a sum of four squares, and no negative integer is.</p>
+      </div>
+      <div class="card"><pre id="dlog" style="margin: 0; background: none; border: 0; padding: 0; font-size: 13px; white-space: pre-wrap; color: var(--ink)">Awaiting a transaction.</pre></div>
     </div>
   </div>
 </section>
 
 <section class="stats">
   <div class="wrap grid">
-    <div><b>0</b><span>knowledge, guaranteed</span></div>
-    <div><b>2<sup style="font-size: 22px">128</sup></b><span>bits of security, 0 customers</span></div>
-    <div><b>288 B</b><span>proof size, verified in 3 ms, sold in 9 months</span></div>
-    <div><b>$0</b><span>ARR, and we can prove it</span></div>
+    <div><b>2<sup style="font-size: 20px">768</sup></b><span>the integer that represents one dollar</span></div>
+    <div><b>0</b><span>plaintext quantities held by the server</span></div>
+    <div><b>2<sup style="font-size: 20px">20</sup></b><span>values per ledger directory, scaled horizontally</span></div>
+    <div><b>1707</b><span>Euler's birth year</span></div>
+  </div>
+</section>
+
+<section id="technology">
+  <div class="wrap">
+    <h2>Three centuries of number theory</h2>
+    <p class="sub">BankOfEuler is named for Leonhard Paul Euler (1707–1783), who established that x<sup>φ(n)</sup> ≡ 1 (mod n).</p>
+    <div class="tech">
+      <canvas id="qrs" width="200" height="200" style="width: 200px; height: 200px; border: 1px solid var(--line); border-radius: 8px; image-rendering: pixelated" title="qrspiral"></canvas>
+      <div>
+        <h3 style="margin: 0 0 8px; color: var(--navy)">Quadratic residuosity, visualized</h3>
+        <p style="color: var(--mute); margin: 0 0 10px">The Contezko mark is produced by <code>qrspiral</code>, a tool shipped with BankOfEuler that plots the Jacobi symbol of successive integers along a spiral for a chosen modulus. The pattern is determined by the modulus. The copy above was computed in your browser for modulus <code id="qrsmod">…</code>; every visit chooses another.</p>
+        <p style="color: var(--mute); margin: 0">The same arithmetic underlies the proofs of non-negativity: a client demonstrates a property of a hidden number by exhibiting its relationship to squares modulo n, and the server verifies the relationship without learning the number.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="operations">
+  <div class="wrap">
+    <h2>Operations</h2>
+    <p class="sub"><code>bankshell</code> is the command-line client. <br>It sends each operation to the server and records the result locally once the server has accepted it.</p>
+    <div class="card">
+      <table>
+        <tr><th>Command</th><th>Effect</th><th>Note</th></tr>
+        <tr><td><code>bankshell sync -a 0x75 '$10'</code></td><td>Make the shell aware of a value held in an account.</td><td>Accounts are directories; values are files.</td></tr>
+        <tr><td><code>bankshell check -a 0x75 '$10'</code></td><td>Confirm the server still values the number.</td><td>Reports "has value" or does not.</td></tr>
+        <tr><td><code>bankshell split -a 0x75 '$10' '$2'</code></td><td>Split a value into two values that sum to it.</td><td>The $10 file ceases to have value.</td></tr>
+        <tr><td><code>bankshell merge</code></td><td>Combine two values into their sum.</td><td>The parts are unlinked on success.</td></tr>
+        <tr><td><code>bankshell randomize</code></td><td>Split a value into a valuable part and a worthless part.</td><td>The worthless part is discarded locally; the server retains it as an ordinary value.</td></tr>
+      </table>
+    </div>
+    <div class="grid2" style="margin-top: 22px">
+      <div class="card">
+        <h3 style="margin: 0 0 8px; color: var(--navy)">Sandbox</h3>
+        <p style="color: var(--mute); font-size: 15px; margin: 0 0 10px">A BankOfEuler server is running at <code>bank.contezko.com</code>. Account 0x75 holds one $10 value, shared with everyone and reset on the hour.</p>
+        <p style="color: var(--mute); font-size: 15px; margin: 0 0 10px">The <code>enterprise</code> branch builds with current compilers and installs into <code>~/.BankOfEuler</code>, including the sandbox configuration and server certificate. It needs libgmp-dev and Python 3. The session runs over the bank's own TLS, carried inside a WebSocket; the server certificate is verified end to end.</p>
+        <p style="color: var(--mute); font-size: 15px; margin: 0"><a href="https://github.com/jdb19937/BankOfEuler/tree/enterprise">github.com/jdb19937/BankOfEuler</a>, branch <code>enterprise</code> — public domain</p>
+      </div>
+      <div class="card">
+        <pre style="margin: 0">git clone -b enterprise https://github.com/jdb19937/BankOfEuler
+cd BankOfEuler &amp;&amp; make install
+export PATH="$HOME/.BankOfEuler/bin:$PATH"
+export BANKOFEULER_HOME="$HOME/.BankOfEuler/sandbox"
+bankshell check -a 0x75 '$10'
+bankshell split -a 0x75 '$10' '$2'
+bankshell check -a 0x75 '$8'</pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="support" style="background: #f5f9fc">
+  <div class="wrap">
+    <h2>Support</h2>
+    <p class="sub">Support is included with every Contezko Enterprise seat and covers deployment, operation and the mathematics.</p>
+    <div class="grid">
+      <div class="card"><h3>Engineering</h3><p>A solutions engineer and number theorist is available at all hours to assist immediately with any issue that arises.</p><a class="btn" href="https://peaple.io/contezko_engineer/chat" style="margin-top: 16px">Talk to an engineer</a></div>
+      <div class="card"><h3>Documentation</h3><p>The README and FAQ of the reference implementation are reproduced in full in the <a href="docs">documentation</a>, together with an operational runbook. The header files are the API reference.</p></div>
+      <div class="card"><h3>Issues and patches</h3><p>The source is public domain. Defects and patches are accepted through the <a href="https://github.com/jdb19937/BankOfEuler/issues">issue tracker</a>. Enterprise customers receive fixes in the next build.</p></div>
+    </div>
   </div>
 </section>
 
 <section id="pricing">
   <div class="wrap">
-    <h2>Simple, transparent pricing</h2>
-    <p class="sub">Per proof, per verifier, per month, billed annually, in a currency we will reveal later.</p>
+    <h2>Pricing</h2>
+    <p class="sub">BankOfEuler is public domain and will remain so. <br>Contezko Enterprise is priced per seat and settled through the ledger it provides.</p>
     <div class="grid plans">
-      <div class="card plan"><h3>Free</h3><div class="price">$0<small> forever*</small></div>
-        <ul><li>1 proof per month (of your choice, as long as it is true)</li><li>"Proven by Contezko" watermark on the verifier</li><li>Trusted setup: trust us</li><li>Community support (the community is you)</li></ul>
-        <a class="btn ghost" href="#waitlist">Start free</a><div class="fine">*forever is a 14-day trial</div></div>
-      <div class="card plan hot"><span class="tag">MOST POPULAR</span><h3>Pro</h3><div class="price">$49<small> /verifier/mo, 25-verifier minimum</small></div>
-        <ul><li>Unlimited proofs, including false ones (beta)</li><li>Recursive proofs: prove you paid for Pro</li><li>Priority email support: we read it, we do not reveal that</li><li>Export to CSV (Enterprise)</li></ul>
-        <a class="btn" href="#waitlist">Start free trial</a></div>
-      <div class="card plan"><h3>Enterprise</h3><div class="price">Contact sales<small> we will prove we received it</small></div>
-        <ul><li>Everything in Pro</li><li>SSO, SCIM, an acronym of your choice</li><li>On-site trusted setup ceremony with catering</li><li>A shared Slack channel where we say "great question"</li><li>Dedicated Customer Success Manager (also the CEO)</li></ul>
-        <a class="btn ghost" href="#" onclick="return sales()">Talk to sales</a></div>
+      <div class="card plan"><h3>Community</h3><div class="price">$0<small> public domain</small></div>
+        <ul><li>BankOfEuler 1.1, complete source</li><li><code>bankserve</code>, <code>bankshell</code>, <code>flipserve</code></li><li>Documentation: README, FAQ, and the header files</li><li>Community support</li></ul>
+        <a class="btn ghost" href="https://github.com/jdb19937/BankOfEuler">View source</a></div>
+      <div class="card plan hot"><span class="tag">ENTERPRISE</span><h3>Enterprise</h3><div class="price">$1<small> per seat per month, remitted as 2<sup>768</sup></small></div>
+        <ul><li>Everything in Community</li><li>Journal reconciliation after a server failure</li><li>Security review and patch program</li><li>Scale-out ledger storage beyond 2<sup>20</sup> values</li><li>Managed stunnel deployment</li></ul>
+        <a class="btn" href="#waitlist">Request access</a></div>
+      <div class="card plan"><h3>Sovereign</h3><div class="price" style="font-size: 30px">Contact us</div><div class="fine" style="margin-bottom: 6px">quoted on request</div>
+        <ul><li>Everything in Enterprise</li><li>Dedicated modulus</li><li>Witnessed on-premises key ceremony</li><li>Direct access to the author</li></ul>
+        <a class="btn ghost" href="#" onclick="return sales()">Contact us</a></div>
+    </div>
+  </div>
+</section>
+
+<section id="security">
+  <div class="wrap">
+    <h2>Security</h2>
+    <p class="sub">Contezko is built on foundational principles of number theory studied continuously since the eighteenth century.</p>
+    <div class="grid">
+      <div class="card"><h3>Established foundations</h3><p>Every proof in the system reduces to Euler's theorem and the hardness of the discrete logarithm, the same assumptions that secure the world's public-key infrastructure.</p></div>
+      <div class="card"><h3>Zero disclosure by design</h3><p>The server holds ciphertexts and hashes only. A copy of the server's storage contains no balances, transaction amounts or account relationships.</p></div>
+      <div class="card"><h3>Soundness</h3><p>A transfer is accepted only when its proof verifies. A client cannot spend a value it does not hold, create value, or overdraw.</p></div>
+      <div class="card"><h3>Encrypted transport</h3><p>Every session runs over an encrypted stunnel channel, which protects it against eavesdropping and tampering.</p></div>
+      <div class="card"><h3>Durable records</h3><p>Every operation is journaled on the server before and after it is applied. Multi-step transactions can be audited and reconciled from the journal alone, with no dependence on client state.</p></div>
+      <div class="card"><h3>Open source, open review</h3><p>The reference implementation is public domain and has been available for review in full since its first release. Contezko Enterprise ships the same code, with the same proofs, under support.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="releases">
+  <div class="wrap">
+    <h2>Release notes</h2>
+    <p class="sub">The complete release history of the platform.</p>
+    <div class="card">
+      <table>
+        <tr><th style="width: 200px">Version</th><th style="width: 120px; white-space: nowrap">Date</th><th>Notes</th></tr>
+        <tr><td>BankOfEuler 0.9.1</td><td>2007</td><td>Initial public release: homomorphic ledger, proofs of non-negativity, split, merge, randomize, coin flipping.</td></tr>
+        <tr><td>BankOfEuler 1.1-r76</td><td>2007</td><td>Final Subversion revision on SourceForge.</td></tr>
+        <tr><td>GitHub import</td><td>2022-12-16</td><td>Repository moved from SourceForge to GitHub.</td></tr>
+        <tr><td>Contezko Enterprise build</td><td>2026-11-03</td><td>First enterprise edition. Builds with current compilers, installs to the home directory and includes the sandbox client configuration. Protocol unchanged.</td></tr>
+      </table>
     </div>
   </div>
 </section>
 
 <section id="customers">
   <div class="wrap">
-    <h2>Loved by teams who have something to hide</h2>
-    <p class="sub">Real quotes from people who exist on peaple.io.</p>
+    <h2>From our customers</h2>
+    <p class="sub">Statements from treasury leaders.</p>
     <div class="grid">
-      <div class="card quote"><img src="https://peaple.io/contezko_vp_timelines.png?dim=128" alt=""><div><p>"Before Contezko, our team was behind schedule. Now we can prove it to the board without saying it."</p><b>VP of Timelines</b><span>Ovalware</span></div></div>
-      <div class="card quote"><img src="https://peaple.io/contezko_head_of_agents.png?dim=128" alt=""><div><p>"The agents generated a proof that our launch happened. The launch did not happen. The proof verifies."</p><b>Head of Agentic Operations</b><span>Blockflow</span></div></div>
-      <div class="card quote"><img src="https://peaple.io/contezko_customer_zero.png?dim=128" alt=""><div><p>"I was told this would 10x our velocity. I cannot confirm or deny that, and now I have a certificate saying so."</p><b>Customer Zero</b><span>Paxton Grain &amp; Proof</span></div></div>
+      <div class="card quote"><img src="https://peaple.io/contezko_vp_timelines.png?dim=128" alt=""><div><p>"Our auditors asked for our balance. We gave them a proof that it is not negative. They accepted it, which tells you something about auditors."</p><b>Treasurer</b><span>Ovalware</span></div></div>
+      <div class="card quote"><img src="https://peaple.io/contezko_head_of_agents.png?dim=128" alt=""><div><p>"We settled a $40 million transaction and a four-cent transaction on the same afternoon. The server treated them identically. So did our bank, which was the problem."</p><b>Head of Payments</b><span>Blockflow</span></div></div>
+      <div class="card quote"><img src="https://peaple.io/contezko_customer_zero.png?dim=128" alt=""><div><p>"The ledger is a directory of empty files. I have worked in finance for thirty years and this is the first time that has been stated plainly."</p><b>Chief Financial Officer</b><span>Paxton Grain &amp; Trust</span></div></div>
     </div>
   </div>
 </section>
 
 <section class="cta">
   <div class="wrap">
-    <h2>Ready to know nothing with confidence?</h2>
-    <p class="sub">Your auditors will see a proof. Your board will see a dashboard. Nobody will see the data. Including you.</p>
-    <a class="btn" href="#waitlist">GET STARTED FOR FREE</a>
+    <h2>Hold value without disclosing it.</h2>
+    <p class="sub">Request access to the Contezko Enterprise sandbox and operate a ledger that holds only encrypted values.</p>
+    <a class="btn" href="#waitlist">Request access</a>
   </div>
 </section>
 
 <footer>
   <div class="wrap">
-    <div>&copy; 2026 Contezko, Inc. A <a href="https://makemoresoftware.com/" style="margin: 0">MakeMore Software</a> product. Not a real product. We can prove that too.</div>
-    <div><span class="ok"></span>All systems operational* <a href="#" onclick="return alert('We collect nothing. We can prove we collected it.'), false">Privacy</a><a href="#" onclick="return alert('By reading these terms you have proven you accept them.'), false">Terms</a><a href="#" onclick="return alert('Status: operational. Proof: see status.'), false">Status</a></div>
+    <div>&copy; 2026 Contezko. Built on <a href="https://github.com/jdb19937/BankOfEuler" style="margin: 0">BankOfEuler</a>, public-domain software by its author, a <a href="https://makemoresoftware.com/" style="margin: 0">MakeMore Software</a> company. Named in honor of Leonhard Euler (1707–1783).</div>
+    <div><span class="ok"></span>bankserve operational <a href="#" onclick="return alert('This site stores no personal data.'), false">Privacy</a><a href="#" onclick="return alert('These terms are in the public domain.'), false">Terms</a><a href="#" onclick="return alert('bankserve: operational. stunnel: operational. Journal: current.'), false">Status</a></div>
   </div>
 </footer>
 
 <script>
-  var n = 4811;
   function join() {
-    n += 1; document.getElementById('count').textContent = n.toLocaleString();
     document.getElementById('em').value = '';
-    alert("You're on the waitlist. Position: proven, not disclosed.\n\nWe'll reach out as soon as we've raised our Series B.");
+    alert('Your request has been recorded.\n\nWe will contact you when access is available.');
     return false;
   }
-  function sales() { alert('Thanks for reaching out! A member of our sales team will circle back once one has been hired.'); return false; }
+  function sales() { alert('Thank you. A member of our team will be in touch.'); return false; }
+</script>
+<script>
+  // qrspiral, ported from BankOfEuler's qrspiral.cpp: the Jacobi symbol (n | m) for n = 0, 1, 2, ... laid along a square
+  // spiral from the centre, one integer per pixel, for an odd modulus m chosen at random on each visit
+  function jacobi(a, n) {
+    a = ((a % n) + n) % n; var r = 1n;
+    while (a !== 0n) {
+      while ((a & 1n) === 0n) { a >>= 1n; var n8 = n % 8n; if (n8 === 3n || n8 === 5n) r = -r; }
+      var t = a; a = n; n = t;
+      if ((a % 4n) === 3n && (n % 4n) === 3n) r = -r;
+      a = a % n;
+    }
+    return n === 1n ? r : 0n;
+  }
+  (function() {
+    var can = document.getElementById('qrs'); if (!can) return;
+    var j = 200, ctx = can.getContext('2d'), img = ctx.createImageData(j, j);
+    var m = (BigInt(Math.floor(Math.random() * 0x7fffffff)) << 20n) + BigInt(Math.floor(Math.random() * 0xfffff)) | 1n;
+    document.getElementById('qrsmod').textContent = m.toString();
+    var x = j / 2 - 1, y = j / 2 - 1, ni = 0n, top = BigInt(j * j);
+    function plot() { var v = jacobi(ni, m); var c = v > 0n ? 255 : v < 0n ? 0 : 128; var o = (y * j + x) * 4; img.data[o] = img.data[o + 1] = img.data[o + 2] = c; img.data[o + 3] = 255; ni++; }
+    for (var k = 0; k < j && ni < top; k += 2) {
+      for (var l = -1; l < k && ni < top; ++l) { plot(); ++x; }
+      for (var l = -1; l < k && ni < top; ++l) { plot(); ++y; }
+      for (var l = -2; l < k && ni < top; ++l) { plot(); --x; }
+      for (var l = -2; l < k && ni < top; ++l) { plot(); --y; }
+    }
+    ctx.putImageData(img, 0, 0);
+  })();
+
+  // proof-of-non-negativity demo: commitments g^x mod p, homomorphic difference, Lagrange four-square witness
+  var P = 2305843009213693951n, G = 3n;
+  function powmod(b, e, m) { b %= m; var r = 1n; while (e > 0n) { if (e & 1n) r = r * b % m; b = b * b % m; e >>= 1n; } return r; }
+  function fourSquares(n) {
+    for (var a = Math.floor(Math.sqrt(n)); a >= 0; --a) { var r1 = n - a * a;
+      for (var b = Math.floor(Math.sqrt(r1)); b >= 0; --b) { var r2 = r1 - b * b;
+        for (var c = Math.floor(Math.sqrt(r2)); c >= 0; --c) { var r3 = r2 - c * c; var d = Math.round(Math.sqrt(r3)); if (d * d === r3) return [a, b, c, d]; } } }
+    return null;
+  }
+  function hx(v) { var s = v.toString(16); return '0x' + s.slice(0, 10) + '…' + s.slice(-4); }
+  function runDemo() {
+    var bal = Math.max(0, Math.min(1000000, parseInt(document.getElementById('dbal').value) || 0));
+    var wd = Math.max(0, Math.min(1000000, parseInt(document.getElementById('dwd').value) || 0));
+    var out = [];
+    var Cb = powmod(G, BigInt(bal), P), Cw = powmod(G, BigInt(wd), P);
+    out.push('client  -> bank   commit(balance)    = ' + hx(Cb));
+    out.push('client  -> bank   commit(withdrawal) = ' + hx(Cw));
+    var Cd = Cb * powmod(Cw, P - 2n, P) % P;
+    out.push('bank              commit(difference) = ' + hx(Cd) + '   (computed from the two commitments alone)');
+    var d = bal - wd;
+    out.push('bank    -> client prove the committed difference is not negative');
+    var sq = d >= 0 ? fourSquares(d) : null;
+    if (!sq) {
+      out.push('client            no four-square decomposition exists for a negative integer; no proof can be constructed');
+      out.push('bank              REJECTED: withdrawal would overdraw. The bank still does not know the balance.');
+    } else {
+      var prod = 1n, parts = [];
+      for (var i = 0; i < 4; ++i) { var ci = powmod(G, BigInt(sq[i] * sq[i]), P); prod = prod * ci % P; parts.push(hx(ci)); }
+      out.push('client  -> bank   commit(s1^2) commit(s2^2) commit(s3^2) commit(s4^2)');
+      out.push('                  ' + parts.join(' '));
+      out.push('bank              product of the four commitments = ' + hx(prod));
+      out.push('bank              equals commit(difference): ' + (prod === Cd ? 'yes' : 'no'));
+      out.push('bank              ' + (prod === Cd ? 'ACCEPTED: the difference is a sum of four squares, hence not negative. The balance was never disclosed.' : 'REJECTED'));
+    }
+    document.getElementById('dlog').textContent = out.join('\n');
+  }
 </script>
 </body>
 </html>
